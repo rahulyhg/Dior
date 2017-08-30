@@ -1,0 +1,15 @@
+<desktop>
+	<permissions>
+		 <permission id="tgstockcost_costselect_index">库存成本统计</permission>
+		 <permission id="tgstockcost_stocksummary_index">进销存成本统计</permission>
+		 <permission id='tgstockcost_stocksummary_sellstorage'>进销存</permission>
+	</permissions>  
+
+	<workground name="单据报表" id="invoice_center"  order="900">
+		<menugroup name="财务报表">
+			<menu controller='costselect' action='index' permission='tgstockcost_costselect_index' display='true' order='300600'>库存成本统计</menu>
+            <menu controller='stocksummary' action='index' permission='tgstockcost_stocksummary_index' display='true' order='300700'>进销存成本统计</menu>
+            <menu controller='stocksummary' action='sellstorage' permission='tgstockcost_stocksummary_sellstorage' display='true' order='300800'>进销存统计</menu>
+		</menugroup> 
+    </workground> 
+</desktop>

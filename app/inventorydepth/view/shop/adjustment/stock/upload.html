@@ -1,0 +1,40 @@
+<style>
+.info{font-weight:bold;font-size:30px;}
+</style>
+<{if $error}>
+<div class='division info' style='color:red;'>
+<{$error}>
+</div>
+<{area inject='.mainFoot'}>
+  <div class='table-action'>
+    <{button label='取消' type='button' isCloseDialogBtn='true'}>
+  </div>
+<{/area}>
+
+<{else}>
+
+<div class='division info'>
+批量更新<span style='color:red;'><{$shop.shop_bn}></span>店铺所有货品库存会先进队列，<br/>稍后执行，确认吗？
+</div>
+<{area inject='.mainFoot'}>
+  <div class='table-action'>
+    <{button label='确定' type='button' id='submitbtn'}>
+    <{button label='取消' type='button' isCloseDialogBtn='true'}>
+  </div>
+<{/area}>
+<script type="text/javascript">
+$('submitbtn').addEvent('click',function(){
+  new Request.JSON({
+    url:"index.php?app=inventorydepth&ctl=shop_adjustment&act=batchUpload&p[0]=<{$shop.shop_id}>",
+    onComplete:function(resp){
+      if (resp.error) {
+        $E('.info').setHTML('<div style="color:red;font-size:30px;">'+resp.error+'</div>');
+        return;
+      }
+      MessageBox.success('成功插入队列！');
+      $E('.info').getParent('.dialog').retrieve('instance').close();
+    }
+  }).send();
+});
+</script>
+<{/if}>

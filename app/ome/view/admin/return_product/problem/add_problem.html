@@ -1,0 +1,88 @@
+<form method="post" action="index.php?app=ome&ctl=admin_setting&act=problem_save" id='add-category-form'>
+<div class="tableform">
+    <h3>售后类型添加</h3>
+    <div class="division">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <th><{t}>类型名称:<{/t}>
+            <{if $cat.problem_id }><input type="hidden" value="<{$cat.problem_id}>" name="cat[problem_id]" /></th><{/if}>
+          <td><input type="text" value="<{$cat.cat_name|escape:'html'}>" name="cat[cat_name]" vtype='required' class='x-input'/>
+            <{$cat_name}></td>
+        </tr>
+        <tr>
+          <th><{t}>上级类型:<{/t}></th>
+          <td><{input type="select" name="cat[parent_id]" style="font-size:12px;" required='1' value=$cat.parent_id rows=$catList valueColumn="problem_id" labelColumn="cat_name"}>
+            <span class="notice-inline"><{t}>顶级类型请选择“无”<{/t}></span></td>
+        </tr>
+
+        <tr>
+          <th><{t}>排序:<{/t}></th>
+          <td><input style="width:50px;" vtype="unsigned" value="<{$cat.p_order}>" name="cat[p_order]" class="_x_ipt"/>
+            <span class="notice-inline"><{t}>数字越小越靠前<{/t}></span></td>
+        </tr>
+
+      </table>
+    </div>
+</div>
+
+<div class="table-action">
+	<{button label="保存" type="submit" id='easy-save-category' }>
+	<!--
+   <{button label="保存并继续添加" type="button" id='easy-save-category'}>
+   //-->
+	
+</div>
+
+<script>
+           $E('#add-category-form input[name^=cat[cat_name]').addEvent('keydown',function(e){
+
+               if(e.key=='enter'){
+
+
+                 e.stop();
+
+                   return $('easy-save-category').fireEvent('click',{stop:$empty});
+               }
+
+           });
+
+           $('add-category-form').store('target',{onComplete:function(){
+
+                  if(gms=$('g_menu_sec_2')){
+                      gms.empty();
+                      gms.retrieve('update',$empty)();
+                  }
+
+
+           }});
+
+
+           $('easy-save-category').addEvent('click',function(e){
+                    e.stop();
+                    var _form=this.form;
+
+                    var cname=$E('#add-category-form input[name^=cat[cat_name]');
+                    var value=cname.get('value').clean().trim();
+
+                    var cid=$E('#add-category-form input[name^=cat[problem_id]');
+                    //if(cid) cid.remove();
+
+                    if(!value)return MessageBox.error('类型名称为不能为空.');
+                    if(this.retrieve('tempname',[]).contains(value)){
+                       if(!confirm('您刚才已经添加了类型:"'+value+'"\n要重复添加么?'))return;
+                    }
+
+                    this.retrieve('tempname',[]).include(value);
+
+                    if(!$(_form).get('target')){
+
+                      var _target={
+                         update:'messagebox'
+                      }
+                       _form.set('target',JSON.encode(_target));
+                    }
+                    _form.fireEvent('submit',e).erase('target');
+
+           });
+        </script>
+</form>

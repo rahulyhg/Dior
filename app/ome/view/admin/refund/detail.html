@@ -1,0 +1,18 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<div class="prepend-1">
+<div class="tableform">
+<div class="division">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" class="gridlist">
+<tr><th width="15%">平台订单号：</th><td><{$order.order_bn}></td><th width="15%">申请日期：</th><td><{$order.createtime|cdate:FDATE_FTIME}></td></tr>
+<tr><th>退款类型：</th><td><{$refund.paymethod}></td><th>退款支付方式：</th><td><{$refund.payment_name}></td></tr>
+<tr><th>退款银行：</th><td><{$refund.bank}></td><th>申请状态：</th><td><{$refund.status_name}></td></tr>
+<tr><th>退款帐号：</th><td><{$refund.account}></td><th>收款账户：</th><td><{$refund.pay_account}></td></tr>
+<tr><th>申请退款金额：</th><td><{$refund.money|cur}></td><th>已退金额：</th><td><{$refund.cur_money|cur}></td></tr>
+<tr><th>退款类别:</th><td><{$pay_type[$refund.pay_type]}></td><th>第三方交易号：</th><td><{$refund.trade_no}></td></tr>
+<tr><th>申请备注：</th><td colspan="3"><{$refund.memo}></td></tr>
+</table>
+</div>
+</div>
+</div>

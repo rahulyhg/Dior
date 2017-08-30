@@ -1,0 +1,17 @@
+<services>
+    <service id="desktop_finder.logisticsmanager_mdl_channel">
+        <class>logisticsmanager_finder_channel</class>
+    </service>
+
+    <service id="desktop_finder.logisticsmanager_mdl_express_template">
+        <class>logisticsmanager_finder_express_template</class>
+    </service>
+
+    <service id="desktop_finder_column_modifier.logisticsmanager_mdl_express_template.default">
+        <class>logisticsmanager_modifier_column_express_template</class>
+    </service>
+	<service id="operation_log">
+        <class>logisticsmanager_operation_log</class>
+    </service>
+	
+</services>

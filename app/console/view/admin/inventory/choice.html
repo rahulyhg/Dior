@@ -1,0 +1,123 @@
+<div class="tableform">
+<h4><{t}>选择处理方式:<{/t}></h4>
+<div class="division">
+<form action="index.php?app=console&ctl=admin_inventory_apply&act=finish_choice" method="POST" target="uploadframe" enctype="multipart/form-data" id="import_form" class="tableform">
+<input type="hidden" name="inventory_apply_id" value="<{$apply.inventory_apply_id}>" />
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr>
+<th>盘点申请单号：</th>
+<td><{$apply.inventory_apply_bn}></td>
+<th>盘点日期：</th>
+<td><{$apply.inventory_date|date_format:'%Y-%m-%d'}></td>
+</tr>
+<tr>
+<th>备注：</th>
+<td><{$apply.memo}></td>
+<th></th>
+<td></td>
+</tr>
+<tr>
+<th>确认盘点结果：</th>
+<td></td>
+<th></th>
+<td></td>
+</tr>
+<tr>
+<th></th>
+<td><input type="radio" vtype="requiredradio" name="_branch_" value="r1" id="_b1" />指定盘点仓库 <br/>
+<div id="b1_" style="display:none"><{input type="select" vtype="required" name="branch" rows=$branch valueColumn="branch_bn" labelColumn="name" }></div>
+<input type="radio" vtype="requiredradio" name="_branch_" value="r2" id="_b2" />导入盘点明细<br/>
+<div id="b2_" style="display:none">第一步：下载盘点明细 <{button type="button" label="下载" id="btn_download"}> <br/>
+第二步：打开csv文件，调整盘点结果<br/>
+第三步：上传csv文件<br/>
+<input type="file" name="import_file" id="ImportCSV" />
+</div>
+</td>
+<th></th>
+<td></td>
+</tr>
+<tr>
+<th></th>
+<td><{button type="button" label="确认" id="sub1"}></td>
+<th></th>
+<td></td>
+</tr>
+</tbody>
+</table>
+</form>
+</div></div>
+<div style="display:none">
+<form action="index.php?app=console&ctl=admin_inventory_apply&act=index&action=to_export&finder_id=<{$finder_id}>" method="POST" target="download" enctype="multipart/form-data" id="export_form" class="tableform">
+<input type="hidden" name="inventory_apply_id" value="<{$apply.inventory_apply_id}>" />
+<input type='hidden' value='csv' name='_io_type'/>
+</form>
+</div>
+<script>
+
+    var apply_id = <{$apply.inventory_apply_id}>;
+    $('_b1').addEvent('click', function (e){
+        if (this.checked){
+            $('b1_').show();
+            $('b2_').hide();
+        }
+    });
+    $('_b2').addEvent('click', function (e){
+        if (this.checked){
+            $('b1_').hide();
+            $('b2_').show();
+        }
+    });
+
+    $('btn_download').addEvent('click', function (e){
+        //window.location = 'index.php?app=console&ctl=admin_inventory_apply&action=to_export&inventory_apply_id='+apply_id;
+        $('export_form').fireEvent('submit', {
+            stop: function() {}
+        });
+    });
+
+    $('sub1').addEvent('click', function (e){
+        ttt = '';
+        $$('[name=_branch_]').each(function(item){
+            if (item.checked) ttt = item.value;
+        });
+        if (ttt == 'r1'){
+            $('import_form').action = "index.php?app=console&ctl=admin_inventory_apply&act=finish_choice";
+        }else if (ttt == 'r2'){
+            $('import_form').action = "index.php?app=console&ctl=admin_inventory_apply&action=to_import";
+        }
+        $('import_form').fireEvent('submit', {
+            stop: function() {}
+        });
+    });
+    
+    $('import_form').store('target', {
+        onRequest: function() {
+           if ($('sub1')) {
+               $('sub1').set('disabled', 'true');
+               $('sub1').getElements('span')[1].set('text', '确认中');
+           }
+       },
+       onComplete: function(jsontext) {
+           var json = Json.evaluate(jsontext);
+           var finder = opener.finderGroup['<{$finder_id}>'];
+           if (typeof(json.error) == 'undefined') {
+               if (json.success == '成功：处理成功') {
+                   try {
+                       finder.refresh.delay(400, finder);
+                   } catch(e) {}
+                   setTimeout("window.close();",400);
+                   //window.close();//location = window.location.href;
+               }
+               else {
+            	   if ($('sub1')) {
+                       $('sub1').set('disabled', '');
+                       $('sub1').getElements('span')[1].set('text', '确认');
+                   }
+               }
+           }
+       }
+    });
+    
+
+</script>

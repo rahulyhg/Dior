@@ -1,0 +1,67 @@
+<div id='shop-list'>
+    <h3>目前支持店铺：</h3>
+    <div class="division" id='support-shops'>
+        <form method='post' action='<{$url}>' isCloseDialog>
+            <div class="tableform">
+                <ul>
+                <{foreach from=$support_shops item=item }>
+                    <li class='span-auto' style='min-width: 118px;margin-bottom:5px;'>
+                        <input type='radio'  name='shop_id' value='<{$item.shop_id}>' ><span style='font-size:14px;font-weight:bold;'><{$item.name}></span>
+                    </li>
+                <{/foreach}>
+                </ul>
+            </div>
+            <div class="table-action">
+                <{button label="确定" type="button" id='btn-primary'}>
+            </div>
+        </form>
+    </div>
+    <{if $unsupport_shops}>
+    <h3>暂不支持以下店铺：</h3>
+    <ul class="clearfix clear division">
+        <{foreach from=$unsupport_shops item=item key=key}>
+            <li class='span-auto' style='min-width: 118px;margin-bottom:5px;'><span style='font-size:14px;font-weight:bold;'><{$item.name}></span></li>
+        <{/foreach}>
+    </ul>
+    <{/if}>
+
+<script>
+    var show = "<{$show|default:''}>";
+    window.addEvent('domready',function(){
+        $('support-shops').getParent('.dialog').retrieve('instance').setTitle('选择店铺');
+    });
+    $('btn-primary').addEvent('click',function(){
+        var _form = this.form;
+        if (_form.getElements("input[name='shop_id']:checked").length <=0)
+        {
+            MessageBox.error('请选择店铺');return false;
+        }
+        var clickElement = $empty;
+        var target = {
+            method:'post',
+            data:_form,
+            onComplete:function(resp){
+                if ((/text\/jcmd/).test(this.getHeader('Content-type')))
+                {
+                    resp = JSON.decode(resp);
+                }
+
+                if (resp.redirectUrl && resp.update)
+                {
+                    W.page(resp.redirectUrl,
+                    {
+                        update:$('shop-list'),
+                        onRequest:function(){
+                            $('shop-list').getParent('.dialog').retrieve('instance').setTitle('同步商品');
+                        }
+                    });
+                } else {
+                    $('shop-list').getParent('.dialog').retrieve('instance').close();
+                }
+            }
+        };
+        W.page(_form.action,target,clickElement);
+    });
+</script>
+
+</div>

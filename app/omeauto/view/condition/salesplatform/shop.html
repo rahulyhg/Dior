@@ -1,0 +1,5 @@
+<{if $shop}>
+<{foreach from=$shop item=item}>
+<input type="checkbox" name=<{$PREFIX|mkname:"shop[]":$KEY}> value="<{$item.shop_id}>" <{if $item.checked}>checked<{/if}> /> <{$item.shop_name}>
+<{/foreach}>
+<{/if}>

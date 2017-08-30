@@ -1,0 +1,26 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+
+<div class="division">
+<h4>优惠方案</h4>
+<table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+
+  <thead>
+  <tr>
+      <th>优惠方案</th>
+      <th>优惠金额</th>
+    </tr>
+    </thead>
+      <tbody>
+  <{foreach from=$pmts item=pmt}>
+    <tr>
+      <td><{$pmt.pmt_describe}></td>
+      <td><{$pmt.pmt_amount}></td>
+    </tr>
+  <{/foreach}>
+  </tbody>
+</table>
+</div>
+</div>

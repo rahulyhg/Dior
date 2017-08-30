@@ -1,0 +1,97 @@
+<div class="tableform">
+<h3>批量添加货位</h3>
+<div class="division">
+<form method="post" action="index.php?app=ome&ctl=admin_branch_pos&act=do_batch_pos" id="form-batch_branch_pos">    
+      <table  >
+
+       <tbody>
+	   <tr>
+          <th >所属仓库: </th>
+          <td >
+        <{if $is_super}>
+                <{if count($branch_list)=='1'}>
+                    <input type="hidden" name="branch_id" value="<{$branch_list.0.branch_id}>" />
+                    <{$branch_list.0.name}>
+                <{elseif count($branch_list)>'5' }>
+                    <{input type="select" name="branch_id" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                <{else}>
+                    <{foreach from=$branch_list item=items key=keys}>
+                    <input type="radio" name="branch_id" vtype="requiredradio" value="<{$items.branch_id}>" <{if $keys==0}>checked="checked"<{/if}> />
+                    <{$items.name}>
+                    <{/foreach}> <span style="color:red">*</span>
+                <{/if}>
+            <{else}>
+                <{if !$branch_list_byuser}>
+                    <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+                    <script>
+                       $$("input","button","select").set('disabled','disabled');
+                    </script>
+                <{else}>
+                    <{if count($branch_list_byuser)=='1'}>
+                        <{$branch_list_byuser.0.name}>
+                        <input type="hidden" name="branch_id" value="<{$branch_list_byuser.0.branch_id}>" />
+                    <{elseif count($branch_list_byuser)>'5'}>
+                        <{input type="select" name="branch_id" vtype="required" rows=$branch_list_byuser valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                    <{else}>
+                        <{foreach from=$branch_list_byuser item=items key=keys}>
+                        <input type="radio" name="branch_id" vtype="requiredradio" <{if $keys==0}>checked="checked"<{/if}> value="<{$items.branch_id}>" />
+                        <{$items.name}>
+                        <{/foreach}> <span style="color:red">*</span>
+                    <{/if}>
+                <{/if}>
+            <{/if}>
+		</td>
+        </tr>
+        <tr>
+          <th >前缀: </th>
+          <td ><input name="start" type="text" id="start" vtype="required" size="12" /></td>
+        </tr>
+		<tr>
+          <th >后缀: </th>
+          <td ><input name="end" type="text" id="end" size="12" /></td>
+        </tr>
+		<tr>
+          <th >长度 </th>
+          <td ><input name="pos_length" type="text" id="pos_length" size="12" vtype='required&&number'/><font color="red">*长度建议3位,不得超过4位</font></td>
+        </tr>
+		<tr>
+          <th >累加次数: </th>
+          <td><input name="num" type="text" id="num" size="6" vtype='required&&number' caution="该项必填且只允许填写数字"/>
+          <{help}><{t}>循环＋１次数<{/t}><{/help}>
+          
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+  
+  <div class="table-action">
+  <{button type="submit" class="btn-primary" name="Submit" label="批量生成" id="btn-batch_branch_pos" }>
+  <{button type="button" class="btn-secondary" onclick="javascript:window.close();" label="关闭" }>
+  </div>
+    </div>
+  </form> 
+    </div>
+<script>
+$('form-batch_branch_pos').store('target',{
+    onRequest:function(){
+       $('btn-batch_branch_pos').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn-batch_branch_pos').set('disabled', '');
+       }else{
+           $('btn-batch_branch_pos').set('disabled', 'true');
+           var fg = opener.finderGroup;
+           for(fid in fg){
+             if(fid){
+                fg[fid].refresh(); 
+             }
+           }
+           window.close();
+       }
+    }
+    });
+</script>  
+    

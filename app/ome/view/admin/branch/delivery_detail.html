@@ -1,0 +1,69 @@
+<strong class="action-bar-info">发货单信息:</strong><hr>
+<div class="tableform"> 
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+	<td align="right">发货单号:</td>
+	<td align="left"><{$dly.delivery_id}></td>
+	<td align="right">订单号:</td>
+	<td align="left"><{$dly_ord.order_id}></td>
+	<td align="right">配送方式:</td>
+	<td align="left"><{$dly.delivery}></td>
+</tr>
+<tr>
+	<td align="right">操作员:</td><td align="left"><{$dly.delivery_id}></td>
+	<td align="right">会员:</td><td align="left"><{$dly.member_id}></td>
+	<td align="right">收货人:</td><td align="left"><{$dly.ship_name}></td>
+</tr>
+<tr>
+	<td align="right">邮编:</td>
+	<td align="left"><{$dly.ship_zip}></td>
+	<td align="right">Email:</td>
+	<td align="left"><{$dly.ship_email}></td>
+	<td align="right">电话:</td>
+	<td align="left"><{$dly.ship_tel}></td>
+</tr>
+<tr>
+	<td align="right">手机:</td>
+	<td align="left"><{$dly.ship_mobile}></td>
+	<td align="right">物流公司:</td>
+	<td align="left"><{input type="select" name="dly[logi_id]" rows=$dly_corp valueColumn="corp_id" labelColumn="name" value=$dly.logi_id}></td>
+	<td align="right">物流费用:</td>
+	<td align="left"><input type="text" name="dly[logi_no]" size="10"  value="<{$dly.delivery_cost_actual}>" /></td>
+</tr>
+<tr>
+	<td align="right">物流运单号:</td>
+	<td align="left"><input type="text" name="dly[logi_no]" size="10"  value="<{$dly.logi_no}>" /></td>
+	<td align="right">重量:</td>
+	<td align="left"><{$dly.weight}></td>
+	<td align="right">生成时间:</td>
+	<td align="left"><{$dly.create_time}></td>
+</tr>
+<tr>
+	<td align="right">订单支付方式:</td>
+	<td align="left"><b><font color="orange"><{if $dly.is_cod==1}>货到付款<{else}>款到发货<{/if}></font></b></td>
+	<td align="right">订单附言:</td>
+	<td align="left"><{$dly.memo}></td>
+	<td align="right">&nbsp;</td>
+	<td align="left">&nbsp;</td>
+</tr>
+</table>
+</div>
+
+<strong class="action-bar-info">商品信息:</strong><hr>
+<div class="tableform"> 
+<table border="0" cellspacing="0" cellpadding="0">
+<{foreach from=$dly_item item=item}>
+<tr>
+	<td align="left"><{$item.product_id}></td>
+	<td align="right">货号:</td>
+	<td align="left"><{$item.bn}></td>
+	<td align="right">货品名称:</td>
+	<td align="left"><{$item.product_name}></td>
+	<td align="right">货品数量:</td>
+	<td align="left"><{$item.product_name}></td>
+	<td align="right">货品类型:</td>
+	<td align="left"><{$item.item_type}></td>
+</tr>
+<{/foreach}>
+</table>
+</div>

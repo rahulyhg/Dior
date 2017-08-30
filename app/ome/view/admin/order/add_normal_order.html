@@ -1,0 +1,573 @@
+<div class="tableform newOrder">
+  <h3>新建订单</h3>
+  <form action="index.php?app=ome&ctl=admin_order&act=doAddNormalOrder" method="post" class="division" id="newOrderForm">
+    <input type="hidden" name="branch_id" value="<{$branch.branch_id}>" />
+    <div class="gray_form">
+      <p><strong>1.添加会员</strong> <select id="add_mem_sel"><option value="uname">按用户名</option><option value="mobile">按手机号</option></select><span style="position:relative;"><input type="text" name="uname" id="ipt_data" /></span> <{button label="搜索" id="btn_search_member"}>  <{button label="新建用户" id="btn_new_member" onclick="new Dialog('index.php?app=ome&ctl=admin_member&act=addMember',{width:700,title:'新建用户',height:400})"}></p>
+      <table class="gridlist" style="*width:97%;">
+        <thead>
+          <tr>
+            <th style="width:20px;"></th>
+            <th>用户名</th>
+            <th>性别</th>
+            <th>手机号</th>
+            <th>地区</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody id="memNode">
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gray_form" style="margin-top:24px;">
+      <p class="clearfix"><strong class="fl">2.添加订单商品 <{button label="从商品库添加商品" id="btn_add_product" disabled="disabled"}>  <{button label="添加捆绑商品" id="btn_add_product_pkg" disabled="disabled"}> </strong> <span class="fr"><!--<select name="" id="product_add"><option value="product_bn">按货号添加</option><option value="product_name">按商品名添加</option></select>--> 按货号添加:<input type="text" name="product_bn" disabled="disabled" /> 按商品名添加:<input type="text" name="product_name" disabled="disabled" /> 按条形码添加:<input type="text" name="product_barcode" disabled="disabled" /> <!--<{button type="button" label="添加" id="btn_add" disabled="disabled"}>--></span></p>
+      <table class="gridlist" style="*width:97%;">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th>商品名称</th>
+            <th >规格</th>
+            <th style="text-align:center;width:30px;">库存数量</th>
+            <th style="text-align:center;width:30px;">购买数量</th>
+            <th style="text-align:center;width:80px;">商品价格</th>
+            <th style="width:30px;">删除</th>
+          </tr>
+        </thead>
+        <tbody id="proNode">
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gray_form" style="margin-top:24px;">
+      <p><strong>3.选择配货地址</strong></p>
+      <ul class="addrlist" id="addrlist">
+
+      </ul>
+      <input type="hidden" name="consignee[area]" id="consignee_area" value="" />
+      <input type="hidden" name="consignee[addr]" id="consignee_addr" value="" />
+      <input type="hidden" name="consignee[name]" id="consignee_name" value="" />
+      <input type="hidden" name="consignee[zip]" id="consignee_zip" value="" />
+      <input type="hidden" name="consignee[mobile]" id="consignee_mobile" value="" />
+      <input type="hidden" name="consignee[telephone]" id="consignee_telephone" value="" />
+      <input type="hidden" name="consignee[email]" id="consignee_email" value="" />
+
+      <p><{button label="使用新的配货地址" id="btn_add_address" onclick="new Dialog('index.php?app=ome&ctl=admin_order&act=addNewAddress',{title:'添加配货地址',width:650,height:300})" disabled="disabled"}></p>
+      <p>订单附言：<input type="text" name="customer_memo" size="90" />
+    </div>
+
+    <div class="gray_form" style="margin-top:24px; display:none;">
+      <p><strong>4.选择快递公司</strong> </p>
+      <ul class="branch_list clearfix" id="deliverylist">
+
+      </ul>
+    </div>
+
+    <div class="gray_form" style="margin-top:24px;">
+      <p><strong>4.订单信息确认</strong></p>
+      <table border="0" style="width:auto;">
+        <tbody>
+          <tr>
+            <th>商品总金额：</th>
+            <td name="goods_amount">0</td>
+            <th>下单日期：</th>
+            <td name="times"><{$creatime}></td>
+            <th>是否开票：</th>
+            <td>
+            	<input type='radio' id='is_tax_yes' name='is_tax' value='true'/>是
+            	<input type='radio' id='is_tax_no' name='is_tax' value='false' checked="checked"/>否
+            </td>
+          </tr>
+          <tr>
+            <th>订单总金额：</th>
+            <td name="order_amount">0</td>
+            <th>配送金额：</th>
+            <td ><input type="text" name="cost_shipping" value="" size="5" /></td>
+            <th>发票抬头：</th>
+            <td ><input type="text" id='tax_title' name="tax_title" value="" size="15"  style="display:none;"/></td>
+          </tr>
+          <tr>
+            <th>折扣：</th>
+            <td><input type="text" name="disc" size="6" value="" /></td>
+            <input type="hidden" name="discount" id="discount" size="6" value="" />
+            <th>货到付款：</th>
+            <td>
+            	<input type='radio' name='is_cod' value='true'/>是
+            	<input type='radio' name='is_cod' value='false' checked="checked"/>否
+            </td>
+            <th></th>
+            <td name="delivery" ></td>
+
+          </tr>
+          <tr>
+            <th>来源店铺：</th>
+            <td><select name="shop_id">
+                <option value="">-选择店铺-</option>
+                <{foreach from=$shopData item=shop}>
+                    <option value="<{$shop.shop_id}>*<{$shop.shop_type}>"><{$shop.name}></option>
+                <{/foreach}>
+            </select></td>
+            <th>关联订单号:</th>
+            <td><input type="text" name="relate_order_bn" size="30"></td>
+          </tr>
+          <tr>
+            <th>订单备注：</th>
+            <td><textarea rows="6" cols="50" name="order_memo"></textarea></td>
+            <!-- <th>支付方式：</th> -->
+            <!-- <td name="payout"></td> -->
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+<script>
+var visiTips = new Tips({
+		onShow:function(tip,el){
+			el.addClass('active');
+			tip.setStyle('display','block');
+		},
+		text: function(element){
+			if(element.get('visibility')=='false'){
+				return '隐藏商品';
+			}else{
+				return '';
+			}
+		}
+	});
+</script>
+<{area inject=".mainFoot"}>
+    <div class="table-action">
+      <{button type="button" class="btn-primary" id="btn_submit" label="提交" disabled='disabled'}>&nbsp;&nbsp;
+      <!-- <{button type="button" class="btn-secondary" id="preview" label="预 览" disabled='disabled'}> &nbsp;&nbsp; <{button type="button" class="btn-secondary" label="返 回"}> -->
+    </div>
+<{/area}>
+<script>
+
+//显示发票抬头输入框
+$('is_tax_yes').addEvent('click', function(e){
+	 $('tax_title').style.display ='';
+});
+//隐藏发票抬头输入框
+$('is_tax_no').addEvent('click', function(e){
+	 $('tax_title').style.display ='none';
+	 $('tax_title').set('value','');//情况输入框数据
+	 
+});
+
+  (function(){
+    $('add_mem_sel').addEvent('change',function(){
+      $('ipt_data').name = this.get('value');
+    });
+
+    $('ipt_data').addEvent('enter',function(e){
+      //if(e.key=='enter'){
+        e.stop();
+        new Request({url:'index.php?app=ome&ctl=admin_order&act=getMembers',method:'post',data:this.name+'='+this.value.trim(),
+          onSuccess:function(json){
+            if (!json){
+              $('memNode').set('html','');
+              $('addrlist').set('html','');
+              $$('.nodisabled').removeClass('nodisabled').set('disabled',true);
+              return;
+            }
+            json = JSON.decode(json);
+            $$('.nodisabled').removeClass('nodisabled').set('disabled',true);
+            createMember(json);
+          }
+        }).send();
+      //}
+    });
+
+    $('btn_search_member').addEvent('click',function(e){
+      if($('ipt_data').value.trim() !== ''){
+        _this = $('ipt_data');
+        new Request({url:'index.php?app=ome&ctl=admin_order&act=getMembers',method:'post',data:_this.name+'='+_this.value.trim(),
+          onSuccess:function(json){
+            if (!json){
+              $('memNode').set('html','');
+              $('addrlist').set('html','');
+              $$('.nodisabled').removeClass('nodisabled').set('disabled',true);
+              return;
+            }
+            json = JSON.decode(json);
+            $$('.nodisabled').removeClass('nodisabled').set('disabled',true);
+            createMember(json);
+          }
+        }).send();
+      }
+    });
+
+    function sumOrderAmount(){
+      var goods=parseFloat($E('td[name=goods_amount]').get('text'))||0;
+      var cost=parseFloat($E('input[name=cost_shipping]').value)||0;
+      //var pmt=parseFloat($E('input[name=discount]').value)||0;
+      var pmt = $E('input[name=disc]').value;
+      var reg = result = null;
+      if(pmt){
+          reg = /^[1-9][0-9]?\%$/;         //匹配百分数
+          result = pmt.match(reg);
+          if(result){
+        	  var _pmt = pmt.replace('%','');
+        	  var _amount = (goods+cost) - (goods+cost) * _pmt/100;
+        	  $E('td[name=order_amount]').set('text',(_amount).toFixed(3));
+        	  $('discount').set('value',(-(goods+cost) * _pmt/100).toFixed(3));
+          }else{
+          	  reg =  /^[-+\d]\d*\.?\d*$/;　 //匹配浮点数  
+              result = pmt.match(reg);
+        	  if(result){
+            	  pmt=parseFloat($E('input[name=disc]').value)||0;
+            	  $E('td[name=order_amount]').set('text',( goods + cost + pmt).toFixed(3));
+            	  $('discount').set('value',pmt);
+        	  }else{
+        		  alert('折扣数据有误！');
+        		  $E('td[name=order_amount]').set('text',( goods + cost).toFixed(3));
+        		  $('discount').set('value',0);
+        	  }
+          }
+      }else{
+    	$E('td[name=order_amount]').set('text',( goods + cost).toFixed(3));
+    	$('discount').set('value',0);
+      }
+      //$E('td[name=order_amount]').set('text',( goods + cost + pmt).toFixed(3));
+    }
+
+    var callurl='index.php?app=ome&ctl=admin_order&act=getProducts', store=[];
+    var callurlpkg='index.php?app=omepkg&ctl=admin_pkg&act=getPkgGoods', store=[];
+    var options={
+      'getVar':'bn',
+      'delay':800,
+      'fxOptions':false,
+      callJSON:function(){return window.autocompleter_json;},
+      injectChoice:function(json){
+        var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+        choice.store('_data',json);
+        choice.inputValue = json[this.options.getVar];
+        this.addChoiceEvents(choice).inject(this.choices);
+      },
+      onHide:function(){
+        if(!this.selected)return;
+        var _json=this.selected.retrieve('_data');
+        _json=$splat(_json);
+        init(_json);
+      },
+      onFocus:function(ipt){
+      }
+    };
+
+    new Autocompleter.script($E('[name=product_bn]'),callurl, options);
+    new Autocompleter.script($E('[name=product_name]'),callurl,$merge(options,{'getVar':'name'}));
+    new Autocompleter.script($E('[name=product_barcode]'),callurl,$merge(options,{'getVar':'barcode'}));
+
+    function getTemp(j,flag){
+      var checked=flag?'checked="checked"':'';
+      return '<tr><td><input type="radio" name="id" value="'+j.member_id+'" '+checked+' /></td><td>'+j.uname+'</td><td>'+j.sex+'</td><td>'+j.mobile+'</td><td>'+(j.area ? j.area.split(':')[1] : '')+'</td><td>'+j.email || ''+'</td></tr>';
+    }
+
+    var fdoc=document.createDocumentFragment();
+    function createMember(data){
+      var rows='';
+      data.each(function(item){
+        rows+=getTemp(item);
+      });
+      $('memNode').set('html',rows);
+
+      function getAddrTemp(j){
+        return '<li><q><input type="radio" name="address_id" value="'+j.area+'" /> '+j.addr+'</q> <b>'+j.name+'</b> <i>'+j.zip+'</i> <em>'+j.mobile+'</em> &nbsp; &nbsp; &nbsp; <span>'+j.telephone+'</span> &nbsp; &nbsp; &nbsp;  <strong>'+j.email+'</strong></li>';
+      }
+      function getDeliveryTemp(j){
+        return '<li><input type="radio" name="logi_id" value="'+j.corp_id+'" /> <label>'+j.name +'</label></li>';
+      }
+
+      $ES('input[name=id]').addEvent('click',function(e){
+        $$('*[disabled]').addClass('nodisabled').set('disabled',false);
+
+        new Request({url:'index.php?app=ome&ctl=admin_order&act=getMemberAddress',method:'post',data:'member_id='+this.value,
+          onSuccess:function(json){
+            if (!json){
+              $('addrlist').set('html','');
+              return false;
+            }
+            json = JSON.decode(json);
+            var lists='';
+            json.each(function(j){
+              lists+=getAddrTemp(j);
+            });
+            $('addrlist').set('html',lists);
+
+            $$('input[name=address_id]').addEvent('click',function(){
+              var _this=this;
+
+              new Request({url:'index.php?app=ome&ctl=admin_order&act=getCorpArea',method:'post',data:'region='+_this.value,
+                onSuccess:function(json){
+                  json = JSON.decode(json);
+                  var Delist='';
+                  json.each(function(j){
+                    Delist += getDeliveryTemp(j);
+                  });
+                  $('deliverylist').setHTML(Delist);
+                  $('deliverylist').getElements('input[name=logi_id]').addEvent('click',function(){
+                    $E('td[name=delivery]').set('text',this.getParent('li').getElement('label').get('text'));
+                  });
+
+                  $('consignee_area').value=_this.getParent('li').getElement('input[name=address_id]').value;
+                  $('consignee_addr').value=_this.getParent('li').getElement('q').get('text').trim();
+                  $('consignee_name').value=_this.getParent('li').getElement('b').get('text').trim();
+                  $('consignee_zip').value=_this.getParent('li').getElement('i').get('text').trim();
+                  $('consignee_mobile').value=_this.getParent('li').getElement('em').get('text').trim();
+                  $('consignee_telephone').value=_this.getParent('li').getElement('span').get('text').trim();
+                  $('consignee_email').value=_this.getParent('li').getElement('strong').get('text').trim();
+                }
+              }).send();
+            });
+          }
+        }).send();
+
+      });
+    }
+
+    $('deliverylist').getElements('input[name=logi_id]').addEvent('click',function(){
+      $E('td[name=delivery]').set('text',this.getParent('li').get('text').trim());
+    });
+
+    function searchMember(data){
+      new Request({url:'index.php?app=ome&ctl=admin_order&act=getMembers',method:'post',data:'member_id='+data.member_id,
+        onSuccess:function(json){
+          json = JSON.decode(json);
+          createMember(json);
+        }
+      }).send();
+    }
+
+    function cost_item(data){
+        var sum=0;
+        data.each(function(el){
+            var num=price=0;
+            if ($defined(el['num']))
+            {
+                num = el['num'];
+            }
+            if ($defined(el['price']))
+            {
+                price = el['price'];
+            }
+            sum+=num*price;
+        });
+        $E('td[name=goods_amount]').set('text',sum.toFixed(3));
+        sumOrderAmount();
+    }
+
+    var pag;
+    var tpl='<tr key="{product_id}" id="goods_{product_id}">\
+        <td>{bn}</td>\
+        <td class="product-name" visibility="{visibility}">{name}</td>\
+        <td>{spec_info}</td>\
+        <td style="text-align:center;">{store_minus_freeze}</td>\
+        <td style="text-align:center;"><input type="text" value="{num}"  key="num" vtype="unsignedint" tname="num[_PRIMARY_]" size="6"></td>\
+        <td style="text-align:center;"><input type="text" value="{price}" key="price"  vtype="unsigned"  tname="price[_PRIMARY_]" size="6">元</td>\
+        <td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn_delete"}></td>\
+      </tr>';
+
+    function createProduct(data){
+      pag=new PageData(tpl,data,{'updateMain':$('proNode'),'pageNum':5,
+        'onShow':function(){
+          var _this=this;
+          $$('#proNode input[type]').addEvent('change',function(e){
+                if(!validatorMap[this.get('vtype')][1](this, this.getValue())){return ;}
+                var pid=this.getParent('tr').get('key'),value=this.value;
+                _this.editData(pid,[this.get('key'),value]);
+          });
+
+          rows=$$('#proNode tr');
+          rows.each(function(item,i){
+            item.getElement('.btn_delete').addEvent('click',function(e){
+              if(_this.selectData(item.get('key')) && confirm('确定要删除 '+ _this.selectData(item.get('key'))['name'] +' 吗？')){ 
+                    _this.delData(item.get('key'));
+                    cost_item(_this.data);
+              }
+            });
+            item.getElement('input[key=price]').addEvents({
+                'blur':function(){
+                  var notice;
+                    if ($defined(this.getNext('span.error')))
+                    {
+                        this.getNext('span.error').destroy();
+                    }
+                  if(!validatorMap['unsigned'][1](this, this.getValue())){ 
+                        notice=new Element('span.error',{html:'请输入数值！'}).injectAfter(this);
+                        notice.destroy.delay(4000,notice);
+                  }else {
+                        cost_item(_this.data);
+                  }
+                },
+                'focus':function(){
+                    if(this.getNext('span.error')) this.getNext('span.error').destroy();
+                }
+            });
+
+            item.getElement('input[key=num]').addEvents({
+              'keypress':function(e){
+                if(e.code==13) item.getElement('input[key=price]').focus();
+              },
+              'blur':function(){
+                var notice;
+
+                if(!validatorMap['unsignedint'][1](this, this.getValue())) {
+                  notice=new Element('span.error',{html:'请输入数值！'}).injectAfter(this);
+                  notice.destroy.delay(4000,notice);
+                  return;
+                } 
+
+                if(this.value.toInt() > this.getParent('td').getPrevious().get('text').trim().toInt()){
+                  notice=new Element('span.notice',{html:'购买数量超出库存数量！'}).injectAfter(this);
+                  notice.destroy.delay(4000,notice);
+                }
+
+                cost_item(_this.data);
+              },
+              'focus':function(){
+                if(this.getNext('span.notice')) this.getNext('.notice').destroy();
+                if(this.getNext('span.error')) this.getNext('span.error').destroy();
+              }
+
+            });
+
+          });
+          //var len = this.data.length ? (this.data.length > this.options.pageNum ? (this.options.current == this.getTotal() ? this.data.length-this.options.pageNum*(this.options.current-1) : this.options.pageNum) : this.data.length) : 0;
+          if(this.data.length) rows[0].getElement('input[key^=num]').focus();
+		  $ES('.product-name').each(function(item){
+				if (item.get('visibility')=='false')
+				{
+					item.setStyle('color','#808080');
+				}
+		  });
+		  $ES('.product-name').removeEvent('mouseover').addEvent('mouseover',function(e){
+				if (this.get('visibility')=='false')
+				{
+					var e  = new Event(e), el = e.target;
+					visiTips.attach(el);
+					el.addEvent('mouseleave',function(){
+						this.removeClass('active');
+					});
+					el.fireEvent('mouseenter',e);
+				}
+		  });
+        }
+      });
+    }
+
+    $('btn_add_product').addEvent('click',function(e){
+      var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_order&act=findProduct');
+      new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:660,
+        onCallback:function(rs){
+          if(!rs)return;
+          rs=JSON.decode(rs);
+          init(rs);
+        }
+      });
+    });
+
+    $('btn_add_product_pkg').addEvent('click',function(e){
+      var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=omepkg&ctl=admin_pkg&act=findPkgProduct');
+      new finderDialog(url,{params:{url:callurlpkg,name:'goods_id[]'},width:1000,height:660,
+        onCallback:function(rs){
+          if(!rs)return;
+          rs=JSON.decode(rs);
+          init(rs);
+        }
+      });
+    });
+
+    $('btn_submit').addEvent('click',function(e){
+      if(! validradio('input[name=id]','请先选择会员')) return;
+      if( $('proNode').getHTML().trim() == '') {
+        var tip=$('btn_add_product').getParent().getElement('.error') || new Element('span.error').inject($('btn_add_product').getParent());
+        tip.setHTML('请先添加商品');
+        tip.destroy.delay(4000,tip);
+        MessageBox.error('表单验证失败:请先添加商品');
+        e.stop();
+        return;
+      }
+      if(! validradio('input[name=address_id]','请选择收货地址')) return;
+      
+      // 商品金额不允许为0
+      var goods=parseFloat($E('td[name=goods_amount]').get('text'))||0;
+      if(goods == '0' && confirm('商品金额为0，确定要新建订单吗？') == false) {
+        return false;
+      }
+
+      var _this=this;
+      var form = $('newOrderForm');
+      if(pag){
+          var data=pag.toHideInput($('proNode').getElement('tr'));
+          form.store('target',{extraData:data,
+	       onRequest:function(){
+	           $('btn_submit').set('disabled', 'true');
+	           $('btn_submit').getElements('span')[1].set('text','处理中');
+           },
+           onComplete:function(jsontext){
+              var json = Json.evaluate(jsontext);
+              if (typeof(json.error) != 'undefined'){
+                  $('btn_submit').set('disabled', '');
+                  $('btn_submit').getElements('span')[1].set('text','提交');
+              }else{
+                  $('btn_submit').set('disabled', 'true');
+                  $('btn_submit').getElements('span')[1].set('text','处理中');
+              }
+           }
+           });
+      }
+      form.fireEvent('submit',e);
+    });
+
+    function init(rs){
+      var tmparr=findProduct(rs,'product_id');
+      store.unshift.apply(store,tmparr.reverse());
+      createProduct(store,tpl);
+    }
+    function findProduct(arr,PRIMARY){
+      if(!store.length)return arr;
+      store.each(function(a){
+        arr.each(function(b){
+          if(a[PRIMARY]==b[PRIMARY])arr.erase(b);
+        });
+      });
+      return arr;
+    }
+
+    $$('input[name=disc],input[name=cost_shipping]').addEvent('change',function(){
+      sumOrderAmount();
+    });
+
+    function validProduct(element,msg){
+      element=$(element);
+      new Element('span.error',{html:msg}).injectAfter(element);
+      element.removeEvents('blur').addEvent('blur',function(){
+        if(validate(element)) element.removeEvent('blur',arguments.callee);
+      });
+    }
+
+    function validradio(el,msg){
+      el=$E(el);
+      var els=el && $ES('input[type=radio][name='+ el.get('name') +']');
+      if (!els){
+        var tip=$('addrlist').getParent('.gray_form').getElement('p .error') || new Element('span.error').inject($('addrlist').getParent('.gray_form').getElement('p'));
+        tip.setHTML('请新增收货地址');
+        tip.destroy.delay(4000,tip);
+        MessageBox.error("表单验证失败:请新增收货地址");
+        return false;
+      }
+      if(!els.some(function(radio){return (radio.checked == true);})) {
+        var tip=$('addrlist').getParent('.gray_form').getElement('p .error') || new Element('span.error').inject($('addrlist').getParent('.gray_form').getElement('p'));
+        tip.setHTML(msg);
+        tip.destroy.delay(4000,tip);
+        el.focus();
+        MessageBox.error("表单验证失败:"+msg);
+        return false;
+      }
+      return true;
+    }
+  })();
+</script>

@@ -1,0 +1,15 @@
+<{input type="select" name=$PREFIX|mkname:"shop_type":$KEY rows=$shop_type valueColumn="key" labelColumn="label" value=$current_shop_type id=$random_id required='true'}>
+<span id="<{$shop_area}>"><{include file="condition/salesplatform/shop.html"}></span>
+
+
+<script>
+window.addEvent('domready',function(){
+	$('<{$random_id}>').addEvent('change',function(){
+	    new Request.HTML({
+	        url : 'index.php?app=omeauto&ctl=autodispatch&act=ajax_data&p[0]='+"<{$CONDITION}>"+'&p[1]=get_shop_by_type&p[2]='+"<{$KEY}>"+'&p[3]='+$('<{$random_id}>').value,
+	        method : 'post',
+	        update : $('<{$shop_area}>')
+		}).send();
+	});
+});
+</script>

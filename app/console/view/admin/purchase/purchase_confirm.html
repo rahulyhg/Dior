@@ -1,0 +1,73 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<form id="fm1" name="form1" action="index.php?app=console&ctl=admin_purchase&act=doPurchaseconfirm" method="POST">
+<div class="tableform">
+<h4>残损入库确认</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<col style="width:6%;"></col>
+<col style="width:6%;"></col>
+<!-- col style="width:10%;"></col -->
+<thead>
+<tr>
+	<th style='text-align:left;padding-left:5px;'>货号</th>
+    <th style='text-align:left;padding-left:5px;'>货品名称</th>
+    <th style='text-align:left;padding-left:5px;'>规格</th>
+	<th style='text-align:left;padding-left:5px;'>条码</th>
+	<th style='text-align:left;padding-left:5px;'>采购数量</th>
+    <th style='text-align:left;padding-left:5px;'>已入库</th>
+    <th style='text-align:left;padding-left:5px;'>入库取消</th>
+    <th style='text-align:left;padding-left:5px;'>不良品</th>
+    <!-- th>采购价格</th -->
+</tr>
+</thead>
+<{foreach from=$po.po_items item=item}>
+<tbody>
+<tr>
+    <td style='text-align:left;padding-left:5px;'><{$item.bn}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.name}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.spec_info}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.barcode}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.num}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.in_num}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.out_num}></td>
+    <th style='text-align:left;padding-left:5px;'><{$item.defective_num}></th>
+    <!--  td><{$item.price|cur}></td -->
+</tr>
+</tbody>
+<{/foreach}>
+</table>
+</div>
+</div>
+<input type="hidden" name="po_id" value="<{$po.po_id}>">
+<div id="cc" class="noprint table-action">&nbsp;
+<{button type="submit" class="btn" id="purchase-save-btn" label="确 认"}>
+          <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+
+</form>
+<script>
+$('fm1').store('target',{
+    onRequest:function(){
+       $('purchase-save-btn').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+      
+       if (typeof(json.error) != 'undefined'){
+           $('purchase-save-btn').set('disabled', '');
+       }else{
+           $('purchase-save-btn').set('disabled', 'true');
+           if(opener.finderGroup['<{$env.get.finder_id}>']) opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+           setTimeout('window.close()',200);
+       }
+    }
+});
+</script>
+

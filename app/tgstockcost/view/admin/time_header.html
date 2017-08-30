@@ -1,0 +1,119 @@
+<div class="data-action" id="dataAction" style="padding:5px;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <{if $type_display == "true"}>
+      <td align="left" nowrap="nowrap">
+
+        <{foreach from=$typeData key=type_key item=type_item}>
+            <{$type_item.lab}>:
+            <{if $type_item.type eq 'select'}>
+              <select name="<{$type_key}>" id="<{$type_key}>"<{if $report != "month"}> style="max-width:90px;_width:90px;"<{/if}>>
+                  <{foreach from=$type_item.data key=key item=item}>
+                      <option value="<{$key}>" <{if $type_selected.$type_key == $key}>selected="selected"<{/if}>><{$item}></option>
+                  <{/foreach}>
+              </select>
+            <{elseif $type_item.type eq 'text'}>
+                <input type="text" name="<{$type_key}>" value="<{$type_selected.$type_key}>">
+            <{/if}>
+        <{/foreach}>
+
+
+        <{button class="filterBtn btn-thirdly" label=$___eccommon="确定"|t:'eccommon'}>&nbsp;
+      </td>
+      <{/if}>
+    </tr>
+  </table>
+</div>
+
+<script>
+  (function(){
+    //if($E('.num')) $E('.num').innerHTML+=' 数据非及时显示，当天数据请于第二天查看';
+    var _finder = finderGroup['<{$name}>'],
+        dataAction= $('dataAction');
+
+    dataAction.getElement('.filterBtn').addEvent('click',function(e){setChartData(true);});
+
+    var packet=$('finder-packet-<{$name}>');
+    if(packet) packet.addEvent("click",function(e){
+      if(e.target.tagName.toLowerCase()=="a" || e.target.getParent().tagName.toLowerCase()=="a"){
+        e.stop();
+        setChartData(false,e);
+      }
+    });
+
+    function setChartData(flag,e){
+      //if(!check_data(from,to))return;
+      var params=dataAction.toQueryString(),
+          itemcur=$E('.chart-view .chart-item-cur');
+      dataAction.store('_data',params);
+      if(flag&&itemcur&&$E('iframe',itemcur)) $E('iframe',itemcur).src+='&'+params;
+      if(flag) url='index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=<{$env.get.act}>';
+      else url=e.target.href||e.target.getParent().href;
+      W.page(url, {data:params, method:'post',onComplete:function(){
+          if(_finder) _finder.filter.value=params;
+      }});
+    }
+
+    if($ES('.large .span-auto').length)
+    $ES('.large .span-auto').each(function(el){
+      el.store('tip:title',el.get('title')).store('tip:text',el.get('info'));
+      Xtip.attach(el);
+    });
+  })();
+
+
+  window.addEvent('domready',function(e){
+    var lazyload = new LazyLoad();
+    if($E('.chart-tabs li')) new ItemAgg($ES('.chart-tabs li'),$ES('.chart-view .chart-items'),{
+      activeName:'current',
+      itemsClass:'chart-item-cur',
+      onActive:function(tab,item){
+        lazyload.loadCustomLazyData(item,'textarea');
+        var iframe=item.getElement('iframe'),
+        src=item.retrieve('_src',iframe.src),
+        params=$('dataAction').retrieve('_data','');
+        if(window.ie||iframe.retrieve('_params','')!=params){
+          iframe.src=src+params;
+          iframe.store('_params',params);
+        }
+      }
+    });
+    if($E('.finder-action .export')) $E('.finder-action .export').addEvent('click',function(e){
+      e.stop();
+      var target = this.get('target'),options = JSON.decode(target);
+      new Dialog(this.get('href'),$extend({
+        ajaxoptions:{
+          data:$('dataAction').toQueryString(),
+          method: 'post'
+        },
+        onClose:function(){
+          if((_finder=finderGroup['<{$name}>'])) _finder.refresh();
+        }
+      },options));
+    });
+
+    if($E('.chart-view') && $E('.finder-options')){
+      var closeBtn = $('btn_close_charts') || new Element('div.span-auto',{html:'<a id="btn_close_charts" href="javascript:void(0);">收起图形</a>'}).inject($E('.finder-options'));
+      if(window.ie7) $E('.finder-options').style.cssText = 'width:auto;float:right;';
+      var closedEl = $E('.chart-view');
+      closeBtn.getElement('a').addEvent('click',function(){
+        if(closedEl.isDisplay()){
+          closedEl.hide();
+          this.set('text','展开图形');
+        }
+        else{
+          closedEl.show();
+          var iframe=$E('.chart-view .chart-item-cur iframe'),
+          params=$('dataAction').toQueryString();
+          if(iframe && (window.ie||iframe.retrieve('_params','')!=params)){
+            iframe.src += params;
+            iframe.store('_params',params);
+          }
+          this.set('text','收起图形');
+        }
+        window.fireEvent('resize');
+      });
+    }
+  });
+</script>
+

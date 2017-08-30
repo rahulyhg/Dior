@@ -1,0 +1,222 @@
+<style>
+.areabox{
+padding:2px;
+
+}
+.weight_rule{
+align:center;
+width:600px;
+
+}
+</style>
+下属规则设置<br>
+<div class="tableform">
+<form method="POST" id='area_rule_form' action='index.php?app=logistics&ctl=admin_area_rule&act=saveAreaRule'>
+
+<div class="division">
+
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+<tr ><th>选择地区:</th>
+<td >
+  <input type="button" name="button" id='addarearule' value="添加区域">
+          </td>
+        </tr>
+		<tr><th></th><td ><div id='addarea'> </div></td></tr>
+ 
+    </table>
+</div>
+
+<{include file='admin/rule_file.html'}>
+<div class="table-action">
+                <{button type="button" label="保存" id="create_rule_save" }>
+            </div>
+<input type="hidden" name="rule_id" value="<{$rule.rule_id}>">
+<input type="hidden" name="rule_type" value="<{$type}>">
+</form>
+</div>
+<select id="region_list" style="display:none">
+<{foreach from=$rule.class_city_list item=city_list}>
+<option value="<{$city_list.region_id}>"><{$city_list.region_name}></option>
+<{/foreach}>
+</select>
+<script>
+var region_list=$('region_list');
+region_list=region_list.getElements('option');
+var corp_id=<{$dly_corp_list}>;
+
+var addAreaTemp = function(){
+    var p_region_id = "<{$rule.first_city_id}>";
+    var first_city="<{$rule.first_city}>";
+    p_region_array =[];
+    first_city_array=[];
+    p_region_array = p_region_id.split(',');
+    first_city_array = first_city.split(',');
+    temp= '<div><span class="span_x_ipt"  package="mainland"><input type="hidden" class="area" name="area[]" value=""><select onchange="selectArea(this,this.value,2)">';
+temp+='<option value="_NULL_">请选择---</option>';
+region_list.each(function(i,index){
+    temp+='<option value='+i.value+'  has_c="true">'+i.text+'</option>';
+ });
+    temp+='</select></span>';
+    temp+="<a onclick='deleteArea($(this).getParent(\"li\"))'>删除</a></div>";
+
+    return temp;
+}
+
+$('addarearule').addEvent('click',function(e){
+
+var newRow = new Element('li[class=division]',{html:addAreaTemp()}).inject($('addarea'));
+
+});
+
+$('create_rule_save').addEvent('click',function(e){
+
+    var form=this.getParent('form');
+    var _this=this;
+  var set_type=$('area_rule_form').getElements("input[name='set_type']:checked").get('value');
+  
+  if(set_type=='weight'){
+ 
+  if($$('.weight_rule').length<=0){
+    return MessageBox.error('<{t}>请选择对应的重量区间!<{/t}>');
+}
+    var above_set=0;
+    compareValueFlag = $$('.weight_rule').every(function(etd){
+    
+    min_weight = etd.getChildren('input[name^=min_weight]').get('value')/1;
+    max_weight = etd.getChildren('input[name^=max_weight]').get('value')/1;
+    if(min_weight=='' || max_weight==''){
+        return false;
+    }
+    if(max_weight=='-1'){
+        above_set++;
+    }
+    
+    if((min_weight>max_weight || min_weight==max_weight) && max_weight!='-1'){
+        alert(min_weight+','+max_weight);
+        return false;
+     
+    }
+    return true;
+});
+
+if( !compareValueFlag )return MessageBox.error('<{t}>重量值为空或者最小值不可以大于最大值<{/t}>');
+
+if(above_set>=2) return MessageBox.error('<{t}>以上区间只能有一个<{/t}>');
+//区间判断重复
+var length=$$('.weight_left').length;
+//alert(length);
+for(i=0;i<length;i++){
+imin = $$('.weight_left')[i].getChildren('input[name^=min_weight]').get('value');
+imax = $$('.weight_left')[i].getChildren('input[name^=max_weight]').get('value');
+
+for(j=i+1;j<length;j++){
+
+min=$$('.weight_left')[j].getChildren('input[name^=min_weight]').get('value')/1;
+max=$$('.weight_left')[j].getChildren('input[name^=max_weight]').get('value')/1;
+if(imax=='-1'){
+    if(min>imin/1){
+        return MessageBox.error(min+'大于'+imin+',<{t}>不可以大于以上区间重量最小值<{/t}>');
+    }
+}
+
+if(imax>min){
+return MessageBox.error(imax+'大于'+min+'<{t}>重复区间存在<{/t}>');
+}
+}
+}
+//
+}
+var area_exist=true;
+var area_empty=true;
+var area_filter=[];
+var area_first=true;
+if($('area_rule_form').getElements('input[name^=area]').length<=0){
+    return MessageBox.error('<{t}>请选择对应区域<{/t}>');
+}else{
+    $('area_rule_form').getElements('input[name^=area]').each(function(i,index){
+
+        area=i.value;
+        if(area==''){
+            area_empty=false;
+        }else{
+            area = area.split(":");
+            area=area[1].split('/');
+            if(area.length==1){
+                area_first=false;
+            }
+            if(area.length==2){
+                area_exist=false;
+                area_filter.push(i.value);
+            }
+        }
+
+    });
+}
+if(!area_empty){
+return MessageBox.error('<{t}>区域不可为空<{/t}>');
+}
+if(!area_first){
+return MessageBox.error('<{t}>一级区域 不可新建<{/t}>');
+}
+if(!area_exist){
+    
+
+area_filter = area_filter.join(',',area_filter)
+
+    var url = 'index.php?app=logistics&ctl=admin_area_rule&act=areaFilter&rule_id=<{$rule.rule_id}>&area='+area_filter;
+    new Dialog(url,{title:'区域确认',width:800,height:500});
+
+}else{
+
+    //判断此区域是否存在
+    //var querystring = $('area_rule_form')..toQueryString();
+    var region_list=[];
+    $('area_rule_form').getElements('input[name^=area]').each(function(i,index){
+        region_list.push(i.value);
+    });
+    var ckareaexist = true;
+    var msg_region='';
+    region_list = region_list.join(',')
+    new Request({url:'index.php?app=logistics&ctl=admin_area_rule&act=chkAreaRule&region_list='+region_list+'&rule_id='+<{$rule.rule_id}>,async:false,
+   
+    onComplete:function(rs){
+
+    var json = Json.evaluate(rs);
+
+    if(typeof(json.error)!='undefined'){
+        ckareaexist=false;
+        msg_region=json.region_name;
+        
+        
+    }
+     
+    }}).send(); 
+
+    if(!ckareaexist){
+        if(!confirm('['+msg_region+']已存在,如果继续规则将会被覆盖!')){
+            return ;
+        }
+        
+    }
+    form.store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+
+                        _this.getParent('.dialog').retrieve('instance').close();
+                        show_area_list();
+ 
+                                        }
+                 }catch(e){}
+            }
+        });
+        form.fireEvent('submit',e);
+      }
+});
+</script>

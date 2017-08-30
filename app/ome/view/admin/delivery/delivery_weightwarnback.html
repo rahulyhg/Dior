@@ -1,0 +1,64 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<div class="division" id='product-form'>
+<div class="tableform">
+
+<input type="text" value='' id="weightSubmit" style="width:0px;height:0px; border: 0px;"/>
+<table cellspacing="10" cellpadding="0" border="0" width="80%" class="gridlist">
+<tbody>
+     
+<tr >
+    <td >
+    <p>
+    <h2><font color="red">
+    <p>该包裹总重量超出误差允许范围</p>
+   请及时检查包裹内货品是否正确
+    </font></h2>
+    <h3><font color="red">若包裹正确，请及时联系系统管理员对报警设置进行修改</font></h3>
+    </p>
+      </td>
+     
+      </tr>
+  </tbody> 
+</table>
+
+</div>
+
+<table align=center style="padding-top:10px;">
+<tr align="center"><td align='right'><button type="button" id="btn-cancel" style="font-size:1.5em;font-weight: 600; height: 40px; width:150px;cursor: pointer;display: -moz-inline-stack;line-height: 30px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>检查后再发货</span></span></button>&nbsp;&nbsp;&nbsp;&nbsp;</td><td  align='left' style="padding-top:10px;"><input type="text" id="barcode" name="barcode" style="height:20px;vertical-align:bottom;" /></td></tr>
+<tr align="center"><td style="padding-top:6px;" colspan="2"><h4><font weight="bold">按键盘任意键或输入任意条形码实现“检查后再发货”操作</font></h4>
+</td></tr>
+</table>
+
+</div>
+
+</div>
+
+<input type="hidden" name="logi_no" value="<{$logi_no}>">
+<input type="hidden" name="weight" value="<{$weight}>">
+
+<script>
+$('barcode').focus();
+$('barcode').addEvent('keyup',function(e){
+    var barcode = $('barcode').value;
+    
+    if(barcode!=''){
+            $('btn-cancel').fireEvent('click',e);
+    }
+    return false;
+});
+$('btn-cancel').addEvent('click',function(e){
+    $('logi_no').set('value','');
+    $('weight').set('value','');
+    $('product-form').getParent('.dialog').retrieve('instance').close();
+});
+$('product-form').addEvent('click',function(e){
+$('weightSubmit').focus();
+
+});
+$('weightSubmit').addEvent('keyup',function(e){
+    $('btn-cancel').fireEvent('click',e);
+});
+</script>

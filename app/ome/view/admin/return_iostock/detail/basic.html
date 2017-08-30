@@ -1,0 +1,54 @@
+
+<div class="tableform">
+<h4>售后入库详情</h4>
+<div class="division">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th><{t}>退货单号:<{/t}></th>
+    <td><{$return_iostock.reship_id}></td>
+    <th><{t}>售后单号:<{/t}></th>
+    <td><{$return_iostock.return_id}></td>
+    <th><{t}>售后类型:<{/t}></th>
+    <td><{$return_iostock.problem_id}></td>
+    <th><{t}>售后申请时间:<{/t}></th>
+    <td><{$return_iostock.add_time|cdate:SDATE_FTIME}></td>
+  </tr>
+  
+  <tr>
+    <th><{t}>售后理由:<{/t}></th>
+    <td><{$return_iostock.memo}></td>
+    <th><{t}>订单号:<{/t}></th>
+    <td><{$return_iostock.order_id}></td>
+    <th><{t}>会员名:<{/t}></th>
+    <td><{$return_iostock.member_id}></td>
+    <th><{t}>收货人地区:<{/t}></th>
+    <td><{$return_iostock.ship_area|region}></td>
+  </tr>
+  
+    <tr>
+    <th><{t}>收货人手机号:<{/t}></th>
+    <td><{$return_iostock.ship_mobile}></td>
+    <th><{t}>退回物流公司:<{/t}></th>
+    <td><{$return_iostock.return_logi_name}></td>
+    <th><{t}>退回物流单号:<{/t}></th>
+    <td><{$return_iostock.return_logi_no}></td>
+    <th><{t}>货号:<{/t}></th>
+    <td><{$return_iostock.bn}></td>
+  </tr>
+  
+  <tr>
+    <th><{t}>质检人:<{/t}></th>
+    <td><{$return_iostock.op_id}></td>
+    <th><{t}>质检时间:<{/t}></th>
+    <td><{$return_iostock.acttime|cdate:SDATE_FTIME}></td>
+    <th><{t}>质检结果:<{/t}></th>
+    <td><{$return_iostock.is_check}></td>
+  </tr>
+
+</table>
+
+</div>
+
+
+ </div>
+ 

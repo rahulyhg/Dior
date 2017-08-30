@@ -1,0 +1,50 @@
+<div class='tableform'>
+  <h4>会员信息</h4>
+  <div class="division">
+    <table width="100%" border="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>用户名</th>
+          <th>会员固定电话</th>
+          <th>会员邮编</th>
+          <th>Email</th>
+          <th>会员手机</th>
+        </tr>
+      </thead>
+      <tr>
+        <td><{$memberInfo.uname}></td>
+        <td><{$memberInfo.tel}></td>
+        <td><{$memberInfo.zip}></td>
+        <td><{$memberInfo.email}></td>
+        <td><{$memberInfo.mobile}></td>
+      </tr>
+    </table>
+  </div>
+  <h4>收货人信息</h4>
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>收货人姓名</th>
+          <th>收货人地区</th>
+          <th>收货人地址</th>
+          <th>收货人邮编</th>
+          <th>收货人固定电话</th>
+          <th>收货人Email</th>
+          <th>收货人手机</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><{$delivery.consignee.name}></td>
+          <td><{$delivery.consignee.area|region}></td>
+          <td><{$delivery.consignee.addr}></td>
+          <td><{$delivery.consignee.zip}></td>
+          <td><{$delivery.consignee.tel}></td>
+          <td><{$delivery.consignee.email}></td>
+          <td><{$delivery.consignee.mobile}></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

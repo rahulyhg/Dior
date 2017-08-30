@@ -1,0 +1,372 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="tableform">
+<h3>批量校验 <span class="num">(目前还有<em class="count"><{$num}></em>个发货单未校验)</span></h3>
+<div id="main" class="division">
+
+ <div class="division">
+      <table width="98%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+          <tr>
+            <td colspan="2">注: 1,如果手动输入快递单号，完成后需按回车键; 2,在输入过程中请不要加入空格或其他符号<br /><h3 style="margin:5px 0px; padding:0px;">请输入快递单号： <span class="num">(建议使用条码枪扫描)</span></h3></td>
+          </tr>
+          
+    <tr>
+            <td colspan="2">
+    <input id="deliveryOneStep"  style="margin-top: 10px;background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 35px;line-height: 40px;width:260px;" type="text" />
+    <{help}><br>"确认"之条码： <{$stock_confirm}><br><br>"取消"之条码： <{$stock_cancel}><br>&nbsp;<{/help}>
+    &nbsp;&nbsp;本批次还可以输入<em class="count" style="color: red; font-size:40px; font-weight:bold;"><font id="sydd">50</font></em>个发货单
+   </td>
+          </tr>
+<form method="post" action="index.php?app=wms&ctl=admin_check&act=saveBatchCheck" id="processSendForm" class='batchcheck'>
+          <tr>
+            <td width="330"><textarea id="batchDelivery" style="margin-top: 10px;background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 16px;height: 160px;line-height:28px;width:260px;"  cols="40" rows="16" ></textarea></td>
+            <td id="dataNode" class="red fb"></td>
+          </tr>
+           <tr>
+            <td><button type="button" id="btn_submit" style="margin-top: 0px;margin-left: 25px;font-size:3.0em;font-weight: 700; height: 50px; width:120px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>确定</span></span></button></td>
+          </tr>
+
+</form>
+        </tbody>
+      </table>
+
+</div>
+<table style="width:70%;margin-left:20px;border:1px #666666 solid" cellspacing="0" cellpadding="0" border="1">
+<tr>
+   <td style="border:1px #666666 solid;">提交时间</td>
+   <td  style="border:1px #666666 solid;">处理状态</td>
+   <td  style="border:1px #666666 solid;">失败/总数</td>
+   <td style="border:1px #666666 solid;">操作员</td>
+          </tr>
+   <tbody id="dataNodes">
+          <tr>
+            <td colspan="4" align='center'> 暂时没有批量校验操作！ </td>
+          </tr>
+        </tbody>
+</table>
+</div>
+
+</div>
+<{include file='admin/delivery/voice_warning.html'}>
+<style>
+.fail_log{
+color:red;
+cursor:pointer;
+}
+.all_log{
+color:blue;
+cursor:pointer;
+}
+</style>
+<script>
+function batchCheck(value){
+    var rr = false;
+    new Request({url:'index.php?app=wms&ctl=admin_check&act=batchCheck',data:'delivery_id='+value,method:'POST',async:false,
+        onRequest: function(){
+            this.disabled = true;
+        },
+        onComplete: function(json){
+            if(json!= ''){
+                json = JSON.decode(json);
+                msg='';
+                json.each(function(j){
+                    if (typeof(j.bn) != 'undefined'){
+                        msg +=j.bn + ' &nbsp; ' + j.msg + '<br />';
+                    }else{
+                        msg += '';
+                    }
+                });
+                dataNode('0',msg,'red');
+            }else {
+                var msg = value;
+                dataNode('1',msg,'green');
+                $('deliveryOneStep').set('value', '');
+                $('deliveryOneStep').focus();
+                var vall = $('sydd').get('text');
+                if(vall.toInt()<=0){
+                    $('deliveryOneStep').value = '已满50个快递单！';
+                    $('deliveryOneStep').set('disabled','disabled');
+                    dataNode('0','已满50个快递单<br><br>扫描确认条码： <{$stock_confirm}> 可以直接执行发货<br><br>扫描取消条码： <{$stock_cancel}> 可以清空扫描纪录','red');
+                }else{
+                     $('sydd').set('text',vall-1);
+                     if(vall.toInt()-1<=0){
+                      $('deliveryOneStep').value = '';
+                      dataNode('1','已满50个快递单<br><br>扫描确认条码： <{$stock_confirm}> 可以直接执行发货<br><br>扫描取消条码： <{$stock_cancel}> 可以清空扫描纪录','green');
+                     }
+                    rr = true;
+                }
+            }
+        }
+    }).send();
+    return rr;
+}
+
+/*发货日志显示start*/
+var store=[],pag,rows;
+var tpl='<tr key="{log_id}" createtime="{createtime}">'+
+        '  <td>{createtime}</td><td id="status_value{log_id}">{status_value}</td><td><span class="fail_log" id="fail_log{log_id}">{fail_number}</span>/<span class="all_log">{batch_number}</span></td><td>{op_name}</td>'+
+       '</tr>';
+    new Request({url:'index.php?app=wms&ctl=admin_check&act=batchConsignLog',async:false,
+    onComplete:function(rs){
+
+        if(rs){
+            rs=JSON.decode(rs);
+            store.combine(rs);
+            createProduct(store);
+
+        }
+
+    }}).send();
+
+    function createProduct(data){
+        pag=new PageData(tpl,data,{'updateMain':$('dataNodes'),'pageNum':10,'PRIMARY_ID':'log_id',
+        'onShow':function(){
+            var _this=this;
+            $$('#dataNodes tr').each(function(item,i){
+                if(item.getElement('.fail_log')) item.getElement('.fail_log').addEvent('click',function(e){
+                e.stop();
+                var log_id = item.get('key');
+                var createtime = item.get('createtime');
+                batch_log_detail(createtime,log_id);
+                });
+
+                if ($defined(item.getElement('.all_log')))
+                {
+                    item.getElement('.all_log').addEvent('click',function(e){
+                        e.stop();
+                        var log_id = item.get('key');
+                        var createtime = item.get('createtime');
+                        new Dialog('index.php?app=wms&ctl=admin_check&act=batch_log_detail&log_id='+log_id,{width:700,title:createtime+' 批量校验详情',height:400});
+                    });
+                }
+             });
+
+        }
+            
+        });
+    }
+    $('deliveryOneStep').focus();
+    function batch_log_detail(creatime,log_id){
+        new Dialog('index.php?app=wms&ctl=admin_check&act=batch_log_detail&log_id='+log_id+'&status=fail',{width:700,title:creatime+' 批量校验失败详情',height:400});
+    }
+
+    var deliverySync = function sync(e){
+        var value = $('batchDelivery').value.replace(/^[\s\n\r]*|[\s\n\r]*$/,'').split(/[\n\r\s,]+/);
+	        if (value.length > 50){
+	            new Dialog(new Element("div.tableform",{html:'<div id="delivery_max_limit" class="division">一次批量发货最多50个发货单!</div>'}),{
+	                title:'当前共'+value.length+'个发货单',
+	                width:250,
+	                height:80,
+	                modal:true,
+	                resizeable:false});
+	            return;
+	        }
+	        if (value == ''){
+	            return MessageBox.error('请输入快递单号');
+	        }
+           
+	        var tmp = $E('input[name="delivery_id"]') && $E('input[name="delivery_id"]').set('value',value.join(',').substring(-1)) || new Element('input[type=hidden][name="delivery_id"]').set('value',value.join(',').substring(-1)).inject($('processSendForm'));
+            
+            var rr = batchCheck(value.join(',').substring(-1));
+            if (rr == false)
+            {
+                return;
+            }
+
+            var val = encodeURIComponent(tmp.value);
+
+	        $('dataNode').set('html','');
+
+         new Dialog(new Element("div.tableform",{html:'<div id="notice" class="division">正在校验中,请稍候...</div>'}),{
+             title:'提示',
+             width:230,
+             height:80,
+             modal:true,
+             resizeable:false});
+	                    
+	          $('processSendForm').fireEvent('submit',e);
+    }
+
+    function dataNode(flag,str,fcolor){
+        
+        try{
+            if (typeof(voiceWarning) == 'function')
+            {
+                var arg0 = (flag=='1') ? 1 : 0;
+                voiceWarning(arg0);
+            }
+        }catch(e){}
+        
+        if(flag=='0'){
+            var msg = "错误提示：<br /><br />";
+            str = str + '&nbsp;&nbsp;<{img src="bundle/attention.gif" app="desktop"}>';
+        }else if(flag=='1'){
+            var msg = "正确提示：<br /><br />";
+            str = str + '&nbsp;&nbsp;<{img src="bundle/visible.gif" app="desktop"}>';
+        }
+        $('dataNode').set('html','<font style="font-size:14px;color:'+fcolor+'">'+msg+str+'</font>');
+        
+        if(flag=='0'){
+            return MessageBox.error('单号有异常');
+        }
+    }
+
+    function doCancel(){
+        if(!confirm("此操作将会清空您扫面的快递纪录，如不想执行清空操作，点击“确认”返回，点击“取消”继续执行清空操作。")){  
+        $('batchDelivery').set('value','');
+        $('sydd').set('text',50);
+        dataNode('1','执行取消操作成功！','green');
+        return MessageBox.success('执行成功！');
+     }else{
+        $('deliveryOneStep').set('value','');
+        return MessageBox.success('返回成功！');
+     };
+    }
+
+    $('deliveryOneStep').addEvent('keyup',function(e){
+        if(e.code==13){
+        var value = $('deliveryOneStep').value.replace(/[\s]+/g, '');
+        if (value == ''){
+            dataNode('0','没有输入快递单号','red');
+        }else{
+            var vall = $('sydd').get('text');
+            if(vall.toInt()<=0){
+            if((value!=<{$stock_cancel}>)&&(value!=<{$stock_confirm}>)){
+             dataNode('0','已满50个快递单，只能执行以下操作：<br><br>1，扫描确认条码： <{$stock_confirm}> 可以直接执行发货<br><br>2，扫描取消条码： <{$stock_cancel}> 可以清空扫描纪录<br><br>3，点击提交执行发货操作','red');
+             return MessageBox.error('快递单号已满，只能输入确认或者取消条码！');
+            }else if(value==<{$stock_cancel}>){
+             return doCancel();
+            }else if(value==<{$stock_confirm}>){
+             return MessageBox.success('确认');
+            }
+           }
+           if(($('batchDelivery').value!='')&&(value==<{$stock_cancel}>)){
+                return doCancel();
+           }
+            //如果没有快递单，输入取消编号
+           if(($('batchDelivery').value=='')&&(value==<{$stock_cancel}>)){
+            return dataNode('0',<{$stock_cancel}>+'为取消条码<br><br>还没有输入快递单号，所以无法执行取消操作','red');
+           }
+           
+           //如果没有快递单，输入发货编号
+           if(($('batchDelivery').value=='')&&(value==<{$stock_confirm}>)){
+            return dataNode('0',<{$stock_confirm}>+'为确认发货条码<br><br>还没有输入快递单号，所以无法执行发货操作','red');
+           }
+           
+           //不满50单执行发货
+           if(($('batchDelivery').value!='')&&(value==<{$stock_confirm}>)){
+            deliverySync(e);
+            return;
+           }
+            //单号判断
+            var rr = batchCheck(value);
+            if (rr)
+            {
+                $('batchDelivery').value += value+'\n';
+            }
+        }
+        }
+    });
+
+
+    $('btn_submit').addEvent('click',function(e){
+        deliverySync(e);
+    });
+
+    $('processSendForm').store('target',{
+	        onRequest:function(){
+	           $('btn_submit').set('disabled', 'true');
+	        },
+	        onComplete:function(jsontext){
+	           $('notice').getParent('.dialog').retrieve('instance').close();
+	           var json = JSON.decode(jsontext);
+	           if (typeof(json.error) != 'undefined'){
+
+	               if (json.msg.delivery_bn){
+	                   if (json.msg.delivery_succ == 'succ'){
+	                      var msg = ' 已提交至校验队列!<br/>';
+	                   }else{
+	                      var msg = ' 提交至校验队列失败!<br/>';
+	                   }
+	                   $('dataNode').show().set('html', msg + json.msg.delivery_bn);
+	               }
+	               $('btn_submit').set('disabled', '');
+	           }else{
+	               $('btn_submit').set('disabled', 'true');
+	           }
+	        }
+    });
+
+(function(){
+
+    function update_check(){
+        var flag = $('main').retrieve('batchcheck');
+        if ((flag != 0 && flag !=1 ) || !$defined($E('.batchcheck')))
+        {
+            return;
+        }
+
+        var log_id ='';
+        if(store){
+            store.each(function(a){
+            if(a['status']=='2' || a['status']=='0'){
+                if(log_id.length>0){
+                    log_id+=','+a['log_id'];
+                }else{
+                    log_id=a['log_id'];
+                }
+            }
+        
+        });
+        }
+
+        if(log_id.length>0){
+            log_id = encodeURIComponent(log_id);
+            new Request({url:'index.php?app=wms&ctl=admin_check&act=updateBatchCheckLog',
+             data:'log_id='+log_id,
+           
+            onComplete:function(rs){
+            
+            if(rs){
+            rs=JSON.decode(rs);
+            rs.each(function(a){
+                if($('fail_log'+a['log_id'])){
+                    $('fail_log'+a['log_id']).set('html',a['fail_number']);
+                }
+                if($('status_value'+a['log_id'])){
+                    $('status_value'+a['log_id']).set('html',a['status_value']);
+                }
+
+                });
+
+                setTimeout(update_check,5000);
+            }
+        
+             
+            }}).send();
+           
+
+        } else {
+            $('main').store('batchcheck',0);
+        }
+    
+      
+  
+
+    }
+
+    var flag = $('main').retrieve('batchcheck',0);
+    if (flag==0)
+    {
+        $('main').store('batchcheck',1);
+        update_check();
+    }
+
+
+})();
+
+</script>

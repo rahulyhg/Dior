@@ -1,0 +1,77 @@
+<style>
+   .new_style{
+    background-position: 0 10px;padding-left: 35px;
+   }
+   .orderby{
+    padding-left: 20px;color:#495F86;font-weight:bold;padding-top: 10px;
+   }
+
+  .btn-orderby { height: 23px; line-height: 23px; position: relative; top: -2px; }
+
+  .btn-orderby span { background-position: 0px -510px; color: white; height: 23px; line-height: 23px; padding-left: 5px; }
+
+  .btn-orderby span span { background-position: right -510px; padding-right: 4px; }
+
+  .btn-orderby_cur span { background-position: 0px -525px; color: white; }
+
+  .btn-orderby_cur span span { background-position: right -525px; }
+
+  .btn-orderby:hover span { background-position: 0px -525px; color: white; }
+
+  .btn-orderby:hover span span { background-position: right -525px; }
+  
+  .btn1 { margin: 20px 20px 0px 20px; }
+
+</style>
+  <div class="large" id="large">
+      <div class="ColColorOrange clearfix">
+          <{foreach from=$orderby key=key item=item}> 
+
+		  <p><span class="orderby"><{$key}></span>
+		   <br>
+
+             <{foreach from=$item key=_key item=order}>             
+                <{button class="btn1 filterBtn btn-orderby" orderby=$order.orderby time_from=$time_from time_to=$time_to onclick="rank(this);" ranktype=$order.ranktype type_id=$type_id label=$___eccommon=$_key|t:'omeanalysts' }>
+			 <{/foreach}>
+			 </p>
+          <{/foreach}>
+      </div>
+  </div>
+<script>
+    (function (){
+        var dataAction = $('large');      
+        var dataBtn=dataAction.getElements('.btn1');
+        var ranktype = "<{$cur_ranktype}>";
+        var orderby = "<{$cur_orderby}>";
+
+        dataBtn.each(function(el,i){
+
+              el.addClass('btn-orderby').removeClass('btn-orderby_cur');
+
+              if(el.get('orderby') == orderby && el.get('ranktype') == ranktype ){
+
+                el.removeClass('btn-orderby').addClass('btn-orderby_cur');
+                
+              }
+        });
+
+    })();
+    
+    function rank(e){
+      var _finder = finderGroup['<{$name}>'];
+      var url='index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=<{$env.get.act}>';
+      orderby = e.get('orderby')?e.get('orderby'):'salenums';
+      ranktype = e.get('ranktype')?e.get('ranktype'):'up';
+      type_id = e.get('type_id')?e.get('type_id'):'';
+      time_to = e.get('time_to')?e.get('time_to'):'';
+      time_from = e.get('time_from')?e.get('time_from'):'';
+      limit = 100;
+      var params = 'orderby='+orderby+'&ranktype='+ranktype+'&type_id='+type_id+'&time_from='+time_from+'&time_to='+time_to+'&limit='+limit;
+      W.page(url, {data:params, method:'post',onComplete:function(){
+          if(_finder) _finder.filter.value=params;                           
+      }});      
+    }
+
+</script>
+
+

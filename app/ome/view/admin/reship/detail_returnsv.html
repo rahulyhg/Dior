@@ -1,0 +1,49 @@
+<div class="tableform">
+<{if $detail.reason.refuse}>
+<div class="division">
+    <table cellspacing="0" cellpadding="0" border="0" >
+      <tr><td><strong><{t}>拒绝理由：<{/t}></strong><{$detail.reason.refuse}></td></tr>
+    </table>
+</div>
+<{else}>
+<div class="division">
+
+  <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+  <th>质检基本信息</th>
+  <th>质检描述</th>
+  </thead>
+  <tbody>
+  <{foreach from=$process_items item=item}>
+  <tr>
+    <td>货号为:<{$item.bn}>商品有1件质检成功，进入<{$item.store_type}>:<{$item.branch_id}></td>
+    <td><{$item.memo}></td>
+  </tr>
+  <{/foreach}>
+  <tbody>
+
+</table>
+
+</div>
+<h3>质检备注</h3>
+<div class="division">
+   <{$memo|default:'-'}>
+</div>
+<!--
+<h4>质检异常原因</h4>
+<div class="division">
+    <table>
+        <{foreach from=$detail.reason.sv item=item key=key}>
+            <tr>
+                <th><{$item.op_name}>说:</th>
+                <td><{$item.reason}></td>
+                <td><{$item.createtime|cdate:FDATE_STIME}></td>
+            </tr>
+        <{/foreach}>
+    </table>
+</div>
+-->
+<{/if}>
+
+
+ </div>

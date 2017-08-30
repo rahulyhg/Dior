@@ -1,0 +1,89 @@
+<div class="tableform">
+    <div style="border-right:1px solid #CCCCCC; float:left; width:600px;">            
+     <form action="<{link app=taoexlib ctl=admin_account act=register}>" method="post" id="enterpriseRegister">
+         <table border="0" cellspan="0" colspan="0">
+                <tr>
+                    <th>&nbsp;</th>
+                    <td><h2 class="head-title">短信账户注册</h2></td>
+                </tr>	            
+             <tr>
+                 <th><em class="c-red">*</em> Email:</th>
+                 <td><{input type="text" name="email" id="email" }></td>
+             </tr>
+             <tr>
+                 <th><em class="c-red">*</em> 密码:</th>
+                 <td><{input type="password" name="password" id="password" }></td>
+             </tr>
+             <tr>
+                 <th><em class="c-red">*</em> 确认密码:</th>
+                 <td><{input type="password" name="confirm" id="confirm" }></td>
+             </tr>                
+             <tr>
+                 <th><em class="c-red">*</em> 联系人:</th>
+                 <td><{input type="text" name="owner" id="owner" }></td>
+             </tr>        
+             <tr>
+                 <th><em class="c-red">*</em> 旺旺号:</th>
+                 <td><{input type="text" name="wangwang" id="wangwang" }></td>
+             </tr>    
+             <tr>
+                 <th>拍拍号:</th>
+                 <td><{input type="text" name="paipai" id="paipai" }></td>
+             </tr>
+             <tr>
+                 <th><em class="c-red">*</em> 联系电话:</th>
+                 <td><{input type="text" name="tel" id="tel" }></td>
+             </tr>         
+             <tr>
+                 <th><em class="c-red">*</em> 所属地区:</th>
+                 <td><{input app="eccommon" type="region" name="region" id="region" }></td>
+             </tr>  
+             <tr>
+                 <th><em class="c-red">*</em> 详细地址:</th>
+                 <td><{input type="text" name="address" id="address" size="60" }></td>
+             </tr>
+             <tr>
+                 <th><em class="c-red">*</em> 邮编:</th>
+                 <td><{input type="text" name="postcode" id="postcode" size="6" }></td>
+             </tr>
+             <tr><td colspan="2" align="center"><{button type="button" label="注册" id="register"}></td></tr>                                                                                     
+         </table>
+     </form>        
+    </div>
+    <div style="float:left; width:400px;">
+        <form action="<{link app=taoexlib ctl=admin_account act=bind}>" method="post" id="enterpriseBind">
+            <table border="0" cellspan="0" colspan="0">
+                <tr>
+                    <th>&nbsp;</th>
+                    <td><h2 class="head-title">短信账户绑定</h2></td>
+                </tr>                
+                <tr>
+                    <th><em class="c-red">*</em> Email:</th>
+                    <td><{input type="text" name="bindemail" id="bindemail" value="{$regEmail}" }></td>
+                </tr>
+                <tr>
+                    <th><em class="c-red">*</em> 密码:</th>
+                    <td><{input type="password" name="bindpassword" id="bindpassword" }></td>
+                </tr>
+                <tr><td colspan="2" align="center"><{button type="button" label="绑定" id="bind"}>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://my.shopex.cn/index.php?ctl=passport&act=forget" target="_blank">找回密码</a></td></tr>                                                                                     
+            </table>                
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    (function(){
+        var _form = $('enterpriseRegister');
+        var btn =$('register');
+        
+        btn.addEvent('click',function(){
+            _form.fireEvent('submit',{stop:$empty});
+        });
+        
+        var _bindform = $('enterpriseBind');
+        var bindbtn = $('bind');
+        bindbtn.addEvent('click', function(){
+        	_bindform.fireEvent('submit',{stop:$empty});
+        })
+    })();
+</script>

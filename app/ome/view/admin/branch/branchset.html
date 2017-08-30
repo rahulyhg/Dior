@@ -1,0 +1,43 @@
+<html>
+
+
+ <body>
+ <h3>仓库设置</h3>
+<div class="gridlist-action data-action" id="dataAction" style="margin-bottom:10px;padding:5px; border:0;">
+	<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<td nowrap="nowrap" style="width:auto;">
+			<div class="tabs-wrap select-tabs delivery-cfg-tab">
+			<ul style="margin-top:2px;padding:0;">
+				<li class="tab current" >
+					<span><a href="javascript:void(0);"><{t}>仓库配置<{/t}></a></span>
+				</li>
+				
+			</ul>
+			</div>
+		</td>
+	</tr>
+	</table>
+</div>
+<form method="post" action="index.php?app=ome&ctl=admin_branchset&act=save">
+<div class='tableform'>
+		<div class="division">
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table'>
+				<tbody>
+				<tr>
+					<th><{t}>类型选择：<{/t}></th>
+					<td>
+						<input type="radio" name="set[branchtype]" value="delivery" <{if $branchtype=='delivery' || $branchtype==''}>checked<{/if}>>发货仓库 
+                        <input type="radio" name="set[branchtype]" value="branch" <{if $branchtype=='branch'}>checked<{/if}>> 仓库列表 <font color="red" weight="bold">(默认为发货仓库)</font>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+            </div></div>
+
+<div class="table-action">
+<{button label="提交" type="submit" name="submit" }>
+</div>
+</form>
+ </body>
+</html>

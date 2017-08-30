@@ -1,0 +1,11 @@
+<style>
+    #role_content div { margin-bottom: 15px; font-size: 12px;}
+    #role_content div span {color:#666666;}
+    #role_content input {height: 18px; line-height: 18px; margin-bottom: 15px;}
+</style>
+<div id="role_content">
+    <div>活动SKU: &nbsp;&nbsp;<span>(输入活动商品的SKU,多个用逗号分隔。如 EH-SHIRT-L,EH-OTHER-X)</span></div>
+    <input type="text" name="s_skus" value="<{$init.content.sku}>" size="90"/> <br/>
+    <div>选择生效的开始和结束时间：&nbsp;&nbsp;<span>(如长期有效，请留空)</span></div>
+    从&nbsp;<{input type="time" name="s_start" value="{$init.content.start}"}>&nbsp;开始至&nbsp;<{input type="time" name="s_end" value="{$init.content.end}"}> 结束
+</div>

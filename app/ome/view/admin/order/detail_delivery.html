@@ -1,0 +1,208 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+
+<table cellspacing="10" cellpadding="0" border="0" width="100%">
+  <tr>
+    <td >
+        <div class="division">
+        <h4>发货单据列表</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>建立日期</th>
+                <th>发货单号</th>
+                <th>物流单号</th>
+                <th>收件人</th>
+                <th>物流公司</th>
+                <th>发货仓库</th>
+                <th>打印状态</th>
+                <th>重量</th>
+                <th>发货状态<{if $dly.request_url}>/查询<{/if}></th>
+              </tr>
+            </thead>
+            <tbody>        
+            
+            <{foreach from=$delivery item=dly}>
+              <tr>
+	              <td><{$dly.create_time}></td>
+	              <td><{$dly.delivery_bn}></td>
+	              <td><{$dly.logi_no}>
+	              <{if $is_hqepay_on && $dly.logi_no}>
+	               <a  id="on<{$dly.logi_no}>"  onclick="delivery_on('<{$dly.logi_no}>',0);" >查询</a><{/if}>
+	               <a id="off<{$dly.logi_no}>"  onclick="delivery_off('<{$dly.logi_no}>',0);"  style=" display:none;">关闭</a>
+	              </td>
+	              <td><{$dly.ship_name}></td>
+	              <td><{$dly.logi_name}></td>
+	              <td><{$dly.branch_name}></td>
+	              <td><{if $dly.selfwms=='1'}><{$dly.print_status}><{else}>-<{/if}></td>
+                  <td><{$dly.weight}></td>
+	              <td><{$dly.status_text}>
+                  <!--
+                  <{if $dly.logi_code && $dly.logi_no}><a onClick="new Dialog('index.php?app=ome&ctl=admin_dly_corp&act=select_dly_status&p[0]=<{$dly.logi_code}>&p[1]=<{$dly.logi_no}>',{width:600,height:220,title:'物流状态查询'})" href="#">查询</a><{/if}>
+                  -->
+                  </td>
+              </tr>
+               <tr style="display:none;"   id="tr<{$dly.logi_no}>">
+	              <td colspan="9">
+		              <div style="width:auto;height:auto;backgroud:#ffffcc;" id="hq<{$dly.logi_no}>"></div>
+	              </td>
+          	 <tr/>
+               </tbody>
+            <{/foreach}>
+          </table>
+        </div>
+        <{if $wms_delivery}>
+         <div class="division">
+        <h4>自有仓发货单据列表</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>建立日期</th>
+                <th>发货单号</th>
+                <th>物流单号</th>
+                <th>收件人</th>
+                <th>物流公司</th>
+                <th>发货仓库</th>
+                <th>打印状态</th>
+                <th>重量</th>
+                <th>发货状态<{if $dly.request_url}>/查询<{/if}></th>
+              </tr>
+            </thead>
+            <tbody>        
+            
+            <{foreach from=$wms_delivery item=dly}>
+              <tr>
+	              <td><{$dly.create_time}></td>
+	              <td><{$dly.delivery_bn}></td>
+	              <td><{$dly.logi_no}>
+	               <{if $is_hqepay_on && $dly.logi_no}>
+	                <a id="onwms<{$dly.logi_no}>" onclick="delivery_on('<{$dly.logi_no}>',1);" >查询</a><{/if}>
+	                <a id="offwms<{$dly.logi_no}>"  onclick="delivery_off('<{$dly.logi_no}>',1);"  style=" display:none;">关闭</a>
+	              
+	              </td>
+	              <td><{$dly.ship_name}></td>
+	              <td><{$dly.logi_name}></td>
+	              <td><{$dly.branch_name}></td>
+	              <td><{$dly.print_status}></td>
+                  <td><{$dly.weight}></td>
+	              <td><{$dly.status_text}>
+                  <!--
+                  <{if $dly.logi_code && $dly.logi_no}><a onClick="new Dialog('index.php?app=ome&ctl=admin_dly_corp&act=select_dly_status&p[0]=<{$dly.logi_code}>&p[1]=<{$dly.logi_no}>',{width:600,height:220,title:'物流状态查询'})" href="#">查询</a><{/if}>
+                  -->
+                  </td>
+              </tr>
+              <tr style="display:none;"  id="trwms<{$dly.logi_no}>">
+	              <td colspan="9">
+		              <div style="width:auto;height:auto;backgroud:#ffffcc;" id="hqwms<{$dly.logi_no}>"></div>
+	              </td>
+          	 <tr/>
+               </tbody>
+            <{/foreach}>
+          </table>
+        </div>
+        <{/if}>
+      </td>
+      </tr>
+      <!--<tr>
+    <td >
+        <div class="division">
+        <h4>退货单据列表</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>建立日期</th>
+                <th>退货单号</th>
+                <th>物流单号</th>
+                <th>退货人</th>
+                <th>物流公司</th>
+              </tr>
+            </thead>
+            <tbody>
+            <{foreach from=$reship item=rsp}>
+              <tr>
+                <td><{$rsp.t_begin|date:"Y-m-d H:i"}></td>
+                <td><{$rsp.reship_bn}></td>
+                <td><{$rsp.logi_no}></td>
+                <td><{$rsp.ship_name}></td>
+                <td><{$rsp.delivery}></td>
+              </tr>
+            <{/foreach}>
+            </tbody>
+          </table>
+      </div></td>
+  </tr>-->
+</tbody></table>
+
+<div class="division">
+    <h4>&nbsp;<{t}>发货单取消日志<{/t}></h4>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <thead>
+        <tr>
+          <th><{t}>操作时间<{/t}></th>
+          <th><{t}>操作员<{/t}></th>
+          <th><{t}>操作类型<{/t}></th>
+          <th><{t}>操作内容<{/t}></th>
+        </tr>
+        </thead><tbody>
+        <{foreach from=$deliveryinfo item=info}>
+        <tr>
+          <td><{$info.operate_time|cdate:SDATE_STIME}></th>
+          <td><{$info.op_name }></td>
+          <td><{$info.operation}></td>
+          <td>发货单号:<{$info.delivery_bn}>,<{$info.memo}></td>
+        </tr>
+        <{/foreach}>
+      </tbody>
+</table>
+</div>
+
+  <script>
+	  function delivery_on(logi_no,type) {
+		  if(type){
+			  type = 'wms';
+		  }else{
+			  type = '';
+		  }
+		  var order_bn = "<{$order_bn}>";
+		 //先检测是否已经请求过数据
+		  var value = $("hq"+type+logi_no).get('text');
+		  if(value){
+			  $("tr"+type+logi_no).style.display = "";
+			  $("on"+type+logi_no).style.display = "none";//隐藏查询按钮
+			  $("off"+type+logi_no).style.display = "";//放出关闭按钮
+		  }else{
+			    new Request({
+		    		url:'index.php?app=ome&ctl=admin_order&act=delviery_hqepay',
+		    		method:'post',
+		    		data:'logi_no='+logi_no+'&order_bn='+order_bn,
+		       		onSuccess:function(json){
+			        	 $("hq"+type+logi_no).set('html',json);
+			        	 $("on"+type+logi_no).style.display = "none";
+			        	 $("off"+type+logi_no).style.display = "";//放出关闭按钮
+			        	 $("tr"+type+logi_no).style.display = "";
+		        	}
+		    }).send();
+		  }
+		}
+	    //点击关闭查询
+		function delivery_off(logi_no,type) {
+			  if(type){
+				  type = 'wms';
+			  }else{
+				  type = '';
+			  }
+			 $("on"+type+logi_no).style.display = "";//开启查询按钮
+			 $("off"+type+logi_no).style.display = "none";//隐藏关闭按钮
+			 $("tr"+type+logi_no).style.display = "none";//隐藏行
+		 }	  
+  </script>

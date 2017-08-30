@@ -1,0 +1,43 @@
+<style>
+    .notice a {color: blue; font-size: 12px; font-weight: 700;margin-left: 4px; margin-right: 4px;}
+    .notify {background-color: #FFF9CF; color: #514721; border-color: #FFD324;}
+</style>
+<div >
+   
+    <div class="division notify" style="padding-left:20px;padding-bottom: 15px;text-align:left">
+<h3>系统检测到原来的"自动审单规则"，
+        <br/>
+<{img app='ome' src='dlycorp.png' }>
+        <br>
+原先“启用”全境物流，但未设置到具体收货地区的分组订单将进入<font color="red">人工审单</font><br><br></h3>
+<h3><font color="red">请及时检查和修改“自动选物流规则”！</font></h3>
+</div>
+    
+    
+    
+     <div class="table-action">
+                <{button label="继续获取" type="botton" id="btn-continue"}>
+                <{button label="取消" type="botton" id="btn-cancel"}>
+            </div>
+         <div align=center style="font-size:14px;font-weight:bold">   <input type="checkbox" id="notify_status" name="notify_status" value='1'>下次不再提醒</div>
+
+</div>
+<script>
+$('btn-continue').addEvent('click',function(e){
+
+    $('btn-continue').getParent('.dialog').retrieve('instance').close();
+    doRun();
+});
+$('btn-cancel').addEvent('click',function(e){
+
+$('btn-cancel').getParent('.dialog').retrieve('instance').close();
+
+$('auto_activeOrder').getParent('.dialog').retrieve('instance').close();
+});
+$('notify_status').addEvent('click',function(e){
+    new Request({url:'index.php?app=ome&ctl=admin_order_auto&act=notify',method:'post',
+                
+    }).send();
+
+});
+</script>

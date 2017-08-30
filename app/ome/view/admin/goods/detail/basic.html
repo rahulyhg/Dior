@@ -1,0 +1,154 @@
+<script>
+$('gEditor').retrieve('setTabs',function(){
+		 var gtabs=$ES('#menu-desktop .spage-side-nav li.l-handle');
+		 new ItemAgg(gtabs,$ES('#gEditor .spage-main-box'),{
+			activeName:'cur',
+			onActive:function(tab,item){
+				 var anotherItems=$$($A(this.items).remove(item));
+                  if(tab.hasClass('all')){
+                     anotherItems.show();
+                  }else{
+                     anotherItems.hide();
+                  }
+        	}
+		 });
+}());
+
+</script>
+
+<h3><{t}>商品信息<{/t}></h3>
+<div class="tableform">
+<div id="x-g-basic" class="goods-detail">
+		<div>
+			<table border="0" cellpadding="0" cellspacing="0">
+            <tbody>
+				<tr style="display:none;">
+					<th><{t}>所属分类：<{/t}></th>
+					<td><select name="goods[category][cat_id]" id="gEditor-GCat-input" class="x-input">
+							<{if $goods.category.cat_id < 1}>
+							<option value="0" ><{t}>请选择所属分类<{/t}></option>
+							<{/if}>
+							<{foreach from=$cats item=cat}>
+							<option class="optionlevels optionlevel_<{math equation="x" x=$cat.step|default:1}>
+							" value="<{$cat.cat_id}>"  depth="<{$cat.step}>" type_id="<{$cat.type}>" <{if $cat.cat_id==$goods.category.cat_id}>selected<{/if}>> <{$space|paddingleft:$cat.step:'　'}><{$cat.cat_name}>
+							</option>
+							<{/foreach}>
+						</select></td>
+					<td rowspan="10" style="width:300px; border-bottom:none;">&nbsp;</td>
+				</tr>
+				<tr>
+					<th><{t}>商品类型：<{/t}></th>
+					<td><select name="goods[type][type_id]" id="gEditor-GType-input">
+							<!--<option value='1'><{t}>通用商品类型<{/t}></option>-->
+							<{foreach from=$gtype item=type}>
+							<option class="optionlevels" value='<{$type.type_id}>' <{if $type.type_id==$goods.type.type_id}>selected<{/if}>><{$type.name}>
+							</option>
+							<{/foreach}>
+						</select>
+					</td>
+				</tr>
+                <tr>
+                    <th><{t}>品牌：<{/t}></th>
+                    <td><{input type="select" name="goods[brand][brand_id]" nulloption="1" rows=$brandList valueColumn="brand_id" labelColumn="brand_name" value=$goods.brand.brand_id}></td>
+                </tr>
+
+				<tr>
+					<th><{t}>商品名称：<{/t}></th>
+					<td><{input type="text" size="60" id="id_gname" name="goods[name]" required="true" vtype='required' value=$goods.name }><em><font color="red">*</font></em></td>
+				</tr>
+
+				<tr>
+					<th><{t}>商品编号：<{/t}></th>
+					<td><{input type="text" name="goods[bn]" value=$goods.bn }></td>
+				</tr>
+                <{if $goods.spec }>
+				<tr>
+					<th><{t}>条码：<{/t}></th>
+					<td><{$goods.barcode}></td>
+				</tr>
+				<{/if}>
+                <tr>
+					<th><{t}>预览图片地址：<{/t}></th>
+					<td><{input type="text" size="60" maxlength="200" name="goods[picurl]" value=$goods.picurl }>
+                    (包含http://)</td>
+				</tr>
+
+				<!--PROPERTY_AFTER_BN-->
+
+				<{if $goods.type.is_physical}>
+				<tr>
+					<th><{t}>计量单位：<{/t}></th>
+					<td><{input type="text" size="10" value=$goods.unit name="goods[unit]" maxlength="25" }></td>
+				</tr>
+				<{/if}>
+				<tr>
+					<th><{t}>存在唯一码：<{/t}></th>
+                    <td>
+                        <input type="radio" value="true" name="goods[serial_number]" <{if $goods.serial_number == 'true' }> checked="checked"<{/if}>>是
+                        <input type="radio" value="false" name="goods[serial_number]" <{if $goods.serial_number != 'true' }> checked="checked"<{/if}>>否
+                    </td>
+				</tr>
+				<tr>
+					<th><{t}>简介：<{/t}></th>
+					<td><{input type="textarea" value=$goods.brief name="goods[brief]" cols="45" rows="10" maxth="255" }><br />
+						<span class="info"><{t}>简短的商品介绍,请不要超过255字节<{/t}></span></td>
+				</tr>
+                <tr>
+                    <th><{t}>隐藏：<{/t}></th>
+                    <td>
+                        <input type='checkbox' name='goods[visibility]' value='false' <{if $goods.visibility=='false'}>checked<{/if}> />
+                        
+                    </td>
+                </tr>
+				<tr style="display:none;">
+					<th><{t}>是否上架销售：<{/t}></th>
+					 <td>
+					 <input type="radio" name="goods[status]"<{if $goods.status != 'false' }> checked="checked"<{/if}> value="true" ><{t}>是<{/t}>
+					 <input type="radio" name="goods[status]"<{if $goods.status == "false"}> checked="checked"<{/if}> value="false" ><{t}>否<{/t}>
+					 </td>
+				</tr>
+
+				<{if $point_setting == 2}>
+				  <tr style="display:none;">
+				    <th><{t}>积分：<{/t}></th>
+				    <td><{input type="digits" value=$goods.score name="goods[score]" maxlength="25" }></td>
+				  </tr>
+				<{/if}>
+                </tbody>
+			</table>
+
+
+            <div id="goods-spec">
+<{if $goods.spec }>
+           <{include file="admin/goods/detail/spec/spec.html"}>
+<{else}>
+           <{include file="admin/goods/detail/spec/nospec.html"}>
+<{/if}>
+
+</div>
+
+<{if $goods.type.setting.use_props=='attr'}>
+       <h4 class="head-title"><{t}>扩展属性：<{/t}></h4>
+			<table border="0" cellpadding="0" cellspacing="0" >
+				<{if $goods.type.setting.use_props}>
+				<{foreach from=$goods.type.props key=key item=aProp}>
+				<tr class="prop">
+					<th><{$aProp.name}>：</th>
+					<td><{assign var="p_col" value="p_{$key}"}>
+						<{if $aProp.type eq 'select'}>
+						<{input name="goods[props][p_{$key}][value]" type="select" nulloption="1" options=$aProp.options value="{$goods.props[$p_col].value}"}>
+						<{else}>
+						<{input type="text" name="goods[props][p_{$key}][value]" maxlength="25" value="{$goods.props[$p_col].value}"}>
+						<{/if}></td>
+				</tr>
+				<{/foreach}>
+				<{/if}>
+			</table>
+       <{/if}>
+		</div>
+</div>
+</div>
+
+
+
+

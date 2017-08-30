@@ -1,0 +1,21 @@
+<div class="tableform" id='sync_form'>
+  <h3>同步短信模板审核状态</h3>
+  <div class="division">
+    <div id='progress'>同步中</div>
+  </div>
+</div>
+<input type="hidden" id="finder_id" name="finder_id" value='<{$finder_id}>'>
+<script type="text/javascript">
+    (function(){
+        var finder_id = $('finder_id').value;
+        new Request({
+                url:'index.php?app=taoexlib&ctl=admin_sms_sample&act=do_sync_sample',
+                method:'post',
+                onSuccess:function(response){
+                    $('progress').set('html','同步完成');
+                    $('sync_form').getParent('.dialog').retrieve('instance').close();
+                    finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+                }
+              }).send();
+    })();
+</script>

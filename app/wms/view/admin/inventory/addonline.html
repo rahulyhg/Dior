@@ -1,0 +1,105 @@
+
+<div class="tableform">
+  <h3>盘点</h3>
+  <div class="division">
+
+    <form action="index.php?app=wms&ctl=admin_inventory&act=addtoInventory" method="POST">
+      <div class="gray_form">
+        <ul class="branch_list">
+		<{if $inventory_list}>
+          <table width="100%" border="0" >
+		 
+            <tr>
+              <td width="30%" valign="bottom">
+			  <h5>正在进行的盘点</h5>
+			  <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+			   <thead>
+			
+			   
+                <tr>
+                
+                  <th>名称</th>
+                  <th>日期</th>
+                  <th>负责人</th>
+				    <th>操作</th>
+                </tr>
+				  </thead>
+				 <{foreach from=$inventory_list item=inventory_list}>
+                <tr>
+                  
+                  <td><a href="index.php?app=wms&ctl=admin_inventory&act=go_inventory&inventory_id=<{$inventory_list.inventory_id}>"><{$inventory_list.inventory_name}></a></td>
+                  <td><{$inventory_list.inventory_date|date_format:"%Y-%m-%d"}></td>
+                  <td><{$inventory_list.op_name}></td>
+				  <td><a href="index.php?app=wms&ctl=admin_inventory&act=go_inventory&inventory_id=<{$inventory_list.inventory_id}>"><input type="button" name="button" value="加入"></a></td>
+                </tr>
+				  <{/foreach}>	
+              </table>
+			  <{/if}>
+			  </td>
+              <td>	<table width="100%">
+	<tr><th align="left">仓库:</th>
+		<td><{$branch.name}></td></tr>
+		<tr><th align="left">盘点名称</th>
+		<td>
+		<input type="text" name="inventory_name" id="inventory_name" value="<{$inventory_name}>" vtype="required" size="26"></td></tr>
+		
+		
+		
+		<tr>
+		  <th align="left">盘点方式:</th>
+		  <td>
+		 <select name="pos" >
+		  <option value='1' selected>按货位</option>
+		  <option value='0' >按货品</option>
+		  </select>	<{help}>按货位,须录入货位+条形码+数量,累加不同货位;按货品是条形码+数量,不累加<{/help}>	  </td>
+		</tr>
+		<tr>
+		  <th align="left">业务时间:</th>
+		  <td><{input type="date" name="add_time" value=$date readonly="readonly" vtype="required"}></td>
+		  </tr>
+		  <tr>
+		  <th align="left">盘点类型:</th>
+		  <td><input name="inventory_type" type="radio" value="3" checked="checked" />
+		    部分盘点<{help}>盘点表确认后，仅更新盘点货品的库存信息。<{/help}>
+		    <input type="radio" name="inventory_type" value="2" />全盘<{help}>全仓盘点，未盘点货品库存信息确认后被清零。<{/help}>
+      <input type="radio" name="inventory_type" value="4" <{if $branch_product}>disabled<{/if}>>期初
+      </td>
+		  </tr>
+		  <tr>
+		  <th align="left">复核人:</th>
+		  <td><{$op_name}></td>
+		  </tr>
+		
+		<tr>
+		  <th align="left">备注:</th>
+		  <td><textarea name="memo" ></textarea></td>
+		  </tr>
+		</table></td>
+            </tr>
+          </table>
+	
+        </ul>
+		<input type="hidden" name="branch_id" value="<{$branch.branch_id}>">
+	<input type="hidden" name="inventory_id" value="<{$inventory.inventory_id}>">
+      <input type="hidden" name="join_pd" value="<{$join_pd}>">
+      </div>
+      <div class="division" align="center"><{button type="submit" class="btn-primary" label="确 定"}></div>
+    </form>
+  </div>
+</div>
+
+<script>
+$ES('input[name=unconfirm]').addEvent('click',function(e)
+  {
+
+$$('.unconfirm').each(function(i,index){
+if(i.checked){
+$('inventory_name').value=i.value;
+}
+});
+  	
+
+	
+  }
+  );
+</script>

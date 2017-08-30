@@ -1,0 +1,125 @@
+<div class="tableform" id="tableform">
+
+<h3><{t}>第一步:新建对账任务<{/t}></h3>
+ <div class="division">
+<form method="post" id='statements_form' action='index.php?app=logisticsaccounts&ctl=admin_actual_task&act=save'>
+		<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+
+			<tr >
+					<th><t>仓库:</t></th>
+					<td >
+					<select id='branch_id' name='branch_id' vtype="required">
+     <option value="">请选择</option>
+				  <{foreach from=$branch_list item=branch_list}>
+			  <option value="<{$branch_list.branch_id}>"><{$branch_list.name}></option>
+			  <{/foreach}>
+					</select></td>
+		    </tr>
+      	<tr >
+					<th><t>物流公司:</t></th>
+					<td >
+					<select id='logi_id' name='logi_id'>
+     <option value="请选择"></option>
+     </select></td>
+	      </tr>
+    <tr >
+					<th><t>任务名称:</t></th>
+					<td >
+     <input type="text" id="task_bn" name="task_bn" vtype="required" size="50"><{help}>建议使用系统默认任务名称,任务名称可自定义<{/help}>
+			</td>
+	      </tr>
+		</table>
+  <input type="hidden" name="finder_id" value="<{$finder_id}>">
+			 <div id="cc" class="noprint table-action"> <{button type="button" class="btn" id="save-btn" label="下一步"}> &nbsp; <{button type="button" class="btn" id="return-btn" label="关 闭" onclick="javascript:void(this.getParent('.dialog').retrieve('instance').close());"}></div>
+
+	</form>
+ <h3><font color="red">提示:</font></h3>
+ <h4><font color="red">1、	请先将物流公司提供的电子账单，按照模板格式编辑csv文件，以备导入。</font></h4>
+ <h4><font color="red">2、	每次上传的csv文件大小，不超过5000条记录，每个对账任务内可分多次文件上传。</font></h4>
+  </div>
+</div>
+<script>
+var d = new Date();
+var year = d.getFullYear();
+var month = d.getMonth();
+if(month==0){
+    month = 12;
+    year = year-1;
+}
+$('branch_id').addEvent('change',function(){
+    
+    var branch_id = $('branch_id');
+    branch_name = branch_id.options[branch_id.selectedIndex].text;
+    //var logi_id = $('logi_id');
+    logi_name = '请选择';
+
+    if(logi_name!=''){
+    $('task_bn').value=branch_name+'_'+logi_name+'_'+year+month;
+    }
+    //获取对应物流公司
+    new Request({
+            url:'index.php?app=logisticsaccounts&ctl=admin_actual_task&act=get_corps',
+            method:'post',
+            data:'branch_id='+branch_id.value,
+            onComplete: function(json) {
+                if(!json)
+                    return;
+                json = JSON.decode(json);
+                var s = '<option value="">请选择</option>'
+                json.each( function(j,i) {
+                    s += '<option value="'+j.corp_id+'">'+j.name+'</option>';
+                });
+             
+                $('logi_id').set('html',s);
+                $('logi_id').options[0].selected = true;
+                
+            }
+        }).send();
+
+});
+$('logi_id').addEvent('change',function(){
+    var d = new Date();
+    var branch_id = $('branch_id');
+    branch_name = branch_id.options[branch_id.selectedIndex].text;
+    var logi_id = $('logi_id');
+    logi_name = logi_id.options[logi_id.selectedIndex].text;
+    if(branch_name!=''){
+        $('task_bn').value=branch_name+'_'+logi_name+'_'+year+month;
+    }
+
+});
+$('save-btn').addEvent('click',function(e){
+    var _this=this;
+    var form=this.getParent('form');
+    var branch_id = $('branch_id').value;
+    var logi_id = $('logi_id').value;
+
+    if(branch_id==""){
+        return MessageBox.error('请选择仓库!');
+    }
+    if(logi_id==""){
+        return MessageBox.error('请选择物流公司!');
+    }
+var querystring = $('statements_form').toQueryString();
+new Request({url:'index.php?app=logisticsaccounts&ctl=admin_actual_task&act=save',data:querystring,
+    onComplete:function(rs){
+    var rs = Json.evaluate(rs);
+
+     if (typeof(rs.error) != 'undefined'){
+
+              return MessageBox.error(rs.error);
+    }else{
+
+    _this.getParent('.dialog').retrieve('instance').close();
+
+    new Dialog(rs.redirect,{width:460,height:400,title:'上传对账文件'}); 
+    
+    
+    }
+    }}).send(); 
+
+	
+});
+
+</script>
+

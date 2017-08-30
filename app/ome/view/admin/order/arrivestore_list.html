@@ -1,0 +1,39 @@
+<{if !$env.get.target}><div class="division" container="true"><{/if}>
+  <h3>在途库存列表</h3>
+  <table cellpadding="0" cellspacing="0" border="0" class="gridlist">
+    <thead>
+      <tr>
+      <th>序号</th>
+      <th>到货时间</th>
+      <th>数量</th>
+      
+      
+      
+      </tr>
+    </thead>
+    <tbody>
+	<{assign var=num value=1}>
+	<{foreach item=item from=$order_lack}>
+      <tr>
+        <td><{$num}></td>
+        <td><{$item.arrive_time|date_format:'%Y-%m-%d'}></td>
+        <td><{$item.arrive_store}></td>
+      
+		<input type="hidden" value=<{$num++}>></input>
+      </tr>
+	<{/foreach}>
+    </tbody>
+  </table>
+  <div class="table-action">
+<{$pager}>
+  </div>
+
+<{if !$env.get.target}></div><{/if}>
+<{if !$env.get.target}>
+<{capture name="footbar"}>
+<div class="table-action">
+    <{button label="确 定" type="button" onclick="window.close();"}>
+</div>
+<{/capture}>
+<{/if}>
+

@@ -1,0 +1,154 @@
+<form id="fm1" name="form1" action="index.php?app=purchase&ctl=admin_purchase&act=<{$checkInfo.action}>" method="POST">
+<input type="hidden" name="po_id" value="<{$po.po_id}>" />
+<div class="tableform">
+<h3><{$checkInfo.title}>采购订单</h3>
+    <div class="division">
+      <h5>基本信息</h5>
+      <table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+      <thead>
+        <tr>
+          <td width="10%" align="right" nowrap="nowrap">采购单名称:</td>
+          <td colspan="3"><span id="exigence" style="color:red; display:none">！</span>
+            <{if $po.name}><{$po.name}><{else}><{$cur_date}><{/if}>
+             <{if $po.emergency=='true'}>紧急采购<{/if}>
+            </td>
+        </tr>
+        <tr>
+          <td align="right">供应商:</td>
+          <td width="40%"><{$supplier_detail.name}><div style="position:relative;display:none;">
+
+              <span style="color:red;">*</span> <a title="查看供应商列表" class="btn_supplier" target="_blank"><{img id="copy" app="desktop" title="供应商列表" src="bundle/zoom_btn.gif"}></a> </div></td>
+          <td width="10%" align="right">到货仓库:</td>
+          <td>
+            <{if $branch_mode=='single'}>
+                <{$po.branch_name}>
+            <{else}>
+                <{if count($branch)>5}>
+                <{input type="select" name="branch" vtype="required" rows=$branch valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                <{else}>
+                <{foreach from=$branch item=items}>
+                <input type="radio" name="branch" vtype="requiredradio" value="<{$items.branch_id}>" />
+                <{$items.name}>
+                <{/foreach}> <span style="color:red">*</span>
+                <{/if}>
+            <{/if}></td>
+        </tr>
+        <tr>
+          <td align="right">采购方式:</td>
+          <td><{if $po.po_type=='cash'}>现购 <{else}>赊购<{/if}></td>
+          <td align="right" nowrap="nowrap" title="一次性物流费用">物流费用:</td>
+          <td><{$po.delivery_cost}>元</td>
+        </tr>
+        <tr >
+          <td align="right"><span class="endd" style="display:none;">预付款:</span></td>
+          <td><span class="endd" style="display:none;">
+            <{if $po.po_type=='cash' || $po.statement!=1 || $po.deposit_balance >0}><{$po.deposit|cur}><{else}>
+            <input type="text" vtype="number" name="price" size="6" value="<{$po.deposit}>" /><{/if}>
+            元</span></td>
+          <td align="right" nowrap="nowrap">预计到货天数:</td>
+          <td><{$po.diff_days}> 天 </td>
+        </tr>
+        </thead>
+      </table>
+
+<h5 style="margin-top:10px;">采购商品</h5>
+      <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th style="width:240px;">货品名称</th>
+            <th>货品规格</th>
+            <th>条形码</th>
+            <th>数量</th>
+            <th>单价</th>
+          </tr>
+        </thead>
+        <tbody id="dataNode">
+		<{if ($po_items)}>
+			<{foreach from=$po_items item=item}>
+			<tr>
+				<td><{$item.bn}></td>
+				<td><{$item.name|visibility:$item.product_id}></td>
+				<td><{$item.spec_info}></td>
+				<td><{$item.barcode}></td>
+				<td><{$item.num}></td>
+				<td><{$item.price}>元</td>
+			</tr>
+			<{/foreach}>
+			<{else}>
+          <tr>
+            <td colspan="6" style="padding:0;"><div class="note" style="margin:0;"> 暂无采购货品信息 </div></td>
+          </tr>
+		  <{/if}>
+        </tbody>
+      </table>
+     </div>
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+      <{if $po.memo}>
+      <tr>
+      	<td width="10%" align="right">备注：</td>
+      	<td align="left"><{foreach from=$po.memo item=items}>
+      	<b><{$items.op_content|escape:"HTML"}></b>
+      	<{$items.op_time}> by <{$items.op_name}><br/>
+      	<{/foreach}></td>
+      </tr>
+      <{/if}>
+      <tr>
+        <td align="right">经办人:</td>
+        <td align="left"><{$po.operator}></td>
+      </tr>
+    </table>
+    <div id="cc" class="noprint table-action"><{button type="submit" class="btn" id="purchase-save-btn" label="审 核"}> &nbsp; <{button type="button" class="btn" id="return-btn" label="取 消" onclick="javascript:void(window.close());"}></div>
+</div>
+</form>
+<script>
+$('fm1').store('target',{
+    onRequest:function(){
+       $('purchase-save-btn').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('purchase-save-btn').set('disabled', '');
+       }else{
+           $('purchase-save-btn').set('disabled', 'true');
+           if(opener && opener.finderGroup && opener.finderGroup['<{$env.get.finder_id}>']){
+              opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+              window.close();
+           }
+       }
+    }
+});
+
+<{if $env.get._finder_name}>
+$('fm1').store('target',{
+    update:'messagebox'
+});
+<{/if}>
+
+function visibility(e){
+	var visiTips = new Tips({
+			onShow:function(tip,el){
+				el.addClass('active');
+				tip.setStyle('display','block');
+			},
+			text: function(element){
+				if(element.get('visibility')=='false'){
+					return '隐藏商品';
+				}else{
+					return '';
+				}
+			}
+		});
+
+		var e  = new Event(e), el = e.target;
+		if (el.get('visibility')=='false')
+		{
+			visiTips.attach(el);
+			el.addEvent('mouseleave',function(){
+				el.removeClass('active');
+			});
+			el.fireEvent('mouseenter',e);
+		}
+}
+</script>

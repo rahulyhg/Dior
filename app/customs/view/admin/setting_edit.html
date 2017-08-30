@@ -1,0 +1,169 @@
+<link rel="stylesheet" type="text/css" href="<{$env.app.res_url}>/style.css" media="screen" />
+<form action="index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=save&_finder%5Bfinder_id%5D=3fbf60" method="post" id="frm_setting" name="frm_setting">
+    <div id="gEditor-Body">
+      <div class="spage-main-box">
+          <div class="edit_title"><h3>跨境申报设置</h3></div>
+          <div class="tableform">
+          <div id="x-g-basic" class="goods-detail">
+              <div>
+                <table border="0" cellpadding="0" cellspacing="0" id="content_tbl">
+                <tbody>
+                    <tr style="display:none;">
+                    	<tr>
+                        	<th>电子口岸：</th>
+                            <td>
+                            <select name="item[company_id]" class="x-input-select inputstyle" id="company_id" type="select">
+                                <{foreach from=$company_id key=key item=val}>
+                                <option value="<{$key}>" <{if $key == $item.company_id}>selected<{/if}> ><{$val}></option>
+                                <{/foreach}>
+                            </select> <em><font color="red">*</font></em>
+                            </td>
+                        </tr>
+                        
+                    	<tr>
+                            <th>企业代码：</th>
+                            <td><{input type="text" size="30" maxlength="32" name="item[company_code]" id="company_code" maxlength="30" required='required' value=$item.company_code}> <em><font color="red">*</font></em></td>
+                        </tr>
+                        <tr>
+                            <th>企业名称：</th>
+                            <td><{input type="text" size="50" maxlength="50" name="item[company_name]" id="company_name" required='required' value=$item.company_name}> <em><font color="red">*</font></em></td>
+                        </tr>
+                        
+                        <tr>
+                        	<th>业务类型：</th>
+                            <td>
+                            <select name="item[custom_type]" class="x-input-select inputstyle" id="custom_type" type="select">
+                                <{foreach from=$custom_type key=key item=val}>
+                                <option value="<{$key}>" <{if $key == $item.custom_type}>selected<{/if}> ><{$val}></option>
+                                <{/foreach}>
+                            </select> <em><font color="red">*</font></em>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th>账　号：</th>
+                            <td><{input type="text" size="30" maxlength="32" name="item[username]" id="username" required='required' value=$item.username}> <em><font color="red">*</font></em></td>
+                        </tr>
+                        <tr>
+                            <th>密　钥：</th>
+                            <td>
+                            	<{input type="password" size="30" maxlength="50" name="item[password]" id="password" required='required' value=$item.password}> <em><font color="red">*</font></em>
+                            	<br><span class="color_1">*跨境平台接口的密钥。</span>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                          <th>发货仓库：</th>
+                          <td>
+							<select name="item[branch_id]" class="x-input-select inputstyle" id="branch_id" type="select">
+                            	<option value="">=请选择=</option>
+                                <{foreach from=$branch key=key item=val}>
+                                <option value="<{$val.branch_id}>" <{if $val.branch_id == $branch_id}>selected<{/if}> ><{$val.name}></option>
+                                <{/foreach}>
+                            </select> <em><font color="red">* 跨境申报完成后，系统将自动选择仓库进行发货（仓库管理栏目中添加）。</font></em>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>&nbsp;</th>
+                          <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                          <th><{input type="hidden" name="item[sid]" value=$item.sid}><input type="hidden" value="<{$item.bind_status}>" name="item[bind_status]">&nbsp;</th>
+                          <td><div class="table-action text_left"><{if $item.sid}><{button label="保存记录" type="button" id="btn_submit" name="btn_submit"}><{else}><{button label="添加新记录" type="button" id="btn_submit" name="btn_submit"}><{/if}></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+              </div>
+          </div>
+          </div>
+      </div>
+    </div>
+</form>
+<script language="javascript">
+(function()
+{
+	var _form	= $('frm_setting');
+	$('btn_submit').addEvent('click',function()
+	{
+		var flag		= submit_frm();
+		if(flag)
+		{
+			_form.fireEvent('submit',{stop:$empty});	
+		}
+    });
+})();
+
+function submit_frm()
+{
+	var company_id		= document.getElementById("company_id").value;
+	var company_code	= document.getElementById("company_code").value;
+	var company_name	= document.getElementById("company_name").value;
+	var custom_type		= document.getElementById("custom_type").value;
+	var username		= document.getElementById("username").value;
+	var password		= document.getElementById("password").value;
+	var branch_id		= document.getElementById("branch_id").value;
+	
+	if(!company_id)
+	{
+		alert("请选择电子口岸.");
+		document.getElementById("company_id").focus();
+		return false;
+	}
+	if(!company_code)
+	{
+		alert("请填写企业代码.");
+		document.getElementById("company_code").focus();
+		return false;
+	}
+	if(!company_name)
+	{
+		alert("请填写企业名称.");
+		document.getElementById("company_name").focus();
+		return false;
+	}
+	if(!custom_type)
+	{
+		alert("请选择业务类型.");
+		document.getElementById("custom_type").focus();
+		return false;
+	}
+	if(!username)
+	{
+		alert("请填写账号");
+		document.getElementById("username").focus();
+		return false;
+	}
+	if(!password)
+	{
+		alert("请填写密钥.");
+		document.getElementById("password").focus();
+		return false;
+	}
+	if(!branch_id)
+	{
+		alert("请选择发货仓库.");
+		document.getElementById("branch_id").focus();
+		return false;
+	}
+	
+	return true;
+}
+
+$('frm_setting').store('target',{
+    onRequest:function(){
+       $('btn_submit').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn_submit').set('disabled', '');
+       }else{
+		   $('btn_submit').set('disabled', 'true');
+           if(opener && opener.finderGroup && opener.finderGroup['<{$env.get.finder_id}>']){
+              opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+              window.close();
+           }
+       }
+    }
+});
+</script>

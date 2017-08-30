@@ -1,0 +1,67 @@
+
+<div class="tableform">
+    <div class="note">您的服务信息</div>
+    
+    <div id="select_cmp" name="select_cmp">
+
+	<div class="note">
+		<{if $days<0}>
+		提醒：<font color='red'>您的服务已过期，有可能随时被停止而影响您的工作，请及时续费！</font>
+		<{elseif $days===0}>
+		提醒：<font color='red'>您的服务今天是最后一天，请及时续费！</font>
+		<{else}>
+   		 提醒：您的服务还有 <font color='red' size="14"><{$days}></font> 天到期！
+   		<{/if}>
+        <{if $ensureInfo.userDegree > 0 && $ensureDay >= 0 && $ensureInfo.ver < 2}>
+            <br /><br />
+            <{if ensureDay === 0}>
+                                        提醒：<font color='red'>您的保障部署服务今天是最后一天，请及时续费！</font>
+            <{else}>
+                                        提醒：您的<font color='red'><b>保障部署</b></font>服务还有 <font color='red' size="14"><span id='orderCount'><{$ensureDay}></span></font> 天即将到期！请及时续约，谢谢！
+            <{/if}>
+        <{/if}>
+   			<BR>续费请联系以下客服：<a title="在线客服:紫苏" target="_blank" href="http://amos.im.alisoft.com/msg.aw?v=2&amp;uid=taoex淘易:紫苏&amp;site=cntaobao&amp;s=1&amp;charset=utf-8"><img border="0" style="padding-top: 4px;" src="http://amos.im.alisoft.com/online.aw?v=2&amp;uid=taoex淘易:紫苏&amp;site=cntaobao&amp;s=2&amp;charset=utf-8" alt="taoex淘易:紫苏">紫苏</a>&nbsp<a title="在线客服:紫草" target="_blank" href="http://amos.im.alisoft.com/msg.aw?v=2&amp;uid=taoex淘易:紫草&amp;site=cntaobao&amp;s=1&amp;charset=utf-8"><img border="0" style="padding-top: 4px;" src="http://amos.im.alisoft.com/online.aw?v=2&amp;uid=taoex淘易:紫草&amp;site=cntaobao&amp;s=2&amp;charset=utf-8" alt="taoex淘易:紫草">紫草</a>&nbsp<a title="在线客服:紫萍" target="_blank" href="http://amos.im.alisoft.com/msg.aw?v=2&amp;uid=taoex淘易:紫萍&amp;site=cntaobao&amp;s=1&amp;charset=utf-8"><img border="0" style="padding-top: 4px;" src="http://amos.im.alisoft.com/online.aw?v=2&amp;uid=taoex淘易:紫萍&amp;site=cntaobao&amp;s=2&amp;charset=utf-8" alt="taoex淘易:紫萍">紫萍</a>
+    </div>
+
+	<table>
+	  <tr>
+	    <td style="width:120px;">部署时间：</td>
+	    <td><{$info->getCreateTime('Y-m-d 00:00:00')}></td>
+	  </tr>
+	  <tr>
+	  <tr>
+	    <td style="width:120px;">开通时间：</td>
+	    <td><{$info->getActiveTime('Y-m-d 00:00:00')}></td>
+	  </tr>
+	  <tr>
+	    <td style="width:120px;">开始时间：</td>
+	    <td><{$info->getCycleStart()}></td>
+	  </tr>
+	  <tr>
+	    <td style="width:120px;">结束时间：</td>
+	    <td><{$info->getCycleEnd()}></td>
+	  </tr>
+	  <{if $ensureDay >= 0 && $ensureInfo.userDegree > 0 && $ensureInfo.ver < 2}>
+	  <tr>
+	   <td>保障部署开始时间：</td>
+	   <td><{$ensureInfo.ensure_st_title}></td>
+	  </tr>
+	  <tr>
+	   <td>保障部署结束时间：</td>
+	   <td><{$ensureInfo.ensure_et_title}></td>
+	  </tr>
+	  <{/if}>
+	</table>
+    
+    <div class="table-action">
+        <{button label="关闭" type="botton" name="btn-close" id="btn-close"}>
+    </div>
+</div>
+
+<script>
+	
+	$('btn-close').addEvent('click', function(){
+		$('btn-close').getParent('.dialog').retrieve('instance').close();
+	});
+    
+</script>

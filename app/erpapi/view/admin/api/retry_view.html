@@ -1,0 +1,71 @@
+<style>
+    .processBarBg {border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;}
+    .processBar {background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;}
+</style>
+<div id="processBarBg" class="processBarBg"><div id="processBar" class="processBar">&nbsp;</div></div>
+
+<div class="division" style="display:none;" id="information">
+</div>
+
+<div class="tableform">
+    <form id="batch-retry-dialog" method='post' action='index.php?app=erpapi&ctl=admin_api_fail&act=retry_do'>
+        <input type="hidden" name="filter" value="<{$filter}>">
+    </form>
+</div>
+
+<{area inject='.mainFoot'}>
+<div class="table-action">
+    <{button label="开始" type="botton" name="Start" id="btn-run"}>
+    <{button label="关闭" type="botton" isCloseDialogBtn="true" }>
+</div>
+<{/area}>
+
+<script type="text/javascript">
+(function(){
+
+    var total = "<{$total}>";
+    var page_size = 20;
+    function process(page_no){
+        var _form = $("batch-retry-dialog");
+        new Request({url:_form.action+'&p[0]='+page_no,method:_form.method,data:_form,
+            onComplete:function(result){
+                if(!result) return;
+                result = JSON.decode(result);
+
+                if (result.data) {
+                    result.data.each(function(item){
+                        var info = new Element('div',{
+                            html:'单据<span style="color:red">'+item+'</span>发起请求................................................................................<span style="color:green">ok</span>'
+                        });
+
+
+                        $('information').adopt(info);
+                    });
+
+                };
+
+                $('processBar').setStyle('width', result.rate+'%');
+                if (result.status == 'running') {
+                    page_no++;
+                    return process(page_no);
+                };
+
+                $('btn-run').set('html', '<span><span>处理已完成，本窗口将在3秒后自动关闭！</span></span>');
+                var finish = function(){$('btn-run').getParent('.dialog').retrieve('instance').close()};
+                // finish.delay(2000);
+            },
+            onRequest:function(){
+                $('information').style.display ='';
+                $('btn-run').disabled = true;
+
+                $('btn-run').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+            }
+        }).send();
+    }
+
+    $("btn-run").addEvent('click',function(){
+        process(1);
+    });
+
+})();
+</script>

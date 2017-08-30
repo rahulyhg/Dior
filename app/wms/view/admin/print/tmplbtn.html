@@ -1,0 +1,46 @@
+<{if $otmplList}>  
+<form method='post' action='<{$request_uri}>' id='relate-delivery-form'>
+  <{foreach from=$postData item=item key=key}>
+  <input type='hidden' name="<{$key}>" value="<{$item}>" />
+  <{/foreach}>
+</form>
+<div style='float:left;'>
+  <div style='float:left;'>可选模板：</div>
+  <select name='otmpl'  onchange="changeTmpl(this);" >
+  <{foreach from=$otmplList item=item key=key}>
+  <option value="<{$item.id}>" <{if $item.id==$current_otmpl_id}>selected='selected'<{/if}> > <{$item.title}> </option>
+  <{/foreach}>
+  </select>
+  
+</div>
+<style>
+.tmpl-cur{
+	color:#808080;
+}
+.tmpl-other{
+	color: #000000;
+}
+</style>
+<script type="text/javascript">
+function changeTmpl(el){
+  var id=0;
+  el.getElements("option").each(function(item){
+    if (item.selected) {
+      id=item.value;
+    }
+  });
+  if (id==0) {
+    return;
+  }
+  var _form = $('relate-delivery-form');
+  var action = '<{$request_uri}>';
+  if (action.contains('&otmplId=')) {
+    action = action.replace(/&otmplId=\d+/,'&otmplId='+id);
+  }else{
+    action += '&otmplId='+id;
+  }
+  _form.set('action',action);
+  _form.submit();
+}
+</script>
+<{/if}>

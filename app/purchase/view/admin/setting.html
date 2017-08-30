@@ -1,0 +1,22 @@
+            <tr>
+                <th>是否条码入库控制：</th>
+                <td>
+                <input type="radio" name="set[purchase.stock.stockset]" value='true' <{if $setData.purchase_stock_stockset=='true'}>checked='checked'<{/if}>>是 <input type="radio" name="set[purchase.stock.stockset]" value='false' <{if $setData.purchase_stock_stockset=='false'}>checked='checked'<{/if}>> 否
+                </td>
+            </tr>
+
+            <tr>
+                <th>"确认"之条码设置：</th>
+                <td><input type="text" name="set[purchase.stock_confirm]"  value="<{$setData.purchase_stock_confirm}>" vtype="required"/></td>
+            </tr>
+            <tr>
+                <th>"取消"之条码设置：</th>
+                <td><input type="text" name="set[purchase.stock_cancel]"  value="<{$setData.purchase_stock_cancel}>" vtype="required"/></td>
+            </tr>
+            <tr>
+                <th>采购方式：</th>
+                <td><select name="set[purchase.po_type]">
+                    <option value="cash" <{if $setData.purchase_po_type=='cash'}>selected="selected"<{/if}>>现购</option>
+                    <option value="credit" <{if $setData.purchase_po_type=='credit'}>selected="selected"<{/if}>>赊购</option>
+                </select></td>
+            </tr>

@@ -1,0 +1,33 @@
+<{if $verifycode == 'true'}>
+  <div>
+  <form action="index.php?app=ome&ctl=admin_dly_corp&act=get_dly_info"  method="post" class="tableform">
+  <input type="hidden" name="kdapi_code" value="<{$kdapi_code}>" />
+  <input type="hidden" name="tracking_no" value="<{$tracking_no}>" />
+  <input type="hidden" name="request_url" value="<{$request_url}>" />
+  <table>
+    <tr><th><{t}>请输入验证码:<{/t}></th><td> <input vtype="required" type="text" name="verifycode" /><img onClick="change_img(this);" src="index.php?app=ome&ctl=admin_dly_corp&act=get_verifycode&p[0]=<{$kdapi_code}>#<{$time}>" class="btn"></td><td></td><tr>
+    <tr><th></th><td><span style="color:red;"><{t}>点击图片刷新验证码<{/t}></span></td><td></td><tr>
+  </table>
+   <div class="table-action">
+  <{button type="submit" label="提交" id="btn-dly_corp" }>
+</div>
+  </form>
+  </div>
+  <script>
+  function change_img(obj)
+  {
+      var timestamp = Date.parse(new Date());
+      obj.src = '<{$desktop_res}>'+'/bundle/loading_small.gif#'+timestamp;
+      obj.src='index.php?app=ome&ctl=admin_dly_corp&act=get_verifycode&p[0]=<{$kdapi_code}>#'+timestamp;  
+  }
+  </script>
+<{else}>
+  <{if $return_data}>
+   <table width="100%" border="1" cellpadding="0" cellspacing="0">
+    <tr><th><{t}>时间<{/t}></th><th><{t}>地点和跟踪进度<{/t}></th></tr>
+    <{foreach from=$return_data item=data_item }>
+    <tr><td><{$data_item.time}></td><td><{$data_item.context}></td></tr>
+    <{/foreach}>
+    </table>
+  <{else}><{$message}><br/>未读取到物流信息,请稍后重试!  或者点击   <a target="_blank" href = "<{$request_url}>">这里   </a>前往物流公司网站查询<{/if}>
+<{/if}>

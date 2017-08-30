@@ -1,0 +1,221 @@
+<style type="text/css">
+.tab_delivery th{width:170px;}
+</style>
+
+<div class="division tab_delivery">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>发货校验商品名称显示方式：</th>
+                <td><select name="set[wms.delivery.check_show_type]" id="delivery_check_show_type">
+                    <option value="stock" <{if $setData.wms_delivery_check_show_type=='stock'}>selected="selected"<{/if}>>后台名称</option>
+                    <option value="front" <{if $setData.wms_delivery_check_show_type=='front'}>selected="selected"<{/if}>>前台名称</option>
+                </select></td>
+            </tr>
+            <tr>
+                <th>打印是否检验批次号：</th>
+                 <td><select name="set[wms.delivery.check_ident]">
+                    <option value="on" <{if $setData.wms_delivery_check_ident=='on'}>selected="selected"<{/if}>>开启</option>
+                    <option value="off" <{if $setData.wms_delivery_check_ident=='off'}>selected="selected"<{/if}>>关闭</option>
+                </select></td>   
+            </tr>
+            <tr>
+                <th>分组校验时间间隔设置(分钟)：</th>
+                <td><input type="text" size="10"  id="groupCalibration" name="set[wms.groupCalibration.intervalTime]"  value="<{$setData.wms_groupCalibration_intervalTime}>" vtype="required"/><span style='margin-left:5px;'>执行分组校验时，检测上一次分组校验的执行时间，设置间隔时间，防止短时间执行该操作发生错误！(时间间隔最短2分钟)</span></td>
+            </tr>
+            
+            <tr>
+                <th>分组发货时间间隔设置(分钟)：</th>
+                <td><input type="text" size="10"  id="groupDelivery" name="set[wms.groupDelivery.intervalTime]"  value="<{$setData.wms_groupDelivery_intervalTime}>" vtype="required"/><span style='margin-left:5px;'>执行分组发货时，检测上一次分组发货的执行时间，设置间隔时间，防止短时间执行该操作发生错误！(时间间隔最短2分钟)</span></td>
+            </tr>
+            <tr>
+                <th>包裹重量范围：</th>
+                <td>
+                    <input type="text" name="set[wms.delivery.minWeight]" size=10 value="<{$setData.wms_delivery_minWeight}>" vtype="required&&unsignedint"/>克 < 包裹重量 < 
+                    <input type="text" name="set[wms.delivery.maxWeight]" size=10 value="<{$setData.wms_delivery_maxWeight}>" vtype="required&&unsignedint"/>克
+                </td>
+            </tr>
+            <tr id="delivery_check_num">
+                <th>发货校验商品数量设置：</th>
+                <td><input type="text" name="set[wms.delivery.check]"  value="<{$setData.wms_delivery_check}>" size="5" vtype="required&&unsignedint"/><span style='margin-left:5px;'>同一货品数量大于设置数量时可以通过录入数量来批量检验</span></td>
+            </tr>
+            <tr>
+                <th>逐单发货是否称重：</th>
+                <td>
+                    <input class='set_delivery_weight' type="radio" name="set[wms.delivery.weight]" value="on" <{if $setData.wms_delivery_weight == 'on'}> checked<{/if}>>开启
+                    <input class='set_delivery_weight' type="radio" name="set[wms.delivery.weight]" value="off" <{if $setData.wms_delivery_weight == 'off'}> checked<{/if}>>关闭
+                    <span style='margin-left:5px;'>开启逐单发货称重功能</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class='check_delevery' >
+    <table>
+        <tbody>
+            <tr>
+                <th>整单校验后是否直接发货：</th>
+                <td>
+                    <input type="radio" name="set[wms.delivery.check_delivery]" value="off" <{if $setData.wms_delivery_check_delivery == 'off'}> checked<{/if}>>关闭
+                    <input type="radio" name="set[wms.delivery.check_delivery]" value="on"  <{if $setData.wms_delivery_check_delivery == 'on'}> checked<{/if}>>开启
+                 </td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <!---发货称重报警 begin-->
+    <div class='weight_on'>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+                <tr>
+	                <th>称重扫描配置：</th>
+	                <td>
+	                    <input class='set_delivery_weight' type="radio" name="set[wms.delivery.logi]" value="0" <{if $setData.wms_delivery_logi != '1'}> checked<{/if}>>先扫描快递单号后称重
+	                    <input class='set_delivery_weight' type="radio" name="set[wms.delivery.logi]" value="1" <{if $setData.wms_delivery_logi == '1'}> checked<{/if}>>先称重后扫描快递单号
+	                </td>
+	            </tr>
+                <tr>
+                    <th>逐单发货称重报警：</th>
+                    <td>
+                        <input type="radio" name="set[wms.delivery.weightwarn]" value="on" <{if $setData.wms_delivery_weightwarn == 'on'}> checked<{/if}>>开启
+                        <input type="radio" name="set[wms.delivery.weightwarn]" value="off" <{if $setData.wms_delivery_weightwarn != 'on'}> checked<{/if}>>关闭
+                        
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class='weightwarn_on'>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+                <tr>
+                    <th>逐单发货称重报警设置：</th>
+                    <td>
+                       包裹称重重量比系统中货品净重多出<input type="text" name="set[wms.delivery.max_weightwarn]" size="6" value="<{$setData.wms_delivery_max_weightwarn|default:0}>" vtype="required&&unsignedint">&nbsp;&nbsp;<span id='warnunit1' style="width:20px;"><{if $setData.wms_delivery_maxpercent=='1'}>%<{else}>g<{/if}></span><input type="hidden" id="maxpercent" name="set[wms.delivery.maxpercent]" value="<{$setData.wms_delivery_maxpercent|default:0}>">&nbsp;&nbsp;以上,进行报警<input type="checkbox" class='weightpercent' value="1" <{if $setData.wms_delivery_maxpercent=='1'}>checked<{/if}>>按百分比计算
+                        
+                    </td>
+                </tr>
+              
+                <tr>
+                    <th></th>
+                    <td>
+                       包裹称重重量比系统中货品净重少了<input type="text" name="set[wms.delivery.min_weightwarn]" size="6" value="<{$setData.wms_delivery_min_weightwarn|default:0}>" vtype="required&&unsignedint">&nbsp;&nbsp;<span id='warnunit2' ><{if $setData.wms_delivery_minpercent=='1'}>%<{else}>g<{/if}></span><input type="hidden" id="minpercent" name="set[ome.delivery.minpercent]" value="<{$setData.wms_delivery_minpercent|default:0}>">&nbsp;&nbsp;以上,进行报警<input type="checkbox" class='weightpercent' value="2" <{if $setData.wms_delivery_minpercent=='1'}>checked<{/if}>>按百分比计算<font  color="red">(多物流单包裹不适用此范围报警)</font>
+                        
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>仓库对问题包裹的处理权限：</th>
+                    <td>
+                       <input type="radio" name="set[wms.delivery.problem_package]" value="1" <{if $setData.wms_delivery_problem_package == '1'}> checked<{/if}>>可选择仍然发货或退回检查<{help}>包裹重量不变的情况下,仓库可以选择对问题包裹进行发货操作或退回检查<{/help}><font color='red'>可制作并扫入“确认”和“取消”之条形码来控制</font><br><input type="radio" name="set[wms.delivery.problem_package]" value="0" <{if $setData.wms_delivery_problem_package == '0'}> checked<{/if}> <{if $setData.wms_delivery_problem_package == ''}> checked<{/if}>>只能退回检查<{help}>包裹重量不变的情况下，需要修改商品重量或报警设置，才能对问题包裹进行发货<{/help}><font color='red'>可按键盘任意键或扫入任意条码来控制</font>
+                        
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>唯一码发货回传：</th>
+                <td>
+                    <input type="radio" name="set[wms.product.serial.delivery]" value="false" <{if $setData.wms_product_serial_delivery == 'false'}> checked<{/if}>>关闭
+                    <input type="radio" name="set[wms.product.serial.delivery]" value="true" <{if $setData.wms_product_serial_delivery == 'true'}> checked<{/if}>>开启
+                </td>
+            </tr>
+            <tr>
+                <th>打印配置：</th>
+                <td>
+                    <input type="radio" name="set[wms.delivery.cfg.radio]" value="1" <{if $setData.wms_delivery_cfg_radio != '2'}> checked<{/if}>>经典打印
+                    <input type="radio" name="set[wms.delivery.cfg.radio]" value="2" <{if $setData.wms_delivery_cfg_radio == '2'}> checked<{/if}>>按品类打印
+                    <span style='margin-left:5px;'>此选项控制发货配置</span>
+                </td>
+            </tr>                
+            <tr>
+                <th>显示校验数量：</th>
+                <td>
+                    <{input type="bool" name="set[wms.delivery.checknum.show]" value=$setData.wms_delivery_checknum_show|default:'true'}>
+                    <span style='margin-left:5px;'>只适用于逐个校验和整单校验</span>
+                </td>
+            </tr>
+            <tr>
+                <th>显示发货数量：</th>
+                <td>
+                    <{input type="bool" name="set[wms.delivery.consignnum.show]" value=$setData.wms_delivery_consignnum_show|default:'true'}>
+                    <span style='margin-left:5px;'>只适用于整单发货</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+window.addEvent('domready',function(){
+
+    function delivery_weight(setting) {
+        if(setting=='on') {
+            $E('.weight_on').setStyle('display','');
+            $E('.check_delevery').setStyle('display','none');
+        } else {
+            $E('.weight_on').setStyle('display','none');
+            $E('.check_delevery').setStyle('display','');
+        }
+    }
+
+    $$('input[name=set[wms.delivery.weight]]').addEvent('click',function(e){
+        delivery_weight(this.value);
+    });
+
+    var set_delivery_weight = $$('input[name=set[wms.delivery.weight]]:checked').get('value');
+    delivery_weight(set_delivery_weight);
+
+
+    $$('input[name=set[wms.delivery.weightwarn]]').addEvent('click',function(e){
+
+        delivery_weightwarn(this.value)
+
+    });
+
+
+    function weight_warnunit(setting,id) {
+        if(setting==true){
+            $('warnunit'+id).set('html','%');
+            if(id=='1'){
+                $('maxpercent').set('value',1);
+            }else{
+                $('minpercent').set('value',1);
+            }
+        }else{
+            $('warnunit'+id).set('html','g');
+            if(id=='1'){
+                $('maxpercent').set('value',0);
+            }else{
+                $('minpercent').set('value',0);
+            }
+        }
+    }
+    $$('.weightpercent').addEvent('click',function(e){
+        
+       weight_warnunit(this.checked,this.value);
+    });
+
+    var weightwarn = $$('input[name=set[wms.delivery.weightwarn]]:checked').get('value');
+
+    if(weightwarn){
+        delivery_weightwarn(weightwarn);
+    }else{
+        delivery_weightwarn('off');
+        
+    }
+
+    function delivery_weightwarn(setting) {
+        if (setting=='on') {
+            $E('.weightwarn_on').setStyle('display','');
+            
+        } else {
+            $E('.weightwarn_on').setStyle('display','none');
+        }
+    }
+});
+</script>

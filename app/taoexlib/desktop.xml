@@ -1,0 +1,26 @@
+<desktop> 
+    <permissions>
+        <permission id="taoexlib_queue">队列管理</permission>
+        <permission id="taoexlib_ietask" display='false'>导出任务</permission>
+		<permission id="rolescfg">系统管理</permission>
+    </permissions>
+    
+    <workground name="系统" id="setting_tools"  order="800">
+        <!-- <menugroup name="TG队列">
+            <menu controller='queue' action='index' permission='taoexlib_queue' display='true' order='8000100'>队列管理</menu>
+        </menugroup> -->
+        <menugroup name="导出任务">
+            <menu controller='ietask' action='index' permission='taoexlib_ietask' display='true' order='8000100'>导出任务列表</menu>
+        </menugroup>
+		<menugroup name="短信配置">
+            <menu controller='admin_account' action='index' permission='rolescfg' display='true' order='9000100'>短信开通</menu>
+			<menu controller='admin_setting' action='index' permission='rolescfg' display='true' order='9000200'>短信设置</menu>
+            <menu controller='admin_sms_sample' action='index' permission='rolescfg' display='true' order='9000400'>模板列表</menu>
+            <menu controller='admin_sms_rule' action='index' permission='rolescfg' display='true' order='9000500'>分组规则</menu>
+			<menu controller='admin_sms_bind' action='index' permission='rolescfg' display='true' order='9000600'>发送设置</menu>
+			<menu controller='admin_log' action='index' permission='rolescfg' display='true' order='9000700'>短信日志</menu>
+			<menu controller='admin_setting' action='blacklist' permission='rolescfg' display='true' order='9000800'>免打扰设置</menu>
+
+        </menugroup>
+    </workground>
+</desktop>

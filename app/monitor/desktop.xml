@@ -1,0 +1,12 @@
+<desktop>
+    <permissions>
+        <permission id="order_monitor">订单作业状况</permission>
+    </permissions>
+
+    <workground name="单据报表" id="invoice_center"  order="900">
+        <menugroup name="分析报表">
+            <menu controller='admin_order' action='index' permission='order_monitor' display='true' order='6000600'>订单作业状况</menu>
+        </menugroup>
+    </workground>
+
+</desktop>

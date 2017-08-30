@@ -1,0 +1,88 @@
+<div class="finder-title">
+    <h2 class="head-title span-auto"><span id="title_info">订单作业状况</span><span class="num">数据缓存5分钟</span></h2>
+
+    <div class="top_extra clear" >
+        <div style="margin-bottom:0px;padding:5px; border:0;" id="dataAction" class="gridlist-action data-action">
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tbody>
+                    <tr>
+                        <td nowrap="nowrap">选择店铺:<select style="max-width:60px;_width:60px;" id="select_shop" name="shop_id">
+                            <{foreach from=$shopList item=shop}>
+                            <option value="<{$shop.shop_id}>"><{$shop.name}></option>
+                            <{/foreach}>
+                        </select></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="finder-header-wrapper">
+        <table width="100%" cellspacing="0" cellpadding="0" class="finder-header">
+            <colgroup>
+                <col class="orderCell" style="width:70px">
+                <col class="orderCell" style="width:55px">
+                <col class="orderCell" style="width:80px">
+                <col class="orderCell" style="width:55px">
+                <col class="orderCell" style="width:55px">
+                <col class="orderCell" style="width:55px">
+                <col class="orderCell" style="width:70px">
+                <col class="orderCell" style="width:70px">
+                <col class="orderCell" style="width:50px">
+                <col class="orderCell" style="width:50px">
+                <col class="orderCell" style="width:50px">
+                <col class="orderCell" style="width:50px">
+                <col class="orderCell" style="width:50px">
+                <col class="orderCell" style="width:50px">
+                <col class="orderCell" style="width:50px">
+                <col>
+            </colgroup>
+            <thead>
+            <tr>
+                <td><div class="cell">日期</div></td>
+                <td><div class="cell">新增订单</div></td>
+                <td><div class="cell">货到付款订单</div></td>
+                <td><div class="cell">失败订单</div></td>
+                <td><div class="cell">异常订单</div></td>
+                <td><div class="cell">取消订单</div></td>
+                <td><div class="cell">未确认订单</div></td>
+                <td><div class="cell">已确认订单</div></td>
+                <td><div class="cell">发货单</div></td>
+                <td><div class="cell">已发货</div></td>
+                <td><div class="cell">未发货</div></td>
+                <td><div class="cell">未打印</div></td>
+                <td><div class="cell">已打印</div></td>
+                <td><div class="cell">未校验</div></td>
+                <td><div class="cell">已校验</div></td>
+                <td>&nbsp;</td>
+            </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div id="shop_data" class="content-main"></div>
+
+</div>
+
+<script>
+(function(){
+    function getShopData(){
+        var shop_id = $('select_shop').value;
+        var load_img = '<div style="text-align:center;margin-top:30px;"><{img app="desktop" src="bundle/loading_medium.gif"}></div>';
+
+        $('title_info').set('text','店铺 <'+$('select_shop').getSelected().get('text')+'> 订单作业状况');
+        $('shop_data').set("html",load_img);
+        new Request.HTML({
+            url : 'index.php?app=monitor&ctl=admin_order&act=getShopData&p[0]='+shop_id,
+            method : 'post',
+            update : $('shop_data')
+        }).send();
+    }
+
+    if($('select_shop')) $('select_shop').addEvent('change',function(e){
+        getShopData();
+    });
+
+    getShopData();
+})();
+</script>

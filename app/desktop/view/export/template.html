@@ -1,0 +1,24 @@
+<{foreach from=$temps item=item name="_s"}>
+<input type="radio" name="extemp_id" class="extemp_id" vtype="requiredradio" value="<{$item.et_id}>" <{if $smarty.foreach._s.first}>checked="checked"<{/if}> /><label><{$item.et_name}></label>
+<{/foreach}>
+<div id="expmbdetail">
+</div>
+<script>
+    $ES('.extemp_id').each(function(e){
+        if(e.checked){
+            var extemp_id = e.value;
+            new Request.HTML({
+                update:'expmbdetail',
+                url:'index.php?index.php?app=desktop&ctl=export&act=getTempDetail&tp_id='+extemp_id,
+            }).send();
+        }
+
+        e.addEvent('click',function(){
+            var extemp_id = this.value;
+            new Request.HTML({
+                update:'expmbdetail',
+                url:'index.php?index.php?app=desktop&ctl=export&act=getTempDetail&tp_id='+extemp_id,
+            }).send();
+        })
+    });
+</script>

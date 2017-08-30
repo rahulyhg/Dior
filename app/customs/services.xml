@@ -1,0 +1,8 @@
+<services>
+	<service id="desktop_finder.customs_mdl_setting">
+		<class>customs_finder_setting</class>
+	</service>
+	<service id="desktop_finder.customs_mdl_orders">
+		<class>customs_finder_orders</class>
+	</service>
+</services>

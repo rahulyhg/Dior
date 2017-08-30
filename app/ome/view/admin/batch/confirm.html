@@ -1,0 +1,160 @@
+<style>
+    .notice a {color: blue; font-size: 12px; font-weight: 700;margin-left: 4px; margin-right: 4px;}
+    .notify {border-color: #FFD324;font-size: 12px; }
+    .processBarBg {border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;}
+    .processBar {background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;}
+</style>
+<div class="division">
+  <h4>当前共<{$ordertotal}>个订单，可审核<font color='red'><{$ordercount}></font>个<br>
+（批量审核不进行合单及拆单，仓库不满足发货条件时则审核失败，批量审核失败的订单请单个审核）
+</h4>
+  <div class="gridlist" >
+    <table class="nosplit" width="100%" cellspacing="0" cellpadding="0" border="0" >
+
+        <tr>
+        <th>选择仓库:</th>
+        <td>
+        <select name='branch_id' id='branch_id'>
+         <{foreach from=$branchList item=branch}>
+        <option value='<{$branch.branch_id}>'><{$branch.name}></option>
+        <{/foreach}>
+        </select>
+        </td>
+        </tr>
+       <tr> 
+       <th>选择物流:</th> <td>
+       <select name='corp_id' id='corp_id'>
+       <{foreach from=$corpList item=corp}>
+        <option value=<{$corp.corp_id}>><{$corp.name}></option>
+        <{/foreach}>
+       </select>
+        </td>
+    </tr>
+
+     
+    </table>
+  </div>
+
+   <div class="division" style="display:none;" id="information">
+                本次获取大约 <span id="iTotal" style="color:#083E96"></span> 个订单，
+                <span id="iSucc" style="color:green"></span> 个已自动确认并生成发货单，
+                <span id="iFail" style="color:red"></span> 个失败，请稍候……
+            </div>
+            <div id="processBarBg" class="processBarBg">
+                <div id="processBar" class="processBar">
+                    &nbsp;
+                </div>
+</div>
+  <div class="table-action">
+ <{button label="开始" type="botton" name="Start" id="btn-run"}>
+ <{button label="关闭" type="botton" isCloseDialogBtn="true" }>
+  </div>
+</div>
+<script>
+   var MaxProcessOrderNum = 20;
+    var OrderGroups = <{$orderGroup}>;
+    var total = <{$ordercount}>;
+    var OrderQueue = new Array();
+    var doTotal = 0;
+    var doFailInfo='';
+
+
+
+    function doRun(){
+        initOptQueue();
+        if (OrderQueue.length == 0) {
+            return ;
+        }
+        //禁用开始按钮
+        doTotal = 0;
+        doSucc = 0;
+        doFail = 0;
+
+        displayProcessInfo();
+
+        $('information').style.display ='';
+        $('btn-run').disabled = true;
+        $('btn-run').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+         doAjaxProcess(1);
+    }
+    function initOptQueue() {
+        var OrderHash = '';
+        var OrderNum = 0;
+        var OrderKey = '';
+
+        if (OrderGroups == '') {
+            return;
+        }
+        var LeaveProcessOrderNum = total;
+
+        if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+            MaxProcessOrderNum = LeaveProcessOrderNum;
+        }
+
+        for (var i=0;i<OrderGroups.length;i++) {
+            if (OrderHash == '')
+                OrderHash = OrderGroups[i];
+            else
+                OrderHash = OrderHash + ';' + OrderGroups[i];
+
+            OrderNum ++;
+
+            if (OrderNum >= MaxProcessOrderNum) {
+                OrderQueue.push(OrderHash);
+                OrderNum =0;
+                OrderHash = '';
+                LeaveProcessOrderNum = LeaveProcessOrderNum - MaxProcessOrderNum;
+                if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+                    MaxProcessOrderNum = LeaveProcessOrderNum;
+                }
+            }
+        }
+
+        if (OrderHash != '') {
+            OrderQueue.push(OrderHash);
+        }
+    }
+
+   $('btn-run').addEvent('click', function(){
+        doRun();
+    });
+     /**
+     * 显示信息进度
+     */
+    function displayProcessInfo() {
+        
+        $('iTotal').set('html', getTotal());
+        $('iSucc').set('html', doSucc);
+        $('iFail').set('html', doFail);
+    }
+
+    function getTotal() {
+        displayTotal= <{$ordercount}>;
+        return displayTotal;
+    }
+
+    /**
+     * 执行一次AJAX调用
+     */
+    function doAjaxProcess(idx) {
+        if (idx > OrderQueue.length || doTotal >= getTotal()) {
+            $('processBar').setStyle('width', '100%');
+            $('btn-run').set('html', '<span><span>处理已完成，本窗口将在3秒后自动关闭！</span></span>');
+            setTimeout("$('btn-run').getParent('.dialog').retrieve('instance').close();finderGroup['<{$finder_id}>'].refresh();",2000);
+        } else {
+            var params = OrderQueue[idx-1];
+            new Request({url:'index.php?app=ome&ctl=admin_batch_order&act=ajaxDoAuto',method:'post',data:'ajaxParams='+params+'&branch_id='+$('branch_id').value+'&corp_id='+$('corp_id').value,
+                onComplete:function(result){
+                    if(!result) return;
+                    ret = JSON.decode(result);
+                    doTotal = doTotal + ret['total'];
+                    doSucc = doSucc + ret['succ']; 
+                    doFail = doFail + ret['fail'];
+                    displayProcessInfo();
+                    $('processBar').setStyle('width', (doTotal*100/(getTotal())) + '%');
+                    doAjaxProcess(idx+1);
+                }
+            }).send();
+        }
+    }
+</script>

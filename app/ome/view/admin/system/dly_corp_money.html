@@ -1,0 +1,427 @@
+<div class="tableform" id="dltype-info-<{$dt_id}>"><div style="text-align:right;"><{help docid="69" type="link"}><{t}>点击查看帮助<{/t}><{/help}></div>
+    <h4 class="head-title">添加/编辑物流公司</h4>
+
+
+    <form action="index.php?app=ome&ctl=admin_dly_corp&act=saveDlType"  method="post" class="tableform" id="form-dly_corp">
+        <div class="division">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th><input type="radio" onchange="check()" name="all_branch" value="true" <{if $dt_info.all_branch=='true'}>checked<{/if}>>全部仓库</th>
+                    <td><input type="radio" onchange="check()" name="all_branch" value="false" <{if $dt_info.all_branch=='false'}>checked<{/if}>>指定仓库</td>
+                </tr>
+                <tr id="select_branch_id">
+                    <th><{t}>选择对应仓库：<{/t}></th>
+                    <td><{input type="select" name='branch_id' rows=$branchList valueColumn="branch_id" labelColumn="name" value=$dt_info.branch_id vtype="required"}> <em><font color='red'>*</font></em></td>
+                </tr>
+            </table>
+        </div>
+        <div class="division">
+            <{if $dt_info.corp_id}>
+            <input type="hidden" name="corp_id" value="<{$dt_info.corp_id}>">
+            <{/if}>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+
+                <tr>
+                    <th><{t}>物流公司：<{/t}></th>
+                    <td><div style="position:relative;"><input type="text" id="dly_name" name="name" value="<{$dt_info.name}>" vtype="required" > <{img id="btn-search" class="btn-zoom pointer" app="desktop" src="bundle/zoom_btn.gif"}><em><font color='red'>*</font></em></div></td>
+                    <th>&nbsp;</th>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <th><{t}>物流编号：<{/t}></th>
+                    <td><input type="text" name="type" id="dly_type" value="<{$dt_info.type}>" vtype='required'><em><font color='red'>*</font></em></td>
+                    <th>&nbsp;</th>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <th><{t}>网址：<{/t}></th>
+                    <td><input name="website" type="text" id="dly_website" value="<{$dt_info.website}>"></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th><{t}>询件网址：<{/t}></th>
+                    <td><input name="request_url" type="text" id="dly_request_url" value="<{$dt_info.request_url}>"></td>
+                    <th></th>
+                    <td>    </td>
+                </tr>
+                <!--  <tr>-->
+                <!--    <th><{t}>类型：<{/t}></th>-->
+                <!--    <td><label><input type="radio" name="is_cod" value="false" <{if $dt_info.is_cod=='false' || $dt_info.is_cod==''}>checked<{/if}>>先收款后发货</label> &nbsp; <label><input type="radio" name="is_cod" value="true" <{if $dt_info.is_cod=='true'}>checked<{/if}>>货到付款</label><span class="notice-inline"><{t}>选择货到付款后顾客无需再选择支付方式<{/t}></span></td>-->
+                <!--  </tr>-->
+                <!--<tr>
+                    <th><{t}>重量设置(单位g)：<{/t}></th>
+                    <td><{t}>首重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="firstunit" value="<{if $dt_info.firstunit}><{$dt_info.firstunit}><{else}><{/if}>" ><{t}>g&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="continueunit" value="<{if $dt_info.continueunit}><{$dt_info.continueunit}><{else}><{/if}>">g</td>
+                    <th>&nbsp;</th><td>&nbsp;</td>
+                </tr>-->
+                <tr>
+                    <th>&nbsp;</th>
+                    <td><input type="checkbox" name="protect" value="true" <{if $dt_info.protect=='true'}>checked<{/if}>>支持物流保价
+                        <script>
+                            $E('#dltype-info-<{$dt_id}> input[name=protect]').addEvent('click',function(){
+                                if(this.checked){
+                                    $('protect_rate').show().getFormElements().set('disabled',false);
+                                }else{
+                                    $('protect_rate').hide().getFormElements().set('disabled',true);
+                                }
+                            });
+                            $E('#dltype-info-<{$dt_id}> input[name=protect]')
+                            .fireEvent('click',$E('#dltype-info-<{$dt_id}> input[name=protect]'));
+
+                        </script>    </td>
+                    <th>&nbsp;</th><td>&nbsp;</td>
+                </tr>
+                <tr id="protect_rate">
+                    <th><{t}>保价设置：<{/t}></th>
+                    <td>
+                        费率&nbsp;<input type="text" name="protect_rate" value="<{$dt_info.protect_rate}>" style="width:25px;" class='_x_ipt' vtype='number' caution="该项必填且只允许填写数字金额"><{t}>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低保价费&nbsp;<{/t}><input type="text" name="minprice" value="<{$dt_info.minprice}>" style="width:25px;" class='_x_ipt' vtype='required&&number' caution="该项必填且只允许填写数字金额">    </td>
+                    <th>&nbsp;</th><td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <th><{t}>地区费用类型：<{/t}></th>
+                    <td>
+                        <div id='deliveryAreaToggle'>
+                            <label><input type="radio" name="setting" value='1' <{if $dt_info.setting=="1"||$dt_info.setting==""}>checked<{/if}>><{t}>统一设置<{/t}></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="radio" name="setting" value='0' <{if $dt_info.setting=="0"}>checked<{/if}>><{t}>指定配送地区和费用<{/t}></label>
+                        </div>
+                        <script>
+
+                            function deliveryAreaToggle(radio){
+                                var tradio=radio;
+                                var tradioValue=tradio.get('value');
+                                var tmap={
+                                    '1':$('def_dexp'),
+                                    '0':$('deliveryAreabox')
+                                };
+                                if(tradio.checked){
+                                    tmap[tradioValue].show();
+                                    tmap[tradioValue].getFormElements().set('disabled',false);
+                                }else{
+                                    tmap[tradioValue].hide();
+
+                                    tmap[tradioValue].getFormElements().set('disabled',true);
+                                }
+                            }
+
+                        </script>    </td>
+                    <th>&nbsp;</th><td>&nbsp;</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="division" id='def_dexp'>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th><{t}>重量设置(单位g)：<{/t}></th>
+                    <td>
+                        <{t}>首重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="firstunit" value="<{if $dt_info.firstunit}><{$dt_info.firstunit}><{else}><{/if}>" ><{t}>g&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="continueunit" value="<{if $dt_info.continueunit}><{$dt_info.continueunit}><{else}><{/if}>">g
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>配送费用：<{/t}></th>
+                    <td>
+                        <div style="line-height:30px;" class='deliveryexpbox'>
+                            <div class='deliveryexp' style="<{if $dt_info.dt_useexp==1}>display:none<{/if}>">
+                                首重费用 <input style="width:30px;" type='text' name='firstprice' value="<{$dt_info.firstprice}>" class="_x_ipt" vtype="required&&number" caution="该项必填且只允许填写数字金额"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                续重费用 <input style="width:30px;" type='text' name='continueprice' value="<{$dt_info.continueprice}>" class="_x_ipt" vtype="required&&number" caution="该项必填且只允许填写数字金额"/>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>使用公式<{/t}></span>
+
+                            </div>
+                            <div class='deliveryexp' style='<{if $dt_info.dt_useexp==0}>display:none<{/if}>'>
+                                配送公式 <input style="width:300px;" type='text' name='dt_expressions' value="<{if $dt_info.dt_useexp}><{$dt_info.dt_expressions}><{/if}>"  class="_x_ipt" vtype="required&&checkExp1&&checkExp2" /><{button label="验证" class="checkexp" onclick="checkExp(this);"}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>取消公式<{/t}></span>
+                                <input type="hidden" name="dt_useexp" value="<{$dt_info.dt_useexp}>">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="division" id='deliveryAreabox'>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th><{t}>支持的配送地区：<{/t}></th>
+                    <td>
+                        <div  id="deliveryArea-<{$dt_info.dt_id}>" class='deliveryArea'>
+                            <ol style='list-style-type:decimal;list-style:decimal'>
+
+                                <input type='hidden' name='delidgroup'/>
+                                <script>
+                                    function deleteDelivery(d){
+                                        if (!confirm('删除后无法恢复，确定要删除吗？')){
+                                            return;
+                                        }
+                                        var areaid_group=d.getElement('input[name^=area_fee_conf[areaGroupId][]]');
+                                        var delidgroupHidden=$E('#deliveryArea-<{$dt_info.dt_id}> input[name=delidgroup]');
+                                        var _id;
+                                        areaid_group.get('name').replace(/\[(\d+)?\]/,function($0,$1){
+                                            _id=$1;
+                                        });
+                                        if(_id){
+                                            delidgroupHidden.value+=(delidgroupHidden.value!=''?",":'')+_id;
+                                        }
+                                        d.remove();
+                                    }
+                                </script>
+
+                                <{if $dt_info.area_fee_conf}>
+
+                                <{foreach from=$dt_info.area_fee_conf item=area key=key}>
+                                <li class='division' style="line-height:30px;">
+                                    <div class='deliverycity'>
+                                        配送地区 <input style="width:300px;" type='text' name='area_fee_conf[areaGroupName][]' readonly=true required="true" value='<{$area.areaGroupName}>' class="_x_ipt" vtype="required" caution="配送地区不能为空" onclick="regionSelect(this);">
+                                        <input type='hidden' name='area_fee_conf[areaGroupId][]' value="<{$area.areaGroupId}>"/><{img class='regionSelect' src='images/bundle/editcate.gif' style='cursor:pointer;display:none;' onclick='regionSelect(this)' alt='编辑地区' title="编辑地区"}>
+                                        <a onclick='deleteDelivery($(this).getParent("li"))' >删除</a>
+                                    </div>
+                                    <div class='deliveryexpbox'>
+                                    <div class='deliveryweight'>
+                                    <{t}>首重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="area_fee_conf[firstunit][]" value="<{if $area.firstunit}><{$area.firstunit}><{else}><{/if}>" ><{t}>g&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="area_fee_conf[continueunit][]" value="<{if $area.continueunit}><{$area.continueunit}><{else}><{/if}>">g
+                                    
+                                    </div>
+                                        <div class='deliveryexp' style="<{if $area.dt_useexp==1}>display:none<{/if}>">
+                                            首重费用 <input style="width:30px;" type='text' name='area_fee_conf[firstprice][]' value="<{$area.firstprice}>" <{if $area.dt_useexp=="0"}>class="_x_ipt"<{/if}> vtype="required&&number" caution="该项必填且只允许填写数字金额"/>
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重费用 <input style="width:30px;" type='text' name='area_fee_conf[continueprice][]' value="<{$area.continueprice}>" <{if $area.dt_useexp=="0"}>class="_x_ipt"<{/if}> vtype="required&&number" caution="该项必填且只允许填写数字金额"/>
+
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>使用公式<{/t}></span>
+                                        </div>
+                                        <div class='deliveryexp' style='<{if $area.dt_useexp==0}>display:none<{/if}>'>
+                                            配送公式 <input style="width:300px;" type='text' name='area_fee_conf[dt_expressions][]' value="<{if $area.dt_useexp}><{$area.dt_expressions}><{/if}>" <{if $area.dt_useexp=="1"}>class="_x_ipt"<{/if}> vtype="required&&checkExp1&&checkExp2" /><{button label="验证" class="checkexp" onclick="checkExp(this);"}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>取消公式<{/t}></span>
+                                            <input type='hidden' name='area_fee_conf[dt_useexp][]' value='<{$area.dt_useexp}>'/>
+                                        </div>
+                                    </div>
+
+                                </li>
+
+                                <{/foreach}>
+
+                                <{else}>
+                                <li class='division' style="line-height:30px;">
+                                <div></div><div></div>
+                                </li>
+                                <li class='division' style="line-height:30px;">
+                                    <div class='deliverycity'>
+                                        配送地区 <input style="width:300px;" type='text' name='area_fee_conf[areaGroupName][]' readonly=true required="true" value='' onclick="regionSelect(this);">
+                                        <input type='hidden' name='area_fee_conf[areaGroupId][]' value="" class="_x_ipt" caution="配送地区不能为空"/>
+                                        <{img class='regionSelect' src='images/bundle/editcate.gif' style='cursor:pointer;display:none;' onclick='regionSelect(this)' alt='编辑地区' title="编辑地区"}>
+                                        <a onclick='deleteDelivery($(this).getParent("li"))' >删除</a>
+                                    </div>
+                                    
+                                    <div class='deliveryexpbox'>
+                                    <div class='deliveryweight'>
+                                    <{t}>首重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="area_fee_conf[firstunit][]" value="<{if $dt_info.firstunit}><{$dt_info.firstunit}><{else}><{/if}>" ><{t}>g&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重重量&nbsp;<{/t}><input style="width:30px;" vtype="required&&unsignedint" type="text" name="area_fee_conf[continueunit][]" value="<{if $dt_info.continueunit}><{$dt_info.continueunit}><{else}><{/if}>">g
+                                    
+                                    </div>
+                                        <div class='deliveryexp'>
+                                            首重费用 <input style="width:30px;" type='text' name='area_fee_conf[firstprice][]' value="" class="_x_ipt" vtype="required&&number" caution="该项必填且只允许填写数字金额"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            续重费用 <input style="width:30px;" type='text' name='area_fee_conf[continueprice][]' value="" class="_x_ipt" vtype="required&&number" caution="该项必填且只允许填写数字金额"/>
+                                            <span class='lnk chgexp' onclick='chaexps(this)'><{t}>使用公式<{/t}></span>
+                                        </div>
+                                        <div class='deliveryexp' style='display:none'>
+                                            配送公式 <input style="width:300px;" type='text' name='area_fee_conf[dt_expressions][]' value=""  class="_x_ipt" vtype="required&&checkExp1&&checkExp2" /><{button label="验证" class="checkexp" onclick="checkExp(this);"}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>取消公式<{/t}></span>
+                                            <input type='hidden' name='area_fee_conf[dt_useexp][]' value='0'/>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <{/if}>
+
+                            </ol>
+                            <{button label="添加配送地区" class="add-dlyarea" }>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="division">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th><{t}>状态：<{/t}></th>
+                    <td><input name="disabled" type="radio" value="true" <{if $dt_info.disabled=='true'}>checked="checked"<{/if}> ><{t}>关闭<{/t}>
+                               <input type="radio" name="disabled" value="false" <{if $dt_info.disabled=='false' || $dt_info.disabled==''}>checked="checked"<{/if}>><{t}>启用<{/t}><{help}>关闭后在选择物流公司的列表中不可见<{/help}></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="division">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th><{t}>选择快递单模板：<{/t}></th>
+                    <td><{input type="select" name='prt_tmpl_id' rows=$prttpl valueColumn="prt_tmpl_id" labelColumn="prt_tmpl_title" value=$dt_info.prt_tmpl_id vtype="required"}> <em><font color='red'>*</font></em></td>
+                </tr>
+            </table>
+            <div class="division">
+                <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <th><{t}>权重：<{/t}></th>
+                        <td><{input type="number" value=$dt_info.weight|default:0 name="weight" size=2}></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="table-action">
+                <{button type="submit" label="保存" id="btn-dly_corp" }>
+            </div>
+    </form>
+</div>
+
+
+<script>
+    function check(){
+		if($$('input[name=all_branch]:checked').get('value') == 'false'){
+			$('select_branch_id').show();
+            $('select_branch_id').getFormElements().set('disabled',false);
+		}else{
+			$('select_branch_id').hide();
+            $('select_branch_id').getFormElements().set('disabled',true);
+		}
+    }
+    check();
+
+    $('form-dly_corp').store('target',{
+        onRequest:function(){
+            $('btn-dly_corp').set('disabled', 'true');
+        },
+        onComplete:function(jsontext){
+            var json = Json.evaluate(jsontext);
+            if (typeof(json.error) != 'undefined'){
+                $('btn-dly_corp').set('disabled', '');
+            }else{
+                $('btn-dly_corp').set('disabled', 'true');
+                var fg = opener.finderGroup;
+                for(fid in fg){
+                    if(fid){
+                        fg[fid].refresh();
+                    }
+                }
+                window.close();
+            }
+        }
+    });
+
+
+    $("btn-search").addEvent('click',function(e){
+        var url='index.php?app=ome&ctl=admin_dly_corp&act=corp_recommend';
+        new Dialog(url,{width:400,height:420,title:'物流公司选择'});
+    });
+
+    /*var DialogExp ;
+$ES(".checkexp","area-tbody-dom").each(function(item, index, itobj){
+  item.addEvent('click',function(e){
+    e=new Event(e);
+    var ipt=e.target;
+    var id = 'check_'+ipt.getAttribute('areaid');
+    DialogExp = new Dialog('index.php?app=ome&ctl=admin_dly_corp&act=checkExp&area_id='+ipt.getAttribute('areaid')+'&expvalue='+encodeURIComponent($(id).value),{modal:true,title:'验算配送公式'});
+  });
+});*/
+
+    $$("#deliveryAreaToggle input[name=setting]").addEvent('click',function(){
+
+        $$("#deliveryAreaToggle input[name=setting]").each(deliveryAreaToggle);
+    }).each(deliveryAreaToggle);
+
+
+    function getval(expval){
+        if (eval(expval) > 0.000001){
+            return 1;
+        }else if (eval(expval) >-0.000001&&eval(expval)< 0.000001){
+            return 1/2;
+        }else{
+            return 0;
+        }
+    }
+    function getceil(expval){
+        if (eval(expval) > 0){
+            return Math.ceil(eval(expval)-0.000001);
+        }else{
+            return 0;
+        }
+    }
+
+
+    function chaexps(el){
+        var  dexps=$ES('.deliveryexp',$(el).getParent('.deliveryexpbox'));
+        dexps.toggleDisplay();
+        dexps.each(function(i){
+            if(i.getElement('input[name^=useexp]')){
+                if(!i.isDisplay()){
+                    i.getElement('input[name^=useexp]').set('value',0);
+                }else{
+                    i.getElement('input[name^=useexp]').set('value',1);
+                }
+            }
+            else if (i.getElement('input[name^=dt_useexp]'))
+            {
+                if(!i.isDisplay()){
+                    i.getElement('input[name^=dt_useexp]').set('value',0);
+                }else{
+                    i.getElement('input[name^=dt_useexp]').set('value',1);
+                }
+            }
+        });
+    }
+
+    void function(){
+
+        var btn_add=$E('#deliveryArea-<{$dt_info.dt_id}> .add-dlyarea');
+        var getItemTemplete=function(){
+            var pre_firstunit='';
+            var pre_continueunit='';
+            if($$('.deliveryweight').getLast()){
+                pre_firstunit = $$('.deliveryweight').getLast().getElement('input[name^=area_fee_conf[firstunit]').value;
+                pre_continueunit = $$('.deliveryweight').getLast().getElement('input[name^=area_fee_conf[continueunit]').value;
+            }
+            var btn = '<{button label="验证" class="checkexp" onclick="checkExp(this);"}>';
+            var itemTemplete = "<div class='deliverycity'>";
+            itemTemplete+="配送地区";
+            itemTemplete+="<input style='width:300px;' type='text' name='area_fee_conf[areaGroupName][]' readonly=true  value='' class='_x_ipt' vtype='required' caution='配送地区不能为空' onclick=\"regionSelect(this);\">";
+            itemTemplete+="<input type='hidden' name='area_fee_conf[areaGroupId][]' value=''/>";
+            //itemTemplete+="<img class='regionSelect' src='images/bundle/editcate.gif' style='cursor:pointer;' onclick='regionSelect(this)' alt='编辑地区' title='编辑地区'>";
+            //itemTemplete+='<{img class="regionSelect" src="images/bundle/editcate.gif" style="cursor:pointer;" onclick="regionSelect(this)" alt="编辑地区" title="编辑地区"}>';
+            itemTemplete+="<a onclick='deleteDelivery($(this).getParent(\"li\"))' >删除</a>";
+            //itemTemplete+="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label><input type='checkbox' name='hasCod[]' value='1'/><{t}>支持货到付款<{/t}></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+            itemTemplete+="</div>";
+            itemTemplete+="<div class='deliveryexpbox'><div class='deliveryweight'><{t}>首重重量&nbsp;<{/t}><input style='width:30px;' vtype='required&&unsignedint' type='text' name='area_fee_conf[firstunit][]' value='"+pre_firstunit+"' ><{t}>g&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重重量&nbsp;<{/t}><input style='width:30px;' vtype='required&&unsignedint' type='text' name='area_fee_conf[continueunit][]' value='"+pre_continueunit+"'>g</div><div class='deliveryexp'>";
+            itemTemplete+="首重费用 <input style='width:30px;' type='text' name='area_fee_conf[firstprice][]' class='_x_ipt' vtype='required&&number' caution='该项必填且只允许填写数字金额' value=''>";
+            itemTemplete+="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;续重费用 <input style='width:30px;' type='text' name='area_fee_conf[continueprice][]' class='_x_ipt' vtype='required&&number' caution='该项必填且只允许填写数字金额' value='' >";
+            itemTemplete+="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>使用公式<{/t}></span>";
+            itemTemplete+="</div>";
+            itemTemplete+="<div class='deliveryexp' style='display:none'>";
+            itemTemplete+="配送公式 <input style='width:300px;' type='text' name='area_fee_conf[dt_expressions][]' value='' vtype='required&&checkExp1&&checkExp2' />";
+            itemTemplete+= btn +"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class='lnk chgexp' onclick='chaexps(this)'><{t}>取消公式<{/t}></span>";
+            itemTemplete+="<input type='hidden' name='area_fee_conf[dt_useexp][]' value='0'/>";
+            itemTemplete+="</div></div>";
+
+            return  itemTemplete;
+        };
+        var list=$E('#deliveryArea-<{$dt_info.dt_id}> ol');
+        btn_add.addEvent('click',function(){
+        
+
+            var newitem=new Element('li',{'class':'division','style':'line-height:30px;'}).set('html',getItemTemplete()).inject(list);
+            regionSelect(newitem.getElement('.regionSelect'));
+        });
+
+        $$('#dltype-info-<{$dt_id}> .chgexp').each(chaexps);
+
+    }();
+    function regionSelect(el){
+        var el=$(el).getParent('.deliverycity');
+        var iptText=el.getElement('input[type=text]');
+        var iptHidden=el.getElement('input[type=hidden]');
+        Ex_Loader('modedialog',function(){
+            new ModeDialog('index.php?app=eccommon&ctl=regions&act=showRegionTreeList&p[0]='+el.uid+'&p[1]=multi',{
+                width:270,height:340,params:{iptText:iptText,iptHidden:iptHidden}
+            });
+        });
+    }
+    var checkExp=function(btn){
+        btn=$(btn);
+        var ipt=btn.getPrevious('input');
+        var expValue=ipt.getValue();
+        new Dialog('index.php?app=ome&ctl=admin_dly_corp&act=checkExp&expvalue='+encodeURIComponent(expValue),
+        { modal:true,
+            title:'验算配送公式'
+        }
+    );
+    }
+</script>

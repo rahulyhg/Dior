@@ -1,0 +1,409 @@
+<div class="goods-spec-cell" id='goods-spec-product'>
+<h4><{t}>规格设置<{/t}></h4>
+    <div class='clearfix note'>
+       <div class='span-auto'><span class="sysiconBtn addorder addproduct"><{t}>添加一个货品<{/t}></span></div>
+       <div class='span-auto' style="display:none;"><{*help docid="80" type="link-small"*}><{t}>点击查看货品说明<{/t}><{*/help*}></div>
+       <div class='span-auto'><span class="sysiconBtn edit selectspec"><{t}>选择规格项<{/t}></span><span class="sysiconBtn delete closespec"><{t}>关闭规格<{/t}></span></div>
+    </div>
+    <table cellspacing="0" cellpadding="0" border="0" class="gridlist">
+        <thead id="productNodeTitle">
+            <tr>
+                <th orderkey="visibility"><{t}>隐藏<{/t}></th>
+                <th orderkey="bn"><{t}>货号<{/t}></th>
+                <{foreach from=$goods.spec item=spec key=specid}>
+                <th orderkey="product_id"><{$spec.spec_name|escape:'html'}>
+                </th>
+                <{/foreach}>
+
+                <th orderkey="barcode" ><{t}>条形码<{/t}></th>
+                <th orderkey="picurl" ><{t}>预览图片<{/t}></th>
+                <th orderkey="price"><{t}>销售价<{/t}></th>
+                <th orderkey="cost" ><{t}>成本价<{/t}></th>
+                <th orderkey="mktprice" style="display:none"><{t}>市场价<{/t}></th>
+                <th orderkey="weight"><{t}>重量<{/t}></th>
+                <th orderkey="store" style="display:none"><{t}>安全库存<{/t}></th>
+                <th style="display:none"><{t}>上架<{/t}></th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id='productNode'>
+
+        </tbody>
+
+    </table>
+</div>
+<input type='hidden' name='goods[spec]' id='goods_spec' value='<{$goods.spec|serialize}>'/>
+
+<script>
+(function(){
+	var specTmplImageHash = $H();
+	var specImageHash = $H();
+	<{foreach from=$spec_tmpl item=specImage}>
+	<{if $specImage.spec_type == 'image'}>
+	<{foreach from=$specImage.spec_value item=aSpecImage}>
+	<{if $aSpecImage.spec_image}>
+	    specTmplImageHash.set( '<{$aSpecImage.spec_image}>' , '<{$aSpecImage.spec_image|storager}>' );
+	<{/if}>
+	<{/foreach}>
+	<{/if}>
+	<{/foreach}>
+
+	<{foreach from=$goods.spec item=specImage}>
+	<{foreach from=$specImage.option item=aSpecImage}>
+	<{if $aSpecImage.spec_image}>
+	    specImageHash.set( '<{$aSpecImage.spec_image}>' , '<{$aSpecImage.spec_image|storager}>' );
+	<{/if}>
+	<{/foreach}>
+	<{/foreach}>
+	
+	
+    <{assign var=goods_spec value=array('spec'=>$goods.spec)}>
+           var spec_desc = $H(<{$goods_spec|json_encode}>);
+           $('goods_spec').set('value','<{$goods.spec|serialize}>');
+           $E('#gEditor .goods-spec-cell .selectspec').addEvent('click',function(){
+         
+                new Dialog('index.php?app=ome&ctl=admin_goods_editor&act=set_spec&type_id='+$('gEditor-GType-input').getValue(),
+                {title:'选择规格项',ajaxoptions:{data:'spec='+encodeURIComponent($('goods_spec').get('value')), method:'post'}
+                });
+           });
+
+           /*取消规格操作*/
+           $E('#gEditor .goods-spec-cell .closespec').removeEvents('click').addEvent('click',function(e){
+              var canCloseSpec = '<{$goods.canCloseSpec}>';
+              if (canCloseSpec == 'false')
+              {
+                alert('下列货品已有订单或已有库存，不能关规格！');return;
+              }
+
+               if(e&&!confirm('关闭后现有已添加的货品数据将全部丢失，确定要关闭规格吗？'))return;
+               new Request.HTML({url:'index.php?app=ome&ctl=admin_goods_editor&act=nospec&goods_id='+$('gEditor-GId-input').value,method:'post',update:'goods-spec',data:'type_id='+$('gEditor-GType-input').getValue(),
+                                 onRequest:function(){
+                                 },
+                                 onComplete:function(){
+                                 },
+                                 onFailure:function(){
+                                    MessageBox.error('货品已有订单或已有库存，不能关规格！');
+                                 }
+               }).send();
+           });
+
+    var newProI = 0;
+    <{assign var=pro_tmpl value="{$app_dir}/view/admin/goods/detail/product_row.html"|file_get_contents}>
+    var _li_text = "<li specvid={spec_value_id} specpvid={private_spec_value_id}><span key='spec_value_{spec_value_id}' class='spec_sel' >{spec_value}</span></li>";
+    var _li_img = "<li specvid={spec_value_id} specpvid={private_spec_value_id}><img key='spec_value_{spec_value_id}' class='spec_sel' src='{spec_image_src}' alt='{spec_value}'/></li>";
+
+    var PRO_TPL = '<{$pro_tmpl|replace:"
+":""}>';
+    var data= [];
+    <{foreach from=$goods.product item=aproduct name=pro}>
+        data[<{$smarty.foreach.pro.iteration-1}>] = <{$aproduct|json_encode}>;
+    <{/foreach}>
+
+var checkProSpec=function(pager,checked,unchecked){
+    var hasPspecid=[];
+    pager.data.each(function(d,i){
+        var state=unchecked.every(function(v,k){return d[k]==v;});
+        if(state)hasPspecid.include(d[checked]);
+    });
+    return hasPspecid;
+};
+
+
+var setValue=function(d,v){
+    d['spec_value_'+v[0]]=v[1];
+    if($H(spec_desc).get('spec')[v[0]]['spec_type'] == 'image' ){
+        if(option=spec_desc['spec'][v[0]]['option'][v[3]] ){
+
+               if(option['spec_image'] ){
+                    if( specImageHash.get(option['spec_image']) ){
+                        d['spec_value_desc_'+v[0]] = '<img src="'+specImageHash.get(option['spec_image'])+'--" alt="'+ d['spec_value_'+v[0]]+'ggg333" width="20" height="20"/>';
+                    }else{
+                        d['spec_value_desc_'+v[0]] = '<img src="'+specTmplImageHash.get(option['spec_image'])+'--" alt="'+ d['spec_value_'+v[0]]+'ggg333" width="20" height="20"/>';
+                    }
+                }else{
+                    d['spec_value_desc_'+v[0]] = '<img src="<{$spec_default_pic|storager}>" width="20" height="20"/>';
+                }
+
+        }
+    }else{
+        d['spec_value_desc_'+v[0]] = v[1];
+    }
+    d['spec_value_id_'+v[0]]=v[2];
+    if( d['spec_desc'] ){
+        d['spec_desc']['spec_value'][v[0]]=v[1];
+        d['spec_desc']['spec_value_id'][v[0]]=v[2];
+        d['spec_desc']['spec_private_value_id'][v[0]]=v[3];
+    }
+    d['spec_private_value_id_'+v[0]]=v[3];
+    d['spec_html']=spec_html.substitute(d);
+}
+
+var selectSpecValue =function(pager){
+    var selValue = this;
+    var selBox=this.getNext();
+    var selDom = selBox.getElement('ul');
+    if($type($('productNode').retrieve('ts'))=='element'&&$('productNode').retrieve('ts')!=selBox){
+           $('productNode').retrieve('ts').hide().retrieve('sv').removeClass('goods-spec-select');
+    }
+    
+    if(this.hasClass('goods-spec-select')){
+        selBox.hide();
+        return this.removeClass('goods-spec-select');
+    }
+    var sI = $('gEditor').retrieve('specInfo',$H(spec_desc.get('spec')));
+    var selSpecHtml='',ssid = this.get('specid');
+    selValue.addClass('goods-spec-select');
+
+    var tSpec = $H(sI.get(ssid));
+    $H(tSpec.get('option')).each(function(tsi,psid){
+        tsi =$H(tsi);
+        tsi['private_spec_value_id'] = psid;
+        if (tSpec.get('spec_type') == 'text'){
+            selSpecHtml += _li_text.substitute(tsi);
+        }else{
+            if( tsi['spec_image'] ){
+                if( specImageHash.get(tsi['spec_image']) ){
+                    tsi['spec_image_src'] = specImageHash.get(tsi['spec_image']);
+                }else{
+                    tsi['spec_image_src'] = specTmplImageHash.get(tsi['spec_image']);
+                }
+            }else{
+                tsi['spec_image_src'] = '<{$spec_default_pic|storager}>';
+            }
+            selSpecHtml += _li_img.substitute(tsi);
+        }
+    });
+    var unChecked=new Hash(),thisPspecid;
+    var unipt=this.getParent('tr').getElements('.select-spec-unselect[specid!='+ssid+']').getNext('input[key^=spec_value_id]');
+    unipt.each(function(el){unChecked.set(el.get('key'),el.value);});
+    thisPspecid=this.getNext('input[key^=spec_private_value_id]').get('key');
+    var filterPspecid=checkProSpec(pager,thisPspecid,unChecked);
+
+    selDom.set('html', selSpecHtml);
+    selDom.getElements('li').each(function(cli){
+        if(filterPspecid.contains(cli.get('specpvid'))){
+            return cli.addClass('noclick');
+        }
+        cli.addEvent('click',function(e){
+            selValue.getElement('span').set('html',this.get('html'));
+            if(selValue.getElement('img')){
+                selValue.getNext('input[key^=spec]').set('value',this.getElement('img').get('alt'));
+                var tvalue=this.getElement('img').get('alt');
+            }else{
+                selValue.getNext('input[key^=spec]').set('value',this.get('text'));
+                var tvalue=this.get('text');
+            }
+            selValue.getNext('input[key^=spec_private_value_id]').set('value',this.get('specpvid'));
+            selValue.getNext('input[key^=spec_value_id]').set('value',this.get('specvid'));
+            selDom.empty();
+            selBox.hide();
+            selValue.removeClass('goods-spec-select');
+            selValue.addClass('goods-spec-selected');
+
+            var pid=selDom.getParent('tr').get('product_id');
+            var specpvid=this.get('specpvid');
+            var specvid=this.get('specvid');
+            var specid=selValue.get('specid');
+            pager.data.each(function(d){
+                if(d[pager.PRIMARY_ID]==pid){
+                 setValue(d,[specid,tvalue,specvid,specpvid]);
+                }
+            });
+
+            var d=pager.selectData(pid);
+            selValue.getAllNext('input[type=hidden]').each(function(ipt){
+                d[ipt.get('key')]=ipt.value;
+            });
+        });
+    });
+    
+    var selBoxStyls={'position':'absolute','left':this.getPosition($('main')).x,'zIndex':65535};
+    if(window.webkit){$extend(selBoxStyls,{'top':this.getPosition().y+25});}
+
+    selBox.setStyles(selBoxStyls).show().store('sv',selValue);
+    $('productNode').store('ts',selBox);
+    document.body.addEvent('click',function(e){
+        var target=$(e.target);
+        if(!$('productNode')||!$('productNode').retrieve('ts'))return;
+        if(!target.getParent('.goods-spec-select')&&!target.getParent('.select-spec-value')){
+                var selBox=$('productNode').retrieve('ts').hide();
+                selBox.retrieve('sv').removeClass('goods-spec-select');
+                this.removeEvent('click',arguments.callee);
+        }
+   });
+};
+
+	var spec_html='<{foreach from=$mLevels item=mlv}><input tname="goods[product][_PRIMARY_][price][member_lv_price][<{$mlv.member_lv_id}>]" lv_id="<{$mlv.member_lv_id}>" key="member_lv_price_<{$mlv.member_lv_id}>" value="<{if $mlv.custom=='true'}>{member_lv_price_<{$mlv.member_lv_id}>}<{/if}>" type="hidden"/><{/foreach}>\
+	<{foreach from=$goods.spec item=spec}><td><div class="select-spec-unselect goods-spec-selected" specid="<{$spec.spec_id}>"><span class="spec_sel" key="spec_value_<{$spec.spec_id}>">{spec_value_<{$spec.spec_id}>}</span></div>\
+	<div class="select-spec-value" style="display:none"><ul class="goods-spec-box" style="width:200px;"></ul></div>\
+	<input type="hidden" key="spec_value_<{$spec.spec_id}>" tname="goods[product][_PRIMARY_][spec_desc][spec_value][<{$spec.spec_id}>]" value="{spec_value_<{$spec.spec_id}>}"/>\
+	<input type="hidden" key="spec_private_value_id_<{$spec.spec_id}>" tname="goods[product][_PRIMARY_][spec_desc][spec_private_value_id][<{$spec.spec_id}>]" value="{spec_private_value_id_<{$spec.spec_id}>}"/>\
+	<input type="hidden" key="spec_value_id_<{$spec.spec_id}>" tname="goods[product][_PRIMARY_][spec_desc][spec_value_id][<{$spec.spec_id}>]" value="{spec_value_id_<{$spec.spec_id}>}"/></td><{/foreach}>'
+     var disableData=$A(data);
+	
+     data=data.length?data:$('gEditor').retrieve('_data');
+     var sort=['bn'],hsspec=$('goods-spec').retrieve('hsspec',$H());
+     
+     var pager=new PageData(PRO_TPL,data,{pageNum:10,'updateMain':$('productNode'),'format':function(d){
+        if( d['price'] ){
+            d['cost']= d['cost']||(d['price']['cost']?d['price']['cost']['price']:0);
+            $H(d['price']['member_lv_price']).each(function(v,i){
+                d['member_lv_price_'+i]=(v['custom']=='true'?v['price']:'');
+            });
+            d['mktprice']= d['mktprice']||(d['price']['mktprice']?d['price']['mktprice']['price']:0);
+            d['price']= d['price']['price']?d['price']['price']['price']:d['price'];
+        }else{
+             d['product_id'] ='new_'+(newProI++);
+         }
+            if(d['spec_desc']){
+                $H(d['spec_desc']).each(function(v,spec_desc_k){
+                    $H(v).each(function(sv,g_spec_id){d[spec_desc_k+'_'+g_spec_id] = sv});
+                });
+            }
+
+            d['status'] = (d['status']!='false')?'true':'false';
+            d['spec_html'] =spec_html.substitute(d);
+
+            return d;
+       },'onHide':function(){
+            $('productNode').eliminate('ts');
+       },'onShow':function(){
+            var _this=this;
+            $$('#productNode .pro-marketable-check').each(function(el,i){
+                if(el.get('status')!='true')el.removeProperty('checked')
+            });
+            $$('#productNode .select-spec-unselect').removeEvents('click').addEvent('click',function(e){
+                    selectSpecValue.call(this,_this);
+            });
+            $$('#productNode input[key]').removeEvents('change').addEvent('change',function(e){
+                    var pid=this.getParent('tr').get('product_id');
+                    _this.editData(pid,[this.get('key'),this.get('type')=='checkbox'?this.checked:this.value]);
+            });
+            $$('#productNode .operater').setStyle('cursor','pointer').addEvent('click',function(e){
+                    var chanChange = this.getParent('tr').get('canChange');
+                    if (chanChange == 'false')
+                    {
+                        this.value = this.get('p-bn');
+                        alert('此货品已有库存或已有订单，不能删除！');return;
+                    }
+
+                    var pid=this.getParent('tr').get('product_id');
+                    if(confirm('删除后货品数据将不能恢复，确认删除本行？'))
+                    _this.delData(pid);
+            });
+
+            $$('#productNode .edit').setStyle('cursor','pointer').addEvent('click',function(e){
+                 var pid=this.getParent('tr').get('product_id');
+                 var member_lv=this.getParent('tr').getElements('input[key^=member_lv_price]');
+                 var info='';
+                 var d=pager.selectData(pid);
+                 member_lv.each(function(v,i){
+                        var vl=d['member_lv_price_'+v.get('lv_id')]||'';
+                        info+='&level['+v.get('lv_id')+']='+vl;
+                });
+                 window.fbox= new Dialog('index.php?app=ome&ctl=admin_goods_editor&act=set_mprice',{ajaxoptions:{data:info,method:'post'},modal:true});
+                 window.fbox.onSelect=function(arr){
+                     arr.each(function(el,i){
+                          member_lv[i].value=el.value;
+                         _this.editData(pid,['member_lv_price_'+el.name,el.value]);
+                     });
+                 }
+            });
+
+			$ES('#productNode .spec_sel').each(function(d){
+				if(!d.get('html').trim().length)d.set('text','请选择');
+			});
+			if(disableData){
+				/*var _is_use = false;
+				var patrn = /^[\d]+/;
+				$ES('#productNode tr').each(function(t,i){
+					disableData.each(function(d,v){
+						if( d.product_id == t.get('product_id') && null != patrn.exec(t.get('product_id')) ){
+							if(d.is_use){
+								t.getElement('input').disabled=true;
+	                            t.getElements('td img').getParent('td').set('html','-');
+	                            _is_use = true;
+						    }
+						}
+					});
+
+                });
+                if(_is_use){
+                    $E('#gEditor .goods-spec-cell .closespec').addClass('ome-stock-disabled');
+                    $E('#gEditor .goods-spec-cell .closespec').removeEvents('click');
+                    $E('#gEditor .goods-spec-cell .selectspec').addClass('ome-stock-disabled');
+                    $E('#gEditor .goods-spec-cell .selectspec').removeEvents('click');
+                }*/
+			}
+
+			/*隐藏联动 BEGIN*/
+			$$('#productNode .pro-visibility-check').removeEvents('change').addEvent('change',function(){
+				    var pid=this.getParent('tr').get('product_id');
+                    _this.editData(pid,[this.get('key'),this.checked ? 'false' : 'true']);
+			});
+			$E("#gEditor input[name='goods[visibility]']").addEvent('click',function(){
+				if(this.checked){
+					$$('#productNode .pro-visibility-check').setProperty('checked','checked');
+				}else{
+					$$('#productNode .pro-visibility-check').removeProperty('checked');
+				}
+				$$('#productNode .pro-visibility-check').fireEvent('change');
+			});
+            $$('#productNode .pro-visibility-check').each(function(el,i){
+                if(el.get('status')!='false')el.removeProperty('checked')
+            });
+			/*隐藏联动 END*/
+            $$('#productNode input[key="bn"]').addEvents({
+                'change':function(){
+                    var chanChange = this.getParent('tr').get('canChange');
+                    if (chanChange == 'false')
+                    {
+                        this.value = this.get('p-bn');
+                        alert('此货品已有库存或已有订单，不能修改！');
+                    }
+                }
+            });
+            /*货号加事件*/
+
+       }
+       });
+
+       
+	<{if $needUpValue}>
+		$H(<{$needUpValue}>).each(function(pvid){
+		   var pvid = $H(pvid),data= $('gEditor').retrieve('_data',[]);
+           var vid=pvid.get('specpvid'),id = pvid.get('specid');
+            data.each(function(d){
+                  var pd=spec_desc['spec'][id]['option'][vid];
+				  if(d['spec_private_value_id_'+id]==vid){
+				     setValue(d,[id,pd['spec_value'],pd['spec_value_id'],pd['private_spec_value_id']]);
+				 }
+            });
+		});
+		pager.goPage(1);
+		$('gEditor').store('specInfo',$H(spec_desc.get('spec')));
+	<{/if}>
+  
+    	 
+    	$$('#productNodeTitle th').setStyle('cursor','pointer').addEvent('click',function(e){
+    	        //    pager.sort(this.get('orderkey'),this);
+    	 });
+
+    	 $$('#gEditor .goods-spec-cell .addproduct').removeEvents('click').addEvent('click',function(e){
+    	   pager.addData();
+           /*增加规格，隐藏取消 BEGIN*/
+           $E("#gEditor input[name='goods[visibility]']").removeProperty('checked');
+           $$('#productNode .pro-visibility-check').removeProperty('checked').fireEvent('change');
+           /*增加规格，隐藏取消 END*/
+    	 });
+
+    	  if( $E('#goods-spec-product .selectspec ') ){
+    	              $E('#goods-spec-product .selectspec ').addEvent('click',function(e){
+    	                    $('gEditor').store('_data',pager.data);
+    	              });
+    	  }
+    	  $('productNode').retrieve('specOBJ',pager);
+        /*$('productNode').appendChild(pager.toHideInput($('productNode').getElement('tr')));*/
+        
+})();
+</script>

@@ -1,0 +1,192 @@
+      <h4>销售单中的商品</h4>
+      <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+              <thead>
+                <tr>
+                  <th><{t}>选择<{/t}></th>
+                  <th><{t}>货号<{/t}></th>
+                  <th><{t}>商品名称<{/t}></th>
+                  <th><{t}>价格<{/t}></th>
+                  <th><{t}>剩余数量<{/t}></th>
+                  <th><{t}>申请数量<{/t}></th>
+                  <{if $branch_mode!='single'}>
+                  <th><{t}>仓库<{/t}></th>
+                  <{/if}>
+                </tr>
+              </thead>
+              <{foreach from=$items item=aGoods name="item" key=key}>
+              <{if $aGoods.sendnum > '0'}>
+              <input type="hidden" name="change[goods_name][<{$aGoods.bn}>]" value="<{$aGoods.name}>">
+              <input type="hidden" name="change[product_id][<{$aGoods.bn}>]" value="<{$aGoods.product_id}>">
+              <input type='hidden' id='effective<{$aGoods.bn}>' name='change[effective][<{$aGoods.bn}>]' value='<{$aGoods.effective}>'>
+              <tbody>
+                <tr id=s<{$aGoods.bn}>>
+                  <td>
+                    <{if $aGoods.effective>0}><input type="checkbox" shouhou="change" id="goods_bn" name="change[goods_bn][]" value='<{$aGoods.bn}>'><{/if}></td>
+                  <td><{$aGoods.bn}></td>
+                  <td><{$aGoods.name|visibility:$aGoods.product_id}> </td>
+                  <td><{$aGoods.price|cur}></td>
+                  <td><{$aGoods.effective}></td>
+                  <td><{if $aGoods.effective>0}><input type='text' id='num<{$aGoods.bn}>' name='change[num][<{$aGoods.bn}>]' value='<{$aGoods.effective}>' size='6'><{/if}></td>
+
+                  <{if $branch_mode=='single'}> 
+                  <{$aGoods.branch.0.branch_name}>                  
+                  <input type="hidden" value="<{$aGoods.branch.0.branch_id}>" />
+                  <input type="hidden" value="<{$aGoods.bn}>" />
+                  <input name="change[branch_id][<{$aGoods.bn}>]" type="hidden" value="<{$aGoods.branch.0.branch_id}>"/>
+                  <span id="canpay<{$aGoods.bn}>"></span>
+                  <{else}>
+                  <td>
+                    <{foreach from=$aGoods.branch item=branch key=keys}>
+                    <input name="change[branch_id][<{$aGoods.bn}>]" type="hidden" value="<{$branch.branch_id}>" class="x-pdt-chk-<{$aGoods.bn}>"/><{$branch.branch_name}>
+                    <{/foreach}>
+                    <span id="canpay<{$aGoods.bn}>"></span>
+                  </td>
+                  <{/if}>
+                </tr>
+              </tbody>
+              <{/if}>
+              <{/foreach}>
+              <input type="hidden" name="total_change_filter" value="<{$total_change_filter}>">
+      </table>
+          <h4><{button label="新增换出商品" id="change-find-btn" rtype="change" }></h4>
+             <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+                <thead>
+                  <tr>
+                    <th style="width:30px;">操作</th>
+                    <th><{t}>货号<{/t}></th>
+                    <th><{t}>商品名称<{/t}></th>
+                    <th><{t}>价格<{/t}></th>
+                    <th><{t}>剩余数量<{/t}></th>
+                    <th><{t}>申请数量<{/t}></th>
+                    <{if $branch_mode!='single'}>
+                    <th><{t}>仓库<{/t}></th>
+                    <{/if}>
+                </tr>
+                </thead>
+                <tbody id="dataNode_change">
+                </tbody>
+             </table>       
+
+<script>
+
+function visibility(e){
+  var visiTips = new Tips({
+      onShow:function(tip,el){
+        el.addClass('active');
+        tip.setStyle('display','block');
+      },
+      text: function(element){
+        if(element.get('visibility')=='false'){
+          return '隐藏商品';
+        }else{
+          return '';
+        }
+      }
+    });
+
+    var e  = new Event(e), el = e.target;
+    if (el.get('visibility')=='false')
+    {
+      visiTips.attach(el);
+      el.addEvent('mouseleave',function(){
+        el.removeClass('active');
+      });
+      el.fireEvent('mouseenter',e);
+    }
+}
+
+
+</script>
+
+<script>
+    var store_change = [];
+
+    var tpl_change='<tr key="{product_id}" id="product_{product_id}" ><td><{img src="bundle/delecate.gif" app="desktop" alt="删除" key="state" class="pointer btn-delete-item"}></td>'+
+        '  <td>{bn}</td><td class="product-name" visibility="{visibility}">{name}<input type="hidden" name="{type}[product][name][{bn}]" value="{name}"></td><td><input type="text" vtype="number&amp;&amp;required"  tname="pr[_PRIMARY_]" key="price" value="{price}" name="{type}[product][price][{bn}]" size="8">元</td><td id="sale_store_{bn}">{sale_store}</td><input name="{type}[product][sale_store][{bn}]" id="product_sale_store_{bn}" type="hidden" value="{sale_store}">'+
+    '  <td><input type="text" value="{num}" key="num" name="{type}[product][num][{bn}]" vtype="unsigned&amp;&amp;required" tname="at[_PRIMARY_]" size="6"></td>'+
+        '  <td>{branch_info}</td><input type="hidden" name="{type}[product][product_id][{bn}]" value="{product_id}"><input type="hidden" name="{type}[product][bn][]" value="{bn}">'+
+        '</tr>';
+
+
+    $('change-find-btn').addEvent('click',function(e){
+       add_Product();
+    });
+
+    function add_Product(){ 
+
+        var rtype = $('change-find-btn').get('rtype');
+        if(rtype == 'return'){
+           filter = $ES('input[name=total_return_filter]').getValue();
+        }else{
+           filter = $ES('input[name=total_change_filter]').getValue();
+        }
+        var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_return_rchange&act=getGoods&p[0]='+filter);
+        var callurl='index.php?app=ome&ctl=admin_return_rchange&act=getProducts&type='+rtype;
+        Ex_Loader('modedialog',function() {
+        new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:660,
+          onCallback:function(rs){
+            if(!rs)return;
+            rs=JSON.decode(rs);
+            init(rs);
+          }
+        });
+      });
+
+    }
+    function init(rs){
+      var tmparr=findProduct(rs,'product_id',store_change);
+       store_change.unshift.apply(store_change,tmparr.reverse());
+       createProduct(store_change);           
+    }
+    
+     function findProduct(arr,PRIMARY,obj){
+        if(!store_change.length)return arr;
+        store_change.each(function(a){
+            arr.each(function(b){
+                if(a[PRIMARY]==b[PRIMARY]){
+                  arr.erase(b);
+                }
+            });
+        });
+        return arr;
+    }
+    function delProduct(obj,arr){
+        arr.each(function(d){obj.delData(d);});
+    } 
+
+    var pag;  
+    function createProduct(data){
+      var type = 'dataNode_change';
+      pag=new PageData(tpl_change,data,{'updateMain':$(type),'pageNum':10000,
+        'onShow':function(){
+                var _this=this;
+                $$('#'+type+' tr').each(function(item,i){
+                    item.getElement('.btn-delete-item').addEvent('click',function(e){
+                        e.stop();
+                        if(_this.selectData(item.get('key')) && confirm('确定要删除 '+ _this.selectData(item.get('key'))['name'] +' 吗？')){
+                          _this.delData(item.get('key'));
+                        }
+                    });
+                });
+      }
+      });  
+    }
+
+function choose_branch(obj,branch_id,product_id){
+    var request = new Request({
+       url : 'index.php?app=ome&ctl=admin_return_rchange&act=ajax_showStore',
+       method : 'post',
+       data : 'branch_id='+branch_id+'&product_id='+product_id,
+       onComplete : function(rs){
+            var resp = JSON.decode(rs);
+
+            if(resp.res == 'succ'){
+              bn = obj.get('bn');
+              $('sale_store_'+bn).set('html',resp.msg);
+              $('product_sale_store_'+bn).set('value',resp.msg);
+            }
+       }
+    }).send();
+}
+
+</script>

@@ -1,0 +1,17 @@
+<desktop>
+
+	<workground name="单据报表" id="invoice_center"  order="900">
+       
+        <menugroup name="库存管理">
+            <menu controller='admin_iostocksearch' action='index' permission='iostock_search' display='true' order='1000400'>出入库明细</menu>
+        	<menu controller='admin_iostocksearch' action='index'  permission='iostock_search_export' display='false'>出入库明细导出</menu>
+        </menugroup>
+    </workground>
+
+    <permissions>
+       <!-- <permission id="branch_pos_added">货品上架</permission>-->
+        <permission id="iostock_search">出入库查询</permission>
+        <permission id="iostock_search_export">出入库明细导出</permission>
+    </permissions>
+
+</desktop>

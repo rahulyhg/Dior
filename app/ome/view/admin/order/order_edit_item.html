@@ -1,0 +1,19 @@
+<div id="present">
+  <!--  <table cellspacing="0" cellpadding="0" border="0" style="margin:5px 0;">
+    <tbody>
+      <tr>
+        <td class="fontcolorBlue fontbold font14px" >(<{$object_alias[$obj_type]|default:'普通商品'}>)</td>
+      </tr>
+    </tbody>
+  </table> -->
+
+  <div class="gridlist" >
+    <input type="hidden" name="item_list" value="<{$item_list_log}>">
+    <div id="datalist">
+    <{foreach from=$conf_list key=type item=conf}>
+        <{include app="{$conf.app}" file="{$conf.html}"}>
+    <{/foreach}>
+    </div>
+    <div style="text-align: right; line-height:30px;"><b>商品总金额:<span id="total"></span>元</b>&nbsp;&nbsp;<b>商品销售总金额:<span id="total_sale_amount"></span>元</b></div>
+  </div>
+</div>

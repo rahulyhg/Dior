@@ -1,0 +1,477 @@
+<services>
+
+    <service id="desktop_finder.ome_mdl_orders">
+        <class>ome_finder_orders</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_reship_refuse">
+        <class>ome_finder_reship_refuse</class>
+    </service>
+    
+    <service id="desktop_finder.ome_mdl_order_fail">
+        <class>ome_finder_order_fail</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_branch">
+        <class>ome_finder_branch</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_payments">
+        <class>ome_finder_payments</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_operation_log">
+        <class>ome_finder_operation_log</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_abnormal_type">
+        <class>ome_finder_abnormal_type</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_branch_pos">
+        <class>ome_finder_branch_pos</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_branch_product_pos">
+        <class>ome_finder_branch_product_pos</class>
+    </service>
+	<service id="desktop_finder.ome_mdl_branch_product">
+        <class>ome_finder_branch_product</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_dly_corp">
+        <class>ome_finder_dly_corp</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_payment_cfg">
+        <class>ome_finder_payment_cfg</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_print_tmpl">
+        <class>ome_finder_print_tmpl</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_refunds">
+        <class>ome_finder_refunds</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_refund_apply">
+        <class>ome_finder_refund_apply</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_return_product_problem">
+        <class>ome_finder_return_product_problem</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_return_product">
+        <class>ome_finder_return_product</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_delivery">
+        <class>ome_finder_delivery</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_delivery_outerlogi">
+        <class>ome_finder_delivery</class>
+    </service>
+    
+    <service id="desktop_finder.ome_mdl_groups">
+        <class>ome_finder_groups</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_products">
+        <class>ome_finder_products</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_reship">
+        <class>ome_finder_reship</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_shop">
+        <class>ome_finder_shop</class> 
+    </service>
+        <service id="desktop_finder.ome_mdl_goods"> 
+        <class orderby="10">ome_finder_goods</class>
+    </service>
+        <service id="desktop_finder.ome_mdl_brand">
+        <class>ome_finder_brand</class>
+    </service>
+        <service id="desktop_finder.ome_mdl_goods_type">
+        <class>ome_finder_gtype</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_specification">
+        <class>ome_finder_specification</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_api_log">
+        <class>ome_finder_api_log</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_return_iostock">
+        <class>ome_finder_return_iostock</class>
+    </service>
+    
+    <service id="desktop_finder.ome_mdl_tbgift_goods">
+        <class>ome_finder_tbgift_goods</class>
+    </service>
+    
+    <service id="view_compile_helper">
+        <class>ome_view_compiler</class>
+    </service>
+
+    <service id="ome_goods_list_apps">
+        <class>ome_goods_list</class>
+    </service>
+
+    <service id="ome_goods_filter_apps">
+        <class>ome_goods_filter</class>
+    </service>
+    <service id="ome_jsonrpc">
+        <class>ome_rpc_request</class>
+    </service>
+    <service id="api.ome.gift">
+        <class>ome_rpc_response_gift</class>
+    </service>
+    <service id="api.ome.order">
+        <class>ome_rpc_response_order</class>
+    </service>
+    <service id="api.ome.refund">
+        <class>ome_rpc_response_refund</class>
+    </service>
+    <service id="api.ome.payment">
+        <class>ome_rpc_response_payment</class>
+    </service>
+    <service id="api.ome.aftersale">
+        <class>ome_rpc_response_aftersale</class>
+    </service>
+	<service id="api.ome.aftersalev2">
+        <class>ome_rpc_response_aftersalev2</class>
+    </service>
+    <service id="api.ome.taoda.order">
+        <class>ome_rpc_response_taoda_order</class>
+    </service>
+    <service id="api.ome.taoda.delivery">
+        <class>ome_rpc_response_taoda_delivery</class>
+    </service>
+    <service id="api.ome.taoda.product">
+        <class>ome_rpc_response_taoda_product</class>
+    </service>
+    <service id="openapi.ome.shop">
+        <class>ome_rpc_response_shop</class>
+    </service>
+   
+    <service id="api.ome.taobao.session">
+        <class>ome_rpc_response_taobao_session</class>
+    </service>
+
+    <service id="ome_group_type">
+        <class>ome_group_type</class>
+    </service>
+
+    <service id="operation_log">
+        <class>ome_operation_log</class>
+    </service>
+      <service id="system_setting">
+        <class>ome_system_setting</class>
+    </service>
+    <service id="desktop_view_helper">
+        <class>ome_view_helper</class>
+    </service>
+    <service id="autotask">
+        <class>ome_misc_task</class>
+    </service>
+    <service id="desktop.widgets">
+        <class>ome_desktop_widgets_waittask</class>
+    </service>
+    <service id="service.order">
+        <class>ome_service_order</class>
+    </service>
+    <service id="service.order.shopex_b2b">
+        <class>ome_service_shopex_b2b_order</class>
+    </service>
+    <service id="service.order.taobao">
+        <class>ome_service_c2c_taobao_order</class>
+    </service>    
+    <service id="service.aftersale">
+        <class>ome_service_aftersale</class>
+    </service>
+    <service id="service.payment">
+        <class>ome_service_payment</class>
+    </service>
+    <service id="service.refund">
+        <class>ome_service_refund</class>
+    </service>
+	<service id="service.refundapply">
+        <class>ome_service_refund_apply</class>
+    </service>
+    <service id="service.reship">
+        <class>ome_service_reship</class>
+    </service>
+    <service id="service.delivery">
+        <class>ome_service_delivery</class>
+    </service>
+    <service id="service.delivery.shopex_b2b">
+        <class>ome_service_shopex_b2b_delivery</class>
+    </service>
+    <service id="service.stock">
+        <class>ome_service_stock</class>
+    </service>
+    <service id="service.shop">
+        <class>ome_shop</class>
+    </service>
+    <service id="ome.service.order.sdfdata">
+        <class>ome_order_order</class>
+    </service>
+    <service id="ome.service.iostock_sales">
+        <class>ome_iostocksales</class>
+    </service>
+    <service id="ome.service.template">
+        <class>ome_service_template</class>
+    </service>
+    <service id="ome.service.getbranchview">
+        <class>ome_service_branchview</class>
+    </service>
+    <service id="ome.service.order.objtype.pkg">
+        <class>ome_service_objtype_pkg</class>
+    </service>
+    <service id="ome.service.order.remain.pkg">
+        <class>ome_service_order_remain_pkg</class>
+    </service>
+    <service id="ome.service.order.remain.goods">
+        <class>ome_service_order_remain_goods</class>
+    </service>
+    <service id="ome.service.order.remain.gift">
+        <class>ome_service_order_remain_gift</class>
+    </service>
+    <service id="ome.service.order.remain.giftpackage">
+        <class>ome_service_order_remain_giftpackage</class>
+    </service>
+    <service id="ome.service.order.object.diff.pkg">
+        <class>ome_service_order_object_pkg</class>
+    </service>
+    <service id="ome.service.order.object.diff.goods">
+        <class>ome_service_order_object_goods</class>
+    </service>
+    <service id="ome.service.order.object.diff.gift">
+        <class>ome_service_order_object_gift</class>
+    </service>
+    <service id="ome.service.order.object.diff.giftpackage">
+        <class>ome_service_order_object_giftpackage</class>
+    </service>
+    <service id="ome.service.order.edit">
+        <class>ome_service_order_edit</class>
+    </service>
+    <service id="ome.service.order.edit.goods">
+        <class>ome_service_order_edit_goods</class>
+    </service>
+    <service id="ome.service.order.edit.pkg">
+        <class>ome_service_order_edit_pkg</class>
+    </service>
+    <service id="ome.service.order.edit.giftpackage">
+        <class>ome_service_order_edit_giftpackage</class>
+    </service>
+    <service id="ome.service.order.edit.gift">
+        <class>ome_service_order_edit_gift</class>
+    </service>
+    <service id="ome.service.order.confirm">
+        <class>ome_service_order_confirm</class>
+    </service>
+    <service id="ome.service.order.products">
+        <class>ome_service_order_products</class>
+    </service>
+    <service id="ome.service.order.sales.pkg">
+        <class>ome_service_order_sales_pkg</class>
+    </service>
+    <service id="ome.service.order.sales.giftpackage">
+        <class>ome_service_order_sales_giftpackage</class>
+    </service>
+    <service id="ome.service.delivery.bindkey">
+        <class>ome_service_delivery_bindkey</class>
+    </service>
+    <service id="tpl_source.messenger_ome">
+        <class>ome_messenger_tmpl</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_orders">
+        <class>ome_finder_extend_filter_orders</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_payments">
+        <class>ome_finder_extend_filter_payments</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_refunds">
+        <class>ome_finder_extend_filter_refunds</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_delivery">
+        <class>ome_finder_extend_filter_delivery</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_reship">
+        <class>ome_finder_extend_filter_reship</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_return_product">
+        <class>ome_finder_extend_filter_return_product</class>
+    </service>
+   <service id="extend_filter_ome_mdl_return_product_problem">
+        <class>ome_finder_extend_filter_return_product_problem</class>
+    </service>
+    
+    
+    <service id="extend_filter_ome_mdl_branch_product_pos">
+        <class>ome_finder_extend_filter_branch_product_pos</class>
+    </service>
+
+
+    <service id="extend_filter_ome_mdl_products">
+        <class>ome_finder_extend_filter_products</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_refund_apply">
+        <class>ome_finder_extend_filter_refund_apply</class>
+    </service>
+
+    <service id="extend_filter_ome_mdl_payment_cfg">
+        <class>ome_finder_extend_filter_payment_cfg</class>
+    </service>
+
+    <service id="get_todo_row">
+        <class>ome_desktop_widgets_service_tody</class>
+        <class>ome_desktop_widgets_service_order</class>
+        <class>ome_desktop_widgets_service_delivery</class>
+<!--        <class>ome_desktop_widgets_service_aftersale</class>-->
+        <class>ome_desktop_widgets_service_apilog</class>
+    </service>
+
+    <service id="ome.product">
+        <class>ome_goods_product</class>
+    </service>
+
+    <service id="service.ome.csm_data">
+        <class>ome_rpc_request_csm_data</class>
+    </service>
+
+    <service id="desktop_controller_content.desktop.default.index">
+        <class>ome_hijack_desktopdefaultindex</class>
+    </service>
+
+    <service id="ome_shop_relation">
+        <class>ome_shop_relation</class>
+    </service>
+
+    <service id="data_clear">
+        <class>ome_service_data_clear</class>
+    </service>
+
+    <service id="ome.iostock">
+        <class>ome_iostock</class>
+    </service>
+
+    <service id="ome.sales">
+        <class>ome_sales</class>
+    </service>
+    
+     <service id="ome.return_process">
+        <class>ome_return_process</class>
+    </service>
+    
+    <service id="extend_filter_ome_mdl_supply_product">
+        <class>ome_finder_extend_supply_product</class>
+    </service>
+    
+    <service id="desktop_finder.ome_mdl_supply_product">
+        <class>ome_finder_supply_product</class>
+    </service>
+    
+     <service id="ome.service.order.index.action_bar">
+        <class>ome_service_order_index_actionbar</class>
+    </service>
+    
+     <service id='api_login'>
+        <class>ome_service_login</class>
+    </service>
+    
+    <service id="desktop_finder.ome_mdl_api_stock_log">
+        <class>ome_finder_api_stock</class>
+    </service>
+     <service id="desktop_finder.ome_mdl_order_groupon">
+        <class>ome_finder_order_groupon</class>
+    </service>
+    
+    <service id="desktop_menu">
+        <class>ome_desktop_validity</class>
+    </service>
+
+    <service id="tpl_source.print_otmpl">
+        <class>ome_print_otmpl</class>
+    </service>
+
+    <service id="desktop_finder.ome_mdl_print_otmpl">
+        <class>ome_finder_print_otmpl</class>
+    </service>
+
+    <service id="view_helper">
+        <class>ome_view_helper2</class>
+    </service>  
+	 <service id="extend_filter_ome_mdl_branch_product">
+        <class>ome_finder_extend_filter_branch_product</class>
+    </service>
+	<service id="extend_filter_ome_mdl_branch_pos">
+        <class>ome_finder_extend_filter_branch_pos</class>
+    </service>
+    <service id="extend_filter_ome_mdl_product_serial">
+        <class>ome_finder_extend_filter_product_serial</class>
+    </service>
+	<!--缺货订单-->
+	<service id="extend_filter_ome_mdl_order_lack">
+        <class>ome_finder_extend_filter_order_lack</class>
+    </service>
+	<service id="desktop_finder.ome_mdl_order_lack">
+        <class>ome_finder_order_lack</class>
+    </service>
+		<!--缺货订单-->
+	<service id="desktop_finder.ome_mdl_print_tag">
+        <class>ome_finder_print_tag</class>
+    </service>
+    <service id="desktop_finder.ome_mdl_print_tag">
+        <class>ome_finder_print_tag</class>
+    </service>
+    <service id="desktop_finder.ome_mdl_extrabranch">
+        <class>ome_finder_extrabranch</class>
+    </service>
+	<service id="desktop_finder.ome_mdl_return_batch">
+        <class>ome_finder_return_batch</class>
+    </service>
+	<service id="desktop_finder.ome_mdl_product_serial">
+        <class>ome_finder_product_serial</class>
+    </service>
+
+    <!-- 操作日志Start -->
+    <service id="extend_filter_ome_mdl_operation_log">
+        <class>ome_finder_extend_filter_operation_log</class>
+    </service>
+    <!-- 操作日志End -->
+    
+    <!-- 发货单状态回写 -->
+    <!--<service id="desktop_finder.ome_mdl_delivery_sync">-->
+    <!--    <class>ome_finder_delivery_synclist</class>-->
+    <!--</service>-->
+    
+    <!-- 复审订单Start -->
+    <service id="desktop_finder.ome_mdl_order_retrial">
+        <class>ome_finder_order_retrial</class>
+    </service>
+    <!-- 复审订单志End -->
+   
+    <service id="desktop_finder.ome_mdl_return_fail">
+        <class>ome_finder_return_fail</class>
+    </service>
+
+    <service id="desktop.cert.check">
+        <class>ome_cert_certcheck</class>
+    </service>
+</services>
+

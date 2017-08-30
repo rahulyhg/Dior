@@ -1,0 +1,14 @@
+<desktop>	
+    <!--<workground name="仓储" id="storage_center" order="700">
+		<menugroup name="调拨管理">
+            <menu controller='admin_appropriation' action='index' permission='storage_appropriation' display='true' order='4000100'>调拨单</menu>
+        </menugroup>
+	</workground> 
+
+ 
+	<permissions>
+        <permission id="storage_appropriation" show='ome_roles:show_branch' save='ome_roles:save_role'>调拨单</permission>
+
+    </permissions>
+-->
+</desktop>

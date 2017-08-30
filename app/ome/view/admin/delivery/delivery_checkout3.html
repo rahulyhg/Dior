@@ -1,0 +1,206 @@
+<style>
+    .goods_lists th {font-size: 1.8em; text-align: left;padding-left: 15px; border-bottom-width: 2px;border-bottom-color: #CCCCCC;border-bottom-style: solid;}
+    .goods_lists td {font-size: 1.5em; text-align: left;padding-left: 15px; border-bottom-width: 1px;border-bottom-color: #CCCCCC;border-bottom-style:dashed;}
+</style>
+<script>
+function checkmemo(){
+    var dly_id = $('dly_id').value;
+    var refresh_url = 'index.php?app=ome&ctl=admin_check&act=index&type=all';
+    new Dialog('index.php?ctl=admin_pick&act=setCheckFail&app=tgkpi&id='+dly_id+'&rurl='+encodeURIComponent(refresh_url),{width:450,height:240,title:'校验失败备注'});
+}
+</script>
+<div id ="chkContent" class="spage-main-box">
+    <!--
+    <span  style="padding-left: 10px; font-size: 2.5em;font-weight: 700;">在包裹<{$logi_no}>中共有 
+        <em class="count" style="font-weight:700;font-size:2.5em;color: green;"><{$goodsNum}></em> 种 
+        <em class="count" style="font-weight:700;font-size:2.5em;color: red;"><{$count}></em> 件货品：</span>
+    -->
+    <br>
+    <form name="form1" id="form1" method="POST" action="index.php?app=ome&ctl=admin_consign&act=doCheckDelivery" style="padding-top: 10px;">
+        <table border="0" cellspacing="0" cellpadding="0" class="goods_lists">
+        	<tr>
+                <td width="55px">&nbsp;</td>
+                <td><span id="error" style="color:red; font-weight:bold; font-size:14px;display:none" class="error" ></span></td>
+		     </tr>
+            <!--GOODSINOF_BEGIN-->
+            <tr style="height:40px;">
+                <th width="150px" ><span>货号</span></th>
+                <th ><span>货品名称</span></th>
+                <th ><span>货品规格</span></th>
+                <th width="150px"><span>货品数量</span></th>
+            </tr>
+            <tbody>
+                <{foreach from=$items item=item}>
+                <tr id="_<{$item.barcode}>" style="height:35px;">
+                    <td><{$item.bn}></td>
+                    <td><{$item.product_name}></td>
+                    <td><{if $item.spec_info}> <{$item.spec_info}> <{else}> - <{/if}></td>
+                    <td><span style=" font-weight: 900; color: red;"><{$item.number}></span></td>
+                </tr>
+                <{/foreach}>
+            </tbody>
+            <tr id="_<{$item.barcode}>" style="height:35px;">
+                <td colspan="4" style="text-align: right;border-bottom-width: 0px;"><div style="margin-top:27px; position: relative; float: left">校验人：<{$userName}> <{if $picktName}>&nbsp;&nbsp;捡货人：<{$picktName}><{/if}> 日期：<{$date}></div>合计共有货品 (<em class="count" style="font-weight:700;font-size:2.5em;color: green;"><{$goodsNum}></em>) 种 (<em class="count" style="font-weight:700;font-size:2.5em;color: red;"><{$count}></em>) 件&nbsp;&nbsp;</td>
+            </tr>
+            <!--GOODSINOF_END-->
+
+        </table>
+        <input type="hidden" id="dly_id" name="delivery_id" value="<{$dly.delivery_id}>" />
+        <input type="hidden" id="count" name="count" value="<{$count}>" />
+        <input type="hidden" id="number" name="number" value="<{$count}>" />
+        <input type="hidden" id="return" name="return" value="OK" />
+        <input type="hidden" id="checkType" name="checkType" value="<{$checkType}>" />
+        <input type="hidden" name="weight" value="<{$weight}>" />
+
+        <input type="hidden" name="logi_no"  id="logi_no"  value="<{$dly.logi_no}>"/>
+        <input type="hidden" name="check_delivery" value="<{$check_delivery}>"/>
+        <!-- <button type="button" onclick="new Dialog('index.php?app=ome&ctl=admin_check&act=showmemo&p[0]=<{$dly.delivery_id}>',{title:'打回发货单备注',width:600,height:500})" style="margin-top: 20px;margin-left: 50px;font-size:3.0em;font-weight: 700; height: 50px; width:200px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;"><span><span>终止发货</span></span></button> -->
+        <!--BUTTON_start-->
+        <div style="height:75px;">
+            <input type="text" value='' id="codeSubmit" style="width:0px;height:0px; border: 0px;"/>
+            
+             <button type="button" id="sendProduct2" style="margin-top: 20px; margin-left: 30px;font-size:3.0em;font-weight: 700; height: 50px; width:280px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>校验通过并发货</span></span></button>
+            &nbsp;&nbsp;&nbsp;
+            <button type="button" id="sendProduct" style="margin-top: 20px; margin-left: 30px;font-size:3.0em;font-weight: 700; height: 50px; width:150px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" onclick="window.location='index.php?app=ome&ctl=admin_check&act=index&type=all';"><span><span>取 消</span></span></button>
+            &nbsp;&nbsp;&nbsp;
+            <{ if $tgkpi_status == 'true'}>
+            <button type="button" id="sendProduct" style="margin-top: 20px; margin-left: 30px;font-size:3.0em;font-weight: 700; height: 50px; width:250px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" onclick="checkmemo();"><span><span>校验失败备注</span></span></button>
+            &nbsp;&nbsp;&nbsp;
+            <{/if}>
+            <div style="margin-top:27px; font-size:1.2em; float: left;">你可以在这里直接按回车或扫描任意内容完成校验<br/><{if $check_delivery =='on'}>校验通过后<font color='red' >系统自动发货</font><br/><{/if}>或占击取消按钮放弃止次检验</div>
+        </div>
+        <!--BUTTON_end-->
+    </form>
+        <br/>
+        <h3 style="margin-left: 12px;font-size: 1.5em;font-weight: bold;" valign="bottom">订单信息&nbsp;&nbsp;<span style="font-size:1em;font-weight:normal;">收货人:<font color="red"><{$ship_name}></font></span></h3>
+        <table border="1" cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>订单附言</th>
+                    <th>订单备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                <{foreach from=$markandtext item=item}>
+                    <tr>
+                        <td><{$item.order_bn}></td>
+                        <td>
+                            <{if count($item._mark)>0 }>
+                            <{foreach from=$item._mark item=it}>
+                                <b><{$it.op_content}></b> <{$it.op_time}> by <{$it.op_name}><br/>
+                            <{/foreach}>
+                            <{else}>
+                                无
+                            <{/if}>
+                        </td>
+                        <td>
+                            <{if count($item._mark_text)>0 }>
+                            <{foreach from=$item._mark_text item=it}>
+                                <b><{$it.op_content}></b> <{$it.op_time}> by <{$it.op_name}><br/>
+                            <{/foreach}>
+                            <{else}>
+                                无
+                            <{/if}>
+                        </td>
+                    </tr>
+                <{/foreach}>
+            </tbody>
+        </table>    
+</div><!--PAGE_END-->
+
+<script>
+     $('codeSubmit').focus();
+    $('chkContent').onclick = function() {
+        $('codeSubmit').focus();
+    }; 
+
+$('sendProduct2').addEvent('click', function(e){
+	e.stop();
+	batchCheck(e);
+	
+	
+});
+//校验完成后，直接发货,不做重量处理
+function batchCheck(e){
+	var logi_no = $('logi_no').value;
+    var check_delivery = "<{$check_delivery}>";//发货校验是否开启的标示
+    var weight = "<{$weight}>";//用系统设置的最小重量，使验证通过
+    if(logi_no == '0'){
+    	new MessageBox('快递单号有误！',{type:'error',autohide:true});return false;
+    }
+    var logi_no = encodeURIComponent(logi_no);
+    var delivery_id = $('dly_id').value;
+    
+    var  count    =  $('count').value;
+    var number   = $('number').value;
+    
+    var checkType   = $('checkType').value;
+    
+    if(count != number){
+    	new MessageBox('对不起，校验提交的货品数量错误！',{type:'error',autohide:true});return false;
+    }
+    
+     
+    new Request({
+    	url:'index.php?app=ome&ctl=admin_consign&act=CheckDelivery',data:'delivery_id='+delivery_id+'&check_delivery='+check_delivery+'&weight='+weight+'&logi_no='+logi_no+'&count='+count+'&number='+number+'&checkType='+checkType,method:'POST',
+        onComplete: function(json){
+            if (json != ''){
+                json = JSON.decode(json);
+            }
+            //校验有问题的
+            if(json.result == 0){
+            	alert(json.msg);return false;
+            	
+            }
+           //发货一般性检测(盘点状态、发货状态、管辖仓、库存等检测)
+        	if(json.status == 'error'){
+        		 new MessageBox(json.msg,{type:'error',autohide:true});return false;
+        	}
+        	//是否允许发货的其他检测
+        	else{
+        		var refund_orders, is_confirm_delivery = false;
+        		//检测是否有退款处理
+	        	if (json != '' ){
+		            json = json.filter(function(n){
+		                if (n.order_exists_refund != ''){
+		                	is_confirm_delivery = true;
+		                	refund_orders = n.order_exists_refund;
+		                }
+		                return !n.order_exists_refund;
+		            });
+	        	}
+        		 //允许发货的检测(快递单是否不存在、是否已发货、无权发货、是否处于发货状态、发货单订单存在异常、已打回、已发货、盘点、库存数等检测)
+		        if(json != ''){
+			          var msg = "快递单号存在异常状况：<br />";
+			          json.each(function(j){
+			        	  if (typeof(j.bn) != 'undefined'){
+			        		  msg += j.bn + ' &nbsp; ' + j.msg + '<br />';
+			        	  }
+			          });
+			          new MessageBox(msg,{type:'error',autohide:true});return false;
+			   }else{
+		             //判断订单是否申请退款
+		            if ($defined(refund_orders) && refund_orders != ''){
+		                var o = '';
+		                var refundOrders = JSON.decode(refund_orders);
+		                refundOrders.each(function(item){
+		                    o += item.order_bn+'、';
+		                });
+		                msg = '此订单【'+o.substr(0,o.length-1)+'】发生过退款，不能发货';
+		               
+		                new MessageBox(msg,{type:'error',autohide:true});return false; 
+					 } 
+			   }
+			}
+        	submitSend(e);
+        }
+    }).send();
+}
+function submitSend(e){
+	var _form = $('form1');
+	_form.fireEvent('submit',{stop:$empty});
+}
+
+
+</script>

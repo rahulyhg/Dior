@@ -1,0 +1,76 @@
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+          <col style="width:30%; align:left;"></col>
+          <col style="width:12%; align:left;"></col>
+          <col style="width:10%; align:left;"></col>
+          <col style="width:8%; align:left;"></col>
+          <col style="width:10%; align:left;"></col>
+          <col style="width:10%; align:left;"></col>
+          <col style="width:10%; align:left;"></col>
+          <col style="width:10%; align:left;"></col>
+          <thead>
+            <tr>
+                <th>货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+                <th>货位</th>
+                <th>帐面数量</th>
+                <th>实际数量</th>
+                <th>单价</th>
+                <th>品质情况</th>
+            </tr>
+          </thead>
+            <{foreach from=$inventory item=items key=keys}>
+            <tbody>
+            <tr>
+                <td><{$items.name|visibility:$items.product_id}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><{$items.store_position}></td>
+                <td><{$items.store}></td>
+                <td>-</td>
+                <td><{$items.price|cur}></td>
+                <td>-</td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+          <{if !$inventory}>
+          <tbody>
+            <tr>
+              <td colspan="9" style="padding:0;"><div class="note" style="margin:0;"> 没有查询到相关的货品信息 </div></td>
+            </tr>
+          </tbody>
+          <{/if}>
+        </table>
+        <div class="footer" style="overflow:hidden;line-height:32px;">
+            <div style="float:left;"><{$pager}></div>
+            <div style="float:right;margin-right:10px;">共<{$count}>条，每页显示<{$pagelimit}>条</div>
+        </div>
+<script>
+function visibility(e){
+	var visiTips = new Tips({
+			onShow:function(tip,el){
+				el.addClass('active');
+				tip.setStyle('display','block');
+			},
+			text: function(element){
+				if(element.get('visibility')=='false'){
+					return '隐藏商品';
+				}else{
+					return '';
+				}
+			}
+		});
+
+		var e  = new Event(e), el = e.target;
+		if (el.get('visibility')=='false')
+		{
+			visiTips.attach(el);
+			el.addEvent('mouseleave',function(){
+				el.removeClass('active');
+			});
+			el.fireEvent('mouseenter',e);
+		}
+}
+</script>

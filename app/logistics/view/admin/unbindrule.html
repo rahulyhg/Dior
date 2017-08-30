@@ -1,0 +1,50 @@
+<div class="division" id='support-shops'>
+    <form method='post' action='index.php?app=logistics&ctl=admin_rule&act=unbindRule&finder_id=<{$finder_id}>'>
+        <div class="tableform">
+          <h4>是否确认解除仓库规则的关联?</h4>
+        </div>
+     
+  
+   <div class="table-action">
+            <{button label="确定" type="button" id='copy-rule'}><{button label="取消" type="button" id='cancel-rule'}>
+        </div>
+<input type='hidden' name="branch_id" value='<{$branch_id}>'>
+<input type='hidden' name='oper' value='edit'>
+  </form>
+</div>
+
+<script>
+$('copy-rule').addEvent('click',function(e){
+    var form=this.getParent('form');
+    var _this=this;
+  
+    form.store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+
+                        _this.getParent('.dialog').retrieve('instance').close();
+                        window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        form.fireEvent('submit',e);
+
+
+
+});
+
+$('cancel-rule').addEvent('click',function(e){
+var _this=this;
+_this.getParent('.dialog').retrieve('instance').close();
+
+});
+</script>

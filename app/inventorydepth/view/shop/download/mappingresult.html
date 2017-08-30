@@ -1,0 +1,21 @@
+<div id="downloading" class="division">
+商品已经分配给所选店铺，您可以前往已分配商品界面查看已分配好的商品，也可以留在此界面继续分配商品。
+    <{$errormsg}>
+    <h4>存在以下错误：</h4>
+    <div class='error'>
+        <{foreach from=$errormsg item=item}>
+            <div><{$item}></div>
+        <{/foreach}>
+    </div>
+    <{/if}>
+</div>
+<div class="table-action">
+    <{button label="继续分配商品" type="button" id="btn_continue"}>
+</div>
+
+<script>
+    //继续分配商品
+    $('btn_continue').addEvent('click',function(e){
+        this.getParent('.dialog').retrieve('instance').close();
+    });
+</script>

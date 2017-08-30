@@ -1,0 +1,60 @@
+<form name="form1" id="form-memo" method="POST" action="index.php?app=wms&ctl=admin_delivery&act=doReback">
+    <div class="division">
+        <div class='notice'>
+            说明：<br/>
+            1.撤销当前发货单后,订单的确认状态将随之改变<br>
+        </div>
+        <h4><{t}>发货单单号：<{/t}><span style='color:#069CBC'><{$delivery_bn}></span></h4><hr>
+
+        <h4 style='margin-bottom:6px;'>撤销发货单备注：</h4>
+        <table width="100%">
+            <tr>
+                <td>
+                    <textarea name="memo" id="memo"  cols="60" rows="5" value='' vtype="required"></textarea><br>
+                    <span></span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <input type='hidden' name='delivery_id' value='<{$delivery_id}>'>
+</form>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+    <table width="100%" cellspacing="0" cellpadding="0">
+        <tbody>
+            <tr>
+                <td>
+                    <button class="btn btn-primary" id="" onclick='dosubmit()'>
+                        <span><span><{t}>确定<{/t}></span></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<{/area}>
+
+<script>
+    function dosubmit(){
+        $("form-memo").fireEvent('submit',{stop:function(){}});
+    }
+</script>
+
+
+
+
+<script>
+
+$('form-memo').store('target',{
+
+  onComplete:function(data){
+    var rs =JSON.decode(data);
+    if( rs && rs.success ){
+      if($('form-memo').getParent('.dialog'))
+      $('form-memo').getParent('.dialog').retrieve('instance').close();
+    }
+  }
+});
+
+</script>
+

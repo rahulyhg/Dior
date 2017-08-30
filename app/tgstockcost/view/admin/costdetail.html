@@ -1,0 +1,50 @@
+
+<div class="tableform">
+<div class="division" style="overflow:scroll">
+<table id="aa" border="0" cellspacing="0" class="gridlist" cellpadding="0">
+<thead>
+<tr>
+    <th>货号</th>
+    <th>名称</th>
+    <th>商品类型</th>
+	<th>品牌</th>
+	<th>规格</th>
+	<th>单位</th>
+	<th>日期</th>
+	<th>原始单据号</th>
+	<th>单据类型</th>
+	<th>入库数量</th>
+	<th>入库单位成本</th>
+	<th>入库库存成本</th>
+	<th>出库数量</th>
+	<th>出库单位成本</th>
+	<th>出库库存成本</th>
+	<th>结存数量</th>
+	<th>结存单位成本</th>
+	<th>结存库存成本</th>
+
+</tr></thead>
+
+</table>
+</div>
+</div>
+<script>
+function ajax_load_data(page){
+	var bn= '<{$get_params.bn}>';
+	 new Request({
+			url:'index.php?app=tgstockcost&ctl=costdetail&act=view_detail_ajax',
+			//update:$("aa"),
+			method:'post',
+			data:'branch_id='+'<{$get_params.branch_id}>'+'&start_time='+'<{$get_params.start_time}>'+'&end_time='+'<{$get_params.end_time}>'+'&bn='+'<{$get_params.bn}>'+'&page='+page,
+			onSuccess:function(response){
+					var res_data = JSON.decode(response);
+					new Element('tbody',{
+						html:res_data.costdetail_data
+					}).inject($('aa'));
+					page = page+1;
+					if(res_data.end!='true' && !bn) ajax_load_data(page);
+				},
+			}).send();
+}
+ajax_load_data(1);
+</script>

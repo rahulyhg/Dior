@@ -1,0 +1,74 @@
+<div class="tableform">
+<div class="division">
+<form method="post" action="index.php?app=wmsmgr&ctl=admin_wms&act=saveWms" id="terminal">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+        <tr>
+          <th><em class="c-red">*</em> 仓储编码：</th>
+          <td><{if $wms.channel_bn}><{$wms.channel_bn}><{else}>
+              <{input type="text&&required" name="wms[channel_bn]" value=""}><{/if}>
+              <{help}><{t}>第三方仓储的唯一标识<{/t}><{/help}>
+          </td>
+        </tr>
+        <tr>
+        <th ><em class="c-red">*</em> 仓储名称：</th>
+          <td><{input type="text&&required" size="32" name="wms[channel_name]" value=$wms.channel_name}>
+              <{help}><{t}>中文名称<{/t}><{/help}>
+          </td>
+        </tr>
+        <tr>
+        <th ><em class="c-red">*</em> 仓储适配器：</th>
+          <td><{input type='select' name='wms[adapter]' id='wmstype' vtype='required' rows=$adapter_list valueColumn=value labelColumn=label value=$wms.adapter}>
+            <ul style='color:red' id="adapter_desc">
+              <{foreach from=$adapter_list item=item}>
+                <li id="desc_<{$item.value}>" style="display:none"><{$item.desc}></li>
+              <{/foreach}>
+            </ul>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div id='adapter_config'></div>
+      <{if $wms.channel_id}>
+       <input type="hidden" name="wms[channel_id]" value="<{$wms.channel_id}>">
+      <{/if}>
+
+      <div class="table-action">
+      <{button class="btn-primary" type="submit" id="saveterminal" name="submit" label="提交"}>
+      </div>
+</form>
+</div>
+</div>
+
+<script>
+$('terminal').store('target',{
+  onRequest:function(){
+     $('saveterminal').set('disabled', 'true');
+  },
+  onComplete:function(jsontext){
+     var json = Json.evaluate(jsontext);
+     if (typeof(json.error) != 'undefined'){
+         $('saveterminal').set('disabled', '');
+     }else{
+         $('saveterminal').set('disabled', 'true');
+         parent.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,parent.finderGroup['<{$env.get.finder_id}>']);
+         $('saveterminal').getParent('.dialog').retrieve('instance').close();
+     }
+  }
+});
+
+$('wmstype').addEvents({
+    'change':function(e){
+
+      if (!this.value) return;
+   
+      $ES('#adapter_desc li').hide();
+      $ES('#adapter_desc #desc_'+this.value).show();
+      W.page('index.php?app=wmsmgr&&ctl=admin_wms&act=confightml&p[0]=<{$wms.channel_id}>&p[1]='+this.value,{update:$('adapter_config'),clearUpdateMap:false});
+    },
+    'domready':function(e){
+      this.fireEvent('change',e);
+    }
+});
+
+</script>

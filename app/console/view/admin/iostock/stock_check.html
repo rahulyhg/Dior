@@ -1,0 +1,153 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+
+<form name="form1"  action="index.php?app=console&ctl=admin_iostockorder&act=doCheck" method="post">
+<div class="tableform">
+<input type="hidden" name="io" value="<{$io}>">
+<input type="hidden" name="iso_id" value="<{$iso.iso_id}>">
+<input type="hidden" name="io_act" value="<{$act}>">
+<h4><{if $io=='1'}>入库<{else}>出库<{/if}>单审核</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<tbody>
+<tr>
+	<th><{if $io=='1'}>入库<{else}>出库<{/if}>单编号:</th>
+	<td ><{$iso.iso_bn}></td>
+  
+	<th><{if $act != 'allocate_iostock'}>供应商:<{/if}></th>
+	<td ><{if $act != 'allocate_iostock'}><{$iso.supplier_name}><{/if}></td>
+ 
+	<th >经办人:</th>
+	<td ><{$iso.operator}></td>
+    <th >仓库:</th>
+    <td ><{$iso.branch_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+    <th >金额总计:
+
+    </th>
+    <td ><font color="orange"><b><{$amount|cur}></b></font></td>
+    <th>商品总额:</th>
+    <td><font color="orange"><b><{$iso.product_cost|cur}></b></font></td>
+    <th >
+        物流费用:
+    </th>
+    <td>
+    <{$iso.iso_price}>&nbsp;
+    </td>
+	<th ><{if $act != 'allocate_iostock'}><{if $io=='1'}>来源地:<{else}>目的地:<{/if}><{/if}></th>
+    <td ><{$iso.extrabranch_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<th ><{if $io=='1'}>入库<{else}>出库<{/if}>日期:</th>
+	<td ><{$iso.create_time}></td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<th ><{if $io=='1'}>入库<{else}>出库<{/if}>单数</th>
+	<td ><{$iso.total_num}></td>
+    <th ></th>
+    <td ></td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+	<th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+<{if $iso.memo}>
+<tr>
+    <th >备 注</th>
+    <td colspan=20 style="text-align:left">
+        <{$iso.memo}>
+    </td>
+</tr>
+<{/if}>
+</tbody>
+</table>
+</div>
+
+
+
+</div>
+<h4><{if $io=='1'}>入库<{else}>出库<{/if}>单明细</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<thead>
+<tr>
+	<th>货号</th>
+    <th>货品名称</th>
+    <th>规格</th>
+	<th>条码</th>
+	<th><{if $io=='1'}>入<{else}>出<{/if}>库数量</th>
+
+</tr>
+</thead>
+<{foreach from=$iso.iso_items item=item}>
+<tbody>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.product_name}></td>
+    <td><{$item.spec_info}></td>
+    <td><{$item.barcode}></td>
+    <td><{$item.nums}></td>
+  
+</tr>
+</tbody>
+<{/foreach}>
+</table>
+<div id="cc" class="noprint table-action"><{button type="button"  id="stock-save-btn" label="审 核"}> &nbsp;
+          <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+</div>
+
+</div>
+
+</form>
+<script>
+$('stock-save-btn').addEvent('click',function(e){
+
+        var _this=this;
+        var form=this.getParent('form');
+        form.store('target',{
+                onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                    try{
+                        var json = JSON.decode(jsontext);
+                       
+                        if (typeof(json.error)!='undefined'){
+                            
+                            _this.disabled=false;
+                        }else{
+                            _this.disabled=true;
+                            opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',200);
+                        }
+                    }catch(e){}
+                }
+            });
+        form.fireEvent('submit',e);
+    });
+
+</script>

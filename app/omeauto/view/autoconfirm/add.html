@@ -1,0 +1,238 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<style>
+    #content_tbl .role_content ul li {width:140px; overflow: hidden; float: left; margin-bottom: 0px; font-size: 12px;}
+    #content_tbl .role_content ul li span {cursor: pointer;}
+    #content_tbl .role_content ul li input {cursor: pointer;}
+    #content_tbl .title  {height: 20px; margin-bottom: 0px; font-size: 12px; font-weight: 700;}
+    #content_tbl .role_content  {margin-top: 6px; height : auto ; padding: 8px;}
+    #content_tbl .title span  {height: 20px; margin-bottom: 5px; margin-left: 20px; color: #999999;}
+    #content_li li {width:90px; overflow: hidden; float: left; margin-bottom: 10px; font-size: 12px; line-height: 20px;}
+    .current-set {color: red; font-weight: 700;  cursor: pointer;}
+    .current-disabled , .current-disabled span {color: #DDDDDD; font-weight: 700;  cursor:auto;}
+</style>
+<form action="index.php?app=omeauto&ctl=autoconfirm&act=do_add" method="post">
+    <div class="tableform">
+        <div class="division">
+            <table width="100%" cellspacing="0" cellpadding="0" id="content_tbl">
+                <tbody>
+                    <tr>
+                        <th width="10%"><label for="autoName">规则名称：</label></th>
+                        <td colspan="3"><{input type="text&&required" name="name" id="autoName" value="{$data.name}" size="30" }> &nbsp;&nbsp;&nbsp;&nbsp;(请使用通俗易懂的名称，如独立店规则、淘宝订单规则)
+                            <{if $data.defaulted=='true'}><script>$('autoName').set('disabled', 'true');</script><{/if}>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="autoMemo">简单描述：</label></th>
+                        <td colspan="3"><textarea name="memo" id="autoMemo" cols="60" rows="4" class="x-input" <{if $data.defaulted=='true'}>disabled<{/if}>><{$data.memo|escape}></textarea> </td>
+                    </tr>
+                    <tr>
+                        <th>订单分组：</th>
+                        <td colspan="3">
+                            <div class="title">选择已设定分组<span>(勾选的订单分组将会使用本审单规则)</span></div>
+                            <div class="role_content" id="content_li">
+                                <ul>
+                                    <{foreach from=$orderType item=item}>
+                                    <li><input type="checkbox" name="config[autoOrders][]" value="<{$item.tid}>" id="autoOrder_<{$item.tid}>" <{if $item.tid|in_array:$data.config.autoOrders}>checked<{else}><{if $item.oid || $data.defaulted=='true'}>disabled<{/if}><{/if}>/><label for="autoOrder_<{$item.tid}>">&nbsp;&nbsp;<span title="<{$item.title}>"><{$item.name}></span></label></li>
+                                    <{/foreach}>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <!--
+                    <tr>
+                        <th>库存检查处理模式：</th>
+                        <td colspan="3">
+                            <input type="radio" name="store" checked/>&nbsp;&nbsp;需要检查
+                            <input type="radio" name="store"/>&nbsp;&nbsp;不需要
+                        </td>
+                    </tr>
+                    -->
+                    <!--
+                    <tr>
+                        <th>规则设定：</th>
+                        <td colspan="3">
+                            <div class="title">是否启用自动合单<span>(除特定类型如分销订单，<b style="color:red; font-size:14px;">强烈建议开启本选项</b>)</span></div>
+                            <div class="role_content">
+                                <input type="radio" name="config[combine]" value='1' <{if $data.config.combine != '0'}>checked<{/if}>/>&nbsp;&nbsp;自动按规则合并订单
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input type="radio" name="config[combine]" value="0" <{if $data.config.combine == '0'}>checked<{/if}>/>&nbsp;&nbsp;我不需要合单
+                            </div>
+                        </td>
+                    </tr>
+                    -->
+                    <tr>
+                        <th>规则设定：</th>
+                        <td colspan="3">
+                            <div class="title">用户多地址<span>(指同一个买家有多个订单并且收货地址不一致的情况，对分销类型不起作用)</span></div>
+                            <div class="role_content">
+                                <input type="radio" name="config[morder]" value='1' <{if $data.config.morder != '0'}>checked<{/if}>/>&nbsp;&nbsp;检查同用户多地址的订单
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input type="radio" name="config[morder]" value="0" <{if $data.config.morder == '0'}>checked<{/if}>/>&nbsp;&nbsp;不需要
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td colspan="3">
+                            <div class="title">未支付订单<span>(指同一买家还有未支付订单)</span></div>
+                            <div class="role_content">
+                                <input type="radio" name="config[payStatus]" value="1" <{if $data.config.payStatus != '0'}>checked<{/if}>/>&nbsp;&nbsp;需检查可合并的未支付订单
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input type="radio" name="config[payStatus]" value="0" <{if $data.config.payStatus == '0'}>checked<{/if}>/>&nbsp;&nbsp;不需要
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td colspan="3">
+                            <div class="title">发票检查</div>
+                            <div class="role_content">
+                                <input type="radio" name="config[tax]" value='1' <{if $data.config.tax != '0'}>checked<{/if}>/>&nbsp;&nbsp;需要&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <input type="radio" name="config[tax]" value='0' <{if $data.config.tax == '0'}>checked<{/if}>/>&nbsp;&nbsp;不需要
+                            </div>
+                        </td>
+                    </tr>                    
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td colspan="3">
+                            <div class="title">留言和备注<span>(指对订单中客户留言及客服备注内容是否需要检查)</span></div>
+                            <div class="role_content">
+                                <input type="checkbox" name="config[memo]" value='1' <{if $data.config.memo == '1'}>checked<{/if}>/>&nbsp;&nbsp;需检查客户留言
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input type="checkbox" name="config[mark]" value='1' <{if $data.config.mark == '1'}>checked<{/if}>/>&nbsp;&nbsp;需检查客服备注
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td colspan="3">
+                            <div class="title">货到付款订单<span>(选择货到付款的处理模式)</span></div>
+                            <div class="role_content">
+                                <input type="radio" name="config[autoCod]" value="0" <{if $data.config.autoCod != '1'}>checked<{/if}>/>&nbsp;&nbsp;全部需要人工审核
+                                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input type="radio" name="config[autoCod]" value="1" <{if $data.config.autoCod == '1'}>checked<{/if}>/>&nbsp;&nbsp;如符合其它条件，可自动确认
+                            </div>
+                        </td> 
+                    </tr>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td colspan="3">
+                            <div class="title">选择物流公司是否用全境物流<span>(没有指定配送地区的物流公司)</span></div>
+                            <div class="role_content">
+                                <input type="radio" name="config[allDlyCrop]" value="1" <{if $data.config.allDlyCrop == '1'}>checked<{/if}> disabled/>&nbsp;&nbsp;禁用
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <input type="radio" name="config[allDlyCrop]" value="0" <{if $data.config.allDlyCrop != '1'}>checked<{/if}> disabled />&nbsp;&nbsp;启用
+                            </div>
+                        </td> 
+                    </tr>
+                    <!--
+                    <tr>
+                        <th>&nbsp;</th>
+                        <td colspan="3">
+                            <div class="title">商品SKU检查<span>(该情况是指该订单内存在无SKU商品或该商品的SKU无法在商品库中找到)</span></div>
+                            <div class="content">
+                                <input type="radio" name="sku" checked/>&nbsp;&nbsp;需要检查
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <input type="radio" name="morder"/>&nbsp;&nbsp;不需要
+                            </div>
+                        </td> 
+                    </tr>
+                    -->
+                    <tr>
+                        <th>自动生成发货单：</th>
+                        <td colspan="3">
+                            <input type="radio" name="config[autoConfirm]" value="1" <{if $data.config.autoConfirm != '0'}>checked<{/if}> />&nbsp;&nbsp;自动生成发货单
+                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                   <input type="radio" name="config[autoConfirm]" value="0" <{if $data.config.autoConfirm == '0'}>checked<{/if}>/>&nbsp;&nbsp;不生成发货单，但会给订单加上各种需要关注的标记
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <{if $data.oid}><input type="hidden" name="oid" value="<{$data.oid}>"/><{/if}> 
+        </div>
+    </div>
+    <div class="table-action">
+        <{button class="btn-primary" label="保存" type="button" id="saveCurrent"}>
+        <{button class="btn-primary" label="取消" type="button" id="cancelBtn"}>
+    </div>
+</form>
+<script>
+    (function(){
+
+        $('saveCurrent').getParents('form').removeEvents('submit').addEvent('submit', function(e) {
+            e.stop();
+            
+            new Request ({
+                url:this.action,
+                onRequest:function(e){
+                    //提交按钮:disabled
+                    $('saveCurrent').set('disabled', 'true');
+                    $('saveCurrent').getElements('span')[1].set('text','正在保存');
+                },
+                onComplete:function(result){
+      
+                    if (result != 'SUCC'){
+                        //提交按钮:enabled
+                        $('saveCurrent').set('disabled', '');
+                        $('saveCurrent').getElements('span')[1].set('text','保存');
+                    }else{
+                        //提交按钮:disabled
+                        var findId = "<{$env.get.finder_id}>";
+                        if (findId != '') {
+                            finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                        }
+                        $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+                        //setTimeout("window.close()",500);
+                    }
+                }
+            })[this.method](this);
+        });
+        
+        //保存按钮
+        $('saveCurrent').addEvent('click', function() {
+            //检查规则名称
+            var aName = $('autoName').value.trim();
+            if (aName == '') {
+                alert("请输入规则名称，使用通俗易懂的名字，如独立店规则、淘宝订单规则。");
+                return;
+            }
+            //检查对应订单类型
+            var aHasOrder = false;
+            $$('#content_li input[type=checkbox]').each(function(item){
+                if (item.checked) {
+                    aHasOrder = true;
+                }
+            });
+            if (!aHasOrder) {
+                //alert("你必须要选择对应使用本规则的订单分组，请仔细勾选后再试。");
+                //return;
+            }
+            
+            $('saveCurrent').getParents('form').fireEvent('submit', { 
+                stop: function(){ 
+                }
+            });
+        });
+    
+        //关闭按钮
+        $('cancelBtn').addEvent('click', function(){
+            $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+        });
+        
+        //选择订单标红
+        $$('#content_li input[type=checkbox]').addEvent('click',function(item){  
+            this.blur();
+            this.getParent()[this.checked?'addClass':'removeClass']('current-set');     
+        });
+        $$('#content_li input[type=checkbox]').each(function(item){
+            if (item.get('disabled')) {
+                item.getParent()['addClass']('current-disabled');  
+            } else {
+                item.blur();
+                item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+            }
+        });
+    })();
+</script>

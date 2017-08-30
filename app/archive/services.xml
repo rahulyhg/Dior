@@ -1,0 +1,6 @@
+<services>
+
+<service id="desktop_finder.archive_mdl_orders">
+        <class>archive_finder_orders</class>
+    </service>
+</services>

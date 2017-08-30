@@ -1,0 +1,18 @@
+<app>
+    <name>归档</name>
+    <description>归档</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0.2</version>
+    <license>shopex license</license>
+
+	<depends>
+		<app>ome</app>
+	</depends>
+
+</app>

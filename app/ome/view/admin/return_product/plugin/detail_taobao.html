@@ -1,0 +1,122 @@
+<h4>退货信息</h4>
+<div class="tableform">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+        <tbody>
+            <tr>
+                <th>客服介入</th>
+                <th>退款先行垫付</th>
+                <th>第三方分账</th>
+                <th>卖家分账</th>
+                <th>货物状态</th>
+                <th>买家是否需要退货</th>
+                <th>退货时间</th>
+             </tr>
+            <tr>
+                <td><{$return_product_taobao.cs_status}></td>
+                <td><{$return_product_taobao.advance_status}></td>
+                <td><{$return_product_taobao.split_taobao_fee}></td>
+                <td><{$return_product_taobao.split_seller_fee}></td>
+                <td><{$return_product_taobao.good_status}></td>
+                <td><{if $return_product_taobao.has_good_return=='false'}>否<{else}>是<{/if}></td>
+                <td><{$return_product_taobao.good_return_time}></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<{if $return_product_taobao.refuse_memo}>
+<div class="tableform">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+        <tbody>
+            <tr>
+                <th>拒绝备注:</th>
+                <td>
+                <{$return_product_taobao.refuse_memo.refuse_message}>
+                <{if $return_product_taobao.refuse_memo.image}>
+                <img src='<{$return_product_taobao.refuse_memo.image}>' width=50 height=50 onclick="showimage('<{$return_product_taobao.refuse_memo.image}>')" alt='点击查看大图' style='cursor:pointer'>
+                <{/if}>
+                <br>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<{/if}>
+<div class="tableform">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+        <tbody>
+        <tr>
+            <th>支付宝交易号</th>
+            <th>会员ID</th>
+            <th>卖家ID</th>
+        </tr>
+        <tr>
+            <td><{$return_product_taobao.alipay_no}></td>
+            <td><{$return_product_taobao.buyer_nick}></td>
+            <td><{$return_product_taobao.seller_nick}></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+  <div class="tableform">
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>退货人姓名</th>
+         
+          <th>退货人地址</th>
+          <th>退货人邮编</th>
+          <th>退货人固定电话</th>
+         
+          <th>退货人手机</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><{$return_product_taobao.reship_name}></td>
+       
+          <td><{$return_product_taobao.reship_addr}></td>
+          <td><{$return_product_taobao.reship_zip}></td>
+          <td><{$return_product_taobao.reship_phone}></td>
+         
+          <td><{$return_product_taobao.reship_mobile}></td>
+        </tr>
+      </tbody>
+    </table>
+</div>
+<div class="tableform">
+    <h4>
+        淘宝凭证查看
+        <input type="button" id='return_message' name='return_message' value='下载淘宝凭证'>
+    </h4>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+        <tbody>
+            <tr>
+            <td> 
+                <{foreach from=$return_product_taobao.online_memo item=memo}>
+                <{$memo.created}>&nbsp;&nbsp;<{$memo.content}><{if $memo.voucher_urls}>
+                <br>
+                <img src='<{$memo.voucher_urls}>' height='50' onclick="showimage('<{$memo.voucher_urls}>')" alt='点击查看大图' style='cursor:pointer'><{/if}><br>
+                <{foreachelse}>
+                暂无
+                <{/foreach}>
+            </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+if ($('return_message'))
+{
+	$('return_message').addEvent('click',function(e){
+		var url = 'index.php?app=ome&ctl=admin_return&act=refund_message&p[0]=<{$return_product_taobao.return_id}>&p[1]=return&shop_type=taobao&finder_id=<{$env.get.finder_id}>';
+                	new Dialog(url,{title:'淘宝凭证',width:500,height:300});
+	
+	});
+}
+
+function showimage(imgpath){
+    var url = 'index.php?app=ome&ctl=admin_return&act=showImage&p[0]='+imgpath;
+    new Dialog(url,{title:'查看凭证大图',width:500,height:300});
+}
+</script>

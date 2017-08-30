@@ -1,0 +1,26 @@
+<{capture name="header"}>
+<style media="print">
+div{font-size:14pt; }
+.errormsg{display:none}
+</style>
+<style media="screen">
+div{font-size:12px ;}
+</style>
+<style>
+.order-box{ height:auto; padding:10px 10px 0 10px; margin:5px 20px 0 20px; }
+.order-box li{ padding:3px 0}
+.order-tr{ font-weight:bold; border-bottom:1px solid #000;}
+.table-border{ margin:10px 0; border-top:2px solid #333;border-bottom:2px solid #333}
+.order-box td{ padding:3px 5px; vertical-align:top}
+.order-font{ font-weight:bold; padding:0 5px; clear:both; height:25px; line-height:25px; margin:5px 0 25px 0}
+</style>
+<{/capture}>
+<div class="errormsg notice" id="errormsg">
+    <div id="msg" class="msg"><{$msg}></div>
+</div>
+<script>
+    //opener.MessageBox.error('<{$msg}>', {autohide:10000});
+    new opener.Dialog(new Element('div', {'class':'notice', 'html' : '<br><b><{$msg}></b><br><br>'}),
+    {'title':'出错啦！', 'width':300 , 'height':115});
+    window.close();
+</script>sadsad

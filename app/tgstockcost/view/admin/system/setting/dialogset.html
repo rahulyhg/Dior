@@ -1,0 +1,94 @@
+<div class="division tableform dialogsetting">
+    <form action='index.php?app=tgstockcost&ctl=setting&act=save' method='post' isCloseDialog>
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>存货计价法：</th>
+                <td>
+                <{input type='select' name='extends_set[tgstockcost_cost]' options=$tgstockcost.setting.cost.options value=$tgstockcost.setting.cost.value }>
+                <span id="stockcost_cost_desc" style="color:red;padding-left:5px;">
+                    <span id="stockcost_cost_desc_"></span>
+                    <span id="stockcost_cost_desc_1">说明：不考虑成本项 </span>
+                    <span id="stockcost_cost_desc_2">统一按照商品的一个成本价进行计算</span>
+                    <span id="stockcost_cost_desc_3">将新采购商品的成本与库存总成本进行平均</span>
+                    <span id="stockcost_cost_desc_4">按照商品入库时的先后顺序，进行独立成本计算</span>
+                </span>
+                </td>
+            </tr>
+            <tr>
+                <th>盘点/调账成本取值：</th>
+                <td>
+                <{input type='select' name='extends_set[tgstockcost_get_value_type]' options=$tgstockcost.setting.get_value_type.options value=$tgstockcost.setting.get_value_type.value }>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="table-action">
+        <{button label=保存 type="submit" name="button" id="tgstockcost-btn-save" }>
+        <{button label=关闭 type="button" name="button" id="tgstockcost-btn-close" isclosedialogbtn="true"}>
+    </div>
+    </form>
+</div>
+<div class='notice' style='font-size:15px;'>
+    <span style="font-weight:bold;">“更改成本设置”</span>： 更改成本设置后，系统会按照新的成本计算方式，进行成本核算<span style="font-weight:bold;color:red;">（推荐期末，所有业务结束后进行）</span>。不会影响以前已经发生的成本，但对于仓库中现有商品的成本将用商品信息中的成本进行计算，即 “当前库存成本”=“库存数量” * “商品成本价”，<span style="font-weight:bold;color:red;">企业如果想修正成本数据，需要到“商品管理”中进行成本价的维护</span>。
+</div>
+<script type="text/javascript">
+window.addEvent('domready',function(){
+    function costDesc(){
+        $ES('.dialogsetting #stockcost_cost_desc span').hide();
+
+        var v = $E(".dialogsetting select[name='extends_set[tgstockcost_cost]'] option:selected").get('value');
+
+        $E('.dialogsetting #stockcost_cost_desc_'+v).show();
+
+    }
+
+    costDesc();
+
+    $E(".dialogsetting select[name='extends_set[tgstockcost_cost]']").addEvent('change',function(){
+        costDesc();
+    });
+
+    $E('.dialogsetting #tgstockcost-btn-save').addEvent('click',function(e){
+        e.stop();
+
+        if (!confirm('修改后，库存成本将做一次初期，请谨慎使用！\n\n确认要修改？')) {return true;}
+
+        $E(".dialogsetting form").fireEvent('submit',e);
+    });
+
+    $E(".dialogsetting form").store('target',{
+        onRequest:function(){
+            $E('.dialogsetting #tgstockcost-btn-save').disabled = true;
+        },
+        onSuccess:function(response){
+            var resp =  JSON.decode(response);
+            if (resp.success) {
+                var v = $E(".dialogsetting select[name='extends_set[tgstockcost_cost]'] option:selected").get('value');
+
+                $ES("#tgstockcost-config #stockcost_cost option").each(function(item){
+                    if (item.value == v) {
+                        item.selected="selected";
+                    };
+                });
+
+                var v = $E(".dialogsetting select[name='extends_set[tgstockcost_get_value_type]'] option:selected").get('value');
+                $ES("#tgstockcost-config select[name='extends_set[tgstockcost_get_value_type]'] option").each(function(item){
+                    if (item.value === v) {
+                        item.selected="selected";
+                    };
+                });
+
+                var dialog = $E('.dialogsetting').getParent('.dialog').retrieve('instance');
+                dialog.close();
+            } else {
+                $E('.dialogsetting #tgstockcost-btn-save').disabled = false;
+            }
+        }
+    });
+});
+</script>
+
+
+

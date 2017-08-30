@@ -1,0 +1,79 @@
+<{if $error}>
+  <div class="notice"><{$notice}></div>
+<{else}>
+<div class="tableform">
+  <form action="index.php?app=ome&ctl=admin_order&act=do_order_goback" method="post" id="goback">
+    
+    <table border="0">
+      <tbody>
+      <tr>
+            <td>
+              <b>你将对以下订单<{$action_des}>:</b>
+              
+            </td>
+        </tr
+      <{foreach from=$order_info item=item}>
+        <tr>
+            <td>
+              <input type="hidden" name="order_id[]" value=<{$item.order_id}> >
+              <{$item.order_bn}>
+            </td>
+        </tr>
+      <{/foreach}>
+        <tr>
+            <td>
+                <b>请填写<{$action_des}>原因：</b>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <textarea id="memo" name="remark" rows="5" cols="50" vtype="required"></textarea>
+                <input type="hidden" name="doaction" value=<{$action}> >
+            </td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+
+</div>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="sso-tokenedit-submit"><span><span><{t}>确定<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+(function(){
+
+  var _form = $('goback');
+  var btn =$('sso-tokenedit-submit');
+  var finder = finderGroup['<{$env.get.finder_id}>'];
+  _form.store('target',{
+    onComplete:function(){
+    },
+    onSuccess:function(response){
+    var hash_res_obj = JSON.decode(response);
+    if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+      try{
+      var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+      }catch(e){}
+
+      if(_dialogIns){
+      _dialogIns.close();
+
+      }
+    }
+    }
+  });
+
+  btn.addEvent('click',function(){
+    _form.fireEvent('submit',{stop:$empty});
+  });
+})();
+</script>
+  <{/if}>

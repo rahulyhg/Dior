@@ -1,0 +1,91 @@
+<div class="tableform">
+    <form id="from-cancel" name="from-cancel" method="post" action="index.php?app=console&ctl=admin_iostockorder&act=doCancel">
+    <div class="division">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" >
+          <tbody>
+          <tr>
+            <td align="center"><h4>取消：<{$iso.iso_bn}></h4></td>
+          </tr>
+          <tr>
+            <td align="center">
+                <input type="hidden" name="iso_bn" value="<{$iso.iso_bn}>" />
+                <input type="hidden" name="iso_id" value="<{$iso.iso_id}>" />
+                <input type="hidden" name="type" value="<{$type}>" />
+                <input type="hidden" name="io" value="<{$io}>" />
+                <{button label="确定" type="button" id="btn-submit" class="btn-primary"}>
+                <{button label="关闭" type="button" id="btn-close" class="btn-primary"}>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+    </div>
+    
+    </form>
+</div>
+
+<script>
+$('btn-close').addEvent('click', function(){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+var finder = finderGroup['<{$env.get.finder_id}>'];    
+$('from-cancel').store('target',{
+    onComplete:function(json){
+        
+        try{
+            var json = Json.evaluate(json);
+           
+            if (typeof(json.error) != 'undefined'){
+                _this.disabled=false;
+                alert('取消失败!')
+            }else{
+                var _dialogIns = $('btn-submit').getParent('.dialog').retrieve('instance');
+                _dialogIns.close();
+                alert('取消成功');
+                finder.refresh.delay(400,finder);
+                
+            }
+        }catch(e){}
+
+        
+    }
+});
+
+$('btn-submit').addEvent('click',function(e){
+var operator_name = '<{$title}>';
+var _this=this;
+new Request({url:'index.php?app=console&ctl=admin_iostockorder&act=checkCancel&p[0]='+<{$iso.iso_id}>+'&io='+<{$io}>,method:'POST',
+            onRequest:function(){
+                $('btn-submit').set('disabled', 'true');
+                $('btn-submit').getElements('span')[1].set('text','正在取消...'); 
+            },
+            onComplete:function(json){
+                if (json != ''){
+                    json = JSON.decode(json);
+                    
+                    if(json.rsp == 'fail'){
+                        if (json.msg_code=='w402'){
+                            if (window.confirm('仓储物流系统无法进行撤销'+operator_name+'操作,是否继续取消'+operator_name+'?\n注：确定继续拒绝将强制撤销本系统未处理的'+operator_name+'，否则请线下联系仓储服务商取消相应的'+operator_name))
+                            {
+                                $('from-cancel').fireEvent('submit',{stop:function(){}});
+                            }else{
+                                $('btn-submit').set('disabled', '');
+                                $('btn-submit').getElements('span')[1].set('text','确定');
+                            }
+                        }else{
+                            alert('取消失败');
+                            $('btn-submit').set('disabled', '');
+                            $('btn-submit').getElements('span')[1].set('text','确定'); 
+                            _this.getParent('.dialog').retrieve('instance').close();
+                            window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+                            return;
+                        }
+                        
+                    }else{
+                        $('from-cancel').fireEvent('submit',{stop:function(){}});
+                    }
+                }
+            },
+            }).send();
+
+});
+</script>

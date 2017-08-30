@@ -1,0 +1,1 @@
+a:7:{s:2:"id";s:0:"";s:9:"send_type";s:8:"delivery";s:5:"title";s:12:"发货提醒";s:9:"sample_no";s:10:"sample_001";s:6:"status";i:1;s:11:"_DTYPE_BOOL";a:1:{i:0;s:6:"status";}s:7:"content";s:155:"{收货人}，您好！您在{店铺名称}订购的商品已通过{物流公司}发出，单号：{物流单号}，请当面检查后再签收，谢谢！";}

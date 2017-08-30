@@ -1,0 +1,14 @@
+            <tr>
+                <th>发货同时短信提醒：</th>
+                <td>
+                    <input type="radio" name="set[taoexlib.message.switch]" value="on" <{if $setData.taoexlib_message_switch == 'on'}> checked<{/if}>>开启
+                    <input type="radio" name="set[taoexlib.message.switch]" value="off" <{if $setData.taoexlib_message_switch == 'off'}> checked<{/if}>>关闭
+                    <{help}>开启发货的同时通知用户已发货<{/help}>
+                </td>
+            </tr>
+            <tr>
+                <th>短信预警条数：</th>
+                <td><input type="text" name="set[taoexlib.message.warningnumber]"  value="<{$setData.taoexlib_message_warningnumber}>" size="5" vtype="required"/>
+                    <{help}>可以使用的短信剩余多少条发起预警，提示充值<{/help}>
+                </td>
+            </tr>

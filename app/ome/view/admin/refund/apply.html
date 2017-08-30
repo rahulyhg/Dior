@@ -1,0 +1,138 @@
+<form id="dorefund" class="tableform" method='post' action='index.php?app=ome&ctl=admin_order&act=do_refund&finder_id=<{$env.get.finder_id}>'>
+    <input type='hidden' name='order_id' value='<{$order.order_id}>'>
+    <input type='hidden' name='terminal_tag' value='<{$order.terminal_tag}>'>
+	<input type='hidden' name='order_bn' value='<{$order.order_bn}>'>
+    <div class="division">
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+    <th><{t}>平台订单号:<{/t}></th>
+    <td><{$order.order_bn}> 【<{if $order.pay_status == 0}><{t}>未支付<{/t}><{elseif $order.pay_status == 1}><{t}>已支付<{/t}><{elseif $order.pay_status == 2}><{t}>处理中<{/t}><{elseif $order.pay_status == 3}><{t}>部分付款<{/t}><{elseif $order.pay_status == 4}><{t}>部分退款<{/t}><{elseif $order.pay_status == 5}><{t}>已退款<{/t}><{/if}>】</td>
+    <th><{t}>下单日期:<{/t}></th>
+    <td><{$order.createtime|cdate:'SDATE_STIME'}></td>
+    </tr>
+  <tr>
+    <th><{t}>订单金额:<{/t}></th>
+    <td><{$order['total_amount']}></td>
+
+    <th><{t}>已付金额:<{/t}></th>
+    <td><{$order.payed}></td>
+    </tr>
+  <tr>
+    <th><{t}>退款类型: <{/t}></th>
+    <td><{input type="radio" name="pay_type" options=$typeList value=$pay_type}></td>
+    <th><{t}>退款支付方式：<{/t}></th>
+    <td><{input type="select" name='payment' rows=$payment valueColumn="id" labelColumn="custom_name" value=$payment_id }></td>
+  </tr>
+    <tr>
+    <th><{t}>退款银行:<{/t}></th>
+    <td colspan="3"><{input type='text' id='payBank' name='bank' value='' width="140"}> <{input id="selectAccount" type="select" name='select_account' options=$pay_account  value=''}></td>
+    </tr>
+    <tr>
+    <th><{t}>退款帐号:<{/t}></th>
+    <td><{input type='text' name='account' id='payAccount' value='' width="140"}></td>
+    <th><{t}>收款人:<{/t}></th>
+    <td><{input type='text' name='pay_account' value=$member.account.uname  width="80"}></td>
+  </tr>
+  <tr>
+       <th><{t}>剩余金额:<{/t}></th>
+    <td><{$order.payed-$order.payinfo.cost_payment}></td>
+  </tr>
+  <tr>
+    <th><{t}>退款金额:<{/t}></th>
+    <td colspan="3"><{input type='text' id='kuaidimoney' vtype="required&&number" name='refund_money' value=$refund_money width="140"}><{input type='hidden' name='return_id' value=$return_id}></td>
+    </tr>
+  <tr>
+  <th><{t}>申请退款的商品:<{/t}></th>
+    <td colspan="3"><{if count($aItems) > 0}>
+  <div class="division">
+    <div  class="table-grid">
+      <input type='hidden' name='bncheckname' id='bncheckname'>
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+        <thead>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+		   <th><{t}>数量<{/t}></th>
+		   <th><{t}>单价<{/t}></th>
+        </tr>
+      </thead>
+      <tbody>
+        <{foreach from=$aItems item=aGoods name="item"}>
+        <tr>
+          <td><{$aGoods.bn}></td>
+          <td class="textleft">
+          <{$aGoods.name}>
+          </td>
+          <td><{$aGoods.quantity}></td>
+          <td><{$aGoods.price}></td>
+        </tr>
+        <{/foreach}>
+      </tbody>
+      </table>
+    </div>
+  </div>
+  <{/if}></td>
+    </tr>
+  <tr>
+  <th><{t}>申请备注:<{/t}></th>
+    <td colspan="3"><{input type="textarea" name="memo"   cols="78" rows="5"}></td>
+    </tr>
+</table>
+</div>
+<table cellspacing="0" cellpadding="0" border="0" align="center" class="tableAction">
+  <tbody><tr>
+    <td align="center">
+    <b class="submitBtn">
+    <{button class="btn btn-primary" type="submit" id="register_refund" label="申请退款" onclick="return submitchk()" }>
+    </b></td>
+  </tr>
+</tbody></table>
+</form>
+<script>
+function submitchk()
+{
+ var a = document.getElementsByName("bncheck");
+ var b = document.getElementById("bncheckname");
+ var c='';
+ for(var i = 0 ;i<a.length;i++)
+ {
+  if(a[i].checked)
+  {
+  c+=a[i].value+',';
+  }
+ }
+ b.value=c;
+}
+$('selectAccount').addEvent('change', function(e){
+  e=new Event(e);
+  var ipt=e.target;
+  var str = ipt.value;
+  var aItems = str.split('-');
+  $('payBank').value = aItems[0];
+  $('payAccount').value = aItems[1];
+});
+
+$('dorefund').store('target',{
+	onRequest:function(e){
+	    //提交按钮:disabled
+	    $('register_refund').set('disabled', 'true');
+	    $('register_refund').getElements('span')[1].set('text','正在处理');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) == 'undefined'){
+    	   $('register_refund').set('disabled', 'true');
+           $('register_refund').getElements('span')[1].set('text','正在处理');
+    	   $('dorefund').getParent('.dialog').retrieve('instance').close();
+           doAction(2);
+           if (confirm("编辑完成，是否回到确认页面?")){
+               window.location = 'index.php?<{$env.server.QUERY_STRING|replace:"do_check":"do_confirm"}>';
+           }else {
+               window.close();
+           }
+       }else{
+    	   $('register_refund').set('disabled', '');
+           $('register_refund').getElements('span')[1].set('text','申请退款');
+       }
+    }
+});
+</script>

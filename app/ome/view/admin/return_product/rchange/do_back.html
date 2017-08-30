@@ -1,0 +1,25 @@
+<form action="index.php?app=ome&ctl=admin_return_rchange&act=do_back&p[0]=<{$reship_id}>&finder_id=<{$env.get.finder_id}>" method="post" id="add_link">
+<input type="hidden" name="reship_id" value="<{$reship_id}>">
+</form>
+<div>确定要对单据<{$reship_bn}>,生成退回单吗?</div>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" onclick="sub_form(event);"}> &nbsp; &nbsp;
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+<script>
+
+function sub_form(event) {
+    $('add_link').fireEvent('submit',new Event(event));
+}
+
+$('add_link').store('target',{
+    onComplete:function(){
+        if($('add_link').getParent('.dialog')){
+        	window.finderGroup['<{$env.get.finder_id}>'].refresh();
+        	$('add_link').getParent('.dialog').retrieve('instance').close();
+        }    
+    }
+});
+
+</script>    
+

@@ -1,0 +1,256 @@
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tbody>
+    <tr>
+      <td >
+        <div class="tableform">
+          <table cellspacing="0" cellpadding="0" border="0" class="orderdetails_basic">
+            <tbody>
+              <tr>
+                <td valign="top" >
+					<h4>复审信息</h4>
+                    <div class="division">
+                       <table cellspacing="0" cellpadding="0" border="0">
+                       <tbody>
+                         <tr>
+                           <th >订单ID：</th>
+                           <td><{$result.order_id}></td>
+                         </tr>
+                         <tr>
+                           <th >订单编号：</th>
+                           <td><{$result.order_bn}></td>
+                         </tr>
+                         <tr>
+                           <th >审核类型：</th>
+                           <td>
+                           <{if $result.retrial_type eq 'audit'}>
+                           <b><font color="red"><{$result.retrial_val}></font></b>
+                           <{else}>
+                           <b><{$result.retrial_val}></b>
+                           <{/if}>
+                           </td>
+                         </tr>
+                         <tr>
+                           <th >审核状态：</th>
+                           <td>
+                           <{if $result.status eq '1'}>
+                           <b><font color="green"><{$result.status_val}></font></b>
+                           <{elseif $result.status eq '2'}>
+                           <b><font color="red"><{$result.status_val}></font></b>
+                           <{else}>
+                           <b><{$result.status_val}></b>
+                           <{/if}>
+                           </td>
+                         </tr>
+                         <tr>
+                           <th >进入复审：</th>
+                           <td><{$result.dateline|cdate}></td>
+                         </tr>
+                         <{if $result.lastdate neq $result.dateline}>
+                         <tr>
+                           <th >审核日期：</th>
+                           <td><font color="red"><{$result.lastdate|cdate}></font></td>
+                         </tr> 
+                         <{/if}>                         
+                     </tbody>
+                     </table>
+                    </div>
+                </td>
+                <td >
+                  <h4>商品价格</h4>
+                  <div class="division">
+                    <table cellspacing="0" cellpadding="0"  border="0">
+                      <tbody>
+                        <tr>
+                          <th >商品总额：</th>
+                          <td><{$order.cost_item|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >配送费用：</th>
+                          <td><{$order.shipping.cost_shipping|cur}></td>
+                        </tr>
+                        <{if $order.shipping.cost_protect}>
+                        <tr>
+                          <th >保价费用：</th>
+                          <td><{$order.shipping.cost_protect|cur}></td>
+                        </tr>
+                        <{/if}>
+                        <tr>
+                          <th >税金：</th>
+                          <td><{$order.cost_tax|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >折扣：</th>
+                          <td><{$order.discount|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >商品促销优惠：</th>
+                          <td><{$order.pmt_goods|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >订单促销优惠：</th>
+                          <td><{$order.pmt_order|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >订单总额：</th>
+                          <td><span class="amount"><{$order.total_amount|cur}></span></td>
+                        </tr>
+                        <{if $order.shipping.is_cod eq 'true'}>
+                        <tr>
+                          <th >应收金额：</th>
+                          <td><span class="amount"><{$order.receivable|cur}></span></td>
+                        </tr>
+                        <{/if}>
+                        <tr>
+                          <th >已支付金额：</th>
+                          <td><{$order.payed|cur}></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                </td>
+               <td >
+              <h4>订单其他信息</h4>
+                    <div class="division">
+                       <table cellspacing="0" cellpadding="0" border="0">
+                    
+                         <tbody><tr>
+                           <th >配送方式：</th>
+                           <td><{$order.shipping.shipping_name}></td>
+                         </tr>
+                         <tr>
+                           <th >配送保价：</th>
+                           <td><{if $order.shipping.is_protect=='true'}>是 <{else}>否<{/if}>
+                    
+                           </td>
+                         </tr>
+                         <tr>
+                           <th >商品重量：</th>
+                           <td><{$order.weight}> g</td>
+                         </tr>
+                         <tr>
+                           <th >支付方式：</th>
+                           <td><{$order.payinfo.pay_name}></td>
+                         </tr>
+                         <tr>
+                           <th >支付费用：</th>
+                           <td><{$order.payinfo.cost_payment|cur}></td>
+                         </tr>
+                     </tbody>
+                     </table>
+                 </div>
+               </td>
+          <td >
+            <h4><span><{t}>收货人信息<{/t}></span></h4>
+              <div class="division">
+                <table cellspacing="0" cellpadding="0" border="0">
+
+                  <tbody><tr>
+                    <th >要求到货时间：</th>
+                    <td><{$order.consignee.r_time}></td>
+                  </tr>
+                  <tr>
+                    <th >姓名：</th>
+                    <td><{$order.consignee.name}></td>
+                  </tr>
+                  <tr>
+                    <th >电话：</th>
+                    <td><{$order.consignee.telephone}></td>
+                  </tr>
+                  <tr>
+                    <th >手机：</th>
+                    <td><{$order.consignee.mobile}></td>
+                  </tr>
+                  <tr>
+                    <th >地区：</th>
+                    <td><{$order.consignee.area|region}></td>
+                  </tr>
+                  <tr>
+                    <th >地址：</th>
+                    <td style="white-space: normal; line-height: 18px;"><{$order.consignee.addr|escape:'html'}></td>
+                  </tr>
+                  <tr>
+                    <th >邮编：</th>
+                    <td><{$order.consignee.zip|escape:'html'}></td>
+                  </tr>
+                </tbody></table>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+      </table>
+      </div>
+      </td>
+      </tr>
+      <tr><td>
+
+     <{if $sellagent}>
+     <div class="tableform">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+        <tbody>
+         <tr>
+          <td colspan="5"><strong>代销人信息：</strong></td>
+        </tr>
+        <tr>
+          <td>用户名：<{$sellagent.member_info.uname}></td>
+          <td>姓名：<{$sellagent.member_info.name}></td>
+          <td>性别：<{if $sellagent.member_info.sex == 'male'}>男<{else}>女<{/if}></td>
+          <td>出生日期：<{$sellagent.member_info.birthday}></td>
+          <td>E-mail：<{$sellagent.member_info.email}>  QQ:<{$sellagent.member_info.qq}></td>
+        </tr>
+        <tr>
+          <td>地区：<{$sellagent.member_info.area|region}></td>
+          <td>详情地址：<{$sellagent.member_info.addr}></td>
+          <td>邮编：<{$sellagent.member_info.zip}></td>
+          <td>手机：<{$sellagent.member_info.mobile}></td>
+          <td>固定电话：<{$sellagent.member_info.tel}></td>
+        </tr>
+        <tr>
+          <td>网站名称：<{$sellagent.website.name}></td>
+          <td>网站域名：<{$sellagent.website.domain}></td>
+          <td colspan="3">网站LOGO：<{if $sellagent.website.logo}><a href="<{$sellagent.website.logo}>" target="_blank">查看</a><{/if}></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <{/if}>
+
+  <div class="tableform">
+
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+
+      <tbody>
+       <tr><th><strong>会员备注：</strong></th><td>
+         <{foreach from=$order.custom_mark item=items}>
+         <div id="memo_show">
+          <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+      </td></tr>
+      <tr><th><strong>订单备注：</strong></th><td>
+        <{if $order.mark_text}>
+        <{foreach from=$order.mark_text item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+      </div>
+      <{/foreach}>
+      <{/if}>
+    </td></tr>
+      <tr>
+        <th><strong>客服修改备注：</strong></th>
+        <td><span><font color="red"><{$result.kefu_remarks}></font> by <{$result.dateline|cdate}></span></td>
+      </tr>
+      <{if $result.remarks}>
+      <tr>
+        <th><strong>订单复审备注：</strong></th>
+        <td><span><font color="red"><{$result.remarks}></font> by <{$result.lastdate|cdate}></span></td>
+      </tr>
+      <{/if}> 
+      </tbody>
+</table>
+</div>
+</td></tr>
+</tbody>
+</table>
+<style type="text/css">
+.finder-detail .tableform table td { vertical-align:top; }
+</style>

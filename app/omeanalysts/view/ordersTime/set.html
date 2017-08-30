@@ -1,0 +1,48 @@
+<style>
+  .items{margin:8px 0;}
+  .finder-title h3{float:left;}
+  .finder-title q{float:left;color:#999;margin-top:4px;}
+</style>
+<div class="division">
+  <div class="finder-title"><h3>报表区间设置</h3><q>（<span class="c-orange">注:区间设置成功后，隔日会显示报表展示图</span>）</q></div>
+  <form action="<{$form_action}>" method="post" id="filter_form1">
+    <div class="gray_form">
+      <div class="division">
+        <div style="margin:10px 0;"><span class="notice">注：仅填写一个数值时，报表只能统计此数值的数量。</span></div>
+        <ul>
+          <{foreach from=$data key=key item=item}>
+            <li><{input type="text" size="5" name="arfrom[]" value=$item.from vtype="number"}> - <{input type="text" size="5" name="arto[]" value=$item.to vtype="number"}>&nbsp;<{img src="bundle/delete.gif" app="desktop" class="pointer"}></li>
+          <{/foreach}>
+        </ul>
+        <div style="margin-top:15px;"><{button type="button" label="添加区间" icon="btn_add.gif" id="add_area" app="desktop"}></div>
+      </div>
+    </div>
+    <div class="division"><{button class="btn-primary" type="submit" label="保存设置" id="brandForm"}></div>
+  </form>
+</div>
+<script>
+  (function(){
+    $('filter_form1').getElements('.pointer').addEvent('click',function(e){
+        this.getParent('li').destroy();
+     });
+    var tpl = '<{input type="text" size="5" name="arfrom[]" vtype="number"}> - <{input type="text" size="5" name="arto[]" vtype="number"}>&nbsp;<{img src="bundle/delete.gif" app="desktop" class="pointer"}>';
+    $('add_area').addEvent('click',function(e){
+      var item = new Element('div.items',{html:tpl}).inject(this.getParent(),'before');
+      item.getElement('.pointer').addEvent('click',function(e){
+        item.destroy();
+      });
+    });
+
+    $('brandForm').addEvent("click",function(){
+        _form = $('filter_form1');
+        _form.store('target',{
+        onSuccess:function(){
+
+            $('brandForm').getParent('.dialog').retrieve('instance').close();
+        }
+        });
+        _form.fireEvent('submit',{stop:$empty});
+
+    });
+  })();
+</script>

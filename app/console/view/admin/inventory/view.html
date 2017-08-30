@@ -1,0 +1,74 @@
+<{if ($flag == 'false')}>
+<div class="tableform">
+<h4><{t}>结果:<{/t}></h4>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr>
+<td align="center"><{$msg}></td>
+</tr>
+<tr>
+<td align="center"><{button type="submit" label="确认" id="b223" }></td>
+</tr>
+</tbody>
+</table>
+</div></div>
+<{else}>
+<div class="tableform">
+<h4><{t}>结果:<{/t}></h4>
+<div class="division">
+<form id="confirm123" action="index.php?app=console&ctl=admin_inventory_apply&act=finish_confirm" method="POST">
+<input type="hidden" name="apply_id" value="<{$apply.inventory_apply_id}>" />
+<input type="hidden" name="branch_bn" value="<{$branch}>" />
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr>
+<td align="center">数据正确，请确认</td>
+</tr>
+<tr>
+<td align="center"><{button type="submit" label="确认" id="b123" }></td>
+</tr>
+</tbody>
+</table>
+</form>
+</div></div>
+
+<{/if}>
+<script>
+var finder = opener.finderGroup['<{$finder_id}>'];
+if ($('b223')){
+	$('b223').addEvent('click', function (e){
+	    finder.refresh.delay(400, finder);
+	    setTimeout("window.close();",400);
+	});
+}
+
+if ($('confirm123')){
+	$('confirm123').store('target', {
+        onRequest: function() {
+           if ($('b123')) {
+               $('b123').set('disabled', 'true');
+               $('b123').getElements('span')[1].set('text', '确认中');
+           }
+       },
+       onComplete: function(jsontext) {
+           var json = Json.evaluate(jsontext);
+           var finder = opener.finderGroup['<{$finder_id}>'];
+           if (typeof(json.error) == 'undefined') {
+               if (json.success == '成功：处理成功') {
+                   try {
+                       finder.refresh.delay(400, finder);
+                   } catch(e) {}
+                   setTimeout("window.close();",400);
+               }
+               else {
+                   if ($('b123')) {
+                       $('b123').set('disabled', '');
+                       $('b123').getElements('span')[1].set('text', '确认');
+                   }
+               }
+           }
+       }
+    });
+}
+</script>

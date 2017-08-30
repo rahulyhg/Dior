@@ -1,0 +1,74 @@
+<div class="division">
+  <h3>合并发货单操作</h3>
+  <p>（注意：如果勾选合并的发货单，此大发货单将消失，所属的发货单将与其他勾选的发货单合并为一张新的发货单）</p>
+  <div class="tableform">
+  <form name="form1" id="ome_delivery_merge" method="post" action="index.php?app=ome&ctl=admin_receipts_print&act=doMerge">
+      <table border="0" cellspacing="0" cellpadding="0" id="datatable">
+        <tr>
+            <td >√<input type="hidden" id="oldid" name="check[]" value="<{$olddly.delivery_id}>" /></td>
+            <td ><strong>来源发货单号：</strong><{$olddly.delivery_bn}></td>
+            <td ><strong>是否合并：</strong><{if $olddly.is_bind=='true'}>
+            <font color="red">是</font>
+            <br>子ID:<{foreach from=$olddly.ids item=i}>
+            <br><{$i.delivery_bn}><{/foreach}><{else}>否<{/if}>
+            <input type="hidden" name="is_bind[<{$olddly.delivery_id}>]" value="<{$olddly.is_bind}>" /></td>
+            <td ><strong>订单状态：</strong><{if $olddly.order_status=='ERROR'}><font color="red">异常</font><{else}>正常<{/if}><input type="hidden" name="order_status[<{$olddly.delivery_id}>]" value="<{$olddly.order_status}>" /></td>
+        </tr>
+        <{foreach from=$dly item=item}>
+        <tr>
+          <td ><{if $item.order_status=='ERROR'}>--<{else}><input type="checkbox" name="check[]" value="<{$item.delivery_id}>" /><{/if}></td>          
+          <td ><strong>发货单号：</strong><{$item.delivery_bn}></td>
+          <td ><strong>是否合并：</strong><{if $item.is_bind=='true'}>
+            <font color="red">是</font>
+            <br>子ID:<{foreach from=$item.ids item=i}>
+            <br><{$i.delivery_bn}><{/foreach}><{else}>否<{/if}>
+            <input type="hidden" name="is_bind[<{$item.delivery_id}>]" value="<{$item.is_bind}>" /></td>
+          <td ><strong>订单状态：</strong><{if $item.order_status=='ERROR'}><font color="red">异常</font><{else}>正常<{/if}><input type="hidden" name="order_status[<{$item.delivery_id}>]" value="<{$item.order_status}>" /></td>
+        </tr>
+        <{/foreach}>
+        <tr>
+          <th colspan="4"  align="right"><strong>请选择物流公司：</strong><{input type="select" name="logi_id" rows=$dly_corp valueColumn="corp_id" labelColumn="name" value=''}></th>
+        </tr>
+      </table>
+</form>
+  </div>
+</div>
+<{capture name="footbar"}>
+<div class="table-action">
+    <{button label="合并" class="btn-primary"  type="submit" id="confirm_btn" onClick="do_action()"}>
+</div>
+<{/capture}>
+<script>
+  (function(){
+    $('datatable').easyCheck('td:first-child');
+    var btn = $('confirm_btn');
+
+    $('ome_delivery_merge').store('target',{
+      onRequest:function(){
+        $('confirm_btn').set('disabled', 'true');
+        $('confirm_btn').getElements('span')[1].set('text','合并中');
+      },
+      onComplete:function(jsontext){
+        //jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+        var json = Json.evaluate(jsontext);
+        if (typeof(json.error) != 'undefined'){
+          $('confirm_btn').set('disabled', '');
+          $('confirm_btn').getElements('span')[1].set('text','合并');
+          }else{
+          $('confirm_btn').set('disabled', 'true');
+          $('confirm_btn').getElements('span')[1].set('text','合并完成');
+          $$('input[type=checkbox]').each(function(e){
+               opener.finderGroup['<{$env.get.finder_id}>'].eraseSelected(e.value);
+          });
+          opener.finderGroup['<{$env.get.finder_id}>'].eraseSelected($('oldid').value);
+          opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+          window.close();
+        }
+      }
+    });
+  })()
+  
+  function do_action(){
+      $('ome_delivery_merge').fireEvent('submit',{stop:function(){}});
+  }
+</script>

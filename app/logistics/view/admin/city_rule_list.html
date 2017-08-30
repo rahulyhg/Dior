@@ -1,0 +1,88 @@
+<style>
+.shop-name{
+    color:red;font-weight:bold;padding:5px;
+}
+
+.area-name{
+    font-weight:bold;font-size:14px;
+}
+</style>
+
+<div class="tableform">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td nowrap="nowrap" style="width:auto;">
+   <div class="tabs-wrap select-tabs delivery-cfg-tab">
+   <ul style="margin-top:2px;padding:0;">
+    <li class="tab <{if $env.get.type=='default' || $env.get.type==''}>current<{/if}>" >
+     <span><a href="index.php?app=logistics&ctl=admin_area_rule&act=area_rule_list&type=default&rule_id=<{$rule_id}>&a=c"><{t}>默认规则<{/t}></a></span>
+    </li>
+ 
+<li class="tab <{if $env.get.type=='other'}>current<{/if}>" >
+<span><a href="index.php?app=logistics&ctl=admin_area_rule&act=area_rule_list&type=other&rule_id=<{$rule_id}>&a=c"><{t}>下属特殊地区规则<{/t}></a></span>
+    </li>
+    
+ 
+   </ul>
+   </div>
+  </td>
+ </tr>
+
+ </table>
+<div class="division">
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+ <tbody>
+<tr><th>规则名称:</th><td><{$rule.rule_name}></td></tr>
+<tr><th>当前规则适用地区:</th><td><{$rule.first_city}></td></tr>
+
+<tr><th>规则类型:</th><td>
+<{if $rule.set_type=='weight'}> 重量区间<{/if}>
+<{if $rule.set_type=='noweight'}>任意重量<{/if}>
+</td></tr>
+
+
+<tr><th>规则详情:</th><td>
+<{if $rule.set_type=='weight'}>
+
+
+<{foreach from=$rule.item_list item=item_list}>
+
+<div style="padding-bottom:2px;" id="<{$item_list.item_id}>">重量区间:<{$item_list.min_weight}>g<{if $item_list.max_weight=='-1'}>以上<{else}>至<{$item_list.max_weight}>g<{/if}>  首选物流公司:<{$item_list.corp_name}><{if $item_list.second_corp_name}>, 次选物流公司:<{$item_list.second_corp_name}><{/if}></div>
+
+
+<{/foreach}>
+
+
+
+<{/if}>
+<{if $rule.set_type=='noweight'}>
+
+
+首选物流公司:
+<{$rule.item_list.0.corp_name}>
+<{if $rule.item_list.0.second_corp_name}>, 次选物流公司:<{$rule.item_list.0.second_corp_name}><{/if}>
+
+<{/if}>
+</td></tr>
+ </tbody>
+</table>
+
+</div>
+<div class="table-action">
+                <{button type="button" label="编辑规则" id="edit_city_rule" }>
+            </div>
+
+
+</div>
+<script>
+$('edit_city_rule').addEvent('click',function(e){
+
+this.disabled=false;
+var url = 'index.php?app=logistics&ctl=admin_area_rule&act=editDefaultRule&rule_id=<{$rule_id}>&branch_id=<{$rule.branch_id}>';
+    new Dialog(url,{title:'编辑默认规则',width:800,height:500});
+
+});
+
+
+</script>

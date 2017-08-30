@@ -1,0 +1,47 @@
+<{capture name="header"}>
+  <link href="../app/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="tableform">
+    <div class="division">
+        <table border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <th>店铺名:</th>
+            <td ><{$aftersales.shop_id|default:'-'}></td>
+            <th>订单号：</th>
+            <td ><{$aftersales.order_id|default:'-'}></td>
+            <th >售后申请单号：</th>
+            <td ><{$aftersales.return_id|default:'-'}></td>
+            <th >退换货单号：</th>
+            <td ><{$aftersales.reship_id|default:'-'}></td>
+            <th >退款申请单号：</th>
+            <td ><{$aftersales.return_apply_id|default:'-'}></td>
+        </tr> 
+        <tr>
+            <th>退款金额：</th>
+            <td><{$aftersales.refundmoney|cur}></td>
+            <th >支付类型：</th>
+            <td ><{$aftersales.pay_type|default:'-'}></td>
+            <th >收款账号：</th>
+            <td ><{$aftersales.account|default:'-'}></td>
+            <th >收款银行：</th>
+            <td ><{$aftersales.bank|default:'-'}></td>
+            <th >支付账户：</th>
+            <td ><{$aftersales.pay_account|default:'-'}></td>
+        </tr>
+        <tr>
+            <th >退款申请金额：</th>
+            <td ><{$aftersales.refund_apply_money|cur}></td>
+            <th >退款支付方式：</th>
+            <td ><{$aftersales.paymethod|default:'-'}></td>
+            <th >退款申请创建时间：</th>
+            <td ><{$aftersales.create_time|cdate:SDATE_FTIME}></td>
+            <th >支付完成时间：</th>
+            <td ><{$aftersales.last_modified|cdate:SDATE_FTIME}></td>
+        </tr>
+
+        </table>
+    </div>
+
+
+</div>

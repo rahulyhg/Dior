@@ -1,0 +1,81 @@
+<?php
+$db['api_fail']=array(
+    'columns' => array(
+        'id' => array(
+            'type' => 'int unsigned',
+            'required' => true,
+            'pkey'     => true,
+            'extra'    => 'auto_increment',
+            'label'    => 'ID',
+            'width'    => 150,
+            'editable' => false,
+        ),
+        'obj_bn' => array(
+            'type'     => 'varchar(50)',
+            'label'    => '单据编号',
+            'in_list'  => true,
+            'default_in_list' => true,
+            'filterdefault' => true,
+            'required' => true,
+            'order' => 10,
+            'searchtype' => 'has',    
+        ),
+        'obj_type' => array(
+            'type' => 'varchar(50)',
+            'label' => '单据类型',
+            'in_list' => true,
+            'default_in_list' => true,
+            'required' => true,
+            'order' => 20,
+        ),
+        'method' => array(
+            'type' => 'varchar(50)',
+            'label' => '操作',
+            'in_list'=>true,
+            'default_in_list'=>true,
+            'required' => true,
+            'order' => 30,
+        ),
+        'err_msg' => array(
+            'label' => '失败原因',
+            'type' => 'longtext',
+            'default' => '',
+            'order' => 40,
+            'in_list' => true,
+            'default_in_list' => true,
+        ),
+        'err_code' => array(
+            'type' => 'varchar(255)',
+            'default' => '',
+            'order' => 50,
+        ),
+        'fail_times' => array(
+            'type' => 'mediumint(8) unsigned',
+            'label' => '失败次数',
+            'in_list' => true,
+            'default_in_list' => true,
+            'default' => '0',
+            'order' => 60,
+        ),
+        'status' => array(
+            'type' => array(
+                'running'=>'进行中',
+                'succ'=>'成功',
+                'fail'=>'失败',
+            ),
+            'label' => '状态',
+            'in_list' => true,
+            'default_in_list' => true,
+            'default' => 'fail',
+            'order' => 70,
+        ),
+    ),
+    'index' => array(
+        'ind_obj_bn' => array(
+            'columns' => array('obj_bn','obj_type'),
+        ),
+    ),
+    'comment' => '请求失败记录',
+    'engine' => 'innodb', 
+    'version' => '$Rev: 44513 $',
+);

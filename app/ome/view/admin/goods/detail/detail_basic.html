@@ -1,0 +1,191 @@
+<div class="tableform">
+<div class="division">
+			<table border="0" cellpadding="0" cellspacing="0" style="table-layout:fixed;">
+			<thead>
+				<tr>
+					<!-- <th><{t}>所属分类：<{/t}></th>
+					<td><{$goods.cat_name}></td> -->
+				    <th><{t}>所属类型：<{/t}></th>
+				    <td><{$goods.type_name}>	</td>
+				    <th><{t}>品牌：<{/t}></th>
+                    <td colspan="3"><{$goods.brand_name}></td>
+				</tr>
+				</thead>
+				<thead>
+<tr>
+					<th><{t}>商品名称：<{/t}></th>
+					<td><{$goods.name}></td>
+				    <th><{t}>商品编号：<{/t}></th>
+				    <td><{if $goods.bn_display_switch}><{$goods.bn}>	<{else}>
+				<{$goods.bn}>
+				<{/if}></td>
+				</tr>
+				</thead>
+				<thead>
+					<tr>
+					<{if !$goods.spec }>
+						<th><{t}>条形码：<{/t}></th>
+						<td><{$goods.barcode}></td>
+					<{else}>
+						<th></th>
+						<td></td>
+					<{/if}>
+					<th><{t}>计量单位：<{/t}></th>
+                    <td><{$goods.unit}></td>
+				</tr>
+				</thead>
+			    <thead>
+				<tr>
+					<th><{t}>简介：<{/t}></th>
+					<td colspan="3" style="word-wrap:break-word;"><{$goods.brief}></td>
+				</tr>
+				</thead>
+				<!-- <thead>
+				<tr>
+					<th><{t}>是否上架销售：<{/t}></th>
+					 <td colspan="3">
+					 <{if $goods.status != 'false' }>是<{/if}>
+					  <{if $goods.status == 'false' }>否<{/if}>									 </td>
+				</tr>
+				</thead>-->
+				<{if $point_setting == 2}>
+				  <thead>
+				  <tr>
+				    <th><{t}>积分：<{/t}></th>
+				    <td colspan="3"><{$goods.score}></td>
+				  </tr>
+				  </thead>
+				<{/if}>
+			</table>
+
+
+            <div id="goods-spec">
+<{if $goods.spec }>
+ <h4><{t}>规格：<{/t}></h4>
+
+<div class="goods-spec-cell" id='goods-spec-product'>
+    <table cellspacing="0" cellpadding="0" border="0" class="gridlist">
+        <thead id="productNodeTitle">
+            <tr>
+                <th orderkey="picurl"><{t}>预览图片<{/t}></th>
+                <th orderkey="bn"><{t}>货号<{/t}></th>
+                <{foreach from=$goods.spec item=spec key=specid}>
+                <th orderkey="product_id"><{$spec.spec_name|escape:'html'}>
+                </th>
+                <{/foreach}>
+                <th orderkey="store"><{t}>条码<{/t}></th>
+                <th orderkey="store"  style="display:none;"><{t}>警戒库存<{/t}></th>
+                <th orderkey="store" style="display:;"><{t}>销售价<{/t}></th>
+                <th orderkey="weight"><{t}>重量<{/t}></th>
+                <th orderkey="cost"><{t}>成本价<{/t}></th>
+                <th orderkey="unit"><{t}>单位<{/t}></th>
+                <!-- <th ><{t}>上架<{/t}></th> -->
+            </tr>
+        </thead>
+		<{foreach from=$goods.product item=product}>
+	      <tr >
+              <td align="center"><a href='<{$product.picurl}>' class='img-tip pointer' style="overflow:hidden;height:12px;" target='_blank'
+		        onmouseover='bindFinderColTip(event);'><span>&nbsp;pic</span></a></td>
+			  <td><{$product.bn}></td>
+
+			  <{foreach from=$product.spec_desc.spec_value item=spec key=specid}>
+			  <td><{$spec}></td>
+			  <{/foreach}>
+
+			  <td><{$product.barcode}></td>
+			  <td style="display:none;"><{$product.alert_store}></td>
+			  <td  style="display:;"><{$product.price.price.price}></td>
+			  <td><{$product.weight}></td>
+			  <td><{$product.price.cost.price}></td>
+			  <td><{$product.unit}></td>
+			  <!-- <td><{if $product.status==false}>否<{else}>是<{/if}></td> -->
+		  </tr>
+        <{/foreach}>
+  </table>
+</div>
+
+
+<{else}>
+ <table border="0" cellpadding="0" cellspacing="0" id="nospec_body" >
+<tbody >
+
+  <!-- <tr style="display:none">
+    <th><{t}>销售价：<{/t}><{$product.product_id}></th>
+    <td>
+
+
+	  </td>
+  </tr>
+  <tr style="display:none">
+    <th><{t}>成本价：<{/t}></th>
+    <td><{input type="unsigned" name="goods[product][0][price][cost][price]" maxlength="30" style="width:60px" value=$product.price.cost.price }><span class="notice-inline"><{t}>前台不会显示，仅供后台使用。<{/t}></span></td>
+  </tr>
+  <tr style="display:none">
+	<th><{t}>市场价：<{/t}></th>
+	<td><{input type="text" name="goods[product][0][price][mktprice][price]" maxlength="30" value=$product.price.mktprice.price }></td>
+  </tr> -->
+  <thead>
+  <{foreach from=$goods.product item=product}>
+  <tr>
+    <th><{t}>货号：<{/t}></th>
+    <td><{$product.bn}></td>
+    <{if $product.weight}>
+    <th><{t}>重量：<{/t}></th>
+    <td><{$product.weight}><{t}>克(g)<{/t}></td>
+    <{/if}>
+    <th><{t}>成本价：<{/t}></th>
+    <td><{$product.price.cost.price }></td>
+  </tr>
+  <{/foreach}>
+  </thead>
+  <{if $prototype.is_physical}>
+  <tr style="display:none">
+    <th><{t}>库存：<{/t}></th>
+    <td><{input type="unsigned" value=$product.store name="goods[product][0][store]" style="width:60px" maxlength="25" }></td>
+  </tr>
+  <{/if}>
+
+</tbody>
+</table>
+<{/if}>
+
+</div>
+
+<{if $goods.type.setting.use_props}>
+       <h4><{t}>扩展属性：<{/t}></h4>
+			<table border="0" cellpadding="0" cellspacing="0">
+				<{if $goods.type.setting.use_props}>
+				<{foreach from=$goods.type.props key=key item=aProp}>
+				<tr class="prop">
+					<th><{$aProp.name}>：</th>
+					<td><{assign var="p_col" value="p_{$key}"}>
+						<{if $aProp.type eq 'select'}>
+						<{$goods.props[$p_col].value}>
+						<{else}>
+						<{$goods.props[$p_col].value}>
+						<{/if}></td>
+				</tr>
+				<{/foreach}>
+				<{/if}>
+			</table>
+       <{/if}>
+<{if $goods.type.params}>
+<h4><{t}>属性参数<{/t}></h4>
+<{/if}>
+<table>
+<{foreach from=$goods.type.params item=param key=group}>
+<tr>
+<th colspan="2" style="text-align:left; background:none;"><{$group}></th>
+</tr>
+<{foreach from=$param item=value key=item}>
+<tr>
+<th><{$item}></th>
+<{assign var="params" value="params"}>
+<td><{$goods[$params][$group][$item]}></td>
+</tr>
+<{/foreach}>
+<{/foreach}>
+</table>
+ </div>
+</div>
+

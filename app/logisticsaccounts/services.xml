@@ -1,0 +1,24 @@
+<services>
+<service id="desktop_finder.logisticsaccounts_mdl_actual">
+        <class>logisticsaccounts_finder_actual</class>
+    </service>
+<service id="desktop_finder.logisticsaccounts_mdl_statements">
+        <class>logisticsaccounts_finder_statements</class>
+    </service>
+	 <service id="operation_log">
+        <class>logisticsaccounts_operation_log</class>
+    </service>
+
+	  <service id="crontab.script">
+        <class>logisticsaccounts_crontab_getscript</class>
+    </service>
+	<service id="desktop_finder.logisticsaccounts_mdl_actual_task">
+        <class>logisticsaccounts_finder_actual_task</class>
+    </service>
+	<service id="extend_filter_logisticsaccounts_mdl_actual_task">
+        <class>logisticsaccounts_finder_extend_filter_actual_task</class>
+    </service>
+	 <service id="data_clear">
+        <class>logisticsaccounts_service_data_clear</class>
+    </service>
+</services>    

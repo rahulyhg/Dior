@@ -1,0 +1,50 @@
+<form id="import_form" class="tableform" enctype="multipart/form-data"  method="post" action="index.php?app=wms&ctl=admin_inventory&act=index&action=to_import&flt=list&finder_id=<{$env.get.finder_id}>">
+<input type="hidden" name="app" value="taoguaninventory" />
+<input type="hidden" name="model" value="inventory" />
+
+<h4><{t}>第一步：请选择导入类型<{/t}></h4>
+<div class="division">
+<table border="0" cellpadding="0" cellspacing="0">
+    
+	
+	<tr>
+		<th >导入类型：</th>
+		<td ><input type="radio" name="import_type" value="1" checked>
+		  货品 
+		    <input
+			type="radio" name="import_type" value="0" > 货位
+		</td>
+	</tr>
+	
+</table>
+</div>
+
+<h4><{t}>第二步：上传您要导入的文件<{/t}></h4>
+<div class="division">
+
+<table cellpadding="0" cellspacing="0" border="0">
+
+	<tr>
+		<th><{t}>上传文件：<{/t}></th>
+		<td><input id="ImportCSV" type="file" name="import_file"></td>
+	</tr>
+	<tr>
+		<th>&nbsp;</th>
+		<td><{button class="btn-primary" label="上传" type="submit"}></td>
+	</tr>
+</table>
+</div>
+</form>
+<script>
+$('import_form').store('target', {
+        onComplete: function(jsontext) {
+alert('a');
+        $('import_form').getParent('.dialog').retrieve('instance').close();
+        window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+
+            
+        }
+});
+</script>
+
+

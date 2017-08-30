@@ -1,0 +1,13 @@
+<desktop>
+    <permissions>
+        <permission id="regions">地区管理</permission>
+    </permissions>
+    
+    <workground name="基础档案" id="goods_manager"  order="500">
+        <menugroup name="地区管理">
+            <menu controller='regions' action='index' permission='regions' display='true' order='8000700'>地区管理</menu>
+            <menu controller='regions_setting' action='index' permission='regions' display='true' order='8000800'>地区设置</menu>
+        </menugroup>
+    </workground>
+
+</desktop>

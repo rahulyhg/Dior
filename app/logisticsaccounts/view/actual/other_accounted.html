@@ -1,0 +1,113 @@
+<h3><{t}>批量记账<{/t}></h3>
+<div class="tableform">
+ <div class="division">
+<form id='actual_form' method='post' action='index.php?app=logisticsaccounts&ctl=admin_actual&act=do_save_actual'>
+       <table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+	    <tbody>
+             <tr >
+                    <th align="left" ><h3>出货信息</h3></th>
+                    <th align="left" >&nbsp;</th>
+                    <th align="left" >&nbsp;</th>
+                    <th align="left" >&nbsp;</th>
+             </tr>
+                <tr >
+                    <th ><t>出货仓库:</t></th>
+                  <td><{$actual.branch_name}></td>
+                  <td>快递公司</td>
+                  <td><{$actual.logi_name}></td>
+                </tr>
+            
+                <tr >
+                    <th ><t>发货时间:</t></th>
+                    <td><{$actual.delivery_time}></td>
+                    <td>订单号：</td>
+                    <td><{$actual.order_bn}></td>
+                </tr>
+            <tr >
+                    <th align="left"><h3>收件人信息</h3></th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+            </tr>
+            <tr >
+                    <th><t>收件人：</t></th>
+                    <td ><{$actual.ship_name}></td>
+                    <td >收货地区</td>
+                    <td ><{$actual.ship_area}></td>
+            </tr>
+            <tr >
+                    <th><t>收件地址：</t></th>
+                    <td colspan="3" ><{$actual.ship_addr}></td>
+            </tr>
+                <tr >
+                    <th align="left"><h3>对账信息确认</h3></th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+                </tr>
+                <tr >
+                    <th><t>出库称重：</t></th>
+                    <td><{$actual.weight}></td>
+                    <td>预估运费：</td>
+                    <td><{$actual.delivery_cost_expect|cur}></td>
+                </tr>
+                <tr >
+                  <th>物流称重:</th>
+                  <td><{$actual.logi_weight}></td>
+                  <td>账单金额:</td>
+                  <td><{$actual.delivery_cost_actual|cur}></td>
+                </tr>
+                <tr >
+                  <th>记账费用:</th>
+                  <td><{$actual.actual_amount|cur}></td>
+                  <td>记账状态：</td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr >
+                  <th>备注:</th>
+                  <td><textarea name="textarea"></textarea></td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+				 </tbody>
+    </table>
+
+    <input type='hidden' id='aid' name='aid' value='<{$actual.aid}>'>
+             <div id="cc" class="noprint table-action">
+              <{button type="button" class="btn" id="actual-save-btn" label="保存"}> &nbsp; <{button type="button" class="btn" id="actual-confirm-btn" label="保存并确认"}></div>
+            
+</form>           
+  </div>
+</div>
+<script>
+(function(){
+$('actual-save-btn').addEvent('click',function(e){
+    var _this=this;
+    var form=this.getParent('form');
+    var querystring = $('actual_form').toQueryString();
+    new Request({url:'index.php?app=logisticsaccounts&ctl=admin_actual&act=do_save_actual',
+    data:querystring,
+    onComplete:function(rs){
+     rs=JSON.decode(rs);
+     if (typeof(rs.error) != 'undefined'){
+
+              return MessageBox.error(rs.error);
+    }else{
+
+    _this.getParent('.dialog').retrieve('instance').close();
+    window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+    
+    
+    }
+    }}).send(); 
+});
+
+
+
+
+
+
+})();
+
+
+</script>

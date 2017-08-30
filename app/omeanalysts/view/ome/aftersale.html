@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+	<table>
+	<tr>
+	<td>问题名称</td>
+	<td>同货品中有该问题的数量</td>
+	</tr>
+	<{foreach from=$data item=item}>
+	<tr>
+	<td><{$item['cat_name']}></td>
+	<td><{$item['nums']}></td>
+	</tr>
+	<{/foreach}>
+	</table>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<app>
+    <name>自动任务</name>
+    <description>自动任务</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>0.1</version>
+    <license>shopex license</license>
+
+	<depends>
+		<app>ome</app>
+	</depends>
+
+</app>

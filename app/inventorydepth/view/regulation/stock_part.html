@@ -1,0 +1,113 @@
+<input type='hidden' name='condition' value='stock'>
+<div class="formula-new clearfix" id='rules_stock' >
+
+    <div class='clearfix' style="margin:10px;">
+         <span class="fl mr15"> 更新动作</span>
+         <span class="fl">
+            <select class="x-input-select inputstyle" name='content[stockupdate]'>
+                <option value='0' <{if $data.content.stockupdate=='0'}>selected<{/if}>>不更新店铺库存</option>
+                <option value='1' <{if $data.content.stockupdate!='0'}>selected<{/if}>>更新店铺库存</option>
+            </select>
+         </span>
+    </div>
+
+    <div class="clearfix formula" <{if $data.content.stockupdate=='0'}>style="display:none;"<{else}>style="display:block;"<{/if}>>
+        <span class="fl mr15">　店铺库存 =</span>
+        
+        <div class="fl gray_form">
+            <span class="action-group">
+                <button type="button" class="cal-btn var-btn">使用变量</button>
+                <ul class="var">
+                    <{foreach from=$stock item=val}>
+                    <li><{$val}></li>
+                    <{/foreach}>
+                </ul>
+            </span>
+
+            <span class="action-group">
+                <button type="button" class="cal-btn oper-btn"><{$calculation|array_values|implode:' '}></button>
+                <ul class="oper">
+                    <{foreach from=$calculation item=val}>
+                    <li><{$val}></li>
+                    <{/foreach}>
+                </ul>
+            </span>
+
+            <span class="action-group"><button type="button" class="cal-btn pare-btn">(...)</button>
+                <ul class="pare"><li class="lpare">(</li><li class="rpare">)</li></ul>
+            </span>
+
+            <span class="action-group"><button type="button" class="cal-btn num-btn">1 2 3</button>
+                <ul class="num">
+                    <li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li><li>9</li><li class="zero">0</li><li class="point">.</li>
+                </ul>
+            </span> 
+
+            <button type="button"class="cal-btn del-btn" onclick="btn_del(this)">← 删除</button><br/>
+
+            <textarea readonly="readonly" rows="5" class="disabled" placeholder="选择变量，数字和各种运算符号。" class="result" name="content[result]"><{if $data.content.result!='upper' && $data.content.result!='lower'}><{$data.content.result}><{/if}></textarea>
+            <div class="action">
+            <{button type="button" class="btn-save" onclick="btn_save(this)" label="检验公式"}>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/*验证公式*/
+function btn_save(el){
+    var value = el.getParent('.gray_form').getElement('textarea').value;
+    var reg = /^-?[\d{(][{}\u4e00-\u9fa5()+\-*\/.\d]*[\d})]$/;
+    if(value=='') return alert('请填写公式。');
+
+    new Request({url:'index.php?app=inventorydepth&ctl=regulation&act=checkFormula',onComplete:function(rs){
+		if(rs == 'succ') alert('校验成功，可使用');
+		else if(rs == 'fail') alert('校验失败，请检查');
+	}}).post('result='+encodeURIComponent(value));
+}
+
+/*删除文本框*/
+function btn_del(el){
+    var value = el.getParent('.gray_form').getElement('textarea').value;
+    var len = value.length - 1;
+    if (value.lastIndexOf('}')==len){
+        len = value.lastIndexOf('{');
+    }
+    el.getParent('.gray_form').getElement('textarea').value = value.substr(0,len);
+	init_translation();
+}
+
+$$('.rules-content').addEvents({
+    'mouseover':function(e){
+        e.target.hasClass('cal-btn') && e.target.getSiblings('ul') && e.target.getSiblings('ul').setStyle('display','block');
+    },
+    'mouseout':function(e){
+        e.target.getParent('.action-group') || this.getElements('ul').hide();
+    },
+    'click':function(e){
+        e = $(e.target);
+        if(e.hasClass('disabled') || e.get('tag') !== 'li') return;
+        var val = e.get('text');
+        var value = e.getParent('.gray_form').getElement('textarea').value;
+        var len = value.length;
+        if(e.getParent('.var')) val = '{' +val+ '}';
+
+        if(!e.getParent('.num')){
+            e.getParent('ul').hide();
+        }
+        e.getParent('.gray_form').getElement('textarea').value = value + val;
+		init_translation();
+    }
+});
+
+
+$E('#rules_stock select[name="content[stockupdate]"]').addEvent('change',function(e){
+    if (this.value==0)
+    {
+        $E('#rules_stock .formula').hide();
+    }else{
+        $E('#rules_stock .formula').show();
+    }
+    init_translation();
+});
+</script>

@@ -1,0 +1,120 @@
+<{css src='style.css' app='inventorydepth'}>
+
+<div class=''>
+    <div id='download-msg'>
+        <{if $url}>
+            <{if $loadList}>
+                <div class="console_handle" >
+                    <span class="flt" style="color:#333; margin-left:10px;">等待下载商品</span>
+                </div>
+                <div class="clear loadpart">	
+                    <div  class="loader"><strong class="appNum" style='top:-50px;'>0%</strong></div>
+                </div>
+                <{foreach from=$loadList item=item key=key name='loadItem'}>
+                <div flag='<{$key}>' class='waiting-download' style='display:none;' name="<{$item.name}>" ></div>
+                <{/foreach}>
+            <{/if}>
+            <div class='clear'></div>
+            <div id='result'></div>
+            <!--
+            <div id='result' style='margin-left:10px;'></div>
+            -->
+        <{else}>
+            <div>参数错误，同步失败！！！</div>
+        <{/if}>
+
+    </div>
+</div>
+<{area inject='.mainFoot'}>
+<div class='table-action'>
+<{button label='确定' isCloseDialogBtn="true"}>
+</div>
+<{/area}>
+<form id='download-form'>
+    <{$inputhtml}>
+</form> 
+<{if $url}>
+<script type="text/javascript">
+void function(){
+    var loader = $E('#download-msg .waiting-download');
+    if ($defined(loader))
+    {
+
+        function request(page,flag,item){
+            
+            new Request.JSON({
+                url:"<{$url}>&page="+page+'&flag='+flag,
+                data:$('download-form'),
+                method:'post',
+                async:true,
+                onRequest:function(){
+                    $E('#download-msg .console_handle .flt').setHTML('正在同步【'+item.get('name')+'】商品...');
+                },
+                onComplete:function(resp){
+                    if (resp.error)
+                    {
+                        isDownload = false;
+                        $('result').addClass('error').setHTML('同步终止：'+resp.error);
+                        $E('#download-msg .console_handle .flt').setHTML('终止同步【'+item.get('name')+'】商品！');
+                        return ;
+                    }
+                    if (resp.errormsg)
+                    {
+                        var errorDiv = new Element('div',{html:'同步成功，但存在以下问题：<br/>'+resp.errormsg});
+                        $('result').addClass('notice').adopt(errorDiv);
+                    }
+                    $E('#download-msg .loadpart .appNum').setHTML(resp.downloadRate+'%');
+                    $E('#download-msg .loadpart .loader').setStyle('width',resp.downloadRate+'%');
+                    if (resp.downloadStatus == 'finish')
+                    {
+                        $E('#download-msg .console_handle .flt').setHTML('同步【'+item.get('name')+'】商品完成！');
+                        item.removeClass('waiting-download').addClass('complete');
+                        loader = $E('#download-msg .waiting-download');
+                        if ($defined(loader))
+                        {
+                            request(1,loader.get('flag'),loader);
+                        } else {
+                            if ("<{$redirectUrl}>")
+                            {
+                                W.page("<{$redirectUrl}>");
+                            }
+                        }
+                        return ;
+                    }
+                    page++;
+                    request(page,flag,item);
+                },
+                onFailure:function(){
+                        isDownload = false;
+                        $('result').addClass('error').setHTML('同步终止：请求服务器失败！');
+                        $E('#download-msg .console_handle .flt').setHTML('终止同步【'+item.get('name')+'】商品！');
+                        return ;
+                }
+            }).send();
+            return false;
+        }
+
+        $('result').removeClass('error').removeClass('notice').empty();
+
+        request(1,loader.get('flag'),loader);
+
+        /*
+        var isDownload = true;var downloadNum = 0;
+        loader.each(function(item,index){
+            downloadNum = 0;
+            if(isDownload == false){
+                return ;
+            }
+            var page = 1; var flag = item.get('flag');
+            return request(page,flag,item);
+        });
+
+        loader = $ES('#download-msg .waiting-download');
+        if (loader.length == 0 && "<{$redirectUrl}>")
+        {
+            W.page("<{$redirectUrl}>");
+        }*/
+    }
+}();
+</script>
+<{/if}>

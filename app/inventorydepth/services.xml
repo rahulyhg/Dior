@@ -1,0 +1,59 @@
+<services>
+    <service id="desktop_view_helper">
+        <class>inventorydepth_view_helper</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_regulation">
+        <class>inventorydepth_finder_regulation</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_regulation_apply">
+        <class>inventorydepth_finder_regulation_apply</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_shop_skus">
+        <class>inventorydepth_finder_shop_skus</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_shop">
+        <class>inventorydepth_finder_shop</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_shop_adjustment">
+        <class>inventorydepth_finder_shop_adjustment</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_regulation_goodselect">
+        <class>inventorydepth_finder_regulation_goodselect</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_regulation_productselect"> 
+        <class>inventorydepth_finder_regulation_productselect</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_shop_items">
+        <class>inventorydepth_finder_shop_items</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_shop_frame">
+        <class>inventorydepth_finder_shop_items</class>
+    </service>
+    <service id="desktop_finder.inventorydepth_mdl_shop_batchframe">
+        <class>inventorydepth_finder_shop_batchframe</class>
+    </service>
+	<service id="html_input">
+		<class>inventorydepth_view_input</class>
+	</service>
+	<service id="ome_shop_relation">
+		<class>inventorydepth_shop_relation</class>
+	</service>
+	<!--
+    <service id="autotask">
+        <class>inventorydepth_misc_task</class>
+    </service>
+    <service id="desktop_finder_callback.ome_mdl_products">
+        <class>inventorydepth_stock_products</class>
+    </service>
+    <service id="ome.goods">
+		<class>inventorydepth_stock_products</class>
+	</service>
+	<service id="ome.branch">
+		<class>inventorydepth_stock_products</class>
+	</service>
+	<service id="omepkg.upsert">
+		<class>inventorydepth_stock_pkg</class>
+	</service>
+	-->
+
+</services>

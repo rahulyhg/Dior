@@ -1,0 +1,70 @@
+<div class="division" id='support-shops'>
+    <div class="tableform">
+          <h4>是否需要系统记录特殊的下属地区规则？保留记录，<bt>下次新建该一级地区规则时，系统可自动带出</h4>
+        </div>
+     
+  
+   <div class="table-action">
+            <{button label="是" type="button" id='cancel-rule'}><{button label="否" type="button" id='copy-rule'}>
+        </div>
+
+ 
+</div>
+
+<script>
+$('copy-rule').addEvent('click',function(e){
+
+    var _this=this;
+    $('deleteareaflag').set('value',0);
+    //alert($('deleteareaflag').value);
+    $('rule_form').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+                        
+                        $('rule_form').getParent('.dialog').retrieve('instance').close();
+                        _this.getParent('.dialog').retrieve('instance').close();
+                        
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        $('rule_form').fireEvent('submit',e);
+
+
+
+});
+
+$('cancel-rule').addEvent('click',function(e){
+
+    var _this=this;
+    $('deleteareaflag').set('value',1);
+    $('rule_form').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+
+                        _this.getParent('.dialog').retrieve('instance').close();
+                        
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        $('rule_form').fireEvent('submit',e);
+
+});
+</script>

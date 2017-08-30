@@ -1,0 +1,36 @@
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr>
+                <th style="width:240px;">货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+                <th style="width:60px;">在途库存</th>
+                <th style="width:60px;">库存</th>
+                <th style="width:60px;">安全库存</th>
+                <th>供应商</th>
+            </tr>
+          </thead>
+            <{foreach from=$data item=items key=keys}>
+            <tbody>
+            <tr>
+                <td><{$items.name}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><{$items.arrive_store}></td>
+                <td><{$items.store}></td>
+                <td><{$items.safe_store}></td>
+                <td><{if $items.supplier_name != ''}><div id="<{$items.supplier_id}>" class="su_name" title="点击供应商查询商品" style="cursor:pointer"><{$items.supplier_name}></div><{/if}></td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+          <{if !$data}>
+          <tbody>
+            <tr>
+              <td colspan="9" style="padding:0;"><div id="note" class="note" style="margin:0;"> 没有查询到相关的货品信息 </div></td>
+            </tr>
+          </tbody>
+          <{/if}>
+        </table>
+        <div class="footer" style="overflow:hidden;"><div style="float:left;"><{$pager}></div> <div style="float:right; line-height:32px; margin-right:10px;">共<{$count}>条，每页显示<{$pagelimit}>条</div>   </div>

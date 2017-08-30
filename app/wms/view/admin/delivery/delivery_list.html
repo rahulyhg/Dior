@@ -1,0 +1,78 @@
+<{capture name="header"}>
+  <link href="../app/wms/statics/wms.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<form name="form1" method="POST" action="index.php?<{$env.server.QUERY_STRING}>" id="submit_form">
+<input name="flag" id="flag" type="hidden" value="dayin" />
+<div class="tableform">
+
+<h4>发货单号<span class="red"><{$dly.delivery_bn}></span>物流单列表信息: </h4>
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0" id="delivery_list">
+<thead>
+<tr>
+    <{if $dlyChildListCount>0}><{if $write != '1' || $dlyCorp.tmpl_type == 'electron'}><th><input class="sellist" id="allchecked" type="checkbox" value="" onclick="all_checked()" /></th><{/if}><{/if}>
+	<th>物流公司</th>
+    <th>物流运单号</th>
+    <th>状态</th>
+</tr>
+</thead>
+<tbody>
+<{foreach from=$dlyChildList item=item}>
+<{if $item.type == 1}>
+<tr>
+    <{if $write != '1' || $dlyCorp.tmpl_type == 'electron'}><td></td><{/if}>
+    <td><{$dly.logi_name}></td>
+    <td><{$item.logi_no}></td>
+    <td><{if $item.status == 1}>已发货<{else}>未发货<{/if}></td>
+</tr>
+<{elseif $item.type == 2}>
+<tr>
+    <{if $write != '1' || $dlyCorp.tmpl_type == 'electron'}><td><input name="items" class="sel" type="checkbox" value="<{$item.b_id}>" /></td><{/if}>
+	<td><{$dly.logi_name}></td>
+    <td><{if $write != '1'}><input type="text" name="dlylist[<{$item.b_id}>]" size="10"  value="<{$item.logi_no}>" vtype="required"/><{else}><{$item.logi_no}><{/if}></td>
+    <td><{if $item.status == 1}>已发货<{elseif $item.status == 2}>已取消<{else}>未发货<{/if}></td>
+</tr>
+<{/if}>
+<{/foreach}>
+</tbody>
+</table><br>
+</div>
+</div>
+<{if $write != '1' || $dlyCorp.tmpl_type == 'electron'}><input type="hidden" id="delivery_id" name="delivery_id" value="<{$dly.delivery_id}>" />
+<div style="text-align:center;"><{if $dlyChildListCount>1}><{button type="button" onclick="printdly();" label="打印快递单" }><{/if}><{button type="submit" label="提交" }></div>
+<br><{/if}>
+
+</form>
+
+<script>
+  
+  function all_checked(){
+  	var checked = $('allchecked').get('checked');
+	if(checked){
+		$('delivery_list').getElements('.sel').set('checked','checked');
+	}else{
+		$('delivery_list').getElements('.sel').set('checked','');
+	}
+  }
+  
+  function printdly(){
+	var printnum = 0; //打印数量
+	var iddata = ''; //打印的快递单的ID号
+	var delivery_id = $('delivery_id').value; //主快递单ID号
+	
+	var items = document.getElementsByName("items");
+	var num = items.length;
+	for(var i=0;i<items.length;i++){
+		if(items[i].checked){
+			iddata += items[i].value+',';
+			printnum++;
+		}
+	}
+	iddata = iddata.substring(0,iddata.length-1);
+	if(iddata){
+		window.open('index.php?app=wms&ctl=admin_receipts_print&act=addPrintShipNoData&delivery_id='+delivery_id+'&b_id='+iddata);
+	}else{
+		alert('没有选择打印数据');
+	}
+  }
+</script>

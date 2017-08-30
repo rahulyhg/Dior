@@ -1,0 +1,56 @@
+<div class="dialog-content-head">拆分发货单操作：<br />
+（注意:勾选中的将分离出大发货单，如果全选或剩余一个选项，将拆分整张大发货单，此时大发货单将消失）</div>
+
+<div class="dialog-content-body" container="true" style="height: 400px;">
+
+<div class="tableform">
+<form name="form1" id="form1" method="POST" action="index.php?app=ome&ctl=admin_receipts_print&act=doSplit">
+<table border="0" cellspacing="0" cellpadding="0">
+<{foreach from=$dly item=item}>
+<tr>
+    <td ><input type="checkbox" name="check[]" value="<{$item.delivery_id}>" /></td>
+    <td ><strong>发货单号：</strong><{$item.delivery_bn}></td>
+    <td ><strong>父发货单ID：</strong><{$parent_bn}></td>
+    <td ><strong>订单状态：</strong><{if $item.order_status=='ERROR'}>
+    <font color="red">异常</font><{else}>正常<{/if}></td>
+</tr>
+<{/foreach}>
+
+</table>
+<input type="hidden" id="parentid" name="parent_id" value="<{$parent_id}>" />
+<input type="hidden" id="count" name="count" value="<{$count}>" />
+<div class="dialog-content-foot" >
+<div class="table-action">
+<{button label="拆分" class="btn-primary"  type="submit" id="confirm_btn"}>
+</div></div>
+</form>
+</div>
+</div>
+
+<script>
+(function(){
+  var btn = $('confirm_btn');
+
+$('form1').store('target',{
+    onRequest:function(){
+       $('confirm_btn').set('disabled', 'true');
+       $('confirm_btn').getElements('span')[1].set('text','拆分中');
+    },
+    onComplete:function(jsontext){
+       //jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('confirm_btn').set('disabled', '');
+           $('confirm_btn').getElements('span')[1].set('text','拆分');
+       }else{
+           $('confirm_btn').set('disabled', 'true');
+           $('confirm_btn').getElements('span')[1].set('text','拆分完成');
+           opener.finderGroup['<{$env.get.finder_id}>'].eraseSelected($('parentid').value);
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           window.close();
+       }
+    }
+  });
+})()
+</script>
+

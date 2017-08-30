@@ -1,0 +1,66 @@
+<form id='apply_return' method="post" action='' isCloseDialog>
+<div class="tableform">
+   <h3>新建售后</h3>
+    <div class="division">
+    <h4>第一步:请选择售后类型</h4>
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+       
+        
+        <tr><td style="text-align:right;"><input type="radio" name='return_type' value='return-apply'></td><td>售后申请</td><td style="text-align:right;"><input type="radio" name='return_type' value='reship'></td><td>退货单</td><td style="text-align:right;"><input type="radio" name='return_type' value='rchange'></td><td>换货单</td><td style="text-align:right;"><input type="radio" name='return_type' value='refund'></td><td>退款申请单</td></tr>
+        
+      </table>
+      
+    </div>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" id='return-submit'}> &nbsp; &nbsp;
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+  </div>
+ </form>   
+
+<script>
+window.addEvent('domready',function(){
+        $('return-submit').getParent('.dialog').retrieve('instance').setTitle('新建售后');
+        
+    });
+
+$('return-submit').addEvent('click',function(e){
+var _form = this.form;
+var return_type = _form.getElements("input[name='return_type']:checked");
+if (return_type.length<=0)
+{
+    MessageBox.error('请选择售后类型');return false;
+}
+return_type_value = return_type.get('value');
+var url = '';
+ var width = '700';
+var height = '490';
+if (return_type_value=='return-apply')
+{
+    url = 'index.php?app=ome&ctl=admin_return&act=add_return&source=archive&finder_id=<{$env.get.finder_id}>';
+    title = '售后申请';
+   
+}else if(return_type_value == 'reship'){
+    url = 'index.php?app=ome&ctl=admin_return_rchange&act=rchange&type=return&source=archive&finder_id=<{$env.get.finder_id}>';
+    title = '退货';
+    var width = '1200';
+var height = '546';
+}else if(return_type_value == 'rchange'){
+    url = 'index.php?app=ome&ctl=admin_return_rchange&act=rchange&type=change&source=archive&finder_id=<{$env.get.finder_id}>';
+    title = '换货';
+    var width = '1200';
+var height = '546';
+}else if(return_type_value == 'refund'){
+    url = 'index.php?app=ome&ctl=admin_return_refund_apply&act=add_refund&source=archive&finder_id=<{$env.get.finder_id}>';
+    title = '退款';
+}
+
+$('return-submit').getParent('.dialog').retrieve('instance').close();
+new Dialog(url,{width:width,height:height,title:title,onClose:function(){
+    
+            
+            }});
+
+
+});
+</script>

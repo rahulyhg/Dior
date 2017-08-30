@@ -1,0 +1,9 @@
+<div class="data-action" id="dataAction" style="padding:5px;">
+<{include file="actual/confirm_tab_header.html" app="logisticsaccounts"}>
+</div>
+<div>
+<input type="hidden" id="task_id" name="task_id" value="<{$task_id}>">
+<input type="hidden" id="status" name="status" value="<{$status}>">
+<input type="hidden" id="status" name="confirm" value="<{$env.get.confirm}>">
+<{include file="actual/tab_center.html" app="logisticsaccounts"}>
+</div>

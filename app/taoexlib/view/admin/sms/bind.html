@@ -1,0 +1,142 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<style>
+    #content div a {color: blue; font-size: 14px; }
+    #content div  span {float: right;}
+    #content ul li {height:25px; background: #EEEEEE; margin: 1px; padding-left: 10px; padding-top: 8px;}
+    #content ul li span {float:right; margin-right: 10px;}
+    #content ul li span a {color:blue; text-decoration: underline;}
+    #content ul li div {width:450px; overflow: hidden; height: 16px; float:left;}
+</style>
+<div class="tableform">
+    <div class="division">  
+        <form  method="post" id="orderTypeFrm" action="index.php?app=taoexlib&ctl=admin_sms_bind&act=save_bind"> 
+            <input type="hidden" id="bind_id" name="bind_id" value="<{$bindInfo.bind_id}>" />
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <{if $bindInfo.is_default=='1'}>
+                        <div class='notice'>默认发送规则，只能编辑模板！</div>
+                    <{else}>
+                        <{if ($count<1)&& ($is_add=='is_add')}>
+                            <div class='notice'>一个分组规则只能绑定一个模板，分组规则已经全部绑定完成，请先新建分组规则，再新建发送规则</div>
+                        <{else}>
+                            <tr>
+                                <th width="60"><{t}>选择分组规则：<{/t}></th>
+                                <td >
+                                    <{input type=object app=omeauto object=order_type breakpoint=20 name=tid  cols="name" textcol="name"  value=$bindInfo.tid  filter=$rule_filter required='required' }>
+                                </td>
+                            </tr>
+                        <{/if}>
+                    <{/if}>
+                    <tr>
+                        <td colspan="2" height='5'>
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th width="60">
+                            符合规则的订单是否发送：
+                            <input type="hidden" id="is_send_value" value="<{$bindInfo.is_send}>" />
+                        </th>
+                        <td>
+                            <{input type="bool"  name="is_send"  value=$bindInfo.is_send|default:1}>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" height='5'>
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr id="tr_sample_id" >
+                        <th width="60">短信模板：</th>
+                        <td>
+                            <{input type=object app=taoexlib object=sms_sample breakpoint=20 name=sample_id id=sample_id cols="title,sample_no" textcol="title,sample_no"  value=$bindInfo.id  filter=$sample_filter required='required' }>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" align="center">
+                            <{button class="btn-primary" label="确定" type="submit" id="msaveBtn"}>
+                            <{button class="btn-primary" label="取消" type="button" id="mcancelBtn"}>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div> 
+</div>
+<script> 
+
+    (function() {
+        //关闭按钮
+        $('mcancelBtn').addEvent('click', function(){
+            $('mcancelBtn').getParent('.dialog').retrieve('instance').close();
+        });
+        $ES("#orderTypeFrm input[name='is_send']").addEvent('click', function(){
+            var is_send = this.value;
+            $('is_send_value').set('value',is_send);
+        });
+        /*
+        //保存按钮
+        $('msaveBtn').addEvent('click', function(){
+            <{if $bindInfo.is_default=='1'}>
+                var tid   = 0;
+            <{else}>
+                var tid   = $E("#orderTypeFrm input[name='tid']").value;
+            <{/if}>
+            var is_send   = $('is_send_value').value;
+            var bind_id   = $('bind_id').value;
+
+            var sample_id = $E("#orderTypeFrm input[name='sample_id']").value;
+
+            new Request ({
+                url:'index.php?app=taoexlib&ctl=admin_sms_bind&act=save_bind&tid=<{$info.tid}>',
+                method:'post',
+                data:{'tid':tid,'is_send':is_send,'sample_id':sample_id,'bind_id':bind_id},
+                onRequest: function () {
+                    $('msaveBtn').set('disabled', 'true');
+                    $('mcancelBtn').set('disabled', 'true');
+                },
+                onSuccess: function(result) {
+                    if (result =='SUCC') {
+                        finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                        $('msaveBtn').getParent('.dialog').retrieve('instance').close();
+                    } else {
+                        $('msaveBtn').set('disabled', '');
+                        $('mcancelBtn').set('disabled', '');
+                        //提示信息
+                        alert(result);
+                    }
+                }
+            }).send();
+        }); */
+    })();
+
+    (function(){
+        var _form = $('orderTypeFrm');
+        var btn   = $('msaveBtn');
+        var finder = finderGroup['<{$env.get.finder_id}>'];
+        _form.store('target',{
+            onComplete:function(){},
+            onSuccess:function(response){
+                var hash_res_obj = JSON.decode(response);
+                if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+                    try{
+                        var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+                    }catch(e){
+                    }
+
+                    if(_dialogIns){
+                        finder.refresh.delay(400,finder);
+                        _dialogIns.close();
+
+                    }
+                }
+            }
+        });
+
+        btn.addEvent('click',function(){
+            _form.fireEvent('submit',{stop:$empty});
+        });
+    })();
+</script>

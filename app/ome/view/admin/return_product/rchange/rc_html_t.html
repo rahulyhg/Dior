@@ -1,0 +1,108 @@
+      <h4>销售单中的商品</h4>
+      <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+              <thead>
+                <tr>
+                  <th><{t}>选择<{/t}></th>
+                  <th><{t}>货号<{/t}></th>
+                  <th><{t}>商品名称<{/t}></th>
+                  <th><{t}>规格<{/t}></th>
+                  <th><{t}>原价<{/t}></th>
+                  <th><{t}>销售价<{/t}></th>
+                  <th><{t}>可退入数量<{/t}></th>
+                  <th><{t}>申请数量<{/t}></th>
+                  <{if $branch_mode!='single'}>
+                  <th><{t}>仓库<{/t}></th>
+                  <{/if}>
+                </tr>
+              </thead>
+              <{foreach from=$items item=aGoods name="item" key=key}>
+              <{if $aGoods.sendnum > '0'}>
+              <input type="hidden" name="return[goods_name][<{$aGoods.bn}>]" value="<{$aGoods.name}>">
+              <input type="hidden" name="return[product_id][<{$aGoods.bn}>]" value="<{$aGoods.product_id}>">
+              <input type='hidden' id='effective<{$aGoods.bn}>' name='return[effective][<{$aGoods.bn}>]' value='<{$aGoods.effective}>'>
+              <tbody>
+                <tr id=s<{$aGoods.bn}>  onmouseover='showtips(this,event,"<{$aGoods.ref}>");' >
+                  <td>
+                    <{if $aGoods.effective>0}><input type="checkbox" shouhou="return" id="goods_bn" name="return[goods_bn][]" value='<{$aGoods.bn}>'><{/if}></td>
+                  <td><{$aGoods.bn}></td>
+                  <td>
+                  <{if $aGoods.obj_type=='pkg'}>
+                    <span style='width:18px;padding:2px;height:16px;background-color:<{$aGoods.color|default:"red"}>;'><span style='color:#eeeeee;'>捆绑</span>
+                  <{/if}>
+                  </span>
+                  <{$aGoods.name|visibility:$aGoods.product_id}> 
+                  </td>
+                  <td> <{$aGoods.spec_value}></td>
+                  <td><{$aGoods.price|cur}></td>
+                  <td><input type='text' name='return[price][<{$aGoods.bn}>]' value='<{$aGoods.sale_price/$aGoods.nums}>' size='6'></td>
+                  <td><{$aGoods.effective}></td>
+                  <td><{if $aGoods.effective>0}><input type='text' id='num<{$aGoods.bn}>' name='return[num][<{$aGoods.bn}>]' value='<{$aGoods.effective}>' size='6'><{/if}></td>
+
+                  <{if $branch_mode=='single'}>  
+                  <{$aGoods.branch.0.branch_name}>              
+                  <input type="hidden" value="<{$aGoods.branch.0.branch_id}>" />
+                  <input type="hidden" value="<{$aGoods.bn}>" />
+                  <input name="return[branch_id][<{$aGoods.bn}>]" type="hidden" value="<{$aGoods.branch.0.branch_id}>"/>
+                  <span id="canpay<{$aGoods.bn}>"></span>
+                  <{else}>
+                  <td>
+                    <{foreach from=$aGoods.branch item=branch key=keys}>
+                    <input name="return[branch_id][<{$aGoods.bn}>]" type="hidden" value="<{$branch.branch_id}>" class="x-pdt-chk-<{$aGoods.bn}>"/><{$branch.branch_name}>
+                    <{/foreach}>
+                    <span id="canpay<{$aGoods.bn}>"></span>
+                  </td>
+                  <{/if}>
+                </tr>
+              </tbody>
+              <{/if}>
+              <{/foreach}>
+              <input type="hidden" name="total_return_filter" value="<{$total_return_filter}>">
+      </table>
+
+<script>
+function showtips(_this,e,ref){
+  var tips = new Tips({
+      onShow:function(tip,el){
+        el.addClass('active');
+        tip.setStyle('display','block');
+      },
+      text: function(el){
+        return ''+ref;
+      }
+    });
+
+    var e  = new Event(e), el = e.target;
+    if (ref)
+    {
+        tips.attach(el);
+        el.addEvent('mouseleave',function(){
+            el.removeClass('active');
+        });
+    }
+}
+
+function visibility(e){
+  var visiTips = new Tips({
+      onShow:function(tip,el){
+        el.addClass('active');
+        tip.setStyle('display','block');
+      },
+      text: function(element){
+        if(element.get('visibility')=='false'){
+          return '隐藏商品';
+        }else{
+          return '';
+        }
+      }
+    });
+
+    var e  = new Event(e), el = e.target;
+    visiTips.attach(el);
+      el.addEvent('mouseleave',function(){
+        el.removeClass('active');
+      });
+      el.fireEvent('mouseenter',e);
+}
+
+
+</script>

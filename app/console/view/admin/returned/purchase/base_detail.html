@@ -1,0 +1,95 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<form name="form1" id="memo_form" method="POST" action="index.php?<{$env.server.QUERY_STRING}>">
+<div class="tableform">
+<h4>采购退货单详情</h4>
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<tbody>
+<tr>
+    <th style='text-align:right;'>退货单名称:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.name}></td>
+    <th style='text-align:right;'>物流费用(垫付):</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.delivery_cost}></td>
+    <th style='text-align:right;'>采购员:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.operator}></td>
+    <th style='text-align:right;'>供应商:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.supplier_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+    <th style='text-align:right;'>退货单编号:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.rp_bn}></td>
+    <th style='text-align:right;'>退货日期:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.returned_time|date_format:"%Y-%m-%d %H:%M:%S"}></td>
+    <th style='text-align:right;'>物流单号:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.logi_no}></td>
+    <th style='text-align:right;'>仓库:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.branch_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+    <th style='text-align:right;'>退货金额:
+    <{help}><{t}>退货金额=商品总额(<{$rp.product_cost|cur}>)+物流费用(<{$rp.delivery_cost|cur}>)
+    <b><font color="orange">注：物流费用为一次性物流成本</font></b><{/t}><{/help}>
+    </th>
+    <td colspan="7" style='text-align:left;padding-left:5px;'><{$rp.amount|cur}>
+    </td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<{if $rp.memo}>
+   <tr>
+      <th><{t}>备注：<{/t}></th>
+      <td>
+        <{foreach from=$rp.memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+<tr>
+    <th >追加：</th>
+    <td><textarea id="memo" maxth="255" rows="4" cols="60" name="memo" type="textarea"></textarea></td>
+</tr>
+</tbody>
+</table>
+<div class="table-action"> <{button type="submit" label="追加备注" class="btn btn-primary" }>
+    <input type="hidden" name="rp_id" value="<{$rp.rp_id}>" />
+    </div>
+</div>
+</div>
+</form>
+<script>
+$('append_memo').addEvent('click', function(){
+
+    var memo = $('memo').get('value');
+    var oldmemo = $('oldmemo').get('value');
+    if (!memo){
+        alert('请输入要追加的备注！');
+        $('memo').focus();
+        return false;
+    }
+    url = 'index.php?app=purchase&ctl=admin_returned_purchase&act=append_memo';
+
+    new Request.HTML({
+        update:'memo_show',
+        url:url,
+        onComplete:function(responseTree, responseElements, responseHTML, responseJavaScript){
+            $("oldmemo").set('value', responseHTML);
+        }
+    }).post($('memo_form'));
+
+});
+</script>

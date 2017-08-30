@@ -1,0 +1,96 @@
+<style>
+  #print th{font-size:20px}
+  #print td{font-size:20px}
+  #print div{font-size:20px}
+  #print h4{font-size:20px}
+</style>
+<span id='print'>
+<div class="tableform">
+<div class="division">
+<{if(!isset($process_name))}><{assign var=process_name value='入库'}><{/if}>
+<h4><{$process_name}>单</h4>
+<table width="100%" border="0" class="gridlist">
+  <tr>
+    <td>
+	    <table width="100%" border="0">
+	      <tr>
+	        <th><{$process_name}>仓库:</th>
+	        <td><{$eo.branch_name}></td>
+	        <th>经办人</th>
+	        <td><{$eo.detail.oper}></td>
+	        <th>商品总额:</th>
+	        <td><{$eo.detail.product_cost}></td>
+	      </tr>    
+	      <tr>
+	        <th><{$process_name}>日期:</th>
+	        <td><{$eo.detail.create_time|date_format:"%Y-%m-%d"}></td>     
+	        <th>供应商:</th>
+	        <td><{$eo.supplier_name}></td>
+	         <th>物流费用:</th>
+	        <td><{$eo.detail.iso_price}></td>
+	      </tr>
+	      <tr>
+	        <th><{$process_name}>单备注:</th>
+	        <td><{$eo.detail.memo}></td>
+	        <th><{$process_name}>单编号:</th>
+	        <td><{$eo.detail.iso_bn}></td>
+	        <th>金额总计:</th>
+	        <td><{$eo.detail.amount}></td>
+	      </tr>
+	    </table>
+    </td>
+  </tr>
+</table>
+</div>
+
+<div class="division">
+<h4><{$process_name}>商品明细</h4>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<thead>
+      <tr>
+        <th style="width:30%">商品名称</th>
+        <th style="width:20%">货号</th>
+        <th style="width:10%">货位</th>
+        <th style="width:10%">单位</th>
+        <th style="width:10%">数量</th>
+        <th style="width:10%" class="price">价格</th>
+        <th style="width:10%"class="price">小计</th>
+        </tr>
+        </thead>
+        <tbody>
+	  <{foreach from=$eo.items item=items}>
+      <tr>
+        <th><{$items.product_name}></th>
+        <th><{$items.bn}></th>
+        <th><{$items.store_position}></th>
+        <th><{$items.unit}></th>
+        <th><{$items.nums}></th>
+        <th style="font-weight:bold;" class="price"><{$items.price}></th>
+        <th style="font-weight:bold;" class="price"><{$items.price * $items.nums}></th>
+        </tr>
+	  <{/foreach}>
+	 </tbody>
+</table>
+	 <div style="float:right;">商品总额：<{$product_cost}></div>
+</div>
+</div>
+</span>
+<script language="javascript">
+     function printme()
+     {
+         var print = this.document.getElementById("print").innerHTML;
+         print = print +"<br/>";
+     print = print +'<SCRIPT language=javascript> function printView(){hidden();document.all.WebBrowser.ExecWB(7,1); } function print(){hidden();document.all.WebBrowser.ExecWB(6,6)}function pageSetup(){hidden();document.all.WebBrowser.ExecWB(8,1);}function hidden(){document.all("printView").style.display="none"; document.all("print").style.display="none";  document.all("pageSetup").style.display="none";}<\/script>';
+        print = print + "<OBJECT   classid=CLSID:8856F961-340A-11D0-A96B-00C04FD705A2   height=21   id=WebBrowser   width=87></OBJECT><input  id = print name=Button   onClick='window.print()'   type=button   value=直接打印> ";
+        var newWindow = window.open();
+        newWindow.document.open("text/html");
+        newWindow.document.write(print);
+        newWindow.document.close();
+   }
+   
+   // fix bug:0000237: 打印出库单时打印出的单据上有加载完成字样
+   window.addEvent('load',function(){
+		document.getElementById('messagebox').className = 'msgbox noprint';
+		document.getElementById('side-r').className = 'side-r hide noprint';
+	});
+</script>

@@ -1,0 +1,9 @@
+<services>
+   <service id="desktop_finder.replacesku_mdl_order">
+        <class>replacesku_finder_order</class>
+    </service>
+	  <service id="system_setting">
+        <class>replacesku_setting</class>
+    </service>
+	
+</services>

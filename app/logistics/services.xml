@@ -1,0 +1,8 @@
+<services>
+<service id="desktop_finder.logistics_mdl_area">
+        <class>logistics_finder_area</class>
+    </service>
+<service id="desktop_finder.logistics_mdl_rule">
+        <class>logistics_finder_rule</class>
+    </service>
+</services>

@@ -1,0 +1,79 @@
+<div class="division">
+<form id='batch_area' method="post" action='index.php?app=logistics&ctl=admin_area_rule&act=batch_area_step'>
+  
+  <div class="tableform">
+<{foreach from=$rule_list item=rule_list}>
+<input type="hidden" name='region_id[]' value="<{$rule_list.region_id}>">
+<input type="hidden" name='region_name[]' value="<{$rule_list.region_name}>">
+<input type="hidden" name='obj_id[]' value="<{$rule_list.obj_id}>">
+  <table width="100%" border="0">
+  <tr>
+    <th>区域:</th>
+    <td>
+   <{$rule_list.region_name}></td>
+  </tr>
+
+  <tr>
+    <th>规则类型:</th>
+    <td><{if $rule_list.set_type=='weight'}>重量区间<{/if}>
+    <{if $rule_list.set_type=='noweight'}>非重量区间<{/if}>
+  
+    </td>
+  </tr>
+  <{if $rule_list.set_type=='weight'}>
+<tr><th></th><td>
+
+
+<{foreach from=$rule_list.item_list item=item_list}>
+
+
+<div style="padding-bottom:2px;"> 重量: 从<{$item_list.min_weight}>g 
+<{if $item_list.max_weight=='-1'}>以上
+<{else}>
+
+至<{$item_list.max_weight}>g<{/if}> 物流公司:<{$item_list.corp_name}>
+  
+  </div>
+  <{/foreach}>
+
+
+
+</td></tr>
+<{/if}>
+<{if $rule_list.set_type=='noweight'}>
+<tr><td></td><td>
+<{foreach from=$rule_list.item_list item=item_list}>
+<div style="padding-bottom:2px;"> 物流公司:<{$item_list.corp_name}>
+
+ 
+  </div>
+  <{/foreach}>
+</td></tr>  
+<{/if}>
+</table>
+<{/foreach}>
+</div>
+
+ 
+<div class="table-action">
+<{button label="下一步" class="btn-primary" id="batch_area_step" }>
+<{button label="关闭" class="btn-primary" id="batch_area_close" }>
+  </div>
+<input type="hidden" name="rule_id" value="<{$rule_id}>">
+  </form>
+</div>
+<script>
+
+$('batch_area_step').addEvent('click', function(e){
+    var _this=this;
+    if(!confirm('确认将现有规则删除，重新统一设定规则吗?')){
+    return;
+    }
+    $('batch_area').fireEvent('submit',e);
+        
+
+    });
+$('batch_area_close').addEvent('click', function(){
+        this.getParent('.dialog').retrieve('instance').close();
+});
+</script>

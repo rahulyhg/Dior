@@ -1,0 +1,118 @@
+<div id="nosplitarea" >
+<div class="finder-detail">
+        <div class="division" id="order_price_info">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="110" height="32" align="right">原订单总金额为：</td>
+                <td>&nbsp;&nbsp;<b class="font14px color_1"><{$total|cur}></b></td>
+              </tr>
+              <tr>
+                <td height="35" align="right">现订单总金额为：</td>
+                <td>&nbsp;&nbsp;<b class="font14px color_1"><{$newtotal|cur}></b>&nbsp;&nbsp;&nbsp;&nbsp;差额：<b class="font14px red" style="font-weight:normal;"><{$diff_money|cur}></b></td>
+              </tr>
+              
+              <{if !$price_monitor}>
+              <tr>
+                <td height="5">&nbsp;</td>
+                <td>&nbsp;</td>
+              </tr>
+              <{/if}>
+              
+              <tr>
+                <td colspan="2"><div class="line_2px"></div></td>
+              </tr>
+              <tr>
+                <td height="32" align="right">订单已支付金额：</td>
+                <td>&nbsp;&nbsp;<b class="font14px color_1"><{$payed|cur}></b></td>
+              </tr>
+              
+              <{if $is_change > 0}>
+                  <tr>
+                    <td height="28" align="right">应收金额：</td>
+                    <td>&nbsp;&nbsp;<b class="font14px red"><{$change_value|cur}></b></td>
+                  </tr>
+                  <{if $is_cod != 'true'}>
+                  <tr>
+                    <td height="28" colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在财务管理中会自动生成一张差额付款单，请财务尽快确认！</td>
+                  </tr>
+                  <{/if}>
+              <{else}>
+              <tr>
+                <td height="28" align="right"></td>
+                <td valign="top">&nbsp;&nbsp;订单无差额，编辑后的订单需要重新确认!</td>
+              </tr>
+              <{/if}>
+
+             <{if $price_monitor}>
+              <tr>
+                <td colspan="2"><div class="line_2px"></div></td>
+              </tr>
+              <tr>
+                <td height="32" align="right">价格监控：</td>
+                <td>&nbsp;&nbsp;<{if $price_monitor.profit > 0}><b class="font14px red">合理范围内</b>&nbsp;&nbsp;系统建议复审通过<{else}><b class="font14px red">不在合理范围内</b>&nbsp;&nbsp;系统建议复审不通过<{/if}></td>
+              </tr>
+              
+                  <{if $price_monitor.bn}>
+                  <tr>
+                    <td height="28" colspan="2" style="color:#999;">未设置成本价的商品货号：<b><{$price_monitor.bn}></b></td>
+                  </tr>
+                  <{/if}>
+              
+              <{else}>
+              <tr>
+                <td height="5">&nbsp;</td>
+                <td>&nbsp;</td>
+              </tr>
+              <{/if}>
+              
+            </table>
+      </div>
+      
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td height="25" style="padding-left:25px;"><{if $is_retrial=='true'}>您修改的订单将进入复审，确定要修改此订单吗？<{/if}></td>
+            </tr>
+            <tr>
+              <td height="10"></td>
+            </tr>
+        </table>
+        
+        <table width="100%" border="0" cellpadding="0"  cellspacing="0">
+            <tbody>
+                <tr>
+                    <td width="50%">&nbsp;</td>
+                    <td align="center">
+                    <{if $is_retrial=='true' && $is_refund=='true'}>
+                    <{button label="确认" class="btn-primary" id="submit_refund" onclick="frm_refund()" }><{button label="取消" class="btn-primary" id="close_btn" }>
+                    <{else}>
+                    <{button label="确认" class="btn-primary" id="submit_btn_check" onclick="frm_submit_order_edit()" }><{button label="取消" class="btn-primary" id="close_btn" }>
+                    <{/if}>
+                    </td>
+              </tr>
+            </tbody>
+        </table>
+  </div>
+</div>
+<style type="text/css">
+#order_price_info { background-color:#FFFFCC; }
+.line_2px { width:90%; height:1px; font-size:0px; background-color:#c9c9c9; }
+.font14px { font-family:"微软雅黑", Arial, Helvetica, sans-serif; }
+.color_1 { color:#666; }
+</style>
+<script>
+$('close_btn').addEvent('click', function(event){
+	this.getParent('.dialog').retrieve('instance').close();
+});
+
+function frm_submit_order_edit()
+{
+	$('submit_btn_check').getParent('.dialog').retrieve('instance').close();
+	doAction(1);
+}
+
+function frm_refund()
+{
+	$('submit_refund').getParent('.dialog').retrieve('instance').close();
+	do_refund();
+}
+</script>

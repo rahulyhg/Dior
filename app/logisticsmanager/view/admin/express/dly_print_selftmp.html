@@ -1,0 +1,58 @@
+<div class="tableform">
+<div style=" margin:10px;">
+  <div class="notice">
+  	<strong><{t}>注意：<{/t}></strong><{t}>最多只能选 5 项， 最少必须选 2 项<{/t}></div>
+	  <form id="form1" enctype="multipart/form-data" action="index.php?app=logisticsmanager&ctl=admin_express_template&act=doSelfTmlp" method="post">
+	
+	            <table width="100%" cellspacing="0" cellpadding="0" border="0" style="td{top:10px;}" >
+	                <tbody>
+					<tr>
+					
+						<td><{t}>自定义打印<{/t}></td>
+						<td>权重</td>
+					</tr>
+					</tbody>
+					<tr>
+						<td><input type="checkbox" name="delivery[bn]" value=""  <{if $bn}>checked<{/if}>>&nbsp;&nbsp;货号</td>
+						<td><{input type="text" size="10" name="dly[bn][weight]" value=$bn  vtype='unsigned' }></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[pos]" value=""  <{if $pos}>checked<{/if}>>&nbsp;&nbsp;货位</td>
+						<td><{input type="text" size="10" name="dly[pos][weight]"  value=$pos vtype='unsigned'}></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[name]" value=""  <{if $name}>checked<{/if}>>&nbsp;&nbsp货品名称</td>
+						<td><{input type="text" size="10" name="dly[name][weight]"   value=$name vtype='unsigned'}></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[spec]" value=""  <{if $spec}>checked<{/if}> >&nbsp;&nbsp;规格</td>
+						<td><{input type="text" size="10" name="dly[spec][weight]"   value=$spec vtype='unsigned'}></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[amount]" value=""  <{if $amount}>checked<{/if}> >&nbsp;&nbsp;数量</td>
+						<td><{input type="text" size="10" name="dly[amount][weight]"  value=$amount  vtype='unsigned'}></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[goods_bn2]" value=""  <{if $goods_bn2}>checked<{/if}> >&nbsp;&nbsp商品编号</td>
+						<td><{input type="text" size="10" name="dly[goods_bn2][weight]"  value=$goods_bn2  vtype='unsigned'}></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[new_bn_name]" value=""  <{if $new_bn_name}>checked<{/if}> >&nbsp;&nbsp商品名称</td>
+						<td><{input type="text" size="10" name="dly[new_bn_name][weight]" value=$new_bn_name   vtype='unsigned'}></td>
+					</tr>
+					<tr>
+						<td><input type="checkbox" name="delivery[goods_bn]" value=""  <{if $goods_bn}>checked<{/if}> >&nbsp;&nbsp商家编码</td>
+						<td><{input type="text" size="10" name="dly[goods_bn][weight]"  value=$goods_bn  vtype='unsigned'}></td>
+					</tr>	
+					<tr>
+						<td><input type="checkbox" name="delivery[n]" value="true"  <{if $n}>checked<{/if}> >&nbsp;&nbsp是否换行</td>
+					</tr>					
+				</table>
+	    <input type="hidden" name="prt_tmpl_id" value="<{$prt_tmpl_id}>"/>
+	    <{button label="确定" type="submit" id="btn-upload"}>
+	  </form>
+ </div>
+</div>
+</div>
+<script>
+</script>

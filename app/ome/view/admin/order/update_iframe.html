@@ -1,0 +1,173 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+
+<{if $rs.rsp == 'success' && $rs.url}>
+<input type="hidden" name="rsp" id="rsp" value="" />
+<input type="hidden" name="msg" id="msg" value="" />
+<input type="hidden" name="complete" id="complete" value="" />
+<iframe width="100%" frameborder="0" height="99%" id="iframe" onload="this.height=document.documentElement.clientHeight-4" src="<{$rs.url}>" ></iframe>
+<{/if}>
+
+<script>
+finder = opener.finderGroup['<{$env.get.finder_id}>'];
+<{if $rs.rsp == 'success'}>
+    var iframe = document.getElementById('iframe') || document.getElementsByTagName('iframe')[0];
+        iframe.onload = function() {
+        this.height = document.documentElement.clientHeight - 4;
+    }
+    window.onresize = function() {
+        iframe.style.height = document.documentElement.clientHeight - 4 + 'px';
+    }
+
+    var order_id = '<{$order_id}>';
+
+    //定时获取同步状态
+    var sync_status = setInterval("set_sync_status()",500);
+
+    function set_sync_status(){
+        var rs = new Array();
+        rs = get_url_hash();
+        if (rs && rs['#rsp'])
+        {
+            set_edit_sync_status(rs['#rsp'],rs['msg']);
+        }
+    }
+
+    function get_url_hash(){
+        var hash_str = window.location.hash;
+        if (hash_str)
+        {
+            var hash_arr = new Array();
+            var rs = new Array();
+            hash_arr = hash_str.split("&");
+            for(i=0;i<hash_arr.length;i++){
+                var tmp = hash_arr[i].split('=');
+                rs[tmp[0]] = tmp[1];
+            }
+            return rs;
+        }else{
+            return null;
+        }
+    }
+        
+    var thisPage=false;
+    window.onbeforeunload = function checkLeave(e){
+        var evt = e ? e : (window.event ? window.event : null);
+        var rs = new Array();
+        rs = get_url_hash();
+        if (rs){
+            if (rs['#rsp'])
+            {
+                set_edit_sync_status(rs['#rsp'],rs['msg']);
+            }
+        }
+        var msg = '';
+        if (rs)
+        {
+            if (rs['#rsp'] == 'fail')
+            {
+                msg = '订单编辑信息同步异常，请再次同步编辑信息，关闭本页面会导致订单编辑信息不完整！您是否需要关闭订单编辑界面?';
+            }
+        }else{
+            msg = '请确认订单编辑是否完成！您是否需要关闭订单编辑界面?';
+        }
+        if(msg){
+            alert(msg);
+            if(!thisPage)evt.returnValue = msg;
+        }
+    }
+
+    window.onunload = function leaveAfter(){
+        close_after();
+    }
+
+    //关闭窗口后所做操作
+    function close_after(){
+        var rsp = $('rsp').get('value');
+        if (rsp == 'fail' || rsp == 'success')
+        {
+            var operator_log = '1';
+        }else{
+            var operator_log = '0';
+        }
+
+        //记录操作日志、刷新订单编辑finder（同时更新订单暂停状态为恢复）
+        W.page('index.php?app=ome&ctl=admin_order&act=update_iframe_after&p[0]='+order_id+'&p[1]='+operator_log, {
+            onComplete: function(aa) {
+                var complete = 'true';
+            }
+        });
+
+        sleep(1000);
+
+        //刷新Finder
+        finder.refresh.delay(100, finder);
+    }
+
+    function sleep(numberMillis){
+        var now = new Date();
+        var exitTime = now.getTime()+numberMillis;
+        while (true) {
+            now = new Date();
+            if (now.getTime() > exitTime)
+            return;
+        }
+    }
+
+    //提示消息框
+    function tips(title,msg){
+        new Dialog(new Element("div.tableform",{html:'<div id="downloading" class="division"><div class="box fl">　　</div>'+msg+'</div><div style="text-align:center;"><{button label="取消" type="button" class="btn-primary" id="cancel" onclick="close_div();" }><{button label="确定" type="button" class="btn-primary" id="confirm" onclick="close_win();" }></div>'}),{
+                    title:title,
+                    width:350,
+                    height:120,
+                    modal:true,
+                    resizeable:false});
+    }
+
+    function close_div(){
+        $('cancel').getParent('.dialog').retrieve('instance').close();
+    }
+
+    function close_win(){
+        window.close();
+    }
+
+    //更新订单编辑状态
+    function set_edit_sync_status(cur_rsp,cur_msg){
+        if (cur_rsp != 'success' && cur_rsp != 'fail')
+        {
+            return;
+        }
+        var old_rsp = $('rsp').get('value');
+        if (old_rsp != 'success' && cur_rsp != old_rsp)
+        {
+            $('rsp').set('value',cur_rsp);
+            new Request({
+                 url:'index.php?app=ome&ctl=admin_order&act=set_sync_status',
+                 method:'get',
+                 onComplete:function (rs){
+                    //alert(rs);
+                 }
+            }).send('p[0]='+order_id+'&p[1]='+cur_rsp);
+        }
+    }
+
+<{else}>
+
+    var msg = '<{$rs.msg}>';
+    new Dialog(new Element("div.tableform",{html:'<div id="downloading" class="division"><div class="box fl">　　</div>'+msg+'</div><div style="text-align:center;"><{button label="关闭" type="button" class="btn-primary" id="close"}></div>'}),{
+                    title:'订单编辑',
+                    width:300,
+                    height:100,
+                    modal:true,
+                    resizeable:false});
+
+    $('close').addEvent('click',function(e){
+        finder.refresh.delay(100, finder);
+        window.close();
+    });
+<{/if}> 
+
+//$('close').getParent('.dialog').retrieve('instance').close();
+</script>

@@ -1,0 +1,455 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{css src="style.css" app="ome"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{/capture}>
+<h5 class="head-title">调拨单信息:</h5>
+<div id="stock">
+  <input type="hidden" id="spec" name="spec">
+  <input type="hidden" id="unit" name="unit">
+  <div class="tableform">
+    <div class="division">
+      <table width="100%" border="0">
+        <tbody>
+          <tr>
+            <th>货品名称：</th>
+            <td><strong id="product_name"></strong> <em id="spec_info"></em></td>
+          </tr>
+          <tr>
+            <th>选择商品调拨：</th>
+            <td><span style="position:relative;">
+                <{img class="btn_supplier pointer" id="purchase_select_btn" src="bundle/zoom_btn.gif" app="desktop"}>
+                <input id="purchase_select" type="text"/>
+                <input type='hidden' id="product_id" name='product_id' /></span></td>
+            <th>货号：</th>
+            <td><span style="position:relative;"><input type="text" id="bn" name="bn"/></span></td>
+          </tr>
+          <tr>
+            <th>调出仓库：</th>
+            <td><select id="from_branch_id" name="from_branch_id">
+              </select>
+              <!--<{input type="select" id='from_branch_id' name='from_branch_id' rows=$branch valueColumn="branch_id" labelColumn="name" onchange="getOp(this.value)"}>--></td>
+            <th>调入仓库：</th>
+            <td><{if $is_super}>
+              <{if count($branch)=='1'}>
+              <{$branch.0.name}>
+              <select id="to_branch_id" name="to_branch_id" style="display:none;">
+                <option value="<{$branch.0.branch_id}>"><{$branch.0.name}></option>
+              </select>
+              <{else}>
+              <{input type="select" id="to_branch_id" name="to_branch_id" vtype="required" rows=$branch valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span> <{/if}>
+              <{else}>
+              <{if !$branch_list}> <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+              <script>
+                       $$("input","button","select").set('disabled',true);
+                    </script>
+              <{else}>
+              <{if count($branch_list)=='1'}>
+              <{$branch_list.0.name}>
+              <select id="to_branch_id" name="to_branch_id" style="display:none;">
+                <option value="<{$branch_list.0.branch_id}>"><{$branch_list.0.name}></option>
+              </select>
+              <{else}>
+              <{input type="select" id="to_branch_id" name="to_branch_id" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span> <{/if}>
+              <{/if}>
+              <{/if}>
+              <select id="to_branch_id_bak" name="to_branch_id_bak" style="display:none;">
+              </select>
+              <!--<{input type="select" id='to_branch_id' name='to_branch_id' rows=$branch valueColumn="branch_id" labelColumn="name" onchange="getOp1(this.value)"}>--></td>
+          </tr>
+          <tr>
+            <th>调出货位：</th>
+            <td><div id="from_pos_id_show"> </div>
+              <div style="position:relative;display:none;">
+                <input name="from_pos_name" type="text" id="from_pos_name" size="20" vtype="required" autocomplete="off" />
+                <input name="from_pos_id" type="hidden" id="from_pos_id" />
+                <a title="查看货位列表" id="from_pos_all" class="btn_supplier" target="_blank"><{img id="copy" app="desktop" src="bundle/zoom_btn.gif"}></a> </div></td>
+              </td>
+            <th>调入货位：</th>
+            <td><div id="to_pos_id_show"  style="display:none;" ></div>
+              <span style="position:relative;">
+                <{img title="查看货位列表" id="to_pos_all"  class="pointer btn_supplier" app="desktop" src="bundle/zoom_btn.gif"}>
+                <input name="to_pos_name" type="text" id="to_pos_name" vtype="required" autocomplete="off" />
+                <input name="to_pos_id" type="hidden" id="to_pos_id" />
+              </span></td>
+          </tr>
+		   <tr>
+            <th>调出货位库存：</th>
+            <td><div id="from_pos_stock_show"></div></td>
+              </td>
+            <th>调入货位库存：</th>
+            <td><div id="to_pos_stock_show"> </div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="division">
+  <div class="gridlist-action"> <{button label="增加" id="btn_add_item" type="submit" name="Submit"}> </div>
+  <form method="post" id="form1" action="index.php?app=purchase&ctl=admin_stock&act=do_save">
+    <table width="100%" border="0" class="gridlist">
+      <col style="width:3%;" />
+      <col style="width:10%;" />
+      <col style="width:auto;" />
+      <col style="width:12%;" />
+	  <col style="width:6%;" />
+      <col style="width:12%;" />
+	  <col style="width:6%;" />
+      <col style="width:6%;" />
+      <col style="width:4%;" />
+      <col style="width:5%;" />
+      <col style="width:3%;" />
+      <thead>
+        <th>选择</th>
+        <th>货号</th>
+        <th>货品名称</th>
+        <th>原仓库/货位</th>
+		<th>原货位数量</th>
+        <th>新仓库/货位</th>
+		<th>新货位数量</th>
+        <th>规格</th>
+        <th>单位</th>
+        <th>数量</th>
+        <th>删除</th>
+      </thead>
+      <tbody class='dly-body' id="dly-body">
+      </tbody>
+    </table>
+    <table>
+      <tr>
+        <td align="center">经办人</td>
+        <td align="left"><label>
+            <input type="text" name="op_name" value="<{$operator}>" size="12" />
+          </label></td>
+      </tr>
+      <tr>
+        <td align="center">备注</td>
+        <td align="left"><label>
+            <textarea name="memo" cols="40" rows="6"></textarea>
+          </label></td>
+      </tr>
+    </table>
+    <div class="table-action"> <{button class="btn-primary" type="submit" id="saveCurrent" label="开始调拔"}> </div>
+  </form>
+</div>
+<script>
+  (function() {
+    var callurl = "index.php?app=purchase&ctl=admin_stock&act=get_products";
+    var options = {
+		'getVar': 'name',
+		'fxOptions': false,
+		callJSON: function() {
+			return window.autocompleter_json;
+		},
+		injectChoice: function(json) {
+			var choice = new Element('li', {
+				'html': this.markQueryValue(json[this.options.getVar])
+			});
+			choice.inputValue = json[this.options.getVar];
+            choice.store('_data',json);
+			this.addChoiceEvents(choice).inject(this.choices);
+		},
+		onHide: function() {
+            if(!this.selected)return;
+			var _json=this.selected.retrieve('_data');
+            requestData(_json);
+        }
+    };
+
+    new Autocompleter.script($('purchase_select'), callurl, options);
+    new Autocompleter.script($('bn'), callurl, $merge(options,{getVar:'bn'}));
+
+
+	new Autocompleter.script($('from_pos_name'), "index.php?app=ome&ctl=admin_stock&act=getPosByBranchProduct", {
+		'getVar': 'store_position',
+		'fxOptions': false,
+		callJSON: function() {
+			return window.autocompleter_json;
+		},
+		injectChoice: function(json) {
+			var choice = new Element('li', {
+				'html': this.markQueryValue(json[this.options.getVar])
+			});
+			choice.inputValue = json[this.options.getVar];
+			this.addChoiceEvents(choice).inject(this.choices);
+			$('from_pos_id').set("value", json["pos_id"]);
+		},
+		onLoad: function() {
+			this.options.postData = {
+				'branch_id': $('from_branch_id').getValue()
+			};
+		}
+	});
+
+	$("from_pos_all").addEvent('click', function(e) {
+		var branch_id = $('from_branch_id').getValue();
+		var url = '?app=desktop&act=alertpages&goto=' + encodeURIComponent("index.php?app=ome&ctl=admin_stock&act=view&p[0]=" + branch_id + "&singleselect=1");
+		Ex_Loader('modedialog',function() {
+			new finderDialog(url, {
+				params: {
+					url: 'index.php?app=ome&ctl=admin_stock&act=getPosNameById',
+					name: 'id',
+					type: 'radio'
+				},
+				handle: 'pos_name',
+				width: 1000,
+				height: 500
+			});
+		});
+	});
+
+	new Autocompleter.script($('to_pos_name'), "index.php?app=ome&ctl=admin_stock&act=getPosByBranchProduct", {
+		'getVar': 'store_position',
+		'fxOptions': false,
+		callJSON: function() {
+			return window.autocompleter_json;
+		},
+		injectChoice: function(json) {
+			var choice = new Element('li', {
+				'html': this.markQueryValue(json[this.options.getVar])
+			});
+			choice.inputValue = json[this.options.getVar];
+			this.addChoiceEvents(choice).inject(this.choices);
+			$('to_pos_id').set("value", json["pos_id"]);
+		},
+		onLoad: function() {
+			var to_branch_id = $('to_branch_id').getValue();
+			if (to_branch_id == '') {
+				alert('请选择调入仓库');
+				return false;
+			}
+			this.options.getData = {
+				'branch_id': to_branch_id
+			};
+		},
+		onHide:function(){
+			$('to_pos_name').fireEvent('change');
+		}
+
+	});
+
+	$("to_pos_all").addEvent('click', function(e) {
+		var branch_id = $('to_branch_id').getValue();
+		var url = '?app=desktop&act=alertpages&goto=' + encodeURIComponent("index.php?app=ome&ctl=admin_stock&act=view&p[0]=" + branch_id + "&singleselect=1");
+		Ex_Loader('modedialog',function() {
+			new finderDialog(url, {
+				params: {
+					url: 'index.php?app=ome&ctl=admin_stock&act=getPosNameById',
+					name: 'id',
+					type: 'radio'
+				},
+				handle: 'to_pos_name',
+				width: 1000,
+				height: 500,
+				onCallback: function(data) {
+					data = JSON.decode(data);
+					getPosStore($('product_id').value,data.id,$('to_pos_stock_show'));
+				}
+			});
+		});
+	});
+
+	$('to_pos_name').addEvent('change',function(){
+		if(this.value != ''){
+			var branch_id = $('to_branch_id').getValue();
+			new Request({url:'index.php?app=ome&ctl=admin_stock&act=checkPos&p[0]=' + branch_id + '&p[1]=' + encodeURIComponent(this.value),
+            onComplete:function(rs){
+				if(rs != 0){
+					getPosStore($('product_id').value,rs,$('to_pos_stock_show'));
+				}else{
+					$('to_pos_stock_show').set('text',rs);
+				}
+			}}).send();
+		}
+	});
+
+
+	$('form1').store('target', {
+		onRequest: function() {
+			//提交按钮:disabled
+			$('saveCurrent').set('disabled', 'true');
+			$('saveCurrent').getElements('span')[1].set('text', '正在调拨');
+		},
+		onComplete: function(jsontext) {
+			//jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+			var json = Json.evaluate(jsontext);
+			if (typeof(json.error) != 'undefined') {
+				//提交按钮:enabled
+				$('saveCurrent').set('disabled', '');
+				$('saveCurrent').getElements('span')[1].set('text', '开始调拔');
+			} else {
+				//提交按钮:disabled
+				$('saveCurrent').set('disabled', 'true');
+				$('saveCurrent').getElements('span')[1].set('text', '正在调拨');
+                //opener.window.finderGroup['<{$env.get._finder.finder_id}>'].refresh.delay(400);
+                setTimeout('window.close()',500);
+			}
+		}
+	});
+
+	$('purchase_select_btn').addEvent('click', function(e) {
+		var url = 'index.php?app=desktop&act=alertpages&goto=' + encodeURIComponent('index.php?app=purchase&ctl=admin_purchase&act=findProduct&singleselect=1');
+
+		var callurl = 'index.php?app=purchase&ctl=admin_stock&act=get_proinfo',
+		store = [];
+		Ex_Loader('modedialog',function() {
+			new finderDialog(url, {
+				params: {
+					url: callurl,
+					name: 'product_id'
+				},
+				width: 1000,
+				height: 700,
+				onCallback: function(data) {
+					data = JSON.decode(data);
+					requestData(data);
+				}
+			});
+		});
+	});
+    function requestData(data) {
+        /* $('btn_add_item').set('disabled',false); */
+        $('purchase_select').set('value',data.name);
+        $('from_branch_id').empty();
+        $('product_name').set('text',data.name);
+        $('spec').value = data.spec_value || '';
+        $('spec_info').set('text',data.spec_value);
+        $('unit').value = data.unit || '';
+        $('product_id').value = data.product_id;
+        $('bn').value = data.bn;
+
+        data.branch_product.each(function(i, el) {
+            var opt = new Element('option', {
+                value: i.branch_id,
+                text: i.branch_name
+            }).inject($('from_branch_id'));
+            //new Element('option',{value:i.branch_id,text:i.branch_name}).inject($('to_branch_id'));
+            //调入仓库
+        });
+        getOp(data.branch_product[0].branch_id || {});
+    }
+
+    $('from_branch_id').addEvent('change',function(){
+        getOp(this.value,'1');
+    });
+    $('to_branch_id_bak').addEvent('change',function(){
+        getOp1(this.value);
+    });
+    $('btn_add_item').addEvent('click',function(){
+        if($E('[name^=product_id[]') && $E('[name^=product_id[]').value == $('product_id').value) return;
+        toadd();
+    });
+
+    function getOp(branch_id, type) {
+        //选择货位改为输入货位
+        var product_id = $('product_id').value;
+        //alert(product_id);
+        if (branch_id) {
+            W.page('index.php?app=ome&ctl=admin_stock&act=get_op1&p[0]=' + branch_id + '&p[1]=true&p[2]=from&p[3]=' + product_id, {
+                update: $('from_pos_id_show'),
+				onComplete: function() {
+				   $('from_pos_id').addEvent('change',function(){
+				   		 getPosStore(product_id,$('from_pos_id').value,$('from_pos_stock_show'));
+				   });
+                   getPosStore(product_id,$('from_pos_id').value,$('from_pos_stock_show'));
+                }
+            });
+
+        } else {
+            $('from_pos_id').empty();
+        }
+    }
+    function getOp1(branch_id) {
+        var product_id = $('product_id').value;
+        //alert(product_id);
+        if (branch_id) {
+            W.page('index.php?app=ome&ctl=admin_stock&act=get_op1&p[0]=' + branch_id + '&p[1]=true&p[2]=to&p[3]=' + product_id, {
+                update: $('to_pos_id_show'),
+                onComplete: function() {
+                    $('to_pos_id_show').setStyle('display', 'none');
+                }
+            });
+        } else {
+            $('to_pos_id').empty();
+        }
+    }
+
+	function getPosStore(product_id,pos_id,el){
+		W.page('index.php?app=ome&ctl=admin_stock&act=get_pos_store&p[0]=' + product_id + '&p[1]='+pos_id, {
+                update: el
+         });
+	}
+
+    var n = 0;
+    function toadd() {
+        var from_branch_name="", to_branch_name="", fromselect, toselect;
+        fromselect = $('from_branch_id');
+        if(fromselect.options.length) from_branch_name = fromselect.options[fromselect.selectedIndex].text;
+        else{
+            MessageBox.error('请选择调拨商品');
+            return false;
+        }
+        n++;
+        var product_id = $('product_id').value;
+        var product_name = $('product_name').get('text');
+        var from_branch_id = $('from_branch_id').value;
+        //var from_branch_name = $('from_branch_name').value;
+        //var to_branch_name='';
+        toselect = $('to_branch_id');
+        if(toselect.options.length&&toselect.get('value')!==""){
+            to_branch_name=toselect.options[toselect.selectedIndex].text;
+        }
+        else{
+            MessageBox.error('请选择调出仓库');
+            return false;
+        }
+        var to_branch_id = toselect.value;
+
+        var from_pos_name="",from_pos=$('from_pos_id'), from_pos_id = from_pos.value, to_pos_name = $('to_pos_name').value, to_pos_id=$('to_pos_id').value;
+        if(from_pos.options.length)	from_pos_name = from_pos.options[from_pos.selectedIndex].text;
+
+        //var fromstr = from_branch_id + from_pos_id;
+        //var tostr = to_branch_id + to_pos_id;
+        //if (fromstr==tostr){
+        //alert('调出与调入仓库货位不能相同！');
+        //return false;
+        //}
+        if (!from_branch_id || ! to_branch_id || ! from_pos_id || ! to_pos_id) {
+            MessageBox.error('请选择调出与调入仓库货位！');
+            return false;
+        }
+
+        var product_bn = $('bn').value;
+        var product_unit = $('unit').value;
+		var product_spec = $('spec').value;
+		var from_pos_stock = $('from_pos_stock_show').get('text');
+		var to_pos_stock = $('to_pos_stock_show').get('text');
+        var info = '<td><input type="checkbox" name="ckid[]" value="' + n + '" checked="checked"><input type="hidden" name="from_branch_id[' + n + ']" value="' + from_branch_id + '"><input type="hidden" name="product_id[' + n + ']" value="' + product_id + '"><input type="hidden" name="to_branch_id[' + n + ']" value="' + to_branch_id + '"><input type="hidden" name="from_pos[' + n + ']" value="' + from_pos_id + '"><input type="hidden" name="to_pos[' + n + ']" value="' + to_pos_name + '"></td><td>' + product_bn + '</td><td>' + product_name + '</td>';
+
+        info += '<td>' + from_branch_name + '/' + from_pos_name + '</td>';
+		info += '<td>' + from_pos_stock + '</td>';
+        info += '<td>';
+        if (to_branch_name != '') {
+            info += to_branch_name + '/';
+        }
+        info += to_pos_name + "</td>";
+		info += '<td>' + to_pos_stock + '</td>';
+      info += "<td>" + product_spec + "</td><td>" + product_unit + "</td><td><input type=text size='4' name=num[" + n + "]></td>";
+      info += "<td>";
+      info += '<{img src="bundle/delecate.gif" class="pointer del" app="desktop"}>';
+      info += "</td>";
+
+      new Element("tr",{html:info}).inject('dly-body').getElement('.del').addEvent('click',function(){
+        del(this);
+      });
+    }
+    //删除
+    function del(obj) {
+        var parent = obj.getParent("tr");
+        if (confirm('真的要删除吗?')) {
+            parent.destroy();
+        }
+    }
+})();
+</script>

@@ -1,0 +1,17 @@
+<h3>请先选择店铺</h3>
+<div class="division">
+    <form method='post' action='index.php?app=inventorydepth&ctl=shop_items&act=index'>
+        <div class="tableform">
+            <ul>
+                <{foreach from=$shops item=item }>
+                    <li style='float:left;padding:10px;'>
+                        <input type='radio' name='shop_id' value='<{$item.shop_id}>'><{$item.name}>
+                    </li>
+                <{/foreach}>
+            </ul>
+        </div>
+        <div class="table-action">
+            <{button label="确定" type="submit" }>
+        </div>
+    </form>
+</div>

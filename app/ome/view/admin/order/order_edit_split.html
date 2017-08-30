@@ -1,0 +1,660 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{script src="coms/autocompleter.js" app='desktop' }>
+<{/capture}>
+
+<form class="tableform" style="background:#fff; border:0 none;" method="post" action="index.php?app=ome&ctl=admin_order&act=finish_edit" id="order_split">
+<input type="hidden" name="order_id" id="order_id" value="<{$order_id}>" />
+<input type="hidden" name="do_action" id="do_action" value="0"/>
+<input type="hidden" name="b2b" id="b2b" value="<{$b2b}>"/>
+<input type="hidden" name="shop_id" id="b2b" value="<{$order.shop_id}>"/>
+<input type="hidden" name="total_amount" id="total_amount" value="<{$order.total_amount}>"/>
+
+<div id="nosplitarea">
+  <div class="finder-detail">
+    <table  cellspacing="0" cellpadding="0" border="0">
+      <tbody>
+        <tr>
+        <td style="text-align: left;" ><h3>发货单信息</h3></td>
+        <td style="text-align: right;" >
+        <{foreach from=$conf_list key=name item=conf}>
+            <{if $conf.is_add==true}>
+        <{button label="{$conf.add_title}" id="{$conf.add_id}"}>
+        <input type="hidden" name="add<{$name}>[]" value="" /> &nbsp;
+            <{/if}>
+        <input type="hidden" name="alltotal[]" value="<{$conf.js_count}>" /> &nbsp;
+        <{/foreach}>
+            <span style="position:relative">
+            <span id='pfba'><label>添加货号：</label><{input type="text" name="bn" size="25" }></span>
+            <span id='pfba2'><label>添加货品名称：</label><{input type="text" name="name" size="20" }></span>
+           </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <{include file="admin/order/order_edit_item.html"}>
+  </div>
+</div>
+
+<!-- 订单售后情况 BEGIN-->
+<{if $delivery_list}>
+<div class="finder-detail" id="delivery_list_box" style="border:2px solid #FC0; background:#ffffcc;">
+	<{include file="admin/order/confirm/show_order_delivery_list.html"}>
+</div>
+<{/if}>
+<!-- 订单售后情况 END-->
+
+<div class="finder-detail">
+<div id="order_edit_receiver">
+  <table width="100%" class="gridlist">
+    <thead>
+      <tr>
+        <th style="text-align:left;">配送信息</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" class="delivery-info">
+           <tr>
+            <th>收货人姓名：</th>
+            <td><{input type="text&&required" size="12" value=$order.consignee.name readonly="readonly"}> <em class="c-red">*</em><input type="hidden" name="order[consignee][name]" value="<{$order.consignee.name}>" /></td>
+            <th>送货时间：</th>
+            <td><{input type="text" value=$order.consignee.r_time readonly="readonly"}></td>
+            <th>收货地区：</th>
+            <td><{if $region}>
+              <div id="region"> <{$region}> </div>
+              <div id="area" style="display:none"> <{input type='region' app='ectools' value=$newregion required="true"}>*</div>
+              <div id="showarea">
+                <input  type="button" value="修改地区" onclick="change_region();" />
+              </div>
+              <{else}>
+              <{input type='region' app='ectools' value=$order.consignee.area required="true" readonly="readonly"}> <em class="c-red">*</em> <{/if}> </td>
+           </tr>
+           <tr>
+             <th>联系手机：</th>
+             <td><{input type="text" vtype="requiredalmost" size="12" value=$order.consignee.mobile readonly="readonly"}></td>
+             <th>邮政编码：</th>
+             <td><{input type="text" size="6" value=$order.consignee.zip readonly="readonly"}></td>
+            <th>收货地址：</th>
+            <td><{input type="required" size="40" value=$order.consignee.addr readonly="readonly"}> <em class="c-red">*</em></td>
+            </tr>
+           <tr>
+             <th>联系电话：</th>
+             <td><{input type="text" vtype="requiredalmost" size="12" value=$order.consignee.telephone readonly="readonly"}></td>
+             <th>Email地址：</th>
+             <td><{input type="email" value=$order.consignee.email readonly="readonly"}></td>
+            <th>&nbsp;</th>
+            <td>&nbsp;</td>
+            <input type="hidden" name="log_name" value="<{$order.consignee.name}>" />
+            <input type="hidden" name="log_r_time" value="<{$order.consignee.r_time}>" />
+            <input type="hidden" name="log_area" value="<{$order.consignee.area}>" />
+            <input type="hidden" name="log_mobile" value="<{$order.consignee.mobile}>" />
+            <input type="hidden" name="log_zip" value="<{$order.consignee.zip}>" />
+            <input type="hidden" name="log_addr" value="<{$order.consignee.addr}>" />
+            <input type="hidden" name="log_telephone" value="<{$order.consignee.telephone}>" />
+            <input type="hidden" name="log_email" value="<{$order.consignee.email}>" />
+            <input type="hidden" name="log_discount" value="<{$order.discount}>" />
+          </tr>
+         </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<{ if count($tbgifts) > 0 }>
+    <div class="finder-detail" style="margin-top:10px;">
+        <div><h3>订单优惠需赠送赠品(请确认是否已经编辑添加处理)</h3></div>
+        <div class="division" style="background:#fff;">
+            <table class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                <thead>
+                  <tr>
+                    <th>赠品名称</th>
+                    <th>需送数量</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <{foreach from=$tbgifts item=tbgift}>
+                    <th><{$tbgift.name}></th>
+                    <th><{$tbgift.nums}></th>
+                    <{/foreach}>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<{/if}>
+
+  <div class="finder-detail">
+    <h3 >订单信息</h3>
+    <div class="division" style="background:#fff; " id="order_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody><tr>
+            <th>订单号：</th>
+            <td><span id="order_bn"><{$order.order_bn}><input type="hidden" name="order_bn" value="<{$order.order_bn}>"></span> <a href="javascript:void(0);" id="btn_copy" class="lnk">[复制]</a></td>
+            <th><b>订单总金额：</b></th>
+            <td><b id="total_amount_show" val="<{$order.total_amount}>"><{$order.total_amount|cur}></b><input type="hidden" name="new_total_amount" id="new_total_amount" value="<{$order.total_amount}>" /></td>
+            <th>订单折扣或涨价：</th>
+            <td><input type="text" vtype="number" name="discount" id="discount" size="10" onchange="cal_total_amount(this);" value="<{$order.discount}>" /><br />要给顾客便宜100元，则输入"-100";要提高订单价格100元，则输入"100".</td>
+          </tr>
+          <tr>
+            <th>下单日期：</th>
+            <td><{$order.createtime|date_format:'%Y-%m-%d'}> <span style="color:#84A2AD;">(至今<{$order.difftime}>)<input type="hidden" name="createtime" value="<{$order.createtime|date_format:'%Y-%m-%d'}>"></span></td>
+            <th>配送费用：</th>
+            <td><input id='cost_shipping' size='10' name="cost_shipping"  onchange="cal_cost_shiping(this);"  value="<{$order.shipping.cost_shipping}>"></td>
+            <th>支付方式：</th>
+            <td><{$order.payinfo.pay_name}><input type="hidden" name="pay_name" value="<{$order.payinfo.pay_name}>"></td>
+          </tr>
+          <tr>
+            <th>商品总金额：</th>
+            <td><b id="cost_amount_show"><{$order.cost_item|cur}></b></td>
+            <input type="hidden" id="cost_item" name="cost_item" value="<{$order.cost_item|cur}>" />
+            <th>配送方式：</th>
+            <td><{$order.shipping.shipping_name}><input type="hidden" name="shipping_name" value="<{$order.shipping.shipping_name}>" /></td>
+            <th>支付手续费：</th>
+            <td><{$order.payinfo.cost_payment|cur}><input type="hidden" name="cost_payment" value="<{$order.payinfo.cost_payment|cur}>" /> </td>
+          </tr>
+          <tr>
+            <th>订单优惠金额：</th>
+            <td><{$order.pmt_order|cur}><input type="hidden" name="pmt_order" value="<{$order.pmt_order|cur}>"></td>
+            <th>保价：</th>
+            <td><{$order.shipping.cost_protect|cur}> <span style="color:#84A2AD;">是否要保价：<{if $order.shipping.is_protect == 'true'}>是<{else}>否<{/if}> <input type="hidden" name="cost_protect" value="<{$order.shipping.cost_protect|cur}>"></span></td>
+            <th>税金：</th>
+            <td><{$order.cost_tax|cur}> <input type="hidden" name="cost_tax" value="<{$order.cost_tax|cur}>"></td>
+          </tr>
+          <tr>
+            <th>商品优惠金额：</th>
+            <td><input type="text" class="none_input" size="6" readonly="readonly" name="pmt_goods" id="total_pmt" value="<{$order.pmt_goods|cur}>"></td>
+            <th>商品重量：</th>
+            <td><{$order.weight}><input type="hidden" name="weight" value="<{$order.weight}>"></td>
+            <th>发票抬头：</th>
+            <td><{$order.tax_title}><input type="hidden" name="tax_title" value="<{$order.tax_title}>"></td>
+          </tr>
+          <tr>
+            <th>已支付金额：</th>
+            <td><{$order.payed|cur}><input type="hidden" name="payed" value="<{$order.payed}>"></td>
+            <th>支付币种：</th>
+            <td><{$order.currency}><input type="hidden" name="currency" value="<{$order.currency}>"></td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="finder-detail" style="margin-top:10px;">
+    <div><h3>购买人信息</h3></div>
+    <div class="division" style="background:#fff;" id="buyer_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+          <tr>
+            <th>会员用户名：</th>
+            <td><{$member.account.uname}><input type="hidden" name="mem_uname" value="<{$member.account.uname}>"></td>
+            <th>姓名：</th>
+            <td><{$member.contact.name}><input type="hidden" name="mem_name" value="<{$member.contact.name}>"></td>
+            <th>联系电话：</th>
+            <td><{$member.contact.phone.telephone}><input type="hidden" name="mem_telephone" value="<{$member.contact.phone.telephone}>"></td>
+            <th>手机：</th>
+            <td><{$member.contact.phone.mobile}><input type="hidden" name="mem_mobile" value="<{$member.contact.phone.mobile}>"></td>
+          </tr>
+          <tr>
+            <th>Email：</th>
+            <td><{$member.contact.email}><input type="hidden" name="mem_email" value="<{$member.contact.email}>"></td>
+            <th>邮政编码：</th>
+            <td><{$member.contact.zipcode}><input type="hidden" name="mem_zipcode" value="<{$member.contact.zipcode}>"></td>
+            <th>详细地址：</th>
+            <td><{$member.contact.area|region}> <{$member.contact.addr}><input type="hidden" name="mem_area" value="<{$member.contact.area|region}> <{$member.contact.addr}>"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+    <div class="finder-detail" style="margin-top:10px;">
+        <div><h3>备注信息</h3></div>
+        <div class="division" style="background:#fff;" id="buyer_area">
+            <table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+                <tbody>
+                    <tr><th><strong>会员备注：</strong></th>
+                    <td>
+                        <{foreach from=$order.custom_mark item=items}>
+                        <div id="memo_show">
+                        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                        </div>
+                        <{/foreach}>
+                    </td></tr>
+                    <tr><th><strong>订单备注：</strong></th>
+                    <td>
+                        <{if $order.mark_text}>
+                        <{foreach from=$order.mark_text item=items}>
+                        <div id="memo_show">
+                        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                        </div>
+                        <{/foreach}>
+                        <{/if}>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<{if $retrial_order == 'true'}>
+	<div class="finder-detail" style="margin-top:10px;">
+        <div><h3>客服修改备注</h3></div>
+        <div class="division" style="background:#fff; padding:0px; border:1px solid #efefef;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td><textarea name="kefu_remarks" cols="100" rows="3" id="kefu_remarks" onkeypress="input_remarks()" style="color:#999;padding:3px 5px;font-family:'微软雅黑', Arial, Helvetica, sans-serif;">客户要求 申请通过</textarea></td>
+              </tr>
+          </table>
+        </div>
+    </div>
+<{/if}>
+    
+</form>
+
+<{capture name='footbar'}>
+<table cellspacing="0" cellpadding="0" class="table-action">
+  <tbody><tr valign="middle">
+    <td>
+      <{button label="确认" id="enter_submit" class="btn-primary" onclick="dosubmit(0)"}>
+      <{button label="取消" class="btn-primary" id="do_cancel"}>
+    </td>
+    </tr>
+    </tbody></table>
+<{/capture}>
+
+
+<script>
+//改变客服备注背景色[ExBOY]
+function input_remarks()
+{
+	document.getElementById("kefu_remarks").style.color = "#000000";
+}
+//获取商品列表的ID号[ExBOY]
+function get_product_ids()
+{
+	var product_ids	= ''
+	var obj		= document.getElementsByName("product_ids[]");
+	for(i=0; i<obj.length; i++)
+	{
+		if(obj[i].disabled != true)
+		{
+			//获取购买量
+			var buy_num	= 0;
+			var id		= obj[i].value;
+			var obj_id	= obj[i].getAttribute("id");
+			var item_id	= obj_id.replace("product_ids_", "");
+			
+			if(item_id && document.getElementById("num_"+item_id))
+			{
+				buy_num	= document.getElementById("num_"+item_id).value;
+			}
+						
+			product_ids += ',' + id+'_'+buy_num;
+		}
+	}  
+	if(product_ids != "")
+	{
+		product_ids		= product_ids.substr(1);
+	}
+	
+	return product_ids;
+}
+
+validatorMap.set('requiredalmost', ['<{t}>固定电话与手机号码必须填写一项<{/t}>', function(element, v) {
+    var parent = element.getParent('.delivery-info'),item;
+    item = parent.getElements('input[vtype^=requiredalmost]');
+    var tmp = false;
+    item.each(function(it) {
+        if (it.value != '') tmp = true;
+    });
+    return tmp;
+}]);
+validatorMap.set('mobile', ['<{t}>手机号码不正确<{/t}>', function(element, v) {
+    return  v == null || v == '' || /^1\d{10}$/.test(v);
+}]);
+validatorMap.set('telephone', ['<{t}>固定电话不正确<{/t}>', function(element, v) {
+    return  v == null || v == '' || /^(\(0\d{2,3}\)|0\d{2,3}-)?[2-9]\d{5,7}(\(\d{2,5}\)|-\d{2,5})?$/.test(v);
+}]);
+
+total();
+function total(){
+
+  var totalarr = [], total=0, sale_amount=0;
+  var totals = $$('input[name^=alltotal[]');//['total_goods()','total_pkg()','total_gift()'];
+
+  totals.each(function(e,i){
+    totalarr.push(new Function('return '+e.value)());
+    total += totalarr[i][0];
+    sale_amount += totalarr[i][1];
+
+  });
+
+  var total = total.toFixed(3);
+
+  if(total > 0 ){
+    $("total").set('html', total);
+  }
+
+  var sale_amount = sale_amount.toFixed(3);
+
+  if(sale_amount > 0 ){
+    $("total_sale_amount").set('html', sale_amount);
+  }
+
+  ome_edit_total_amount(total,sale_amount);
+}
+
+
+function ome_edit_total_amount(total,sale_amount){
+    var cost_item,cost_freight,cost_tax,cost_protect,cost_payment,pmt_order,pmt_goods,discount,total_amount;
+
+    total = total || $('total').get('text');
+
+    cost_item = parseFloat(total);//商品总金额
+
+    //cost_freight = parseFloat(<{if $order.shipping.cost_shipping}><{$order.shipping.cost_shipping}><{else}>0<{/if}>);//配送费用
+     //编辑以后的配送费用
+    var new_cost_shipping = document.getElementById("cost_shipping").value;
+    //编辑以前的配送费用
+     var old_cost_freight = parseFloat(<{if $order.shipping.cost_shipping}><{$order.shipping.cost_shipping}><{else}>0<{/if}>);//配送费用
+     if(old_cost_freight != new_cost_shipping ){
+    	cost_freight = new_cost_shipping;
+    }else{
+    	cost_freight = old_cost_freight;
+    }
+    cost_tax = parseFloat(<{if $order.cost_tax}><{$order.cost_tax}><{else}>0<{/if}>);//税金
+    cost_protect = parseFloat(<{if $order.shipping.cost_protect}><{$order.shipping.cost_protect}><{else}>0<{/if}>);//保价费用
+    cost_payment = parseFloat(<{if $order.payinfo.cost_payment}><{$order.payinfo.cost_payment}><{else}>0<{/if}>);//支付手续费
+    pmt_order = parseFloat(<{if $order.pmt_order}><{$order.pmt_order}><{else}>0<{/if}>);//订单优惠金额
+    pmt_goods = parseFloat(<{if $order.pmt_goods}><{$order.pmt_goods}><{else}>0<{/if}>);//商品优惠金额
+
+    discount = parseFloat($('discount').get('value'));//折扣或涨价
+    if(isNaN(discount)){
+        discount = 0;
+    }
+
+    //计算当前总金额
+    total_amount = (parseFloat(sale_amount) + parseFloat(cost_freight) + parseFloat(cost_tax) + parseFloat(cost_protect) + parseFloat(cost_payment) - parseFloat(pmt_order)  + parseFloat(discount)).toFixed(3);
+
+    $('cost_amount_show').set('text', '¥'+parseFloat(cost_item).toFixed(3));
+    $('total_amount_show').set('text', '¥'+total_amount);
+    $('total_amount_show').set('val', total_amount);
+    if (total_amount)
+    {
+        $('new_total_amount').set('value', total_amount);
+    }
+
+    $('total_pmt').set('value', '¥'+parseFloat(total-sale_amount).toFixed(3));
+}
+
+
+function cal_total_amount(e){
+   var _ca = e.getNext('.error');
+   if (!/^[\d-]+(\.\d+)?$/.test(e.value)){
+        if (!_ca)
+        {
+            new Element('span',{'class':"error caution notice-inline",html:"请录入数值"}).injectAfter(e);
+            return;
+        }
+   }else{
+        if (_ca) _ca.remove();
+   }
+   var _ca = $('total_amount_show').getNext('.error');
+   if (_ca) _ca.remove();
+
+   total();
+}
+function cal_cost_shiping(e){
+	   var _ca = e.getNext('.error');
+	   if (!/^[\d]+(\.\d+)?$/.test(e.value)){
+	        if (!_ca)
+	        {
+	            new Element('span',{'class':"error caution notice-inline",html:"请录入大于0的数值"}).injectAfter(e);
+	            return false;
+	        }
+	        if (e.value<0)
+	        {
+	        	 _ca.remove();
+	            new Element('span',{'class':"error caution notice-inline",html:"请录入大于0的数值"}).injectAfter(e);
+	            return;
+	        }
+	   }else{
+	        if (_ca) _ca.remove();
+	   }
+	   var _ca = $('total_amount_show').getNext('.error');
+	   if (_ca) _ca.remove();
+
+	   total();
+	}
+
+
+$('do_cancel').addEvent('click', function(event){
+    if (confirm("是否关闭窗口?")) window.close();
+});
+
+//判断客服备注输入字数[ExBOY]
+function dosubmit(act)
+{
+	var retrial_order	= '<{$retrial_order}>';
+	if(retrial_order == 'true')
+	{
+		var kefu_remarks		= $('kefu_remarks').value;
+		if(kefu_remarks == "" || kefu_remarks.length < 5)
+		{
+			alert("至少输入5个字符以上的备注信息；");
+			document.getElementById("kefu_remarks").focus();
+			return false;
+		}
+	}
+	if (confirm("编辑提交后，未发货的发货单将会自动被打回?"))
+    {
+    	$('do_action').value = act;
+    	$('order_split').fireEvent('submit',{stop:function(){}});
+	}
+	else
+	{
+		return false;
+	}
+}
+
+function docheck(text){
+    var id = $("order_id").value;
+    var newtotal = parseFloat($('new_total_amount').get('value'));
+    var pay_status = parseInt(<{$order.pay_status}>);
+    var total = parseFloat($("total_amount").value);
+    var is_cod = <{$order.shipping.is_cod}>;
+    var payed = <{$order.payed}>;
+	var retrial_order	= '<{$retrial_order}>';
+	
+	//ExBOY自定义
+	var product_ids	= '';
+	product_ids	= get_product_ids();
+	
+    if (payed > newtotal && retrial_order != 'true'){
+        var width=800;
+        var height=500;
+		ome_order_new_dialog(id, newtotal, total, is_cod, pay_status, width, height, product_ids);
+    }else{
+        var width=400;
+        var height=310;
+		ome_order_new_dialog(id, newtotal, total, is_cod, pay_status, width, height, product_ids);
+    }
+}
+
+//增加product_ids参数
+function ome_order_new_dialog(id, newtotal, total, is_cod, pay_status,width,height, product_ids)
+{
+	var url	= 'index.php?<{$env.server.QUERY_STRING|replace:"view_edit":"do_check"}>&p[0]='+id+'&p[1]='+newtotal+'&p[2]='+total+'&is_cod='+is_cod+'&pay_status='+pay_status+'&product_ids='+product_ids;
+	var retrial_order	= '<{$retrial_order}>';
+	if(retrial_order == 'true')
+	{
+		url		+= '&is_retrial=true';
+	}
+	
+    new Dialog(url,{
+        title:'编辑确认',
+        width:width,
+        height:height,
+        modal:true,
+        resizeable:false,
+        onClose:function(){
+            $('enter_submit').set('disabled', '');
+            $('enter_submit').getElements('span')[1].set('text','确认');
+            $('do_cancel').set('disabled', '');
+        }
+  });
+}
+
+function change_region(){
+    $('region').style.display='none';
+    $('area').style.display='';
+    $('showarea').style.display='none';
+}
+function doAction(act){
+    $('do_action').value = act;
+    $('order_split').fireEvent('submit',{stop:function(){}});
+}
+
+$('order_split').store('target',{
+    onRequest:function (){
+        $('enter_submit').set('disabled', 'true');
+        $('enter_submit').getElements('span')[1].set('text','处理中');
+        $('do_cancel').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if ($("do_action").value == 0){
+              if (typeof(json.error) == 'undefined'){
+                    docheck(json.error);
+              }else {
+                  $('enter_submit').set('disabled', '');
+                  $('enter_submit').getElements('span')[1].set('text','确认');
+                  $('do_cancel').set('disabled', '');
+              }
+       }else {
+           if (typeof(json.error) == 'undefined'){
+               finish_edit_confirm();
+           }else {
+               $('enter_submit').set('disabled', '');
+               $('enter_submit').getElements('span')[1].set('text','确认');
+               $('do_cancel').set('disabled', '');
+           }
+       }
+    }
+});
+
+function finish_edit_confirm(){
+	//检测操作人员的操作权限中，是否包含审单权限
+	var order_confirm = "<{$order_confirm}>";
+    var oldsource = '<{$env.get.oldsource}>';
+	if(!order_confirm){
+		//如果操作权限中不包含审单权限，直接关闭窗口
+		window.close();return;
+	}
+    if (confirm("编辑完成，是否回到审单页面?"))
+    {
+        if (oldsource =='active' || oldsource == 'confirm')
+        {
+            window.location = 'index.php?<{$env.server.QUERY_STRING|replace:"view_edit":"do_confirm"}>';
+        }
+        else if(oldsource =='dispatch' || oldsource == 'abnormal')
+        {
+            //暂存区或异常订单[不跳转至父窗体]
+            window.location = 'index.php?<{$env.server.QUERY_STRING|replace:"view_edit":"do_confirm"}>';
+        }else{
+            opener.window.location = 'index.php?<{$env.server.QUERY_STRING|replace:"view_edit":"do_confirm"}>';
+        
+            window.close();
+        }
+        
+    }else {
+        window.close();
+    }
+}
+
+window.addEvent('keydown',function(e){
+    if(e.code=="116"){
+        location = 'index.php?<{$env.server.QUERY_STRING}>&a='+$random(0,1000);
+        return false;
+    }
+})
+
+    $('btn_copy').addEvent('click',function(){
+      copyToClip($('order_bn').get('text'));
+    });
+
+    function copyToClip(txt) {
+      var flag = false;
+      if(window.clipboardData) {
+        window.clipboardData.clearData();
+        window.clipboardData.setData("Text", txt);
+        flag = true;
+      }
+      else if(navigator.userAgent.indexOf("Opera") != -1) {
+        window.location = txt;
+        flag = true;
+      }
+      else if (window.netscape) {
+        try {
+          netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+        } catch (e) {
+          MessageBox.show("被浏览器拒绝！\n请在浏览器地址栏输入'about:config'并回车\n然后将'signed.applets.codebase_principal_support'设置为'true'");
+        }
+        var clip = Components.classes['@mozilla.org/widget/clipboard;1'].createInstance(Components.interfaces.nsIClipboard);
+        if (!clip) return;
+        var trans = Components.classes['@mozilla.org/widget/transferable;1'].createInstance(Components.interfaces.nsITransferable);
+        if (!trans) return;
+        trans.addDataFlavor('text/unicode');
+        var str = new Object();
+        var len = new Object();
+        var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
+        var copytext = txt;
+        str.data = copytext;
+        trans.setTransferData("text/unicode",str,copytext.length*2);
+        var clipid = Components.interfaces.nsIClipboard;
+        clip.setData(trans,null,clipid.kGlobalClipboard);
+        flag = true;
+      }
+      else{
+        flag = prompt('请复制订单号：',txt);
+      }
+      if(flag) MessageBox.show('信息已经复制到剪切板');
+    }
+
+function do_refund()
+{
+    var id = $("order_id").value;
+    var newtotal = parseFloat($('new_total_amount').get('value'));
+    var pay_status = parseInt(<{$order.pay_status}>);
+    var total = parseFloat($("total_amount").value);
+    var is_cod = <{$order.shipping.is_cod}>;
+    var payed = <{$order.payed}>;
+	
+	$('enter_submit').set('disabled', 'true');
+	$('enter_submit').getElements('span')[1].set('text','处理中');
+	$('do_cancel').set('disabled', 'true');
+	
+	var width=800;
+	var height=550;
+	ome_order_refund_dialog(id, newtotal, total, is_cod, pay_status, width, height);
+}
+function ome_order_refund_dialog(id, newtotal, total, is_cod, pay_status,width,height)
+{
+	var url	= 'index.php?app=ome&ctl=admin_order&act=do_check&finder_id=<{$env.get.finder_id}>&p[0]='+id+'&p[1]='+newtotal+'&p[2]='+total+'&is_cod='+is_cod+'&pay_status='+pay_status;
+    new Dialog(url,{
+        title:'生成退款单',
+        width:width,
+        height:height,
+        modal:true,
+        resizeable:false,
+        onClose:function(){
+            $('enter_submit').set('disabled', '');
+            $('enter_submit').getElements('span')[1].set('text','确认');
+            $('do_cancel').set('disabled', '');
+        }
+  });
+}
+</script>

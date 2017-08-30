@@ -1,0 +1,104 @@
+<{capture name="header"}>
+<style>
+.region{
+font-weight:bold;font-size:14px;padding-right:6px;
+}
+.shop-name{
+    color:red;font-weight:bold;
+}
+.area-name{
+    font-weight:bold;font-size:14px;
+}
+.node{
+padding:8px;width:300px;
+}
+li {
+padding:4px;
+}
+</style>
+<{/capture}>
+<p></p>
+<div class="division">
+<input type='hidden' id='sequence'/>
+<table width="100%" border="0" style="border: 1px solid #cccccc; ">
+
+<{foreach from=$area item=area}>
+<tr style="border: 1px solid #cccccc; "><td style="border: 1px solid #cccccc; "><span class="region"><{$area.local_name}></span></th><td style="border: 1px solid #cccccc; " align=center><input type="checkbox" onclick="showAll(this,<{$area.area_id}>)">全选</td><td style="border: 1px solid #cccccc; ">
+<div style="padding-bottom:4px;width:450px;">
+<ul>
+<span id='area_region<{$area.area_id}>'><{foreach from=$area.area_items item=area_items}><li style="width:80px;float:left;"> <span class='node'><input class="item<{$area.area_id}>" type="checkbox" name="region" value='<{$area_items.region_id}>' <{if $area_items.flag=='1'}>disabled<{/if}> onclick="javascript:if(this.checked){this.getNext('span').addClass('shop-name');}else{this.getNext('span').removeClass('shop-name');}">
+<span class='node-name'><{$area_items.local_name}></span></span>
+<{/foreach}></span>
+</ul></div></td></tr>
+<{/foreach}>
+
+</table>
+
+
+<div class="table-action">
+  <{button id="dlg_ok" class="btn btn-primary" label=$___eccommon="确定"|t:'eccommon'}>
+  <{button id="dlg_cancel-{$sid}" class="btn btn-secondary" label=$___eccommon="取消"|t:'eccommon' onclick="window.close();"}>
+</div>
+</div>
+
+<script>
+  void function(){
+ 
+    if(!window.dialogArguments)return;
+    var modedialog=window.dialogArguments.options.params;
+
+    var _inputText=modedialog.iptText;
+    var _inputHidden=modedialog.iptHidden;
+
+    var _inputHiddenValue=_inputHidden.value.split(',');
+   
+
+   
+    $('dlg_ok').addEvent('click',function(){
+    
+      var nodes=$$('.node').filter(function(n){
+
+        return n.getElement('input[type=checkbox]').checked;
+      });
+var iddates=[];
+var namedates=[];
+nodes.each(function(node){
+var v = node.getElement('input[type=checkbox]').getValue();
+var text = node.getElement('.node-name').get('text');
+iddates.push(v);
+namedates.push(text);
+});
+_inputText.set('value',namedates.join(','));
+_inputHidden.set('value',iddates.join(','));
+window.close();
+
+
+    });
+   
+   
+
+    
+  }();
+function showAll(area,area_id){
+
+if(area.checked==true){
+
+$$('.item'+area_id).each(function(i,index){
+if(!i.get('disabled')){
+    i.set('checked',true);
+ 
+    i.getNext('span').addClass('shop-name');
+}
+});
+
+}else{
+   $$('.item'+area_id).each(function(i,index){
+
+i.set('checked',false);
+i.getNext('span').removeClass('shop-name');
+});
+
+}
+}
+</script>
+

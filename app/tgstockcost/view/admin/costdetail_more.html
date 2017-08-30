@@ -1,0 +1,25 @@
+
+<{foreach from=$iostock_data item=item}>
+<{foreach from=$item.iostock item=iostock}>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.name}></td>
+    <td><{$item.type_name}></td>
+	<td><{$item.brand_name}></td>
+    <td><{$item.spec_info}></td>
+    <td><{$item.unit}></td>
+    <td><{if $iostock.is_start=='1'}><{$iostock.stock_date}><{else}><{$iostock.iotime|cdate}><{/if}></td>
+    <td><{$iostock.original_bn}></td>
+	<td><{if $iostock.is_start=='1'}>期初<{else}><{$iostock.io_type_name}><{/if}></td>
+    <td><{if $iostock.io_type=='0'}><{$iostock.nums}><{/if}></td>
+    <td><{if $iostock.io_type=='0'}><{$iostock.unit_cost|cur}><{/if}></td>
+    <td><{if $iostock.io_type=='0'}><{$iostock.inventory_cost|cur}><{/if}></td>
+    <td><{if $iostock.io_type=='1'}><{$iostock.nums}><{/if}></td>
+    <td><{if $iostock.io_type=='1'}><{$iostock.unit_cost|cur}><{/if}></td>
+    <td><{if $iostock.io_type=='1'}><{$iostock.inventory_cost|cur}><{/if}></td>
+    <td><{$iostock.now_num}></td>
+    <td><{$iostock.now_unit_cost|cur}></td>
+    <td><{$iostock.now_inventory_cost|cur}></td>
+</tr>
+<{/foreach}>
+<{/foreach}>

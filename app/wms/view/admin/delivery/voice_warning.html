@@ -1,0 +1,13 @@
+<div class='voice-waring' ></div>
+<script>
+var voiceWarning = function(flag){
+    if (flag == 1){
+        var html = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,28,0" width="5" height="5"><param name="movie" value="<{$env.APP.res_full_url}>/flash/delivery/pass.swf" /><param name="quality" value="high" /><param name="wmode" value="" /><embed src="<{$env.APP.res_full_url}>/flash/delivery/pass.swf" quality="high" wmode="transparent" pluginspage="http://www.adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash" type="application/x-shockwave-flash" width="5" height="5"></embed></object>';
+    } else {
+        var html = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,28,0" width="5" height="5"><param name="movie" value="<{$env.APP.res_full_url}>/flash/delivery/warning.swf" /><param name="quality" value="high" /><param name="wmode" value="" /><embed src="<{$env.APP.res_full_url}>/flash/delivery/warning.swf" quality="high" wmode="transparent" pluginspage="http://www.adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash" type="application/x-shockwave-flash" width="5" height="5"></embed></object>';
+    }
+    
+    $E('.voice-waring').setHTML(html);
+}
+
+</script>

@@ -1,0 +1,53 @@
+<form id="idForm" method='post' action='index.php?app=wms&ctl=admin_receipts_print&act=savePrintStyle' style="margin:5px 10px;">
+<input type="hidden" id="current_print" name="current_print" value="" />
+<{button label=$___ome="恢复初始样式"|t:'wms' type="submit" id="idresume" style="float:right"}>
+
+<{tabber}>
+  <{tab name=$___ome="备货单"|t:'wms'}>
+<{input type="textarea" name="txtContent" class="info-text" style="height:300px;width:100%;" value=$styleContent }>
+
+  <{/tab}>
+  <{tab name=$___ome="发货单"|t:'wms' }>
+<{input type="textarea" name="txtContentDelivery" class="info-text" style="height:300px;width:100%;" value=$styleContentDelivery }>
+  <{/tab}>
+
+  <{tab name=$___ome="采购单"|t:'wms' }>
+<{input type="textarea" name="txtContentPurchase" class="info-text" style="height:300px;width:100%;" value=$styleContentPurchase }>
+  <{/tab}>
+  <{tab name=$___ome="入库单"|t:'wms' }>
+<{input type="textarea" name="txtContentPurchaseEo" class="info-text" style="height:300px;width:100%;" value=$styleContentPurchaseEo }>
+  <{/tab}>
+  <{tab name=$___ome="采购退货单"|t:'wms' }>
+<{input type="textarea" name="txtContentPurchaseReturn" class="info-text" style="height:300px;width:100%;" value=$styleContentPurchaseReturn }>
+  <{/tab}>
+
+  <{/tabber}>
+  <div class="table-action">
+	<{button label=$___ome="保存"|t:'wms' type="button" id="idsave"}>
+</div>
+</form>
+<script>
+  $('idresume').addEvent('click',function(e){
+	if (!confirm('<{t}>恢复后将覆盖现有样式，确定要恢复吗？<{/t}>'))
+	{
+		return ;
+	}
+	setCurrentPrint();
+    e=new Event(e);
+    $('idForm').action = 'index.php?app=wms&ctl=admin_receipts_print&act=rebackPrintStyle';
+    $('idForm').fireEvent('submit', e);
+  });
+  $('idsave').addEvent('click',function(e){
+	  setCurrentPrint();
+	  $('idForm').fireEvent('submit', e);
+  });
+
+  function setCurrentPrint(){
+	  $ES('.tab',$('idForm')).each(function(el,i){
+          if(el.hasClass('current')){
+              var arr = new Array('txtContent','txtContentDelivery','txtContentPurchase','txtContentPurchaseEo','txtContentPurchaseReturn');
+              $('current_print').value = arr[i];
+          }
+      });
+  }
+</script>

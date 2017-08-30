@@ -1,0 +1,35 @@
+<?php
+$setting = array(
+'ome.order.split_type'=>array('type'=>SET_T_STR,'default'=>'product','desc'=>app::get('base')->_('发货分仓模式')),
+'ome.order.failtime'=>array('type'=>SET_T_INT,'default'=>43200,'desc'=>app::get('base')->_('订单失效时间设置(分钟)')),    //一个月
+'ome.order.unconfirmtime'=>array('type'=>SET_T_INT,'default'=>1440,'desc'=>app::get('base')->_('订单未确认的时间设置(分钟)')),   //一天
+'ome.delivery.check'=>array('type'=>SET_T_INT,'default'=>5,'desc'=>app::get('base')->_('发货校验商品数量设置')),
+'ome.branch.mode'=>array('type'=>SET_T_STR,'default'=>'multi','options'=>array('single'=>app::get('base')->_('单一仓库'),'multi'=>app::get('base')->_('多仓库')),'desc'=>app::get('base')->_('仓库设置')),
+'ome.api_log.clean_time'=>array('type'=>SET_T_ENUM,'default'=>'15','options'=>array('7'=>app::get('base')->_('7天'),'15'=>app::get('base')->_('半个月'),'21'=>app::get('base')->_('21天'),'31'=>app::get('base')->_('1个月')),'desc'=>app::get('base')->_('API同步日志备份周期')),
+'purchase.stock.stockset'=>array('type'=>SET_T_BOOL,'default'=>'true','desc'=>app::get('base')->_('是否条码入库控制'),'onclick'=>'if(this.value==\'true\'){$$(\'input[name^=set[purchase.stock_confirm]]\').show();$$(\'input[name^=set[purchase.stock_confirm]]\').getParent(\'tr\').show();$$(\'input[name^=set[purchase.stock_cancel]]\').show();$$(\'input[name^=set[purchase.stock_cancel]]\').getParent(\'tr\').show();}if(this.value==\'false\'){$$(\'input[name^=set[purchase.stock_confirm]]\').getParent(\'tr\').hide();$$(\'input[name^=set[purchase.stock_cancel]]\').getParent(\'tr\').hide();}'),
+'purchase.stock_confirm'=>array('type'=>SET_T_TXT,'default'=>'99999995','desc'=>app::get('base')->_('确认按钮内容设置')),
+'purchase.stock_cancel'=>array('type'=>SET_T_TXT,'default'=>'11111115','desc'=>app::get('base')->_('取消按钮内容设置')),
+'purchase.po_type'=>array('type'=>SET_T_ENUM,'default'=>'credit','desc'=>app::get('base')->_('采购方式')),
+'ome.delivery.consign'=>array('type'=>SET_T_ENUM,'default'=>'single','options'=>array('single'=>app::get('base')->_('逐个发货'),'batch'=>app::get('base')->_('批量发货')),'desc'=>app::get('base')->_('发货方式')),
+'ome.delivery.check_type'=>array('type'=>SET_T_ENUM,'default'=>'barcode','options'=>array('barcode'=>app::get('ome')->_('条码校验'),'all'=>app::get('ome')->_('整单校验')),'desc'=>app::get('base')->_('发货校验类型')),
+'ome.delivery.check_ident'=>array('type'=>SET_T_ENUM,'default'=>'on','options'=>array('on'=>app::get('ome')->_('开启'),'off'=>app::get('ome')->_('关闭')),'desc'=>app::get('base')->_('打印是否检验批次号')),
+'ome.delivery.weight'=>array('type'=>SET_T_ENUM,'default'=>'on','options'=>array('on'=>app::get('base')->_('开启'),'off'=>app::get('base')->_('关闭')),'desc'=>app::get('base')->_('逐单发货是否称重')),
+'ome.delivery.minWeight'=>array('type'=>SET_T_TXT,'default'=>'10','desc'=>app::get('base')->_('最小包裹重量')),
+'ome.delivery.maxWeight'=>array('type'=>SET_T_TXT,'default'=>'30000','desc'=>app::get('base')->_('最大包裹重量')),
+'ome.delivery.weightwarn'=>array('type'=>SET_T_ENUM,'default'=>'off','options'=>array('on'=>app::get('base')->_('开启'),'off'=>app::get('base')->_('关闭')),'desc'=>app::get('base')->_('逐单发货是否称重报警')),
+'ome.product.serial.merge'=>array('type'=>SET_T_BOOL,'default'=>'false','desc'=>app::get('base')->_('条码唯一码合并')),
+'ome.product.serial.separate'=>array('type'=>SET_T_INT,'default'=>'','desc'=>app::get('base')->_('条形码与唯一码分隔符')),
+'ome.product.serial.delivery'=>array('type'=>SET_T_BOOL,'default'=>'false','desc'=>app::get('base')->_('唯一码发货回传')),
+'ome.checkems'=>array('type'=>SET_T_BOOL,'default'=>'false','desc'=>app::get('base')->_('是否忽略淘宝拍拍店铺定义的EMS配送方式并在备注中标记')),
+'ome.groupCalibration.intervalTime'=>array('type'=>SET_T_INT,'default'=>2,'desc'=>app::get('base')->_('分组校验时间间隔设置(分钟)')),
+'ome.groupDelivery.intervalTime'=>array('type'=>SET_T_INT,'default'=>2,'desc'=>app::get('base')->_('分组发货时间间隔设置(分钟)')),
+'ome.getOrder.intervalTime'=>array('type'=>SET_T_INT,'default'=>2,'desc'=>app::get('base')->_('订单获取时间间隔设置(分钟)')),
+'ome.delivery.method'=>array('type'=>SET_T_ENUM,'default'=>'off','options'=>array('on'=>app::get('base')->_('启用'),'off'=>app::get('base')->_('不启用')),'desc'=>app::get('base')->_('优先启用【在线下单】方式执行发货操作 (如果不勾选，默认使用【自己联系物流】方式执行发货操作)')),
+'ome.order.mark'=>array('type'=>SET_T_ENUM,'default'=>'all','options'=>array('all'=>app::get('base')->_('显示全部'),'last'=>app::get('base')->_('显示最新')),'desc'=>app::get('base')->_('订单备注显示方式')),
+'ome.combine.member_id'=>array('type'=>SET_T_ENUM,'default'=>'1'),
+'ome.combine.shop_id'=>array('type'=>SET_T_ENUM,'default'=>'1'),
+'ome.logi.arrived'=>array('type'=>SET_T_INT,'default'=>'0'),
+'ome.logi.arrived.auto'=>array('type'=>SET_T_INT,'default'=>'0'),
+'taoguanallocate.appropriation_type'=>array('type'=>SET_T_STR,'default'=>'io','options'=>array('directly'=>app::get('base')->_('直接调拨'),'io'=>app::get('base')->_('出入库调拨')),'desc'=>app::get('base')->_('调拨方式')),
+);
+?>

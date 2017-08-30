@@ -1,0 +1,53 @@
+<services>
+    
+    <service id="ome_shop_ex">
+        <class>omeanalysts_relate_ome_shop</class>
+    </service>
+
+    <service id="desktop_finder.omeanalysts_mdl_ome_products">
+        <class>omeanalysts_finder_ome_products</class>
+    </service>
+
+    <service id="desktop_finder.omeanalysts_mdl_ome_products">
+        <class>omeanalysts_finder_ome_products</class>
+    </service>
+
+    <service id="extend_filter_omeanalysts_mdl_ome_delivery">
+        <class>omeanalysts_finder_ome_extend_filter_delivery</class>
+    </service>
+    
+    <service id="desktop_finder.omeanalysts_mdl_ome_goods">
+        <class>omeanalysts_finder_ome_goods</class>
+    </service>
+
+    <service id="extend_filter_omeanalysts_mdl_ome_sales">
+        <class>omeanalysts_finder_ome_extend_filter_sales</class>
+    </service>
+
+    <service id="extend_filter_omeanalysts_mdl_ome_cod">
+        <class>omeanalysts_finder_ome_extend_filter_cod</class>
+    </service>
+    
+    <service id="extend_filter_omeanalysts_mdl_cat_sale_statis">
+        <class>omeanalysts_finder_ome_extend_filter_catSaleStatis</class>
+    </service>
+
+    <service id="extend_filter_omeanalysts_mdl_zero_sale">
+        <class>omeanalysts_finder_ome_extend_filter_zerosale</class>
+    </service>
+    
+    <service id="eccommon_analyse_day">
+        <class>omeanalysts_ome_shop</class>
+        <class>omeanalysts_ome_goods</class>
+        <class>omeanalysts_ome_store</class>
+    </service>
+    
+    <service id="data_clear">
+        <class>omeanalysts_data</class>
+    </service>
+
+    <service id="crontab.script">
+        <class>omeanalysts_crontab_getscript</class>
+    </service>
+
+</services>

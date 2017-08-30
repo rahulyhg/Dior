@@ -1,0 +1,71 @@
+<div class="tableform">
+    <h4>
+        淘宝凭证查看 
+        <input type="button" id='return_message' name='return_message' value='下载淘宝凭证'>
+    </h4>
+<{if $refundinfo.online_memo}>
+ <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist"><tbody><tr><td>
+ 
+  <{foreach from=$refundinfo.online_memo item=memo}>
+<{$memo.created}>&nbsp;&nbsp; <{$memo.content}><{if $memo.voucher_urls}><br><img src='<{$memo.voucher_urls}>' height='50' onclick="showimage('<{$memo.voucher_urls}>')" alt='点击查看大图' style="cursor:pointer;"><{/if}><br>
+<{/foreach}>
+ </td></tr></tbody></table>
+ <{/if}>
+ </div>
+
+<{if $refundinfo.product_data}>
+<div class="tableform">
+<h4>申请商品明细</h4>
+ 
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+<tbody>
+<tr><th>货号</th><th>价格</th><th>数量</th></tr>
+<{foreach from=$refundinfo.product_data item=product_data}>
+<tr><td><{$product_data.bn}></td><td><{$product_data.price}></td><td><{$product_data.num}></td></tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>
+<{/if}>
+<div class="tableform"><h4>标签:<font color='red'>
+<{foreach from=$refundinfo.tag_list.tag item=tag_list}>
+<{$tag_list.tag_name}>
+<{/foreach}></font></h4> 
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+<tbody>
+<tr><th>支付宝交易号</th><th>会员ID</th><th>卖家ID</th> <th>当前状态超时时间</th></tr>
+<tr><td><{$refundinfo.alipay_no}></td><td><{$refundinfo.buyer_nick}></td><td><{$refundinfo.seller_nick}></td>
+<td><{$refundinfo.current_phase_timeout|date_format:'%Y-%m-%d'}></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+<{if $refundinfo.refund_type=='return'}>
+<div class="tableform">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+<tbody>
+<tr><td><span style='font-weight:bold;color:red'>由于两边订单发货状态不一致，所以此单如果接受申请请在线上操作</span></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+<{/if}>
+<script>
+if ($('return_message'))
+{
+	$('return_message').addEvent('click',function(e){
+		var url = 'index.php?app=ome&ctl=admin_return&act=refund_message&p[0]=<{$refundinfo.apply_id}>&p[1]=refund&finder_id=<{$env.get.finder_id}>&shop_type=tmall';
+    new Dialog(url,{title:'淘宝凭证',width:500,height:300});
+	
+	});
+}
+function showimage(imgpath){
+
+    var url = 'index.php?app=ome&ctl=admin_return&act=showImage&p[0]='+imgpath;
+    new Dialog(url,{title:'查看凭证大图',width:500,height:300});
+}
+
+</script>

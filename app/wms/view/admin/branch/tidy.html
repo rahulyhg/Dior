@@ -1,0 +1,203 @@
+<div class="division ">
+    <h3 style="border-bottom:1px solid #ddd">货品上架</h3>
+    <div class="tableform">
+            <input type="hidden" name="branch_id" id="branch_id" value="<{$branch.branch_id}>" />
+            <div class="division scan_input">
+
+                <div id='pos_wap'>
+                    <label for="label">商品货位：</label>
+                    <input type="text" name="pos_name" id="old_pos_ipt" vtype="required"/>
+                    <input type="hidden" name="from_pos_id" id="from_pos_id" value="" /><br />
+                </div>
+                <{if $display_type=='wap_barcode'}>
+                    <div id='pos_name_wap'>
+                        <label for="label" id='show_type'>商品条码：</label>
+                        <input type="text" name="barcode" id="bar_ipt" size="60" disabled="disabled"/>
+                        <{button type="button" label="切换到商品货号"  disabled='disabled' id="change_type" }>
+                        <div style="margin-bottom:10px; color:#gray; font-size:14px;"></div>
+                    </div>
+                <{else}>
+                  <div id='pos_name_wap'>
+                        <label for="label" id='show_type'>商品货号：</label>
+                        <input type="text" name="bn" id="bar_ipt" size="60" disabled="disabled"/>
+                        <{button type="button" label="切换到商品条码"  disabled='disabled' id="change_type" }>
+                        <div style="margin-bottom:10px; color:#gray; font-size:14px;"></div>
+                    </div>                
+                <{/if}>
+                 <input type="hidden" name="display_type" id="display_type" value="<{$display_type}>" />
+
+            </div>
+
+            <input type="hidden" name="product_id" id="product_id" value="" />
+
+            <div class="gray_form" id="msg_success" style="display:none;">
+              <table class="tableform">
+                <tr>
+                  <th>商品货位：</th><td id="msg_pos"></td></tr>
+                  <tr><th>商品条码：</th><td id="msg_wap_barcode"></td></tr>
+                  <tr><th>商品货号：</th><td id="msg_wap_bn"></td></tr>
+              </table>
+              <div style="text-align:center;font-size:18px;color:#ff0000" id="msg_tip"></div>
+
+            </div>
+            <div class="table-action">
+                <{button label="确 认" type="button" id="btn_submit" disabled='disabled'}>
+            </div>
+    </div>
+</div>
+
+<script>
+  (function(){
+    var bar_ipt = $("bar_ipt");
+    var old_pos = $('old_pos_ipt');
+    var submit = $('btn_submit');
+    var product = $('product_id');
+    var from = $('from_pos_id');
+    var change_type = $('change_type');
+    var submit_flag = false;
+    old_pos.focus();
+
+    change_type.addEvent('click',function(e){
+        var display_type = $('display_type').value;
+        if(display_type =='wap_barcode'){
+            $('show_type').setHTML('商品货号：');
+            $('change_type').setHTML('<span><span>切换到商品条码</span></span>');
+            saveSetting('wap_bn');
+            $('display_type').set('value','wap_bn');
+            $('bar_ipt').set('name','bn');
+            change_type.addEvent('click');
+        }else{
+            $('show_type').setHTML('商品条码：');
+            $('change_type').setHTML('<span><span>切换到商品货号</span></span>');
+            $('bar_ipt').set('name','barcode');
+            saveSetting('wap_barcode');
+            $('display_type').set('value','wap_barcode');
+            change_type.addEvent('click');  
+        }
+    });
+
+    function message(msg,el,type,delay,id){
+      msg = msg || '';
+      type = type || 'error';
+      delay = $chk(delay) ?delay : 1000;
+      id = id || 'error_msg';
+      var bool = type == 'show' ? null : type == 'success' ? true : false;
+      var err;
+      err = $(id) || new Element('span.'+type+'#'+id);
+      err.setHTML(msg).injectAfter(el);
+      if(delay) err.destroy.delay(delay,err);
+      if(!bool) try{el.select();}catch(e){}
+      return bool;
+    }
+    function validData(ipt,msg,type){
+        var val = ipt.value;
+        val = val.replace(/(^\s*)|(\s*$)/g, '');
+      type = type || 'trim';
+      if (!val) return message('请输入' + msg,ipt);
+      if (type == 'trim' && val.test(/^[\s 　]+|[\s 　]+$/)) return message(msg + '信息无法识别',ipt);
+      if (type == 'number' && !val.test(/^\d+$/)) return message(msg + '请输入数字',ipt);
+      return true;
+    }
+
+    function saveSetting(type){
+       new Request({url:'index.php?app=purchase&ctl=admin_stock&act=savePosSetting',method:'post',data: 'setting='+type,
+            onRequest:function(){
+              MessageBox.show('正在加载...');
+            },
+            onSuccess:function(data){
+            }.bind(this)
+          }).send();
+    }
+    old_pos.addEvent('enter',function(e){
+        //if(e.key == 'enter'){
+          $('msg_success').setStyle('display','none');
+          bar_ipt.set('disabled',true);
+          submit.set('disabled',true);
+          if (!validData(this,'货位')) return;
+          new Request({url:'index.php?app=purchase&ctl=admin_stock&act=exsitPosition',method:'post',data: this.name +'='+ this.value +'&product_id=' + product.value + '&branch_id='+ $('branch_id').value,
+            onRequest:function(){
+              MessageBox.show('正在加载...');
+            },
+            onSuccess:function(data){
+              if(data == 'false'){
+                message('货位不存在',this);
+                return MessageBox.error('加载失败');
+              }
+              data = JSON.decode(data);
+              from.set('value',data.pos_id);
+              bar_ipt.set('disabled',false).focus();
+              change_type.set('disabled',false);
+            }.bind(this)
+          }).send();
+        //}
+      });
+
+    bar_ipt.addEvent('enter',function(e){
+      //if(e.key == 'enter'){
+        if(!validData(this,'条码')) return;
+        new Request({url:'index.php?app=purchase&ctl=admin_stock&act=exsitProduct', method:'post',data: this.name +"="+ this.value + "&branch_id=" + $('branch_id').value,
+          onRequest: function(){
+              MessageBox.show('正在加载...');
+          },
+          onSuccess:function(json){
+            if(json == 'false'){
+              message('商品信息在系统中不存在',this);
+              return MessageBox.error('加载失败');
+            }
+            json = JSON.decode(json);
+            product.set('value',json.product_id);
+            submit.set('disabled',false).fireEvent('click',{stop:$empty});
+          }.bind(this)
+        }).send();
+      //}
+    });
+
+    function setTip(msg){
+          var display_type = $('display_type').value;
+          var msg_type = 'msg_'+display_type;
+          if(display_type=='wap_barcode'){
+              $('msg_wap_bn').setHTML('');
+          }else{
+              $('msg_wap_barcode').setHTML('');
+          }
+            $('msg_success').setStyle('display','block');
+            $(msg_type).setHTML(bar_ipt.value);
+            $('msg_pos').setHTML(old_pos.value);
+            $('msg_tip').setHTML(msg);
+            old_pos.set('value','').focus();
+            bar_ipt.set({'disabled':true,'value':''});
+            product.set('value','');
+            from.set('value','');
+            change_type.set('disabled',true);
+            submit.set('disabled',true);
+            submit_flag = false;
+    }
+
+    submit.addEvent('click', function(){
+        if(submit_flag) return false;
+        submit_flag = true;
+        new Request({url:'index.php?app=wms&ctl=admin_branch&act=do_addPos',method:'post',data: 'product_id='+$('product_id').value+'&from_pos_id='+$('from_pos_id').value+'&branch_id='+ $('branch_id').value,
+          onSuccess:function(data){
+            data = JSON.decode(data);
+            if(!data[0]){
+              if(confirm(data[1])){
+                  new Request({url:'index.php?app=wms&ctl=admin_branch&act=do_addPos',method:'post',data: 'product_id='+$('product_id').value+'&from_pos_id='+$('from_pos_id').value+'&branch_id='+ $('branch_id').value+'&bind=true',
+                        onSuccess:function(data){
+                          data = JSON.decode(data);
+                          setTip('OK!');
+                        }.bind(this)
+                      }).send();
+
+              }else{
+                  $('msg_tip').focus();
+                  setTip('error!');
+              }
+              return;
+            }
+            setTip('OK!');
+          }.bind(this)
+        }).send();
+    });
+
+  })();
+</script>

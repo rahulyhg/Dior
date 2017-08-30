@@ -1,0 +1,177 @@
+<div class="tableform">
+    <h3>仓库理货</h3>
+    <div class="division">
+        <form action="index.php?app=purchase&ctl=admin_stock&act=do_transfer" method="post" id="newPosForm">
+            <input type="hidden" name="branch_id" id="branch_id" value="<{$branch.branch_id}>" />
+            <div class="division scan_input">
+                <label for="label">1.商品条码：</label>
+                <input type="text" name="barcode" id="bar_ipt" size="60" vtype="required" />
+                <input type="hidden" name="product_id" id="product_id" value="" /><br />
+                <label for="label">2.原货位：</label>
+                <input type="text" name="pos_name" id="old_pos_ipt" disabled="disabled" />
+                <input type="hidden" name="from_pos_id" id="from_pos_id" value="" /><br />
+                <div style="margin-bottom:10px; color:#gray; font-size:14px;">-&gt; 将此货位商品全部调拨至新货位</div>
+                <label for="label">3.新货位：</label>
+                <input type="text" name="new_pos_name" id="new_pos_ipt" vtype="required" disabled="disabled" />
+                <input type="hidden" name="to_pos_id" id="to_pos_id" value="" />
+            </div>
+            <div class="gray_form">
+            <table border="0" class="inventory_info" style="width:70%">
+                <caption><div align="left"><b class="blue">理货商品信息</b></div></caption>
+                <tr>
+                    <td colspan="2">商品名称：<strong id="goods_name"></strong> &nbsp;<strong class="blue" id="goods_spec"></strong></td>
+                </tr>
+                <tr>
+                    <td>商品货号：<strong id="goods_bn"></strong></td>
+                    <td width="130">货位数量：<strong id="goods_num"></strong></td>
+                </tr>
+
+            </table>
+            </div>
+            <table border="0">
+                <tr>
+                    <td width="20%">调拨仓库：<{$branch.name}></td>
+                    <td width="20%">调拨人：<{$op_name}></td>
+                    <td>调拨时间：<{$curTime}></td>
+                </tr>
+            </table>
+            <div class="table-action">
+                <{button label="确 认" type="button" id="btn_submit" disabled='disabled'}> &nbsp; &nbsp;
+                <{button label="清 空" id="btn_reset" type="reset"}>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  (function(){
+    var bar_ipt = $("bar_ipt");
+    var old_pos = $('old_pos_ipt');
+    var new_pos = $('new_pos_ipt');
+    var submit = $('btn_submit');
+    var form = $('newPosForm');
+    var from = $('from_pos_id');
+    var to = $('to_pos_id');
+    var product = $('product_id');
+    bar_ipt.focus();
+
+    function message(msg,el,type,delay,id){
+      msg = msg || '';
+      type = type || 'error';
+      delay = $chk(delay) ?delay : 3000;
+      id = id || 'error_msg';
+      var bool = type == 'show' ? null : type == 'success' ? true : false;
+      var err;
+      err = $(id) || new Element('span.'+type+'#'+id);
+      err.setHTML(msg).injectAfter(el);
+      if(delay) err.destroy.delay(delay,err);
+      if(!bool) try{el.select();}catch(e){}
+      return bool;
+    }
+    function validData(ipt,msg,type){
+      type = type || 'trim';
+      if (!ipt.value) return message('请输入' + msg,ipt);
+      if (type == 'trim' && ipt.value.test(/^[\s 　]+|[\s 　]+$/)) return message(msg + '信息无法识别',ipt);
+      if (type == 'number' && !ipt.value.test(/^\d+$/)) return message(msg + '请输入数字',ipt);
+      return true;
+    }
+
+    bar_ipt.addEvent('enter',function(e){
+      //if(e.key == 'enter'){
+        old_pos.set('disabled',true);
+        new_pos.set('disabled',true);
+        submit.set('disabled',true);
+        if(!validData(this,'条码')) return;
+        new Request({url:'index.php?app=purchase&ctl=admin_stock&act=getProduct', method:'post',data: this.name +"="+ this.value + "&branch_id=" + $('branch_id').value,
+          onRequest: function(){
+              MessageBox.show('正在加载...');
+          },
+          onSuccess:function(json){
+            if(json == 'false'){
+              message('商品信息在系统中不存在',this);
+              return MessageBox.error('加载失败');
+            }
+
+            json = JSON.decode(json);
+
+            $('goods_name').setText(json.name);
+            $('goods_spec').setText(json.spec_info);
+            $('goods_bn').setText(json.bn);
+            product.set('value',json.product_id);
+
+            if(json.branch == false){
+                new_pos.set('disabled',false).focus();
+            }else{
+                old_pos.set('disabled',false).focus();
+            }
+          }.bind(this)
+        }).send();
+      //}
+    });
+
+    old_pos.addEvent('enter',function(e){
+        //if(e.key == 'enter'){
+          if (!validData(this,'货位')) return;
+          new Request({url:'index.php?app=purchase&ctl=admin_stock&act=exsitPosition',method:'post',data: this.name +'='+ this.value +'&product_id=' + product.value + '&branch_id='+ $('branch_id').value,
+            onRequest:function(){
+              MessageBox.show('正在加载...');
+            },
+            onSuccess:function(data){
+              if(data == 'false'){
+                message('原货位不存在',this);
+                return MessageBox.error('加载失败');
+              }else if(data == 'pause'){
+                message('包含待出库商品，暂时不能调拨',this);
+                return MessageBox.error('加载失败');
+              }
+              data = JSON.decode(data);
+              if(data.store <= 0){
+                message('原货位没有商品',this);
+                return MessageBox.error('加载失败');
+              }
+              $('goods_num').setText(data.store);
+              from.set('value',data.pos_id);
+              submit.set('disabled',false);
+              new_pos.set('disabled',false).focus();
+            }.bind(this)
+          }).send();
+        //}
+      });
+
+    new_pos.addEvent('enter',function(e){
+      //if(e.key == 'enter'){
+        submit.set('disabled',false).fireEvent('click');
+      //}
+    });
+
+    submit.addEvent('click', function(){
+        //if (!validData(old_pos,'货位')) return;
+        if (!validData(new_pos,'货位')) return;
+
+        new Request({url:'index.php?app=purchase&ctl=admin_inventory&act=exsitPosition',method:'post',data: 'pos_name='+ new_pos.value +"&branch_id="+ $('branch_id').value,
+          onRequest:function(){
+            MessageBox.show('正在加载...');
+          },
+          onSuccess:function(data){
+            if(data == 'false'){
+              message('新货位不存在',new_pos);
+              return MessageBox.error('加载失败');
+            }
+            data = JSON.decode(data);
+            to.set('value',data.pos_id);
+            form.fireEvent('submit',{stop:$empty});
+          }
+        }).send();
+    });
+
+    form.store('target',{
+      onRequest:function(){
+        MessageBox.show('正在提交...');
+      },
+      onComplete:function(json){
+        MessageBox.success('提交成功');
+        message('调拨成功',new_pos,'success');
+      }
+    });
+  })();
+</script>

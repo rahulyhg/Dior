@@ -1,0 +1,17 @@
+<desktop>
+    <workground name="私有矩阵设置" id="commerce_center" controller='admin_index'  action='set' order="99999999">
+        <menugroup name="私有矩阵" order='2'>
+            <menu controller='admin_index' action='set' permission='commerce_setting'   display='true'  order='5'>基本配置</menu>
+		</menugroup> 
+         
+
+    </workground>
+
+<permissions>
+        <permission id="commerce_setting">基本配置</permission>
+        
+    </permissions>	
+
+    
+</desktop>
+

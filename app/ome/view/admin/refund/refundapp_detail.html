@@ -1,0 +1,169 @@
+<div class="tableform">
+  <table class="orderdetails_basic" cellpadding="0" cellspacing="0" border="0">
+    <tbody>
+      <tr>
+        <td>
+          <div class="division">
+            <table cellpadding="0" cellspacing="0" background="0">
+              <tbody>
+                <tr><th><{t}>订单号：<{/t}></th><td><{$orderinfo.order_bn}></td></tr>
+                <tr><th><{t}>退款类型：<{/t}></th><td><{$refunddata.type}></td></tr>
+                <tr><th><{t}>退款银行：<{/t}></th><td><{$refunddata.bank}></td></tr>
+                <tr><th><{t}>退款帐号：<{/t}></th><td><{$refunddata.account}></td></tr>
+                <tr><th><{t}>申请退款金额：<{/t}></th><td><font color="#FF0000"><{$refunddata.money}></font></td></tr>
+                <tr><th><{t}>退款类别：<{/t}></th><td><{$refunddata.type}></td></tr>
+                <tr><th><{t}>申请备注：<{/t}></th><td><{$refunddata.memo}></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </td>
+        <td>
+          <div class="division">
+            <table cellpadding="0" cellspacing="0" background="0">
+              <tbody>
+                <tr><th><{t}>申请日期：<{/t}></th><td><{$refunddata.create_time|cdate:'SDATE_STIME'}></td></tr>
+                <tr><th><{t}>退款支付方式：<{/t}></th><td><{$refunddata.payment_name}></td></tr>
+                <tr><th><{t}>申请状态：<{/t}></th><td><span id="x-return_item_status-<{$refunddata.r_id}>" class="font14px fontcolorOrange fontbold"><{$status_display[$refunddata.status]}></span></td></tr>
+                <tr><th><{t}>收款帐号：<{/t}></th><td><{$refunddata.pay_account}></td></tr>
+                <tr><th><{t}>已退金额：<{/t}></th><td><font color="#FF0000"><{if $refunddata.status == '4'}><{$refunddata.refunded}><{else}>0<{/if}></font></td></tr>
+                <tr><th><{t}>补偿费用：<{/t}></th><td><{$refunddata.bcmoney|cur}></td></tr>
+                <tr><th><{t}>&nbsp;<{/t}></th><td>&nbsp;</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+<{$plugin_html}>
+<div class="tableform">
+  <div class="division">
+    <h4>&nbsp;<{t}>操作日志<{/t}></h4>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <thead>
+        <tr>
+          <th><{t}>操作时间<{/t}></th>
+          <th><{t}>操作员<{/t}></th>
+          <th><{t}>操作类型<{/t}></th>
+          <th><{t}>操作内容<{/t}></th>
+        </tr>
+        </thead><tbody>
+        <{foreach from=$log item=log}>
+        <tr>
+          <td><{$log.operate_time|cdate:SDATE_STIME}></th>
+          <td><{$log.op_name }></td>
+          <td><{$log.operation}></td>
+          <td><{$log.memo}></td>
+        </tr>
+        <{/foreach}>
+      </tbody>
+</table></div></div>
+<{if $deliveryinfo}>
+<div class="tableform">
+  <div class="division">
+    <h4>&nbsp;<{t}>发货单取消日志<{/t}></h4>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <colgroup></colgroup>
+      <thead>
+        <tr>
+          <th><{t}>操作时间<{/t}></th>
+          <th><{t}>操作员<{/t}></th>
+          <th><{t}>操作类型<{/t}></th>
+          <th><{t}>操作内容<{/t}></th>
+        </tr>
+        </thead><tbody>
+        <{foreach from=$deliveryinfo item=info}>
+        <tr>
+          <td><{$info.operate_time|cdate:SDATE_STIME}></th>
+          <td><{$info.op_name }></td>
+          <td><{$info.operation}></td>
+          <td>发货单号:<{$info.delivery_bn}>,<{$info.memo}></td>
+        </tr>
+        <{/foreach}>
+      </tbody>
+</table></div></div>
+<{/if}>
+<{if $env.get.ctl neq 'admin_return_refund_apply'}>
+<form action="index.php?<{$env.server.QUERY_STRING}>" method="post" id="applyform">
+  <input type="hidden" name="status" value="" id="status" />
+  <table cellspacing="0" cellpadding="0" border="0" align="center" class="tableAction" style="margin:10px 20px">
+    <tbody>
+      <tr>
+        <{if $terminal=='B2B'&&$refunddata.type!='售后退款'}>
+        <td><b class="<{if $status_info ==1||$status_info ==2||$status_info ==3}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $status_info== 5||$status_info ==4}>
+            <{button type="submit" label="拒绝" name="butsubmit" disabled="disabled"}>
+            <{else}>
+            <{button type="submit" label="拒绝" name="butsubmit" onclick="set_status({$refunddata.r_id},3)"}>
+            <{/if}>
+        </b></td>
+        <td><b class="<{if $status_info ==1||$status_info ==2||$status_info ==3}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $status_info==5||$status_info ==4}>
+            <{button type="submit" label="退款" name="butsubmit" disabled="disabled"}>
+            <{else}>
+            <{button type="submit" label="退款" name="butsubmit" onclick="if(confirm('退款操作！确认要执行吗？'))set_statusb2b('{$refunddata.r_id}',this)"}>
+            <{/if}>
+        </b></td>
+        <{else}>
+        <td><b class="<{if $status_info ==1}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $status_info >= 1}>
+            <{button type="submit" label="审核中" name="butsubmit" disabled="disabled" }>
+            <{else}>
+            <{button type="submit" label="审核中" name="butsubmit" onclick="set_status(1)"}>
+            <{/if}>
+        </b> </td>
+        <td><b class="<{if $status_info ==2}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $status_info != 1}>
+            <{button type="submit" label="接受申请" name="butsubmit" disabled="disabled"}>
+            <{else}>
+            <{button type="submit" label="接受申请" name="butsubmit" onclick="set_status(2)"}>
+            <{/if}>
+        </b></td>
+        <td><b class="submitBtnoff">
+            <{if $status_info!= 1 && $status_info!= 2}>
+            <{button type="submit" label="拒绝" name="butsubmit" disabled="disabled"}>
+            <{else}>
+                <{if $refuse_button.rsp=='show'}>
+
+            <button class="btn" type="button" onclick="new Dialog('<{$refuse_button_url}>&finder_id=<{$finder_id}>',{width:800,height:360,title:'拒绝退款申请单'})" name="butsubmit">
+<span>
+<span>拒绝</span>
+</span>
+</button>
+
+
+                     
+                <{else}>
+            <{button type="submit" label="拒绝" name="butsubmit" onclick="set_status(3)"}>
+            <{/if}>
+            <{/if}>
+        </b></td>
+        <td <{if $status_info != 2 && $status_info != 6 && $status_info != 5}>style="display:none;"<{/if}>><b class="<{if $status_info ==5}>submitBtnoff<{else}>submitBtn<{/if}>">
+            <{if $status_info != 2 && $status_info != 6 && $status_info != 5}>
+            <{button label="退款" name="butsubmit" disabled="disabled"}>
+            <{else}>
+                <{button label="退款" name="butsubmit" onclick="new Dialog('index.php?ctl=admin_refund_apply&act=accept&app=ome&p[0]={$refunddata.apply_id}&finder_id={$finder_id}&source={$refunddata.source}',{width:800,height:360,title:'订单{$orderinfo.order_bn}的退款申请'})"}>
+            <{/if}>
+        </b></td>
+        <{/if}>
+      </tr>
+  </tbody></table>
+</form>
+<script type="text/javascript">
+
+  function set_status(status){
+    $('status').value = status;
+  }
+</script>
+<{/if}>

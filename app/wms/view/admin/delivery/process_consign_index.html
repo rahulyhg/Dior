@@ -1,0 +1,426 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="spage-main-box">
+<div class="tableform">
+
+    <div style="padding-left: 80px; font-size: 2.5em;font-weight: 700;">
+        发货处理 <span class="num">(目前还有<em class="count" style="font-weight:700;font-size:2.5em;color: red;"><{$deliverynum}></em>个包裹未发货)</span>    </div>
+
+    <div class="division">
+    <form method="post" action="index.php?app=wms&ctl=admin_consign&act=consign" id="ome_single_delivery">
+        <input type="hidden" id="order_exists_refund" name="order_exists_refund" value="" />
+        <input type="hidden" id="delivery_id" name="delivery_id" />
+        <div style="position:relative;">
+	    <div style="position:absolute;top:10px">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" <{if $logi_no_position=='down' }>style='position:relative;top:130px;'<{/if}>>
+            <tbody>
+            <tr>
+                <td width="55px">&nbsp;</td>
+                <td><span id="error" style="color:red; font-weight:bold; font-size:14px;display:none" class="error" ></span></td>
+            </tr>
+            <tr>
+                <td width="55px">&nbsp;</td>
+                <td>
+                    <span  style="font-size: 1.5em;font-weight: bold;">输入快递单号：</span><br/>
+                    <input type="text" id="logi_no" name="logi_no" vtype="required" style="margin-top: 10px;background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;margin-bottom: 10px;padding-left: 19px;width: 400px;" />
+                </td>
+            </tr>
+            </tbody>
+        </table> 
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" <{if $logi_no_position=='down' }>style='position:relative;top:-105px;'<{/if}>>
+            <tbody>
+            <{if $weightSet == 'on'}>
+            <tr>
+                <td width="55px">&nbsp;</td>
+                <td>
+                    <span  style="font-size: 1.5em;font-weight: bold;">输入货物总重量：</span><br/>
+                    <input type="text" id="weight" name="weight" vtype="required&&unsigned" style="margin-top: 10px; background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;margin-bottom: 10px;padding-left: 19px;width: 400px;" /> <span style="font-size: 2.5em;font-weight: bold;">克</span></td>
+            </tr>
+            <{else}>
+                <input type="hidden" id="weight" name="weight" value="<{$minWeight}>" />
+            <{/if}>
+
+            </tbody>
+        </table>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tbody>
+            <tr>
+                <td width="55px">&nbsp;</td>
+                <td>
+                    <br/><br/>
+                    <button type="button" id="sendProduct" style="font-size:3.0em;font-weight: 700; height: 50px; width:200px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>确认出库</span></span></button>
+                </td>
+            </tr>
+            </tbody>
+        </table> 
+	    </div>
+
+	        <div id="hiddenNodes" style="display:none;position:absolute;left:600px;top:50px">
+			 	<table style="width:600;margin-left:20px;border:1px #666666 solid" cellspacing="0" cellpadding="0" border="1">
+					 <tr>
+						 <th style="border:1px #666666 solid;text-align:center;font-weight:bold">货号</th>
+						 <th style="border:1px #666666 solid;;text-align:center;font-weight:bold">货品名称</th>
+						 <th style="border:1px #666666 solid;;text-align:center;font-weight:bold" >数量</th>
+                         <th style="border:1px #666666 solid;;text-align:center;font-weight:bold">重量</th>
+			         </tr>
+					 <tbody id="dataNodes">		
+					 </tbody>
+			    </table>
+			 </div>
+		 </div>
+        <input type="hidden" id="warn_status" name="warn_status" value='0'>
+    </form>
+    </div>
+
+</div>
+</div>
+<{include file='admin/delivery/voice_warning.html'}>
+<script>
+
+var weightSet ='<{$weightSet}>'; 
+var weightWarn='<{$weightWarn}>';
+var logi_no_position = '<{$logi_no_position}>';
+
+switch(logi_no_position){
+    case 'up':
+        $('logi_no').focus(); break;
+    case 'down':
+        $('weight').focus(); break;
+}
+
+function trim(str){  //删除左右两端的空格
+    return str.replace(/(^\s*)|(\s*$)/g, '');
+}
+
+function trimAll(str){  //删除所有空格
+    return str.replace(/[\s]+/g, '');
+}
+
+
+$('logi_no').addEvents({
+    'change':function(e){
+        this.value = trimAll(this.value);
+        showProductItems();
+        return true;
+    },
+    'keyup':function(e){
+        
+        if(e.code==13){
+            switch(logi_no_position){
+                case 'up':
+                if ('<{$weightSet}>'=='on')
+                {
+                    $('weight').focus();
+                    $('weight').select();
+                } else{
+                    delivery_verify(e);
+                }
+                    
+                    break;
+                case 'down':
+                    delivery_verify(e);
+                    break;
+            }
+
+        }
+        return false;
+    }
+});
+$('weight').addEvents({
+    'change':function(e){
+        var reg;
+        var reg1;
+        var reg2;
+        var tmp_str;
+
+        tmp_str = trimAll(this.value);
+
+        reg = new RegExp('^[0-9]+$','g');
+        reg1 = new RegExp('^[0-9]+\.?[0-9]+g$','gi');
+        reg2 = new RegExp('^[0-9]+\.?[0-9]+kg$','gi');
+        if(reg.test(tmp_str)){
+        	this.value = tmp_str/1;
+        	return true;
+        }else if(reg1.test(tmp_str)){
+        	tmp_str = tmp_str.replace(/g/gi, '');
+        	this.value = tmp_str;
+        	return true;
+        }else if(reg2.test(tmp_str)){
+        	tmp_str = tmp_str.replace(/kg/gi, '');
+        	this.value = tmp_str*1000;
+        	return true;
+        }else{
+            this.value = tmp_str/1;
+        }
+    },
+    'keyup':function(e){
+        if(e.code==13){
+            switch(logi_no_position){
+                case 'up':
+                    delivery_verify(e);
+                    break;
+                case 'down':
+                    $('logi_no').focus();
+                    $('logi_no').select();
+                    break;
+            }
+        }
+    }
+});
+
+$('sendProduct').addEvent('click', function(e){
+	delivery_verify(e);
+});
+
+function delivery_verify(e){
+    var logi_no = $('logi_no').value;
+    var weight = $('weight').value;
+    if (logi_no == ''){
+        $('logi_no').focus();
+        $('error').show().set('html','请输入快递单号');return ;
+    }
+    $('delivery_id').set('value', logi_no);
+    var delivery_id = encodeURIComponent(logi_no);
+    new Request({url:'index.php?app=wms&ctl=admin_consign&act=batchCheck&delivery_type=single',data:'delivery_id='+delivery_id+'&weight='+weight,method:'POST',
+      onRequest: function(){
+          $('error').hide();
+      },
+      onComplete: function(json){
+
+        if (json != ''){
+            json = JSON.decode(json);
+        }
+       
+        var refund_orders, is_confirm_delivery = false;
+        if (json.status == 'error'){
+            $('error').show().set('html',json.msg);
+            $('logi_no').focus();$('logi_no').select();
+            try{
+                if (typeof(voiceWarning) == 'function')
+                {
+                    voiceWarning(0);
+                }
+            }catch(e){}
+            return MessageBox.error(json.msg);
+        }else{
+            if (json != ''){
+
+	            json = json.filter(function(n){
+	                if (n.order_exists_refund != ''){
+	                	is_confirm_delivery = true;
+	                    refund_orders = n.order_exists_refund;
+	                }
+	                return !n.order_exists_refund;
+	            });
+            }
+            if(json != ''){
+                var msg = "";
+                json.each(function(j){
+                    if (typeof(j.bn) != 'undefined'){
+                        msg += j.bn + ' &nbsp; ' + j.msg + '<br />';
+                    }
+                });
+                $('error').set('html',msg);
+
+                try{
+                    if (typeof(voiceWarning) == 'function')
+                    {
+                        voiceWarning(0);
+                    }
+                }catch(e){}
+                $('logi_no').focus();$('logi_no').select();
+                return MessageBox.error('单号有异常');
+            }else{
+	            if (is_confirm_delivery == true && refund_orders != ''){
+	            	$('order_exists_refund').set('value', refund_orders);
+	                new Dialog('index.php?app=wms&ctl=admin_consign&act=batch_delivery_confirm&delivery_type=single',{title:'批量发货确认',width:500,height:300});
+                    try{
+                        if (typeof(voiceWarning) == 'function')
+                        {
+                            voiceWarning(0);
+                        }
+                    }catch(e){}
+
+	            }else{
+               
+            if(weightSet=='on' && weightWarn=='on'){
+                var product_weightflag = true;
+                var product_list = [];
+                new Request({
+            url:'index.php?app=wms&ctl=admin_consign&act=weightWarn',async:false,
+            method:'post',
+            data:{logi_no:logi_no,weight:weight},
+            onComplete: function(json) {
+                if(!json){
+                    return;
+                }else{
+                    json = JSON.decode(json);
+                    product_list=json;
+                    json.every(function(i,index){
+                        
+                        if(i.weight==0){
+                            product_weightflag=false;
+                            return false;
+                        }
+                        
+                        
+                    });
+               }
+            }
+        }).send();
+        //判断是否多物流包裹单
+        var package_total=0;
+       new Request(
+       {
+            url:'index.php?app=wms&ctl=admin_consign&act=weightWarn&type=countpackage',async:false,
+            method:'post',
+            data:{logi_no:logi_no},
+            onComplete: function(json) {
+                package_total=json;
+            }
+        }
+       
+       ).send();
+
+        if(!product_weightflag){
+                        new Dialog('index.php?app=wms&ctl=admin_consign&act=showWeightWarn&type=unweight&logi_no='+logi_no,{title:'未录入重量商品列表',width:600,height:400,onClose:function(){
+                        new Request({
+            url:'index.php?app=wms&ctl=admin_consign&act=showWeightWarn&type=addLog',
+            method:'post',
+            data:{logi_no:logi_no,weight:weight,logerror:1},
+            onComplete:function(jsontext){
+                $('logi_no').set('value','');
+                $('weight').set('value','');
+                
+            }
+            }).send();
+        }});
+        }else{
+        
+            //判断重量范围
+            var sub_max_weight = 0;
+            var sub_min_weight = 0;
+            var net_weight=0;
+            var maxpercent='<{$maxpercent}>';
+            var minpercent='<{$minpercent}>';
+            var max_weightwarn='<{$max_weightwarn}>';
+            var min_weightwarn = '<{$min_weightwarn}>';
+            
+            product_list.each(function(i,index){
+               
+                net_weight+=i.weight/1;
+            
+            });
+            sub_max_weight = weight-net_weight;
+            sub_min_weight = net_weight-weight;
+            if(maxpercent=='1'){
+                max_weight=net_weight*(max_weightwarn/100);
+            }else{
+                max_weight = max_weightwarn;
+            }
+            if(minpercent=='1'){
+                min_weight=net_weight*(min_weightwarn/100);
+            }else{
+                min_weight = min_weightwarn;
+            }
+
+            if((weight>net_weight&&sub_max_weight>max_weight)) {//最大重量范围设定
+                
+                new Dialog('index.php?app=wms&ctl=admin_consign&act=showWeightWarn&type=weightwarn&logi_no='+logi_no+'&weight='+weight,{title:'超出范围报警',width:700,height:400,onClose:function(){
+                if($('warn_status').value==0){
+                    new Request({
+            url:'index.php?app=wms&ctl=admin_consign&act=showWeightWarn&type=addLog',
+            method:'post',
+            data:{logi_no:logi_no,weight:weight},
+            onComplete:function(jsontext){
+                $('logi_no').set('value','');
+                $('weight').set('value','');
+                
+            }
+            }).send();
+            }
+                
+                }});
+            }else if((package_total==0) && (net_weight>weight&&sub_min_weight>min_weight)){//最小范围判断开启
+ 
+                new Dialog('index.php?app=wms&ctl=admin_consign&act=showWeightWarn&type=weightwarn&logi_no='+logi_no+'&weight='+weight,{title:'超出范围报警',width:700,height:400,onClose:function(){
+                if($('warn_status').value==0){
+                    new Request({
+            url:'index.php?app=wms&ctl=admin_consign&act=showWeightWarn&type=addLog',
+            method:'post',
+            data:{logi_no:logi_no,weight:weight},
+            onComplete:function(jsontext){
+                $('logi_no').set('value','');
+                $('weight').set('value','');
+                
+            }
+            }).send();
+                }
+                }});
+                
+            }else{
+               
+                submitSend(e);
+            }
+
+        }
+        }else{
+
+	                submitSend(e);
+                 }
+	            }
+            }
+        }
+      }
+    }).send();
+}
+function submitSend(e){
+   $('ome_single_delivery').fireEvent('submit',{stop:$empty});
+}
+//根据物流单号，获取货号、货品名称
+function showProductItems(){
+	var logi_no = $('logi_no').value;
+    new Request(
+  	       {
+  	            url:'index.php?app=wms&ctl=admin_consign&act=getProcutInfo',
+  	            method:'POST',
+  	            data:{logi_no:logi_no},
+  	            onComplete: function(json) {
+  	            	var product_item = json;
+  	            	if(product_item){
+  	            		$('hiddenNodes').style.display ='';
+  	            		$('dataNodes').show().set('html',product_item);
+  	            	}else{
+  	            		$('hiddenNodes').style.display ='none';
+  	            	} 
+  	            }
+  	        }
+     ).send();
+}
+
+$('ome_single_delivery').store('target',{
+    onRequest:function(){
+       $('sendProduct').set('disabled', 'true');
+       $('sendProduct').getElements('span')[1].set('text','正在发货');
+    },
+    onComplete:function(jsontext){
+       var json = JSON.decode(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('sendProduct').set('disabled', '');
+           $('sendProduct').getElements('span')[1].set('text','确认出库');
+           //显示发货失败消息
+           if(json.msg){
+               if (json.msg.delivery_bn){
+        	       $('error').show().set('html',json.msg.delivery_bn + '发货单发货失败!');
+               } 
+           }
+       }else{
+           $('sendProduct').set('disabled', 'true');
+       }
+
+    }
+});
+</script>

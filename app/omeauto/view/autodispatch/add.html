@@ -1,0 +1,144 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<style>
+    #dataNode ul li {width:140px; overflow: hidden; float: left; margin-bottom: 0px; font-size: 12px;}
+    #dataNode ul li span {cursor: pointer;}
+    #dataNode ul li input {cursor: pointer;}
+    #dataNode li {width:90px; overflow: hidden; float: left; margin-bottom: 10px; font-size: 12px; line-height: 20px;}
+    .current-set {color: red; font-weight: 700;  cursor: pointer;}
+    .current-disabled , .current-disabled span {color: #DDDDDD; font-weight: 700;  cursor:auto;}
+    #centent_tbl tr,#centent_tbl th, #centent_tbl td {padding-bottom: 5px;}
+</style>
+<form action="index.php?app=omeauto&ctl=autodispatch&act=do_add" method="post">
+    <div class="tableform">
+        <div class="division">
+            <table width="100%" cellspacing="0" cellpadding="0" id="centent_tbl">
+                <tbody>
+                    <tr>
+                        <th width="80"><label for="dispName">规则名称：</label></th>
+                        <td><{input type="text&&required" name="name" id="dispName" value=$data.name}>&nbsp;&nbsp;&nbsp;&nbsp;(请使用通俗易懂的名称，如独立店规则、淘宝订单规则)</td>
+                    </tr>
+                    <tr>
+                        <th><label for="dispMemo">规则描述：</label></th>
+                        <td><textarea name="memo" id="dispMemo" cols="60" rows="4" class="x-input"><{$data.memo|escape}></textarea></td>
+                    </tr>
+                    <tr>
+                        <th><label>选择订单分组：</label></th>
+                        <td>
+                            <div id="dataNode">
+                                <ul>
+                                    <{foreach from=$orderType item=item}>
+                                    <li><input type="checkbox" name="config[autoOrders][]" value="<{$item.tid}>" id="autoOrder_<{$item.tid}>" <{if $item.tid|in_array:$data.config.autoOrders}>checked<{else}><{if $item.did || $data.defaulted=='true'}>disabled<{/if}><{/if}>/><label for="autoOrder_<{$item.tid}>">&nbsp;&nbsp;<span title="<{$item.title}>"><{$item.name}></span></label></li>
+                                    <{/foreach}>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>分派订单确认组：</th>
+                        <td><{input type="select" id='group_id' name='group_id' rows=$groups valueColumn="group_id" labelColumn="name" onchange="getOp(this.value)" value=$data.group_id required='true'}></td>
+                    </tr>
+                    <tr>
+                        <th>分派订单确认员：</th>
+                        <td><select class=" x-input-select inputstyle" id='op_id' name='op_id'></select></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <{if $data.oid}><input type="hidden" name="oid" value="<{$data.oid}>"/><{/if}> 
+    </div>
+    <div class="table-action">
+        <{button class="btn-primary" label="保存" type="button" id="saveCurrent"}>
+        <{button class="btn-primary" label="取消" type="button" id="cancelBtn"}>
+    </div>
+</form>
+<script type="text/javascript">
+$('saveCurrent').getParents('form').removeEvents('submit').addEvent('submit', function(e) {
+    e.stop();
+    
+    new Request ({
+        url:this.action,
+        onRequest:function(e){
+            //提交按钮:disabled
+            $('saveCurrent').set('disabled', 'true');
+            $('saveCurrent').getElements('span')[1].set('text','正在保存');
+        },
+        onComplete:function(result){
+
+            if (result != 'SUCC'){
+                //提交按钮:enabled
+                $('saveCurrent').set('disabled', '');
+                $('saveCurrent').getElements('span')[1].set('text','保存');
+            }else{
+                //提交按钮:disabled  
+                finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+                //setTimeout("window.close()",500);
+            }
+        }
+    })[this.method](this);
+});
+
+//获取订单确认员列表
+function getOp(group_id,selected_op_id){
+    if(group_id){
+        new Request.HTML({
+            url:'index.php?app=ome&ctl=admin_group&act=get_op&p[0]='+group_id+'&p[1]='+selected_op_id+'&p[2]=true',
+            update:$('op_id'),
+            onComplete:function(){
+                ($('op_id').getElement('option[selected]') || $('op_id').getElement('option')).selected=true;
+            }
+        }).send();
+    }else{
+        $('op_id').empty();
+    }
+}
+
+//保存按钮
+$('saveCurrent').addEvent('click', function() {
+    //检查规则名称
+    var aName = $('dispName').value.trim();
+    if (aName == '') {
+        alert("请输入规则名称，使用通俗易懂的名字，如独立店规则、淘宝订单规则。");
+        return;
+    }
+    //检查对应订单类型
+    var aHasOrder = false;
+    $$('#dataNode input[type=checkbox]').each(function(item){
+        if (item.checked) {
+            aHasOrder = true;
+        }
+    });
+    if (!aHasOrder) {
+        //alert("你必须要选择对应使用本规则的订单分组，请仔细勾选后再试。");
+        //return;
+    }
+    
+    $('saveCurrent').getParents('form').fireEvent('submit', { 
+        stop: function(){ 
+        }
+    });
+});
+
+//关闭按钮
+$('cancelBtn').addEvent('click', function(){
+    $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+});
+
+//选择订单标红
+$$('#dataNode input[type=checkbox]').addEvent('click',function(item){  
+    this.blur();
+    this.getParent()[this.checked?'addClass':'removeClass']('current-set');     
+});
+$$('#dataNode input[type=checkbox]').each(function(item){
+    if (item.get('disabled')) {
+        item.getParent()['addClass']('current-disabled');  
+    } else {
+        item.blur();
+        item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+    }
+});
+
+getOp($('group_id').value,"<{$data.op_id}>");
+</script>

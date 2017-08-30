@@ -1,0 +1,13 @@
+<desktop>
+
+    <permissions>
+        <permission id="pkg">捆绑商品</permission>
+    </permissions>
+
+    <workground name="基础档案" id="goods_manager"  order="500">
+        <menugroup name="商品捆绑">
+            <menu controller='admin_pkg' action='index' permission='pkg' display='true' order='7000100'>捆绑商品</menu>
+        </menugroup>
+    </workground>
+    
+</desktop>

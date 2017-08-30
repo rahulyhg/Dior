@@ -1,0 +1,428 @@
+<div id='addressEdit' style="text-align:left;padding-left:20px;">
+<div id='defaultShipAddress'>
+</div>
+
+<input type="radio" value="rest" name='sAddr' id='sAddrDefault' checked onchange="if ($('sAddrDefault').checked) {$('delivery-info').style.display='';} else {$('delivery-info').style.display='none';}"/> <b style="color:#000;font-size:14px;font-weight:700;">重新输入新的收货信息：</b><br/>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="delivery-info">
+  <tbody id="delivery-info">
+    <tr>
+      <th>收货人姓名：</th>
+      <td><input type="text" name="name" value="<{$order.consignee.name}>" vtype="required" /> <span class="red">*</span></td>
+      <th>送货时间：</th>
+      <td><input type="text" name="time" value="<{$order.consignee.r_time}>" /></td>
+      <th>收货地区：</th>
+      <td><{input type="region" app='eccommon' name="area" vtype="area" value="{$order.consignee.area}"}> <span class="red">*</span></td>
+    </tr>
+    <tr>
+      <th>联系手机：</th>
+      <td><input type="text" name="mobile" value="<{$order.consignee.mobile}>" id="mobile" /></td>
+      <th>邮政编码：</th>
+      <td><input type="text" name="zip" value="<{$order.consignee.zip}>" vtype="required" />
+        <span class="red">*</span></td>
+      <th>收货地址：</th>
+      <td><input type="text" name="address" value="<{$order.consignee.addr}>" vtype="required" />
+        <span class="red">*</span></td>
+    </tr>
+    <tr>
+      <th>联系电话：</th>
+      <td><input type="text" name="phone" value="<{$order.consignee.telephone}>" id="shop[tel]" />
+      <th>Email地址：</th>
+      <td><input type="text" name="email" value="<{$order.consignee.email}>" /></td>
+      <th>&nbsp;</th>
+      <td>&nbsp;</td>
+    </tr>
+    </tbody>
+    <tr><td colspan="6" style="text-align:center;"><{button label="确定" id="btn_delivery_submit" type="button"}> <{button label="取消" id="btn_delivery_reset" type="button"}></td></tr>
+  
+</table>
+
+</div>
+<script>
+(function(){
+    var branch_id = $('dataNode').getParent().getElement('th.selected').get('data-storeid'),
+    order_id = $E('[name=order_id]',$('order_split')).value;
+    $('btn_delivery_submit').addEvent('click', function() {
+
+
+			//检查是否是选取的地址
+
+
+			var selRadio = $$('#defaultShipAddress input').filter( function(item, i) {
+
+
+				return item.checked;
+
+
+			});
+
+
+			if(selRadio.length >0) {
+
+
+				submitDefault(selRadio[0].value);
+			} else {
+
+
+				var flag = false;
+
+
+				this.getParent('.delivery-info').getElements('[vtype]').each( function(item) {
+
+
+					if (!validate(item))
+
+
+						flag=true;
+
+
+				});
+
+
+				if (flag) {
+
+
+					return ;
+				}
+
+
+
+				var handle = $('delivery_info');
+
+
+				var rs = {
+
+
+					name:$E('[name=name]',handle).value,
+
+
+					time:$E('[name=time]',handle).value,
+
+
+					area:$E('[name=area]',handle).value.split(":")[1],
+
+
+					mobile:$E('[name=mobile]',handle).value,
+
+
+					zip:$E('[name=zip]',handle).value,
+
+
+					address:$E('[name=address]',handle).value,
+
+
+					phone:$E('[name=phone]',handle).value,
+
+
+					email:$E('[name=email]',handle).value,
+
+
+					realarea : $E('[name=area]',handle).value
+
+
+				};
+
+
+				$('other_delivery').set('html','使用其它配送信息');
+
+
+				//MessageBox.success('提交成功');
+
+
+				new Request.HTML({
+
+
+					url:'index.php?app=ome&ctl=admin_order&act=do_confirm_delivery_info&p[0]='+order_id,
+
+
+					method:'post',
+
+
+					update:handle,
+
+
+					onSuccess: function() {
+
+
+						$E('[name="consignee[name]"]',handle).value = rs.name;
+
+
+						$E('[name="consignee[r_time]"]',handle).value = rs.time;
+
+
+						$E('[name="consignee[area]"]',handle).value = rs.realarea;
+
+
+						$E('[name="consignee[mobile]"]',handle).value = rs.mobile;
+
+
+						$E('[name="consignee[zip]"]',handle).value = rs.zip;
+
+
+						$E('[name="consignee[addr]"]',handle).value = rs.address;
+
+
+						$E('[name="consignee[telephone]"]',handle).value = rs.phone;
+
+
+						$E('[name="consignee[email]"]',handle).value = rs.email;
+
+
+	
+
+
+						$E('[name="consignee[name]"]',handle).getParent().getElement('span').innerHTML = rs.name;
+
+
+						//$E('[name="consignee[r_time]"]',handle).getParent().getElement('span').innerHTML = rs.time;
+
+
+						$E('[id="consignee[area]"]',handle).innerHTML = rs.area.replace(/\//g, '-');
+
+
+						$E('[name="consignee[mobile]"]',handle).getParent().getElement('span').innerHTML = rs.mobile;
+
+
+						$E('[name="consignee[zip]"]',handle).getParent().getElement('span').innerHTML = rs.zip;
+
+
+						$E('[id="consignee[addr]"]',handle).innerHTML = rs.address;
+
+
+						$E('[name="consignee[telephone]"]',handle).getParent().getElement('span').innerHTML = rs.phone;
+
+
+						//$E('[name="consignee[email]"]',handle).getParent().getElement('span').innerHTML = rs.email;
+                        var consignee_addr = encodeURIComponent(rs.address);
+
+						getCorps(branch_id, rs.realarea, '<{$weight}>','');
+
+
+					}
+
+
+				}).send();
+
+
+			}
+
+
+			/* }
+
+
+			 }).send();*/
+
+
+		});
+
+   	$('btn_delivery_reset').addEvent('click', function() {
+
+
+			$('other_delivery').set('html','使用其它配送信息');
+
+
+			new Request.HTML({
+
+
+				url:'index.php?app=ome&ctl=admin_order&act=do_confirm_delivery_info&p[0]='+order_id,
+
+
+				method:'post',
+
+
+				update:$('delivery_info'),
+
+
+				onSuccess: function() {
+				    var consignee_addr = encodeURIComponent('<{$order.consignee.addr}>');
+
+					getCorps(branch_id, '<{$order.consignee.area}>','<{$weight}>','');
+
+
+				}
+
+
+			}).send();
+
+
+		});
+    if (memberOrders > 0) {
+        resetAddress();		
+    }
+    /**
+	 * 重新计算地址
+	 */
+	function resetAddress() {
+
+		var html = '';
+
+
+		var memberAddress = getAddress();
+
+
+		for (id in memberAddress) {
+
+
+			if (id.length == 32) {
+				
+				html = html + createAddrSession(memberAddress[id]);	
+			}
+
+
+		}
+
+
+		$('defaultShipAddress').set('html', html);
+	}
+ 
+	/**
+
+
+	 * 创建订单地址选择项
+
+
+	 */
+	function createAddrSession(consignee) {
+
+
+		var html = '';
+
+
+		html = html + '<input type="radio" value="' + consignee['hash'] + '" name="sAddr" onchange="if ($(\'sAddrDefault\').checked) {$(\'delivery-info\').style.display=\'\';} else {$(\'delivery-info\').style.display=\'none\';}">';
+
+
+		html = html + '<span style="">' + 
+
+
+		consignee['area'].split(":")[1].replace(/\//g,'-') + '&nbsp;&nbsp;' + consignee['addr'] + 
+
+
+		'&nbsp;&nbsp;&nbsp;&nbsp;' + consignee['name'] + '（收）' + '</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+
+
+		'联络电话:' + (consignee['telephone']==''?'':consignee['telephone']+' / ') + consignee['mobile'] + 
+
+
+		'<br/>';
+
+
+		return html;	
+	}
+
+ 	/**
+
+
+	 * 获取选取的同用户订单
+
+
+	 */
+	function getMemberOrders() {
+    var orderRow = $$('.memberorder input').filter( function(item, i) {
+
+    return item.checked;
+
+
+		});
+
+
+		return orderRow;
+	}
+
+
+	/**
+	 * 获取可用的地址列表
+	 */
+	function getAddress() {
+
+
+		var orderId;
+
+
+		var memberAddress = new Array();
+
+
+		var orders = getMemberOrders();
+
+
+		for (i=0; i<orders.length; i++) {
+
+
+			orderId = orders[i].value;
+
+
+			for (id in gOrders) {
+
+
+				if ( orderId == id && !gOrders[id]['isCombine']) {
+
+
+					//检查地址
+
+
+					memberAddress[gOrders[id]['consignee']['hash']] = gOrders[id]['consignee'];
+
+
+				}
+
+
+			}	
+
+
+		}
+
+
+		return memberAddress;
+	}
+
+ function submitDefault(hash) {
+		for (id in gOrders) {
+			if (gOrders[id]['consignee']['hash'] == hash) {
+				var consignee = gOrders[id]['consignee'];
+				//更新为当前的内容
+				var rs = {
+					name:consignee['name'],
+					time:consignee['r_time'],
+					area:consignee['area'].split(":")[1],
+					mobile:consignee['mobile'],
+					zip:consignee['zip'],
+					address:consignee['addr'],
+					phone:consignee['telephone'],
+					email:consignee['email'],
+					realarea : consignee['area']
+				};
+				//更新
+				//var branch_id = -1;
+				var order_id = $E('[name=order_id]',$('order_split')).value;
+				var handle = $('delivery_info');
+				$('other_delivery').set('html','使用其它配送信息');
+				new Request.HTML({
+					url:'index.php?app=ome&ctl=admin_order&act=do_confirm_delivery_info&p[0]='+order_id,
+					method:'post',
+					update:handle,
+					onSuccess: function() {
+						$E('[name="consignee[name]"]',handle).value = rs.name;
+						$E('[name="consignee[r_time]"]',handle).value = rs.time;
+						$E('[name="consignee[area]"]',handle).value = rs.realarea;
+						$E('[name="consignee[mobile]"]',handle).value = rs.mobile;
+						$E('[name="consignee[zip]"]',handle).value = rs.zip;
+						$E('[name="consignee[addr]"]',handle).value = rs.address;
+						$E('[name="consignee[telephone]"]',handle).value = rs.phone; 
+						$E('[name="consignee[email]"]',handle).value = rs.email;
+		
+						$E('[name="consignee[name]"]',handle).getParent().getElement('span').innerHTML = rs.name;
+						//$E('[name="consignee[r_time]"]',handle).getParent().getElement('span').innerHTML = rs.time;
+						$E('[id="consignee[area]"]',handle).innerHTML = rs.area.replace(/\//g, '-');
+						//$E('[name="consignee[mobile]"]',handle).getParent().getElement('span').innerHTML = rs.mobile;
+						$E('[name="consignee[zip]"]',handle).getParent().getElement('span').innerHTML = rs.zip;
+						$E('[id="consignee[addr]"]',handle).innerHTML = rs.address;
+						$E('[name="consignee[telephone]"]',handle).getParent().getElement('span').innerHTML = 
+							(rs.phone=='' ? '' : rs.phone + ' / ') + rs.mobile;
+						//$E('[name="consignee[email]"]',handle).getParent().getElement('span').innerHTML = rs.email;
+                        var consignee_addr = encodeURIComponent(rs.address);
+						getCorps(branch_id, consignee_addr,'<{$weight}>','');
+					}
+				}).send();
+			}	
+		}
+	}
+})();
+</script>

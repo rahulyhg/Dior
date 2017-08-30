@@ -1,0 +1,33 @@
+<desktop>
+        <permissions>
+                <permission id="console_purchase_po">采购订单</permission>
+                <permission id="console_purchase_check">待审核</permission>
+                <permission id="console_purchase_do_eo">待入库</permission>
+                <permission id="console_purchase_eo">入库单</permission>
+                <permission id="console_purchase_returned">采购退货单</permission>
+                <permission id="console_appropriation" show='ome_roles:show_branch' save='ome_roles:save_role'>调拨单</permission>
+                <permission id="console_iostockorder_other_instock">其他入库</permission>
+                <permission id="console_iostockorder_other_outstock">其他出库</permission>
+                <permission id="console_iostockorder_allocate_instock">调拨入库</permission>
+                <permission id="console_iostockorder_allocate_outstock">调拨出库</permission>
+    </permissions>
+    <workground name="供应计划" id="console_purchasecenter" order="510">
+        <menugroup name="采购管理">
+            <menu controller='admin_purchase' action='index' permission='console_purchase_po' display='true'>采购列表</menu>
+            <menu controller='admin_purchase' action='checklist' permission='console_purchase_check' display='false' order='1000300'>待审核</menu>
+            <menu controller='admin_purchase' action='eoList' permission='console_purchase_do_eo' display='false' order='1000400'>待入库</menu>
+            <menu controller='admin_eo' action='index' permission='console_purchase_eo' display='false' order='1000500'>入库单</menu>
+            <menu controller='admin_returned_purchase' action='index' params='p[0]:eo' permission='console_purchase_returned' display='true' order='1000600'>采购退货列表</menu>
+            <!-- <menu controller='admin_purchase' action='need' permission='console_purchase_do_need' display='true' order='1000700'>补货提醒</menu>-->
+        </menugroup>
+        <menugroup name="调拨计划">
+            <menu controller='admin_appropriation' action='index' permission='console_appropriation' display='true' order='3000100'>新建调拨单</menu>
+            <menu controller='admin_iostockorder' action='allocate_iostock' params='io:0' permission='console_iostockorder_allocate_outstock' display='true' order="3000200">调拨出库</menu>
+            <menu controller='admin_iostockorder' action='allocate_iostock' params='io:1' permission='console_iostockorder_allocate_instock' display='true' order="3000300">调拨入库</menu>
+        </menugroup>
+        <menugroup name="出入库计划">
+            <menu controller='admin_iostockorder' action='other_iostock' params='io:1' permission='console_iostockorder_other_instock' display='true' order="4000100">入库单</menu>
+            <menu controller='admin_iostockorder' action='other_iostock' params='io:0' permission='console_iostockorder_other_outstock' display='true' order="5000100">出库单</menu>
+        </menugroup>
+    </workground>
+</desktop>

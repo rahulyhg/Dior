@@ -1,0 +1,43 @@
+<div class="division">
+   <h4><{t}>订单赠品<{/t}></h4>
+      <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+          <th><{t}>规格<{/t}></th>
+          <th><{t}>单位<{/t}></th>
+          <{if $is_consign}>
+            <th><{t}>代销价<{/t}></th>
+          <{/if}>
+          <th><{t}>原价<{/t}></th>
+          <th><{t}>销售价<{/t}></th>
+          <th><{t}>优惠额<{/t}></th>
+          <th><{t}>购买量<{/t}></th>          <th><{t}>已发货量<{/t}></th>
+          <th><{t}>已退货量<{/t}></th>
+        </tr>
+      </thead>
+      <tbody>
+       <{foreach from=$objs item=obj}>
+      <{foreach from=$obj.order_items item=item}>
+      <tr <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}> >
+        <td class="<{$item.item_type}>class">
+        <span><{$item.bn}></span></td>
+        <td><{t}><{$item.name}><{/t}></td>
+        <td><{t}><{$item.addon}><{/t}></td>
+        <td><{t}><{$item.unit}><{/t}></td>
+        <{if $is_consign}>
+          <td><{$item.buyer_payment}></td>
+        <{/if}>
+        <td><{$item.price}></td>
+        <td><{$item.sale_price/$item.quantity|cur}></td>
+        <td><{$item.pmt_price/$item.quantity|cur}></td>
+        <td><{$item.quantity}></td>
+        <td><{$item.sendnum}></td>
+        <td><{$item.return_num}></td>
+      </tr>
+      <{/foreach}>
+      <{/foreach}>
+      </tbody>
+     </table>
+</div>

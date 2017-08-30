@@ -1,0 +1,34 @@
+<html>
+ <head>
+  <title>选择仓库</title>
+
+ </head>
+
+ <body>
+<div class="tableform"> 
+<table border="0" cellspacing="0" cellpadding="0">
+
+<tr>
+<td></td>
+</tr>
+
+</table>
+</div>
+ </body>
+</html>
+<script>
+window.addEvent('domready', function() {
+    new Request({
+       url : 'index.php?app=ome&ctl=admin_branch&act=ajax_wms_branch&p[0]=<{$wms_id}>',
+       method : 'post',
+
+       onComplete : function(rs){
+            var rs = JSON.decode(rs);
+
+            
+       }
+    }).send();
+
+});
+
+</script>

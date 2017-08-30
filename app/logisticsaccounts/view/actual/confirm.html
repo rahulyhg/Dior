@@ -1,0 +1,71 @@
+<style type="text/css">
+<!--
+.STYLE1 {color: #FF0000}
+-->
+</style>
+<div class="tableform">
+ <div class="division">
+<span  style="color:#FF0000" id="note"></span>
+<form id='actual_form' method='post' action='index.php?app=logisticsaccounts&ctl=admin_actual&act=batch_confirm'>
+       <table border="1" cellpadding="0" cellspacing="0" class="girdlist">
+       <tbody>
+             <tr >
+                    <td align="center">注:系统仅<span class="STYLE1">对有效记账记录</span>进行审核操作</td>
+             </tr>
+			 <tr >
+                    <td align="center"><p>是否进行批量审核</p>审核总金额为<{$summary_actual.total_actual_amount}>元</td>
+             </tr>
+                </tbody>
+    </table>
+
+    <input type='hidden' id='aid' name='task_id' value='<{$task_id}>'>
+    <input type="hidden" name="aid" value='<{$aiddata}>'>
+    <input type='hidden' name='oper' value='sub_accounted'>
+             <div id="cc" class="noprint table-action">
+              <{button type="button" class="btn" id="actual-save-btn" label="确定"}> &nbsp; <{button type="button" class="btn" id="actual-confirm-btn" label="取消" onclick="javascript:this.getParent('.dialog').retrieve('instance').close();"}></div>
+            
+</form>           
+  </div>
+</div>
+<script>
+(function(){
+$('actual-save-btn').addEvent('click',function(e){
+    var _this=this;
+    var form=this.getParent('form');
+  
+
+    
+    var querystring = $('actual_form').toQueryString();
+    new Request({url:'index.php?app=logisticsaccounts&ctl=admin_actual&act=batch_confirm',
+    data:querystring,
+    onRequest:function(){
+               $('note').set('html','请求执行中,请稍等!');
+               $('actual-save-btn').set('disabled','disabled');
+                $('actual-confirm-btn').set('disabled','disabled');
+      },
+    onComplete:function(rs){
+     rs=JSON.decode(rs);
+     if (typeof(rs.error) != 'undefined'){
+
+              return MessageBox.error(rs.error);
+    }else{
+
+    _this.getParent('.dialog').retrieve('instance').close();
+    window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+    
+    
+    }
+    }}).send(); 
+	
+$('actual-confirm-btn').addEvent('click',function(e){
+this.getParent('.dialog').retrieve('instance').close();
+});
+});
+
+
+
+
+})();
+
+
+</script>

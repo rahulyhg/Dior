@@ -1,0 +1,91 @@
+<{capture name="header"}>
+  <link href="../app/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<div class="tableform"> 
+<h3>订单分派统计表</h3>
+
+<form id="Searchform" action="index.php?app=ome&ctl=admin_order&act=count_dispatch" method="post">
+    <div class="division">
+        <table width='100%' cellspacing="0" cellpadding="0" >
+            <tr>
+                <td>
+               分派时间   从：<{input type="date" name="start" id="start" value="" }>
+                至：<{input type="date" value=""  id="end"  name="end"}>
+                订单确认组：
+     <{input type="select" name="group_id" rows=$groups valueColumn="group_id" labelColumn="name" value=''}>
+                订单确认员：
+     <{input type="select" name="op_id" rows=$ops valueColumn="op_id" labelColumn="name" value=''}>
+      <{button class="btn btn-primary" type="submit" id="saveCurrent" label="查询"}>
+                </td>
+            </tr>
+        </table>
+   </div>
+</form>
+<div class="divsion" id="accordion" style="width:10%">
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="index.php?app=ome&ctl=admin_order&act=count_dispatch&p[0]=today">今天</a>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="index.php?app=ome&ctl=admin_order&act=count_dispatch&p[0]=twodays">近两天</a>
+</div>
+<div class="division" id="accordion" style="width:80%">
+        <table width="100%" cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+            <tr>
+                <th>订单量</th>
+                <th>未分派</th>
+                <th>已分派未确认</th>
+                <th>已分派长时间未确认</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="toggler atStart" >
+                <td><{$all.all}></td>
+                <td><{$all.a}></td>
+                <td><{$all.b}></td>
+                <td><{$all.c}></td>
+            </tr>
+            </tbody>
+        </table>
+</div>
+<div class="division" id="accordion" style="width:60%">
+        <table width="100%" cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+            <tr>
+                <th>订单确认组</th>
+                <th>已分派未确认</th>
+                <th>已分派长时间未确认</th>
+            </tr>
+            </thead>
+            <{foreach from=$group item=item}>
+            <tbody>
+            <tr class="toggler atStart" >
+                <td><{$item.name}></td>
+                <td><{$item.b}></td>
+                <td><{$item.c}></td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+        </table>
+</div>
+<div class="division" id="accordion" style="width:80%">
+        <table width="100%" cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+            <tr>
+                <th>订单确认员</th>
+                <th>所属订单确认组</th>
+                <th>已分派未确认</th>
+                <th>已分派长时间未确认</th>
+            </tr>
+            </thead>
+            <{foreach from=$operator item=item}>
+            <tbody>
+            <tr class="toggler atStart" >
+                <td><{$item.u_name}></td>
+                <td><{$item.g_name}></td>
+                <td><{$item.b}></td>
+                <td><{$item.c}></td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+        </table>
+</div>
+   
+ </div>

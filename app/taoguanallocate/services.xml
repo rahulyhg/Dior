@@ -1,0 +1,17 @@
+<services>
+     <service id="taoguanallocate.appropriation">
+        <class>taoguanallocate_appropriation</class>
+    </service>
+    <service id="extend_filter_taoguanallocate_mdl_appropriation">
+        <class>taoguanallocate_finder_extend_filter_appropriation</class>
+    </service>
+    <service id="system_setting">
+        <class>taoguanallocate_setting</class>
+    </service>
+     <service id="data_clear">
+        <class>taoguanallocate_service_data_clear</class>
+    </service>
+    <service id="desktop_finder.taoguanallocate_mdl_appropriation">
+        <class>taoguanallocate_finder_appropriation</class>
+    </service>
+</services>

@@ -1,0 +1,345 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{script src="coms/autocompleter.js" app='desktop' }>
+<{/capture}>
+<div></div>
+<div>
+  <div class="finder-detail">
+    <table  cellspacing="0" cellpadding="0" border="0">
+      <tbody>
+        <tr>
+        <td style="text-align: left;" ><h3>发货单信息</h3></td>
+        </tr>
+      </tbody>
+    </table>
+    <{include file="admin/order/order_edit_item_log.html"}>
+  </div>
+</div>
+
+<div>
+<div id="order_edit_receiver">
+  <table width="100%" class="gridlist">
+    <thead>
+      <tr>
+        <th style="text-align:left;">配送信息</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" class="delivery-info">
+           <tr>
+            <th>收货人姓名：</th>
+            <td><{$operation_detail.consignee.name }></td>
+            <th>送货时间：</th>
+            <td><{$operation_detail.consignee.r_time}></td>
+            <th>收货地区：</th>
+            <td>
+              <{$operation_detail.consignee.area|region}></td>
+           </tr>
+           <tr>
+             <th>联系手机：</th>
+             <td><{$operation_detail.consignee.mobile}></td>
+             <th>邮政编码：</th>
+             <td><{$operation_detail.consignee.zip }></td>
+            <th>收货地址：</th>
+            <td><{$operation_detail.consignee.addr }></td>
+            </tr>
+           <tr>
+             <th>联系电话：</th>
+             <td><{$operation_detail.consignee.telephone}></td>
+             <th>Email地址：</th>
+             <td><{$operation_detail.consignee.email}></td>
+            <th>&nbsp;</th>
+            <td>&nbsp;</td>
+          </tr>
+         </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+  <div class="finder-detail">
+    <h3 >订单信息</h3>
+    <div class="division" style="background:#fff; " id="order_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody><tr>
+            <th>订单号：</th>
+            <td><{$operation_detail.order_bn}></td>
+            <th><b>订单总金额：</b></th>
+            <td><b id="total_amount_show"><{$operation_detail.total_amount|cur}></b></td>
+            <th>订单折扣或涨价：</th>
+            <td><{$operation_detail.discount|cur}>&nbsp;<{help}>要给顾客便宜100元，则输入"-100";要提高订单价格100元，则输入"100".<{/help}></td>
+          </tr>
+          <tr>
+            <th>下单日期：</th>
+            <td><{$operation_detail.createtime|date_format:'%Y-%m-%d'}> <span style="color:#84A2AD;">(至今<{$order.difftime}>)</span></td>
+            <th>配送费用：</th>
+            <td><{$operation_detail.shipping.cost_shipping}></td>
+            <th>支付方式：</th>
+            <td><{$operation_detail.payinfo.pay_name}></td>
+          </tr>
+          <tr>
+            <th>商品总金额：</th>
+            <td><{$operation_detail.cost_item|cur}></b></td>
+            <th>配送方式：</th>
+            <td><{$operation_detail.shipping.shipping_name}></td>
+            <th>支付手续费：</th>
+            <td><{$operation_detail.payinfo.cost_payment|cur}> </td>
+          </tr>
+          <tr>
+            <th>订单优惠金额：</th>
+            <td><{$operation_detail.pmt_order|cur}></td>
+            <th>保价：</th>
+            <td><{$operation_detail.shipping.cost_protect|cur}></td>
+            <th>税金：</th>
+            <td><{$operation_detail.cost_tax|cur}> </td>
+          </tr>
+          <tr>
+            <th>商品优惠金额：</th>
+            <td><{$operation_detail.pmt_goods|cur}></td>
+            <th>商品重量：</th>
+            <td><{$operation_detail.weight}></td>
+            <th>发票抬头：</th>
+            <td><{$operation_detail.tax_title}></td>
+          </tr>
+          <tr>
+            <th>已支付金额：</th>
+            <td><{$operation_detail.payed|cur}></td>
+            <th>支付币种：</th>
+            <td><{$operation_detail.currency}></td>
+            <td>订单失效时间:</td>
+            <td><{$operation_detail.order_limit_time|date_format:'%Y-%m-%d'}></td>
+          </tr>
+      </tbody></table>
+    </div>
+  </div>
+
+ <!--订单备注 -->
+  <div class="finder-detail">
+    <h3 >订单备注</h3>
+    <div class="division" style="background:#fff; ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+   <tr>
+   <th align='right'>标记：</th>
+   <td align='left'>
+      <{foreach from=$operation_detail.mark_type_arr item=item key=key}>
+      <label><input type='radio' disabled="true" name='order[mark_type]' value='<{$key}>' id='<{$key}>' <{if $operation_detail.mark_type==$key}>checked="checked"<{/if}> ><img src='<{$item}>' width='20' height='20'></label>
+      <{/foreach}>
+   </tr>
+   <{if $operation_detail.mark_text}>
+   <tr>
+      <th><{t}>订单备注：<{/t}></th>
+      <td>
+        <{foreach from=$operation_detail.mark_text item=items}>
+        <div>
+      <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+      </div>
+      <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+    </table>  
+</div>
+</div>
+
+
+<!--买家留言 -->
+  <div class="finder-detail">
+    <h3 >买家留言</h3>
+    <div class="division" style="background:#fff; ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+   <{if $operation_detail.custom_mark}>
+   <tr>
+      <th><{t}>买家留言：<{/t}></th>
+      <td>
+        <{foreach from=$operation_detail.custom_mark item=items}>
+        <div id="memo_show">
+      <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+      </div>
+      <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+    </table>  
+</div>
+</div>
+
+<!--支付单信息 -->
+  <div class="gridlist">
+    <div><h3>支付单</h3></div>
+    <div class="division" style="background:#fff;">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <thead>
+            <tr>
+                <th>支付单号</th>
+                <th>收款账号</th>
+                <th>收款银行</th>
+                <th>支付账户</th>
+                <th>支付金额</th>
+                <th>支付网关费用</th>
+                <th>支付方式</th>
+                <th>备注</th>
+            </tr>
+         </thead>
+         <tbody>
+            <{foreach from=$operation_detail.payments item=item}>
+                <tr>
+                    <td><{$item.payment_bn}></td>
+                    <td><{$item.account}></td>
+                    <td><{$item.bank}></td>
+                    <td><{$item.pay_account}></td>
+                    <td><{$item.money|cur}></td>
+                    <td><{$item.paycost|cur}></td>
+                    <td><{$item.paymethod}></td>
+                    <td><{$item.memo}></td>
+                </tr>
+            <{/foreach}>
+         </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="finder-detail" style="margin-top:10px;">
+    <div><h3>购买人信息</h3></div>
+    <div class="division" style="background:#fff;" id="buyer_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+          <tr>
+            <th>会员用户名：</th>
+             <td><{$operation_detail.mem_info.uname}></td>
+            <th>姓名：</th>
+             <td><{$operation_detail.mem_info.name}></td>
+            <th>联系电话：</th>
+            <td><{$operation_detail.mem_info.tel}></td>
+            <th>手机：</th>
+             <td><{$operation_detail.mem_info.mobile}></td>
+          </tr>
+          <tr>
+            <th>Email：</th>
+            <td><{$operation_detail.mem_info.email}></td>
+            <th>邮政编码：</th>
+            <td><{$operation_detail.mem_info.zip}></td>
+            <th>详细地址：</th>
+            <td><{$operation_detail.mem_info.area|region}></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+
+  <!-- 发货人信息 -->
+  <div class="finder-detail" style="margin-top:10px;">
+    <div><h3>发货人信息</h3></div>
+    <div class="division" style="background:#fff;" id="buyer_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+          <tr>
+            <th>发货人姓名：</th>
+             <td><{$operation_detail.consigner.name}></td>
+            <th>联系电话：</th>
+            <td><{$operation_detail.consigner.tel}></td>
+            <th>手机：</th>
+             <td><{$operation_detail.consigner.mobile}></td>
+          </tr>
+          <tr>
+            <th>Email：</th>
+            <td><{$operation_detail.consigner.email}></td>
+            <th>邮政编码：</th>
+            <td><{$operation_detail.consigner.zip}></td>
+            <th>详细地址：</th>
+            <td><{$operation_detail.consigner.area|region}></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+    <!-- 代销人信息 -->
+<{if $operation_detail.shop_type == 'shopex_b2b'}>
+    <div class="finder-detail" style="margin-top:10px;">
+        <div><h3>代销人信息</h3></div>
+        <div class="division" style="background:#fff;">
+          <table width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tbody>
+              <tr>
+                <th>用户名</th>
+                 <td><{$operation_detail.agent.member_info.uname}></td>
+                <th>姓名：</th>
+                 <td><{$operation_detail.agent.member_info.name}></td>
+                <th>性别：</th>
+                <td><{if $operation_detail.agent.member_info.sex == 'male'}>男<{else}>女<{/if}></td>
+                <th>出生日期：</th>
+                 <td><{$operation_detail.agent.member_info.birthday}></td>
+                 <th>E-mail：</th>
+                 <td><{$operation_detail.agent.member_info.email}></td>
+              </tr>
+              <tr>
+                <th>地区：</th>
+                <td><{$operation_detail.agent.member_info.addr}></td>
+                <th>详细地址：</th>
+                <td><{$operation_detail.agent.member_info.area|region}></td>
+                <th>邮编：</th>
+                <td><{$operation_detail.agent.member_info.zip}></td>
+                <th>手机：</th>
+                <td><{$operation_detail.agent.member_info.mobile}></td>
+                <th>固定电话：</th>
+                <td><{$operation_detail.agent.member_info.tel}></td>
+              </tr>
+              <tr>
+                <th>网站名称：</th>
+                <td><{$operation_detail.agent.website.name}></td>
+                <th>网站域名：</th>
+                <td><{$operation_detail.agent.website.domain}></td>
+                <th>网站LOGO：</th>
+                <td><a href="<{$operation_detail.agent.website.logo}>" target=_'blank'>查看</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+    </div>
+<{/if}>
+  <!-- 优惠方案 -->
+    <div class="gridlist">
+    <div><h3>优惠方案</h3></div>
+    <div class="division" style="background:#fff;">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <thead>
+            <tr>
+                <th>优惠方案</th>
+                <th>优惠金额</th>
+            </tr>
+         </thead>
+         <tbody>
+            <{foreach from=$operation_detail.pmt item=item}>
+                <tr>
+                    <td><{$item.pmt_describe}></td>
+                    <td><{$item.pmt_amount}></td>
+                </tr>
+            <{/foreach}>
+         </tbody>
+      </table>
+    </div>
+  </div>
+  
+
+  <{capture name='footbar'}>
+    <table cellspacing="0" cellpadding="0" class="table-action">
+	  <tbody><tr valign="middle">
+	    <td>
+	      <{button label="关闭" class="btn-primary" id="closeBut"}>
+	    </td>
+	    </tr>
+    </tbody></table>
+<{/capture}>
+
+<script>
+$('closeBut').addEvent('click', function(event){
+    window.close();
+});
+</script>
+  

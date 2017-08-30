@@ -1,0 +1,595 @@
+<{capture name="header"}>
+<link href="../app/wms/statics/wms.css" rel="stylesheet" type="text/css">
+<link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<style>
+    .goods_lists th {font-size: 1.8em; text-align: left;padding-left: 15px; border-bottom-width: 2px;border-bottom-color: #CCCCCC;border-bottom-style: solid;}
+    .goods_lists td {font-size: 1.5em; text-align: left;padding-left: 15px; border-bottom-width: 1px;border-bottom-color: #CCCCCC;border-bottom-style:dashed;}
+</style>
+
+<script type="text/javascript">
+    var count = <{$count}>;
+    var already = <{$verify_num}>;
+    var remain = <{$remain}>;
+    var define = <{$conf}>;
+    var serial_merge = '<{$serial.merge}>';
+    var serial_separate = '<{$serial.separate}>';
+    var tmpDiv = '';
+    var serialArray = new Array();
+
+    $("bn").addEvent('keydown',function(e){
+        if (e.key == 'enter'){
+            check();
+            return false;
+        }
+    });
+    
+    function dealWithMsg(type,msg){
+        $('mess').set('html',msg);
+        if (type == 1){
+            $('mess').setStyle('color', 'black');
+        } else {
+            $('mess').setStyle('color', 'red');
+        }
+        var arg0 = type==1 ? 1 : 0;
+        try{
+            if (typeof(voiceWarning) == 'function')
+            {
+                
+                voiceWarning(arg0);
+            }
+        }catch(e){}
+    }
+
+    //<!--FUNCTION_CHECK_BEGIN-->
+    function check(){
+        var bn = $("bn").value;
+        var serial_number = '';
+        if (bn != ''){
+            if(serial_merge == 'true' && bn.contains(serial_separate)){
+                var serialBn = new Array();
+                serialBn = bn.split(serial_separate);
+                if(serialBn[0] && $(serialBn[0]) && $("serial_"+serialBn[0]).value == 'true'){
+                    bn = serialBn[0];
+                    serial_number = serialBn[1];
+                    $("serial_number").value = serial_number;
+                    check_serial(bn,serial_number);
+                }
+            }
+            $("tmp_bn").value = bn;
+            if ($("_"+bn)){
+                if (tmpDiv) tmpDiv.set('styles',{'backgroundColor':''});
+                tmpDiv = $("_"+bn);
+                tmpDiv.set('styles',{'backgroundColor':'#D8D8D8'});
+            }
+            if (!$(bn)){
+                $('goodsMsg').style.display = 'none';
+                $("serialNumberDiv").style.display = 'none';
+                //$('mess').set('text','发货单中没有条形码为'+bn+'的商品！');
+                //$('mess').setStyle('color', 'red');
+                dealWithMsg(0,'发货单中没有条形码为'+bn+'的商品！');
+                $("bn").value = '';
+                $("bn").focus();
+                return false;
+            }
+
+            var name = $(bn+"_name").get('text');
+            var num = parseInt($(bn+"_num").get('text'));
+            var all = parseInt($(bn+"_all").get('text'));
+            if (num < all){
+                var serial = $("serial_"+bn).value;
+                if (serial == 'true'){
+                    $("serialNumberDiv").style.display = '';
+                    $('goodsMsg').style.display = 'none';
+                    $("bn").disabled = true;
+                    $("serial_number").focus();
+                    return false;
+                }else{
+                    $("serialNumberDiv").style.display = 'none';
+                }
+
+                num++;
+                $(bn+"_num").set('text',num);
+                $('number_' + bn).value = num;
+                already++;
+                $('number').value = already;
+
+                //新增产品信息显示
+                $('goodsMsg').style.display = '';
+                $('msgGoodsName').set('html', name);
+                $('msgTotalNum').set('html', all-num);
+                $('msgFinshNum').set('html', num);
+                $('bn').value = '';
+                $('bn').focus();
+                if (num < all){
+                    if(define < all){
+                        $("ipt_num").value = all-num;
+                        $('inputNumDiv').style.display = '';
+                        $('goodsMsg').style.height ='60px';
+                        $(bn+"_name").set('styles', {'color':'red'});
+                    }else{
+                        $('inputNumDiv').style.display = 'none';
+                        $('goodsMsg').style.height = '32px';
+                        $(bn+"_name").set('styles', {'color':'#eeeeee'});
+                    }
+                } else {
+                    $('inputNumDiv').style.display = 'none';
+                    $('goodsMsg').style.height = '32px';
+                    $(bn+"_name").set('styles', {'color':'#eeeeee'});
+                }
+            }else {
+                $('goodsMsg').style.display = 'none';
+                //$('mess').set('text','此条形码为'+bn+'的商品已扫描完成！如果确认未扫描过，请返回重新进行操作，否则请继续');
+                //$('mess').setStyle('color', 'red');
+                dealWithMsg(0,'此条形码为'+bn+'的商品已扫描完成！如果确认未扫描过，请返回重新进行操作，否则请继续');
+                $("bn").value = '';
+                $("bn").focus();
+                return false;
+            }
+        }else {
+            if (tmpDiv) tmpDiv.set('styles',{'backgroundColor':''});
+            $("bn").focus();
+        }
+        $("bn").value = '';
+        remain = count-already;
+
+        var tmp = "需要扫描 <em style='font-weight:700;font-size:2.5em;color:#333333'>"+count+"</em> 个    已扫描 <em style='font-weight:700;font-size:2.5em;color:green'>"+already+"</em> 个    未扫描 <b><em style='font-weight:700;font-size:2.5em;color:red'>"+remain+"</em></b>个";
+        //$("mess").innerHTML = tmp;
+        //$('mess').setStyle('color', 'black');
+        dealWithMsg(1,tmp);
+        if ($('count').value == $('number').value){
+            $("return").value = 'OK';
+            $("logi_no").focus();
+            $("form1").fireEvent('submit',{stop:function(){}});
+        }
+        return false;
+    }
+    //<!--FUNCTION_CHECK_END-->
+
+    $("serial_number").addEvent('keydown',function(e){
+        if (e.key == 'enter'){
+            check_serial();
+            return false;
+        }
+    });
+
+    function check_serial(bn,serial_number){
+        if(!serial_number || serial_number == ''){
+            var serial_number = $("serial_number").value;
+        }
+        if(!bn || bn == ''){
+            var bn = $("bn").value;
+        }
+
+        if(serial_merge == 'true' && bn.contains(serial_separate)){
+            var serialBn = new Array();
+            serialBn = bn.split(serial_separate);
+            if(serialBn[0] && $(serialBn[0]) && $("serial_"+serialBn[0]).value == 'true'){
+                bn = serialBn[0];
+            }
+        }
+
+        var serial = $("serial_"+bn).value;
+
+        if (bn != '' && serial == 'true'){
+            $("tmp_bn").value = bn;
+            if ($("_"+bn)){
+                if (tmpDiv) tmpDiv.set('styles',{'backgroundColor':''});
+                tmpDiv = $("_"+bn);
+                tmpDiv.set('styles',{'backgroundColor':'#D8D8D8'});
+            }
+            if (!$(bn)){
+                $('goodsMsg').style.display = 'none';
+                $("serialNumberDiv").style.display = 'none';
+                //$('mess').set('text','发货单中没有条形码为'+bn+'的商品！');
+                //$('mess').setStyle('color', 'red');
+                dealWithMsg(0,'发货单中没有条形码为'+bn+'的商品！');
+                $("bn").value = '';
+                $("bn").focus();
+                return false;
+            }
+
+            if (!serialArray.contains(serial_number) && serial_number != ''){
+                new Request({url:'index.php?app=ome&ctl=admin_serial&act=ajaxCheckSerial',method:'post',data:'serial='+serial_number+'&bn='+$('bn_'+bn).value,
+                    onComplete:function(result){
+                        if(!result){
+                            return false;
+                        }else{
+                            ret = JSON.decode(result);
+                            if(ret['result'] == 'true'){
+                                serialArray.include(serial_number);
+                                var input  = new Element('input', {type:'hidden',name:'serial_data['+$('bn_'+bn).value+'][]',value:serial_number});
+                                input.inject('data_'+bn);
+
+                                var name = $(bn+"_name").get('text');
+                                var num = parseInt($(bn+"_num").get('text'));
+                                var all = parseInt($(bn+"_all").get('text'));
+                                if (num < all){
+                                    num++;
+                                    $(bn+"_num").set('text',num);
+                                    $('number_' + bn).value = num;
+                                    already++;
+                                    $('number').value = already;
+
+                                    //新增产品信息显示
+                                    $('goodsMsg').style.display = '';
+                                    $('msgGoodsName').set('html', name);
+                                    $('msgTotalNum').set('html', all-num);
+                                    $('msgFinshNum').set('html', num);
+                                    $("bn").disabled = false;
+                                    $('bn').value = '';
+                                    $('bn').focus();
+
+                                    $("serial_number").value = '';
+                                    $('inputNumDiv').style.display = 'none';
+                                    $('goodsMsg').style.height = '32px';
+                                    $(bn+"_name").set('styles', {'color':'#eeeeee'});
+                                    $("serialNumberDiv").style.display = 'none';
+
+                                    remain = count-already;
+                                    var tmp = "需要扫描 <em style='font-weight:700;font-size:2.5em;color:#333333'>"+count+"</em> 个    已扫描 <em style='font-weight:700;font-size:2.5em;color:green'>"+already+"</em> 个    未扫描 <b><em style='font-weight:700;font-size:2.5em;color:red'>"+remain+"</em></b>个";
+                                    //$("mess").innerHTML = tmp;
+                                    //$('mess').setStyle('color', 'black');
+                                    dealWithMsg(1,tmp);
+
+                                    if ($('count').value == $('number').value){
+                                        $("return").value = 'OK';
+                                        $("logi_no").focus();
+                                        $("form1").fireEvent('submit',{stop:function(){}});
+                                    }
+                                }else {
+                                    $("serial_number").value = '';
+                                    $("serialNumberDiv").style.display = 'none';
+                                    $('goodsMsg').style.display = 'none';
+                                    //$('mess').set('text','此条形码为'+bn+'的商品已扫描完成！如果确认未扫描过，请返回重新进行操作，否则请继续');
+                                    //$('mess').setStyle('color', 'red');
+                                    dealWithMsg(0,'此条形码为'+bn+'的商品已扫描完成！如果确认未扫描过，请返回重新进行操作，否则请继续');
+                                    $("bn").disabled = false;
+                                    $("bn").value = '';
+                                    $("bn").focus();
+                                    return false;
+                                }
+                            }else{
+                                $("bn").disabled = true;
+                                $('serial_messs').set('text','唯一码为“'+serial_number+'”的商品不允许出库！');
+                                return false;
+                            }
+                        }
+                    }
+                }).send();
+            }else{
+                $("bn").disabled = true;
+                $('serial_messs').set('text','唯一码为“'+serial_number+'”的商品不允许出库！');
+                return false;
+            }
+        }else {
+            $("serial_number").value = '';
+            $("serialNumberDiv").style.display = 'none';
+            $("bn").disabled = false;
+            $("bn").focus();
+            $("bn").value = '';
+            $('mess').set('text','条形码为'+bn+'的商品不需要输入唯一码！');
+        }
+        return false;
+    }
+
+    function checkin(){
+        $('form1').fireEvent('submit',{stop:function(){}});
+        if ($('count').value == $('number').value){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    $("ipt_num").addEvent('blur',function(event){
+        reset_dis_num();
+    });
+
+    $("ipt_num").addEvent('keydown',function(event){
+        if(event.key=='enter'){
+            var tt = $("ipt_num").value;
+            if (tt == ''){
+                reset_dis_num();
+                $("bn").focus();
+                return false;
+            }else {
+                if (isNaN(tt)){
+                    $("messs").set('text','请输入本次扫描货品的数字')
+                    return false;
+                }
+            }
+            var tmp = $("tmp_bn").value;
+            var ipn = parseInt(tt);
+            var name = $(tmp+"_name").get('text');
+            var num = parseInt($(tmp+"_num").get('text'));
+            var all = parseInt($(tmp+"_all").get('text'));
+            if (num < all){
+                if (num+ipn > all){
+                    $("messs").set('text','填写的数量大于未扫描数');
+                    return false;
+                }
+                num = num+ipn;
+                $(tmp+"_num").set('text',num);
+                $('number_' + tmp).value = num;
+                already = already+ipn;
+                $('number').value = already;
+                remain = count-already;
+
+                //新增产品信息显示
+                $('goodsMsg').style.display = '';
+                $('msgGoodsName').set('html', name);
+                $('msgTotalNum').set('html', all-num);
+                $('msgFinshNum').set('html', num);
+                $('bn').value = '';
+                $('bn').focus();
+                if (num < all){
+                    $("ipt_num").value = all-num;
+                    $('inputNumDiv').style.display = '';
+                    $('goodsMsg').style.height ='60px';
+                    $(tmp+"_name").set('styles', {'color':'red'});
+                } else {
+                    $('inputNumDiv').style.display = 'none';
+                    $('goodsMsg').style.height = '32px';
+                    $(tmp+"_name").set('styles', {'color':'#eeeeee'});
+                }
+
+                var tmp = "需要扫描 <em style='font-weight:700;font-size:2.5em;color:#333333'>"+count+"</em> 个    已扫描 <em style='font-weight:700;font-size:2.5em;color:green'>"+already+"</em> 个    未扫描 <b><em style='font-weight:700;font-size:2.5em;color:red'>"+remain+"</em></b>个";
+                //$("mess").innerHTML = tmp;
+                dealWithMsg(1,tmp);
+                if ($('count').value == $('number').value){
+                    $("return").value = 'OK';
+                    reset_dis_num();
+                    $("logi_no").focus();
+                    $("form1").fireEvent('submit',{stop:function(){}});
+                }else {
+                    reset_dis_num();
+                }
+            }else {
+                if ($('count').value == $('number').value){
+                    $("return").value = 'OK';
+                    reset_dis_num();
+                    $("logi_no").focus();
+                    $("form1").fireEvent('submit',{stop:function(){}});
+                }
+                reset_dis_num();
+            }
+            return false;
+        }
+    });
+
+    $("logi_no").addEvent('keydown',function(e){
+        if (e.key=="enter"){
+            return checkin();
+        };
+    });
+
+    function reset_dis_num(){
+        if (tmpDiv) tmpDiv.set('styles',{'backgroundColor':''});
+        $("bn").focus();
+    }
+    reset_dis_num();
+
+    $('form1').store('target',{
+        onRequest:function(){
+            $('backbtn').set('disabled', 'true');
+            $('logi_no').set('disabled', 'true');
+            $('logi_no').getElements('span')[1].set('text','提交中');
+        },
+        onComplete:function(jsontext){
+            var json = Json.evaluate(jsontext);
+            if (typeof(json.error) != 'undefined'){
+                $('backbtn').set('disabled', '');
+                $('logi_no').set('disabled', '');
+                $('logi_no').getElements('span')[1].set('text','提交');
+            }else{
+                if (json.success.indexOf('校验完成') >= 0){
+                    $('backbtn').set('disabled', 'true');
+                }else {
+                    $('backbtn').set('disabled', '');
+                }
+                $('logi_no').set('disabled', '');
+                $('logi_no').getElements('span')[1].set('text','提交');
+            }
+
+        }
+    });
+
+    (function(){
+        new Request({url:'index.php?ctl=adminpanel',onComplete:function(rs){
+            }}).send();
+    }).periodical(600000);
+
+    var itemsArray = new Array();
+
+    <{foreach from=$items item=item}>
+        itemsArray.push('<{$item.barcode}>');
+    <{/foreach}>
+
+    function filter($code) {
+        var i, bn, all, num;
+        for (i=0; i<itemsArray.length; i++) {
+            bn = itemsArray[i];
+            if ($code == 'all') {
+                setborder('all');
+                $('_' + bn).style.display = '';
+            } else {
+                num =  parseInt($(bn+"_num").get('text'));
+                all = parseInt($(bn+"_all").get('text'));
+                if ($code == 'finish') {
+                    setborder('finish');
+                    $('_' + bn).style.display = (num == all) ? '' : 'none';
+                } else {
+                    setborder('');
+                    $('_' + bn).style.display = (num < all) ? '' : 'none';
+                }
+            }
+        }
+    }
+
+    function setborder(code) {
+        if (code == 'all') {
+            $('allLink').set('styles', {'border':'1px solid','background-color':'#eeeeee', 'padding':'3px 10px', 'color':'black'});
+            $('processLink').set('style', {});
+            $('finishLink').set('style', {});
+        } else if (code =='finish') {
+            $('finishLink').set('styles', {'border':'1px solid','background-color':'#eeeeee', 'padding':'3px 10px', 'color':'black'});
+            $('processLink').set('style', {});
+            $('allLink').set('style', {});
+        } else {
+            $('processLink').set('styles', {'border':'1px solid','background-color':'#eeeeee', 'padding':'3px 10px', 'color':'black'});
+            $('allLink').set('style', {});
+            $('finishLink').set('style', {});
+        }
+    }
+
+    function click_serial(barcode){
+        $("bn").value = barcode;
+        check();
+    }
+    
+
+    function checkmemo(){
+        var dly_id = $('dly_id').value;
+        var refresh_url = 'index.php?app=wms&ctl=admin_check&act=index&type=barcode';
+        new Dialog('index.php?ctl=admin_pick&act=setCheckFail&app=tgkpi&id='+dly_id+'&rurl='+encodeURIComponent(refresh_url),{width:450,height:240,title:'校验失败备注'});
+    }
+
+</script>
+
+<div class="spage-main-box">
+    <div class="tableform">
+        <div style="display: none;"><button class="btn" type="button" id="backbtn" onclick="new Dialog('index.php?app=wms&ctl=admin_check&act=showmemo&p[0]=<{$dly.delivery_id}>',{title:'打回发货单备注',width:600,height:500})"><span><span>打回此发货单</span></span></button></div>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <!-- <button class="btn" type="submit" onclick="return checkin();"><span><span>暂存已扫描数据</span></span></button>  -->
+
+        <h3 style="margin-left: 12px;font-size: 1.5em;font-weight: bold;" valign="bottom">请扫描商品条形码
+            <span style="font-size:1.8em;">(蓝色背景支持点击扫描)</span>：
+            <a id="allLink" color='#333333' href='javascript:;' onclick='return filter("all");'>全部</a>&nbsp;&nbsp;
+            <a id="processLink" color='green' href='javascript:;' onclick='return filter("");'>待较验</a>&nbsp;&nbsp;
+            <a id="finishLink" color='red' href='javascript:;' onclick='return filter("finish");'>已较验</a>
+        </h3>
+
+        <div class="division">
+            <input type="hidden" id="tmp_bn" name="tmp_bn" />
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td><{input type="text" name="bn" id="bn" style="background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;margin-bottom: 10px;padding-left: 19px;width: 400px;" }>&nbsp;
+                        <span style="font-size:18px;font-weight:700;" id='mess'>&nbsp;&nbsp;需要扫描 <b><em style="font-weight:700;font-size:2.5em;color:#333333"><{$count}></em></b> 个&nbsp;&nbsp;
+                            &nbsp;&nbsp;已扫描 <b><em style="font-weight:700;font-size:2.5em;color:green"><{$verify_num}></em></b> 个&nbsp;&nbsp;
+                            &nbsp;&nbsp;还需扫描 <b><em style="font-weight:700;font-size:2.5em;color:red"><{$remain}></em></b> 个&nbsp;&nbsp;</span>
+                        <br>
+                    </td>
+                </tr>
+                <!--TR_HACK-->
+            </table>
+        </div>
+
+        <div id="goodsMsg" class="gridlist" style="height: 60px; background-color: #F5F8F9; padding-top: 8px;text-indent: 15px; display:none;">
+            &nbsp;&nbsp;&nbsp;商品名称：
+            <span id="msgGoodsName" style="font-size: 14px; font-weight: 700;"></span>
+            <span style="float:right; margin-right: 20px; color: red;">未扫描 <em id="msgTotalNum"></em> 个</span>
+            <span style="float:right; margin-right: 20px; color: green;">已扫描 <em id="msgFinshNum"></em> 个</span>
+            <div id="inputNumDiv" style="margin-top:8px; margin-left: 15px;">
+                <span id="ipt_title" style="font-size: 12px; font-weight: 700;">数量：</span>
+                &nbsp;<input id="ipt_num" type="text" value="" size="5"/>&nbsp;
+                <font id="messs" color="red">如此项货物的数量较多并可保证数据的准确，可在此填入未扫描的数量，默认为所有未扫描数量，按回车提交。</font></div>
+        </div>
+
+        <div id="serialNumberDiv" style="margin-top:8px; margin-left:15px; display:none;">
+            <span style="margin-left: 12px;font-size: 1.5em;font-weight: bold;">请扫描商品唯一码：</span><br />
+            <input id="serial_number" name="serial_number" type="text" value="" style="background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;margin-bottom: 10px;padding-left: 19px;width: 400px;" />&nbsp;
+            <font id="serial_messs" color="red" style="font-size:18px;font-weight:700;">此货品需输入唯一码后才能通过效验</font>
+        </div>
+
+        <br>
+        <form name="form1" id="form1" method="POST" action="index.php?app=wms&ctl=admin_check&act=doCheck">
+            <div>
+                <table border="0" cellspacing="0" cellpadding="0" class="goods_lists">
+                    <tr style="height:40px;">
+                        <td style="font-size: 14px; font-weight: 700;" width="12%">货号:</td>
+                        <td style="font-size: 14px; font-weight: 700;" width="12%">条形码:</td>
+                        <td style="font-size: 14px; font-weight: 700;" width="46%">货品名称:</td>
+                        <td style="font-size: 14px; font-weight: 700;" width="12%">货品规格:</td>
+                        <td style="font-size: 14px; font-weight: 700;" width="10%">货品数量:</td>
+                        <td style="font-size: 14px; font-weight: 700;" width="10%">已校验数:</td>
+                    </tr>
+
+                    <{foreach from=$items item=item}>
+                    <tr id="_<{$item.barcode}>" <{if $item.serial_number=='true'}>onclick="return click_serial('<{$item.barcode}>');" style="background-color:#66FFCC;height:35px;"<{else}>style="height:35px;"<{/if}>>
+                        <td><{$item.bn}>
+                            <input type="hidden" id="number_<{$item.barcode}>" name="number_<{$item.barcode}>" value="<{$item.verify_num}>" />
+                            <input type="hidden" id="serial_<{$item.barcode}>" name="serial_<{$item.barcode}>" value="<{$item.serial_number}>" />
+                            <input type="hidden" id="bn_<{$item.barcode}>" name="bn_<{$item.barcode}>" value="<{$item.bn}>" />
+                            <input type="hidden" name="product[<{$item.bn}>]" value="<{$item.product_id}>" />
+                            <span id="data_<{$item.barcode}>" style="display:none"></span>
+                        </td>
+                        <td><div id="<{$item.barcode}>"><{$item.barcode}></div></td>
+                        <td><div id="<{$item.barcode}>_name" style="color:<{$item.nameColor}>"><{$item.product_name}></div></td>
+                        <td><{$item.spec_info}></td>
+                        <td style="font-weight:700;font-size:2.5em;"><font color="red"><div id="<{$item.barcode}>_all"><{$item.number}></font></td>
+                        <td style="font-weight:700;font-size:2.5em;><font color="green"><div id="<{$item.barcode}>_num"><{$item.verify_num}></div></font></td>
+                    </tr>
+                    <{/foreach}>
+                    <tr id="_<{$item.barcode}>" style="height:35px;">
+                        <td colspan="4" style="text-align: right;border-bottom-width: 0px;"><div style="margin-top:0px; position: relative; float: left">
+                            校验人：<{$userName}>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <{if $picktName}>捡货人：<{$picktName}><{/if}>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <input type="hidden" id="dly_id" name="delivery_id" value="<{$dly.delivery_id}>" />
+            <input type="hidden" id="count" name="count" value="<{$count}>" />
+            <input type="hidden" id="number" name="number" value="<{$number}>" />
+            <input type="hidden" id="return" name="return" value="" />
+            <input type="hidden" id="checkType" name="checkType" value="<{$checkType}>" />
+            <input type="hidden" vtype="required" name="logi_no" value="<{$dly.logi_no}>"/>
+
+            <div class="table-action">
+                <{ if $tgkpi_status == 'true'}>
+                <{button label="校验失败备注" class="btn-primary" id="fail_memo" type="button" onclick="checkmemo();"}>
+                <{/if}>
+                <{button label="提交" class="btn-primary" id="logi_no" type="button" onclick="checkin()"}>
+            </div>
+        </form>
+        <br/>
+        <h3 style="margin-left: 12px;font-size: 1.5em;font-weight: bold;" valign="bottom">订单信息&nbsp;&nbsp;<span style="font-size:1em;font-weight:normal;">收货人:<font color="red"><{$ship_name}></font></span></h3>
+        <table border="1" cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>订单附言</th>
+                    <th>订单备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                <{foreach from=$markandtext item=item}>
+                    <tr>
+                        <td><{$item.order_bn}></td>
+                        <td>
+                            <{if count($item._mark)>0 }>
+                            <{foreach from=$item._mark item=it}>
+                                <b><{$it.op_content}></b> <{$it.op_time}> by <{$it.op_name}><br/>
+                            <{/foreach}>
+                            <{else}>
+                                无
+                            <{/if}>
+                        </td>
+                        <td>
+                            <{if count($item._mark_text)>0 }>
+                            <{foreach from=$item._mark_text item=it}>
+                                <b><{$it.op_content}></b> <{$it.op_time}> by <{$it.op_name}><br/>
+                            <{/foreach}>
+                            <{else}>
+                                无
+                            <{/if}>
+                        </td>
+                    </tr>
+                <{/foreach}>
+            </tbody>
+        </table>
+    </div>
+</div>
+<{include file='admin/delivery/voice_warning.html'}>

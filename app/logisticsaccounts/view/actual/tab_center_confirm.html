@@ -1,0 +1,86 @@
+<style>
+.f18{
+width:150px;
+text-align:right;
+float:right;
+padding-top:5px;
+}
+.f12{
+font-weight:bold;
+font-size:14px;
+text-align:left;
+}
+.accounted_tab tr td{
+border:1px solid #cccccc;
+}
+</style>
+<div class="large">
+<div class="ColColorOrange clearfix">
+<table>
+<tr><td><div class="span-auto" title="">
+<a>
+<{img app="desktop" src="bundle/money.gif"}>
+</a>
+<span class="f-12">包裹数:</span>
+<span class="">
+<{if $status}>
+<{$actual_status.hasmatched.count}>
+<{else}>
+<{$actual_status.all.count}>
+<{/if}>
+</span>
+</div></td><td><div class="span-auto"  title="">
+<a>
+<{img app="desktop" src="bundle/coins.gif"}>
+</a>
+<span class="f-12">账单金额:</span>
+<span class="f18"><{if $status}>
+<{$actual_status.hasmatched.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.all.total_delivery_cost_actual|default:0|cur}>
+<{/if}></span>
+</div></td><td><div class="span-auto"  title="">
+<a>
+<{img app="desktop" src="bundle/coins.gif"}>
+</a>
+<span class="f-12">记账金额:</span>
+<span class="">
+<{if $status}>
+<{$actual_status.hasmatched.total_actual_amount|default:0|cur}>
+<{else}>
+<{$actual_status.all.total_actual_amount|default:0|cur}>
+<{/if}>
+</span>
+</div></td></tr>
+<tr><td><div class="span-auto" title="">
+<a>
+<{img app="desktop" src="bundle/money.gif"}>
+</a>
+<span class="f-12">已审核数:</span>
+<span >
+<{if $status}>
+<{$actual_status.hasmatched_confirm.count|default:0}>
+<{else}>
+<{$actual_status.all_confirm.count|default:0}>
+<{/if}>
+
+</span>
+</div></td><td><div class="span-auto"  title="">
+<a>
+<{img app="desktop" src="bundle/coins.gif"}>
+</a>
+<span class="f-12">审核金额:</span>
+<span class="f18">
+<{if $status}>
+<{$actual_status.hasmatched_confirm.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.all_confirm.total_delivery_cost_actual|default:0|cur}>
+<{/if}>
+</span>
+</div></td><td></td></tr>
+
+</table>
+
+</div>
+
+</div>

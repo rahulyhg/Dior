@@ -1,0 +1,20 @@
+<services>
+  
+  <service id="extend_filter_sales_mdl_sales">
+        <class>sales_finder_extend_filter_sales</class>
+  </service> 
+    <service id="desktop_finder.sales_mdl_sales">
+        <class>sales_finder_sales</class>
+    </service>
+  
+  <service id="extend_filter_sales_mdl_aftersale">
+        <class>sales_finder_extend_filter_aftersale</class>
+  </service> 
+
+    <service id="desktop_finder.sales_mdl_aftersale">
+        <class>sales_finder_aftersale</class>
+    </service>
+<service id="data_clear">
+        <class>sales_service_data_clear</class>
+    </service>
+</services>

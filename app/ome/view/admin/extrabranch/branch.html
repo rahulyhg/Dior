@@ -1,0 +1,91 @@
+<div class="tableform">
+  <h3>仓库添加/编辑</h3>
+  <div class="division">
+    <form method="post" action="index.php?app=ome&ctl=admin_extrabranch&act=addbranch" id="form-branch">
+	<input type="hidden" value="<{$extrabranch.id}>" name="branch_id" />
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+          <tr>
+            <th><em class="c-red">*</em> 仓库名称：</th>
+			<td>
+			<{if $extrabranch.branch_id}>
+			<input type="text" value="<{$extrabranch.name}>" vtype="required" <{if $extrabranch.branch_id}>disabled<{/if}> />
+			<input type="hidden" value="<{$extrabranch.name}>" name="name" />
+			<{else}>
+			<input type="text" name="name"  value="<{$extrabranch.name}>" vtype="required"/>
+			<{/if}>
+              <{help}><{t}>仓库在系统中的中文名称标识<{/t}><{/help}> </td>
+          </tr>
+          <tr>
+            <th>地区：</th>
+            <td><{input type='region' app='ectools' name="area" value=$extrabranch.area vtype="area" }>
+			<{help}><{t}>仓库所在地区<{/t}><{/help}>
+			</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <th>联系人姓名：</th>
+            <td><input type="text" size="12" name="uname" value="<{$extrabranch.uname}>" vtype="required"/>
+              <{help}><{t}>仓库负责人的姓名<{/t}><{/help}> </td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <th>地址：</th>
+            <td colspan="2"><input type="text" name="address" value="<{$extrabranch.address}>" vtype="required"/>
+              <{help}><{t}>仓库所在城市的详细地址<{/t}><{/help}> </td>
+          </tr>
+          <tr>
+            <th>邮编：</th>
+            <td colspan="2"><input type="text" size="6" name="zip" value="<{$extrabranch.zip}>" vtype="required"/>
+			 <{help}><{t}>仓库所在地的邮政编码<{/t}><{/help}> 
+			</td>
+          </tr>
+		  <tr>
+            <th>Email</th>
+            <td colspan="2"><input type="text" size="6" name="email" value="<{$extrabranch.email}>" vtype="required"/>
+			 <{help}><{t}>仓库的Email<{/t}><{/help}> 
+			</td>
+          </tr>
+          <tr>
+            <th>电话：</th>
+            <td colspan="2"><input type="text" size="15" name="phone" value="<{$extrabranch.phone}>"/>
+              <{help}><{t}>仓库的固定电话<{/t}><{/help}> </td>
+          </tr>
+          <tr>
+            <th>手机：</th>
+            <td colspan="2"><input type="text" size="12" name="mobile" value="<{$extrabranch.mobile}>"/>
+              <{help}><{t}>仓库负责人的移动联系方式<{/t}><{/help}> </td>
+          </tr>
+          
+          <tr>
+            <th>备注：</th>
+            <td colspan="2"><textarea name="memo" rows="6" cols="80"><{$extrabranch.memo}></textarea>
+              <{help}><{t}>对仓库附加的其它说明<{/t}><{/help}> </td>
+          </tr>
+        
+        </tbody>
+      </table>
+      <div class="table-action"><{button label="提交" type="submit" name="submit" id="btn-branch"}> &nbsp;&nbsp; <{button label="关闭" onclick="javascript:void(window.close());" class="btn-secondary" type="button"}></div>
+      <{if $extrabranch.branch_id}>
+      <input type="hidden" name="branch_id" value="<{$extrabranch.branch_id}>">
+      <{/if}>
+    </form>
+  </div>
+</div>
+<script language="javascript">
+$('form-branch').store('target',{
+    onRequest:function(){
+       $('btn-branch').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn-branch').set('disabled', '');
+       }else{
+           $('btn-branch').set('disabled', 'true');
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           window.close();
+       }
+    }
+});
+</script>

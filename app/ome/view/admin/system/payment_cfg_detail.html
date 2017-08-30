@@ -1,0 +1,24 @@
+<div class="tableform">
+    <div class="division">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <td width="26%">名称</td>
+                <td width="74%" colspan="2"><{$cfg.custom_name}></td>
+            </tr>
+            <tr>
+                <td width="26%">支付类型</td>
+                <td width="74%" colspan="2"><{$cfg.pay_type}></td>
+            </tr>
+            <tr>
+                <td width="26%">关联店铺</td>
+                <td width="74%" colspan="2">
+                    <{foreach from=$cfgShop item=item}>
+                        <{$item.name}>&nbsp;
+                    <{/foreach}>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+</div>

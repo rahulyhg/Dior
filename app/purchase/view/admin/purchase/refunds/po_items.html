@@ -1,0 +1,50 @@
+<script>
+//关闭POP
+$('closeBut').addEvent('click', function(event){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+</script>
+<div class="tableform">
+<h4></h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<{if !$detail.items}>
+<tr><td colspan="7">暂无记录</td></tr>
+<{else}>
+<col style="width:40%;"></col>
+<col style="width:15%;"></col>
+<col style="width:15;"></col>
+<col style="width:15%;"></col>
+<col style="width:15%;"></col>
+<thead>
+      <tr>
+        <th>商品名称</th>
+        <th>货号</th>
+        <th>取消数量</th>
+        <th>价格</th>
+        <th>退款金额</th>
+        </tr>
+        </thead>
+      <{foreach from=$detail.items item=items}>
+      <tbody>
+      <tr>
+        <td><{$items.name}></td>
+        <td><{$items.bn}></td>
+        <td><{$items.num}></td>
+        <td><{$items.price|cur}></td>
+        <td><{$items.price*$items.num}></td>
+        </tr>
+        </tbody>
+      <{/foreach}>
+      <tr>
+         <td colspan="2">合计：</td>
+         <td><{$detail.total_num}></td>
+         <td></td>
+         <td><{$detail.total_price|cur}></td>
+      </tr>
+<{/if}>
+</table>
+</div>
+
+</div>

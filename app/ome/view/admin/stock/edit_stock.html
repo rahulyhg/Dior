@@ -1,0 +1,94 @@
+<div class="division">
+<h4>商品信息</h4>
+<form action="index.php?app=ome&ctl=admin_stock&act=edit" method="post">
+<table class="gridlist" width="100%" border="0">
+    <thead>
+        <tr>
+            <th><t>货号</t></th>
+            <th><t>商品名称</t></th>
+            <th><t>总库存量</t></th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td align="center"><{$pro_detail.bn}></td>
+            <td><{$pro_detail.name}></td>
+            <td><{$pro_detail.store}>    </td>
+            <td><a target="dialog::{width:400,height:200,title:'关联货位'}" href="index.php?ctl=admin_stock&act=change_pos&app=ome&p[0]=<{$product_id}>">关联货位</a></td>
+        </tr>
+    </tbody>
+</table>
+<input type="hidden" name="product_id" value="<{$product_id}>">
+</form>
+
+<h4>仓库信息</h4>
+<table width="100%" border="0" class="gridlist">
+    <thead>
+        <tr>
+            <th><t>仓库名称</t></th>
+            <th><t>库存量</t></th>
+            <th><t>冻结库存</t></th>
+            <th><t>在途库存</t></th>
+        </tr>
+    </thead>
+    <tbody>
+    <{foreach from=$pro_detail.branch_product item=product}>
+    <tr>
+        <td><{$product.branch_name}></td>
+        <td><{$product.store}></td>
+        <td><{$product.store_freeze}></td>
+        <td><{$product.arrive_store}></td>
+    </tr>
+    <{/foreach}>
+    </tbody>
+</table>
+
+<!--<h4>货位信息</h4>
+<form method="post" action="index.php?app=ome&ctl=admin_stock&act=dosave" id="branch_process">
+    <input type="hidden" name="do_action" id="do_action">
+    <table class="gridlist" width="100%" border="0">
+    <thead>
+        <tr>
+            <th colspan="2"><t>仓库</t></th>
+            <th width="17%"><t>货位</t></th>
+            <th width="36%">是否默认货位</th>
+            <th width="18%"><t>库存量</t></th>
+            <th width="5%">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <{foreach from=$pro_detail.items item=items}>
+        <input type="hidden" name="ckid[]" value="<{$items.pos_id}>" />
+        <input type="hidden" name="branch_id[<{$items.pos_id}>]" value="<{$items.branch_id}>">
+        <tr align="center">
+            <td width="2%"></td>
+            <td width="10%"><{$items.name}></td>
+
+            <td><{$items.store_position}></td>
+            <td><{if $items.default_pos=='true'}>是<{else}>否<{/if}></td>
+            <td><{$items.store}><input type="hidden" name="store[<{$items.pos_id}>]" value="<{$items.store}>" ></td>
+            <td><{button class="btn-primary" onclick="reset_pos({$items.pos_id},{$items.branch_id});" label="重置货位"}></td>
+        </tr>
+        <{/foreach}>
+    </tbody>
+    </table>
+    <input type="hidden" id="repos_id" name="repos_id">
+    <input type="hidden" id="rebranch_id" name="rebranch_id">
+    <input type="hidden" name="product_id" value="<{$product_id}>">
+</form>-->
+
+</div>
+
+<script>
+function save_pos(){
+   	$('do_action').value = 'save_branch';
+    $('branch_process').fireEvent('submit',{stop:$empty});
+}
+function reset_pos(pos_id,branch_id){
+   	$('do_action').value = 'reset_branch';
+    $('repos_id').value = pos_id;
+    $('rebranch_id').value = branch_id;
+    $('branch_process').fireEvent('submit',{stop:$empty});
+}
+</script>

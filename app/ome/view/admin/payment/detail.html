@@ -1,0 +1,59 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<div class="tableform">
+<table class="orderdetails_basic" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>支付单号：<{/t}></th><td><{$detail.payment_bn}></td></tr>
+<tr><th><{t}>操作员：<{/t}></th><td><{$detail.op_id}></td></tr>
+<tr><th><{t}>收款银行：<{/t}></th><td><{$detail.bank}></td></tr>
+<tr><th><{t}>备注：<{/t}></th><td><{$detail.memo}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>平台订单号：<{/t}></th><td><{$orderinfo.order_bn}></td></tr>
+<tr><th><{t}>生成时间：<{/t}></th><td><{$detail.t_begin|cdate:SDATE_FTIME}></td></tr>
+<tr><th><{t}>第三方交易号：<{/t}></th><td><{$detail.trade_no}></td></tr>
+<tr><th><{t}>支付账户：<{/t}></th><td><{$detail.pay_account}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>支付方式：<{/t}></th><td><{$detail.paymethod}></td></tr>
+<tr><th><{t}>收款方式：<{/t}></th><td><{if $detail.pay_type == 'online'}><{t}>在线支付<{/t}><{elseif $detail.pay_type == 'offline'}><{t}>线下付款<{/t}><{elseif $detail.pay_type == 'deposit'}><{t}>预存款支付<{/t}><{elseif $detail.pay_type == 'recharge'}><{t}>预存款充值<{/t}><{/if}></td></tr>
+<tr><th><{t}>付款金额：<{/t}></th><td><{$detail.money}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>货币：<{/t}></th><td><{$detail.currency}></td></tr>
+<tr><th><{t}>收款帐号：<{/t}></th><td><{$detail.account}></td></tr>
+<tr><th><{t}>付款时间：<{/t}></th><td><{$detail.t_end|cdate:SDATE_FTIME}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>

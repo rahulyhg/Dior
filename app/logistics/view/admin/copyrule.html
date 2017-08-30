@@ -1,0 +1,69 @@
+<div class="division" id='support-shops'>
+    <form id='copy_rule' method='post' action="index.php?app=logistics&ctl=admin_rule&act=copyRule&finder_id=<{$finder_id}>">
+        <div class="tableform">
+           <table width="100%" border="0">
+  <tr>
+    <th>选择仓库:</th>
+    <td>
+                <div class='span-auto'>
+                <select name='branch'>
+                <{foreach from=$branch_list item=item }>
+                <option value='<{$item.branch_id}>'><{$item.name}></option>
+                <{/foreach}>
+                </select>
+                    
+                </div>
+            </td>
+  </tr>
+  
+</table>
+<input type='hidden' name="branch_id" value='<{$branch_id}>'>
+<input type='hidden' name='oper' value='edit'>
+</div>
+        </div>
+
+<div class="division">
+<h4><{t}>注意:<{/t}></h4>
+<h5>
+1.复用规则后,该仓库的物流费用计算,将与父级的物流费用计算一致<br><br>
+2.父级仓库发生修改，该仓库将进行相同修改<br><br>
+3.子级仓库规则不能作为父级仓库规则再被复用<br></h5>
+ </div> 
+   <div class="table-action">
+            <{button label="确定" type="button" id='copy-rule'}>
+        </div>
+
+  </form>
+
+
+<script>
+$('copy-rule').addEvent('click',function(e){
+
+    var form=this.getParent('form');
+    var _this=this;
+
+    $('copy_rule').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    console.info(json);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+
+                        _this.getParent('.dialog').retrieve('instance').close();
+                        window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        $('copy_rule').fireEvent('submit',e);
+
+
+
+});
+</script>

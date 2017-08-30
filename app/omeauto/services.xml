@@ -1,0 +1,21 @@
+<services> 
+    <service id="desktop_finder.omeauto_mdl_autodispatch">
+        <class>omeauto_finder_autodispatch</class>
+    </service>
+    
+    <service id="desktop_finder.omeauto_mdl_autoconfirm">
+        <class>omeauto_finder_autoconfirm</class>
+    </service>
+
+    <service id="desktop_finder.omeauto_mdl_order_type">
+        <class>omeauto_finder_order_type</class>
+    </service>
+
+    <service id="desktop_finder.omeauto_mdl_branch">
+        <class>omeauto_finder_branch</class>
+    </service>
+
+     <service id="system_setting">
+        <class>omeauto_system_setting</class>
+    </service>
+</services>

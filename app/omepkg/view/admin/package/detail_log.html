@@ -1,0 +1,25 @@
+<div class="tableform">
+<h4>修改日志</h4>
+<div class="division">
+<table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+        <thead>
+        <tr>
+            <th>操作时间</th>
+            <th>操作人</th>
+            <th>行为</th>
+          <th>行为</th>
+        </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$pkglog item=his}>
+        <tr>
+            <td><{$his.operate_time}></td>
+            <td><{$his.op_name}></td>
+            <td><{$his.operation}></td>
+            <td><a href='index.php?app=omepkg&ctl=admin_pkg&act=show_history&p[0]=<{$his.log_id}>' target="_blank">查看快照</a></td>
+        </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>
+</div>

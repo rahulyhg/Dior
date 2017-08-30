@@ -1,0 +1,71 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+
+<style>
+    .finder-detail{
+        background:#eee;
+        padding:5px;
+        margin:5px 0;
+        border:1px solid #bbb;
+    }
+    .finder-detail td{
+        background:#fff;
+
+    }
+    .gridlist tr.waring, .gridlist td.waring {
+        background:none repeat scroll 0 0 #9999ff;
+        color:#333333;
+    }
+    .gridlist tr.masterorder, .gridlist tr.masterorder td, .gridlist td.masterorder {
+        color: #000000;
+        font-weight: 700;
+        font-size : 12px;
+        background:#f0f6fe
+    }
+    .gridlist tr.memberorder, .gridlist tr.memberorder td, .gridlist td.memberorder tr.addressorder, .gridlist tr.addressorder td, .gridlist td.addressorder {
+        background: none repeat scroll 0 0 #e2effe;
+        color: #000000;
+        font-weight: 400;
+        font-size : 12px;
+    }
+
+</style>
+<form class="tableform" style="background:#fff; border:0 none;" method="post" action="index.php?app=ome&ctl=admin_order&act=finish_combine" id="order_split">
+    <input type="hidden" name="order_id" id="order_id" value="<{$order_id}>"/>
+    <input type="hidden" name="do_action" id="do_action" value=""/>
+    <input type="text" style="display:none" />
+	<div id="nosplitarea">
+		<h3 style="border-bottom:none;">拆单配置日志列表<b style="color:red;">(显示最近200条)</b></h3>
+        <div class="finder-detail">
+            <div id="present">
+                <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                  <thead>
+                    <tr>
+                      <th style="width:20%;">操作日期</th>
+                      <th>配置内容</th>
+                      <th style="width:15%;">操作员</th>
+                      <th style="width:15%;">IP</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dataNode">
+					<{if $data}>
+                        <{foreach from=$data key=key item=val}>
+                        <tr <{if $key == 0}>style="color:red;"<{/if}> >
+                          <td height="28"><{$val.operate_time|cdate}></td>
+                          <td align="left" style="text-align:left; padding-left:10px;"><{$val.memo}></td>
+                          <td><{$val.op_name}></td>
+                          <td><{$val.ip}></td>
+                        </tr>
+                        <{/foreach}>
+					<{else}>
+                        <tr>
+                          <td height="50" colspan="4" align="center">没有开启拆单日志。。。</td>
+                        </tr>
+					<{/if}>
+                  </tbody>
+                </table>
+            </div>
+        </div>
+	</div>
+</form>

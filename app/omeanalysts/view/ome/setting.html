@@ -1,0 +1,48 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+<div class="tableform">
+<{tabber}>
+<{tab name="报表配置"}>
+<form action="index.php?app=omeanalysts&ctl=ome_setting&act=save" method="post" class="tableform">
+    <div class="division" style="border: 1px solid #D5DFE3; margin-top:10px;">
+        <h3 style="color: #305C89;"><{t}>时间配置<{/t}></h3>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <th align="right"><{t}>一周的时间设置:<{/t}></th>
+                <td>从<select name="week">
+                    <{foreach from=$week key=key item=item}>
+                        <option value="<{$key}>" <{if $setData.setting.week == $key}>selected="selected"<{/if}>><{$item}></option>
+                    <{/foreach}>
+                </select>开始</td>
+            </tr>
+            <tr>
+                <th align="right"><{t}>时间快捷方式设置:<{/t}></th>
+                <td>
+                    <{foreach from=$time_shortcut key=key item=item}>
+                        <input type="checkbox" name="time_shortcut[<{$key}>]" value="<{$key+1}>" <{if $setData.setting.time_shortcut[$key] == $key+1}>checked="checked"<{/if}>><{$item}></option>
+                    <{/foreach}>
+            </tr>
+        </table>
+    </div>
+    <div class="division" style="border: 1px solid #D5DFE3; margin-top:10px; margin-bottom:20px;">
+        <h3 style="color: #305C89;"><{t}>设置报表统计时间<{/t}></h3>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <th align="right"><{t}>统计时间:<{/t}></th>
+                <td>
+                    <input type="radio" name="order_status" value='createorder' <{if $setData.filter.order_status == 'createorder'}>checked="checked"<{/if}>>创建时间
+                    <input type="radio" name="order_status" value='confirmed' <{if $setData.filter.order_status == 'confirmed'}>checked="checked"<{/if}>>确认时间
+                    <input type="radio" name="order_status" value='pay' <{if $setData.filter.order_status == 'pay'}>checked="checked"<{/if}>>付款时间
+                    <input type="radio" name="order_status" value='ship' <{if $setData.filter.order_status == 'ship'}>checked="checked"<{/if}>>发货时间</td>
+            </tr>
+        </table>
+        <h4><span style="font:12px normal;color:#FF0000;">(修改配置影响以后图表数据，之前图表数据不作改变) 目前只影响货品销售情况、商品销售情况和订单销售情况</span></h4>
+    </div>
+    <div class="table-action">
+        <{button type="submit" label="确定"}>
+    </div>
+</form>
+<{/tab}>
+<{/tabber}>
+</div>

@@ -1,0 +1,48 @@
+<form method='post' action='' id='select-diff-order-form'>
+    <input type='hidden' name='return_order_id' value="<{$order_id}>">
+    <input type='hidden' name='page' value='<{$env.get.p.1|default:1}>'>
+    <div class='tableform'>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>订单号</th>
+                    <th>订单总额</th>
+                    <th>下单时间</th>
+                    <th>付款状态</th>
+                    <th>收货状态</th>
+                    <th>商品信息</th>
+                    <th>会员名</th>
+                    <th>来源店铺</th>
+                </tr>
+            </thead>
+            <tbody>
+            <{if $diffOrders}>
+                <{foreach from=$diffOrders item=item key=key}>
+                    <tr>
+                        <td><input type='radio' name='order_id' value="<{$item.order_id}>" vtype='required'></td>
+                        <td><{$item.order_bn}></td>
+                        <td><{$item.total_amount|amount}></td>
+                        <td><{$item.createtime|cdate:FDATE_FTIME}></td>
+                        <td><{$item.pay_status}></td>
+                        <td><{$item.ship_status}></td>
+                        <td><div rel='<{$item.tostr}>' onmouseover='showGoods(event);' ><{$item.tostr|cut:10}></div></td>
+                        <td><{$item.uname}></td>
+                        <td><{$item.shop_name}></td>
+                    </tr>
+                <{/foreach}>
+            <{else}>
+                <tr>
+                    <td colspan='9'><div class='note'>暂无关联订单</div></td>
+                </tr>
+            <{/if}>
+            </tbody>
+        </table>
+    </div>
+    <{$pager}>
+    <div class='table-action'>
+        <{button label='下一步' id='nextbtn' onclick='nextstep();'}>
+        <{button label='取消' id='cancelbtn' onclick='cancel(this);'}>
+    </div>
+</form>
+

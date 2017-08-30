@@ -1,0 +1,437 @@
+<style>
+#present .seemingly-orders .hightshop{
+background:#4b88cf;color:#ffffff;font-weight:700;
+}
+#present .seemingly-orders .hightship_name{
+background:#4b88cf;color:#ffffff;font-weight:700;
+}
+#present .seemingly-orders .hightaddress{
+background:#5ab6d8;color:#ffffff;font-weight:700;
+}
+#present .seemingly-orders .mastOrderAddress td{
+background:#9ec9fb;font-weight:700;
+}
+</style>
+
+<div id="present">
+    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <thead>
+            <tr>
+                <th style="width:10%;nowarp:true;background:#9ec9fb;">选择</th>
+                <th style="width:7%;background:#9ec9fb;">订单号</th>
+                <th style="width:5%;background:#9ec9fb;">付款状态</th>
+                <th style="width:9%;background:#9ec9fb;">下单至今</th>
+                <th style="width:20%;background:#9ec9fb;">客服备注</th>
+                <th style="width:15%;background:#9ec9fb;">客户留言</th>
+                <th style="width:5%;background:#9ec9fb;">配送方式</th>
+                <th style="width:5%;background:#9ec9fb;">旗标</th>
+                <th style="width:5%;background:#9ec9fb;">订单金额</th>
+                <th style="width:5%;background:#9ec9fb;">支付金额</th>
+                <th style="width:5%;background:#9ec9fb;">配送费用</th>
+                <th style="width:16%;background:#9ec9fb;">操作</th>
+            </tr>
+        </thead>
+        <col></col>
+        <tbody id="orderNode">
+            <{foreach from=$combineOrders item=order key=orderId}>
+            <!-- 可合并订单 -->
+            <{if $order.isCombine }>
+            <tr <{if $orderId == $order_id}> class='masterorder' <{ elseif $order.process_status=="cancel" || $order.pause=="true" || $order.status<>"active" || $order.abnormal=='true' || $order.is_fail=='true' }>class="disabled"<{else}><{if $order.pay_status<>1 && $order.pay_status<>4 && $order.pay_status<>5}>class="waring"<{/if}><{/if}>>
+                <td >
+                    
+                    <div style="float:right;">
+                        <{if $order.is_fail == 'true'}>
+                            <a class="" style="margin:1px;padding:1px;background-color:#FF0000;color:#ffffff;" rel="此订单在失败订单中，请修复" onmouseover="Ex_Loader('finder',function(){bindFinderColTip(event);});" title="此订单在失败订单中，请修复">败</a>
+                        <{elseif $order.abnormal == 'true'}>
+                            <a class="" style="margin:1px;padding:1px;background-color:#990000;color:#ffffff;" rel="此订单属异常订单，请解决" onmouseover="Ex_Loader('finder',function(){bindFinderColTip(event);});" title="此订单属异常订单，请解决">异</a>
+                         <{elseif $order.has_tbgifts == 1}>
+                            <a class="" style="margin:1px;padding:1px;background-color:red;color:#ffffff;" rel="此订单有优惠赠品，请添加" onmouseover="Ex_Loader('finder',function(){bindFinderColTip(event);});" title="此订单有优惠赠品，请添加">赠</a>
+                        <{elseif ($order.group_id == null && $order.group_id==null)}>
+                            <a class="" style="margin:1px;padding:1px;background-color:#CC00EE;color:#ffffff;" rel="此订单还未获取" onmouseover="Ex_Loader('finder',function(){bindFinderColTip(event);});" title="此订单还未获取">缓</a>
+                        <{/if}>
+
+                        <input style='margin:0px 5px 0px 10px;' type="checkbox"  name="orderIds[]" id="orderIds" value="<{$order.order_id}>" <{if $order.has_tbgifts == 1}>has_gift="1"<{/if}> <{if $orderId != $order_id }><{if $order.has_tbgifts == 1}>onclick='displayGiftNote();reWriteProductNode();'<{else}>onclick='reWriteProductNode();'<{/if}><{/if}> <{if $order.derviveryId >0  || ($order.process_status=="cancel" || $order.pause=="true" || $order.status<>"active" || $order.abnormal=='true' || $order.is_fail=='true') || ( $order.pay_status<>1 && $order.pay_status<>4 && $order.pay_status<>5 && $order.is_cod=='false')}>disabled<{else}> checked<{/if}> <{if $orderId == $order_id || $order.derviveryId >0 }> onchange="this.checked = ! this.checked;" <{/if}>/>
+                        
+                        <span id='extendBtn<{$order.order_id}>' style="font-size:16px;font-weight: 700;padding-right: 15px;cursor: pointer;color: blue;" onclick="displayDetail(this);">+</span>
+
+
+                    </div>
+
+                </td>
+
+                <td class="orderbn"><{$order.order_bn}></td>
+                
+                <td class="paystatus"><{if $order.pay_status ==1 || $order.pay_status==5 || $order.pay_status==4}>已支付<{elseif $order.pay_status==6 || $order.pay_status==7}>退款中<{else}><{if $order.is_cod=='false'}><span style="font-weight: 700;color: red;">未支付</span><{else}><span style="font-weight: 700;font-size: 14px; color: red;">货到付款</span><{/if}><{/if}></td>
+                
+                <td class="difftime"><{$order.difftime}></td>
+                <td class="memo">
+                    <div id="mark_<{$orderId}>" title="<{$order.mark_text}>" style="text-align:left;height:22px;overflow:hidden;width:100%;color: #0000ff;font-size: 14px;" <{if $order.mark_text}>onclick="copy_txt('mark_<{$orderId}>');"<{/if}>><{$order.mark_text}></div>
+                    <div id="mark_<{$orderId}>_input" style="display:none"><textarea name="market_copy" id="mark_<{$orderId}>_ci" cols="30" rows="4" readonly><{$order.mark_text}></textarea><br/><span style="font-weight: 700;color:red;">使用CTRL+C和CTRL+V复制</span><{button type="button" label="完成" onClick="copy_finsh('mark_{$orderId}');" }></div>
+                </td>
+                <td class="mark">
+                    <div id="memo_<{$orderId}>" title="<{$order.custom_mark}>" style="text-align:left;height:22px;overflow:hidden;width:100%;color: #0000ff;font-size: 14px;" <{if $order.custom_mark}>onclick="copy_txt('memo_<{$orderId}>')"<{/if}>><{$order.custom_mark}></div>
+                    <div id="memo_<{$orderId}>_input" style="display:none"><textarea name="memo_copy" id="memo_<{$orderId}>_ci" cols="30" rows="4" readonly><{$order.custom_mark}></textarea><br/><span style="font-weight: 700;color:red;">使用CTRL+C和CTRL+V复制</span><{button type="button" label="完成" onClick="copy_finsh('memo_{$orderId}');" }></div>
+                </td>
+                <td class="shipping"><{$order.shipping}></td>
+                <td class="marktype">
+                <{if $order.mark_type}>
+                <img height="20" width="20" src="<{$base_dir}>/app/ome/statics/remark_icons/<{$order.mark_type}>.gif">
+                <{/if}>
+                </td>
+                <td class="tamount"><{if $order.total_amount == 0}>-<{else}><{$order.total_amount}><{/if}></td>
+                <td class="amount"><{if $order.payed == 0}>-<{else}><{$order.payed}><{/if}></td>
+                <td class="cost_freight"><{$order.cost_freight}></td>
+                <td class='operation'>
+                    <{if $order.derviveryId >0 }>
+                        <span style="color:red;font-weight:700;">已生成发货单</span>
+                    <{else}>
+                        <{if $order.process_status != "cancel" }>
+                            <{if $order.abnormal !='true' }>        
+                                <{if $order.ship_status == 0 || $order.ship_status == 2}> 
+                                    <{ if $order.pause == 'true' }> 
+                                        <a href='javascript:void(0);' onclick="doDetailAction(5, <{$order.order_id}>);">恢复</a>
+                                    <{else}>
+                                        <a href='javascript:void(0);' onclick="doDetailAction(4, <{$order.order_id}>);">暂停</a>
+                                    <{/if}>   
+                                    <{if $order.flag_edit eq 'true' || $order.order_source eq 'taofenxiao'}>
+                                    <a href="javascript:void(0);" onclick="<{ if $order.pause == 'true' }>update('<{$order.order_id}>');<{else}>alert('请暂停后再进行编辑操作')<{/if}>" >编辑</a>
+                                    <{/if}>
+                                    <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_order&act=do_abnormal&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>',{width:700,height:300,title:'订单异常',onClose:function(){window.location.reload();}}); ">异常</a>
+                                    <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_order&act=do_cancel&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>',{width:700,height:300,title:'订单取消',onClose:function(){window.location.reload();}}); ">取消</a>
+                                <{/if}>
+                            <{ else }>
+                                <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_order&act=do_abnormal&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>',{width:700,height:300,title:'订单异常',onClose:function(){window.location.reload();}}); ">异常</a>
+                            <{ /if }>
+                        <{/if}>
+                    <{/if}>
+                </td>
+            </tr>
+            <tr id="detail<{$order.order_id}>" style='display:none'>
+                <td style="background:#bbb;" colspan="11">
+                    <div style="padding:3px;">
+                    <table  class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                        <thead>
+                        <tr>
+                            <th style="width:12%;">货号</th>
+                            <th>商品名称</th>
+                            <th style="width:15%;">规格</th>
+                            <th style="width:8%;">价格</th>
+                            <th style="width:8%;">小计</th>
+                            <th style="width:6%;">购买数量</th>
+                            <th style="width:6%;">发货数量</th>
+                            <th style="width:6%;">已退货量</th>
+                        </tr>
+                        </thead>
+                        <tbody id="detail<{$order.order_id}>_Node">
+                            <{assign var="index" value=0}>
+                            <{foreach from=$combineOrders[$order.order_id]['items'] item=objs key=obj_type}>
+                            <{include file="admin/order/confirm/{$obj_type}_confirm.html"}>
+                            <{/foreach}>
+                        </tbody>
+                    </table>
+                    <{ if count($order.tbgifts) >0}>
+                    <br/>
+                    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                        <thead>
+                        <tr>
+                            <th>赠品名称</th>
+                            <th style="width:6%;">需送数量</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <{foreach from=$order.tbgifts item=tbgift}>
+                            <th><{$tbgift.name}></th>
+                            <th><{$tbgift.nums}></th>
+                            <{/foreach}>
+                        </tbody>
+                    </table>
+                    <{/if}>
+                    </div>   
+                </td>
+            </tr>
+            <{/if}>
+            <{/foreach}>
+
+        </tbody>
+        
+ 
+        <tbody class='master_order_match seemingly-orders'>
+             <tr class="mastOrderAddress"> 
+                <td>疑可合订单</td>
+                <td colspan="2" style="text-align:left;">
+                    <{$shopInfo.name}>
+                </td>
+                <td>
+                    <{$member.account.uname|default:'无用户'}>
+                </td>
+                <td colspan="3" style="text-align:left;">
+                    <{$curorder.consignee.name}>&nbsp;&nbsp;<{$curorder.consignee.area|region}> <{$curorder.consignee.addr}>&nbsp;&nbsp;(<{$curorder.consignee.mobile}>)
+                </td>
+                <td colspan="5" style="font-weight:bold;">主单收货地址</td>
+            </tr>
+        </tbody>
+
+        <{foreach from=$combineOrders item=order key=orderId}>
+            <{if !$order.isCombine}>
+                <{if ($combine_addressconf_mobile==0 && $curorder.shop_id == $order.shop_id) && ($curorder.consignee.area != $order.consignee.area || $curorder.consignee.addr != $order.consignee.addr || $curorder.consignee.name != $order.consignee.name || $curorder.consignee.mobile != $order.consignee.mobile)}>
+
+                    <{assign var="sameMemOrder" value=true}>
+
+                <{elseif ($combine_addressconf_mobile==1 && $curorder.shop_id == $order.shop_id) && ($curorder.consignee.area != $order.consignee.area || $curorder.consignee.addr != $order.consignee.addr || $curorder.consignee.name != $order.consignee.name )}>
+
+                    <{assign var="sameMemOrder" value=true}>
+
+                <{else}>           
+
+                    <{assign var="sameAddrOrder" value=true}>
+
+                <{/if}>
+                <tbody class='seemingly-orders <{if $sameMemOrder }>memberorder<{else}>addressorder<{/if}>'>
+                <tr>
+                <td rowspan="2">
+                <div style="float:right">
+                    <{if $sameMemOrder }>
+                        <a class="" style="width:18px;height:16px;background:#cc00ff;color:#ffffff" rel="与主订单收货地址不相同"  title="与主订单收货地址不相同"> 同用户 </a>
+                    <{else}>
+                        <a class="" style="width:18px;height:16px;padding:2px;background:#ff00ff;color:#ffffff" rel="与主订单收货地址相同" title="与主订单收货地址相同">同址</a>
+                    <{/if}>
+
+                    <input style='margin:0px 0px 0px 10px;' type="checkbox"  name="orderIds[]" id="orderIds" value="<{$order.order_id}>" class="hightOrder" <{if $sameMemOrder}> has_address="1"
+                   <{else}>
+                        <{if $curorder.shop_id != $order.shop_id}>
+                        has_shopname="1"
+                        <{/if}>
+                        <{if $curorder.member_id != $order.member_id}>
+                        has_member_id="1"
+                        <{/if}>
+                        <{if $curorder.consignee.mobile!=$order.consignee.mobile}>
+                        has_mobile="1"
+                        <{/if}>
+                    <{/if}> 
+
+                    <{if $order.has_tbgifts == 1}>has_gift="1"<{/if}> <{if $orderId != $order_id }><{if $order.has_tbgifts == 1}>onclick='seemingly_hight(this);displayGiftNote();reWriteProductNode();'<{else}>onclick='seemingly_hight(this);reWriteProductNode();'<{/if}><{/if}> <{if ($order.process_status=="cancel" || $order.pause=="true" || $order.status<>"active" || $order.abnormal=='true' || $order.is_fail=='true') || ( $order.pay_status<>1 && $order.pay_status<>4 && $order.pay_status<>5 && $order.is_cod=='false')}>disabled<{/if}> <{if $orderId == $order_id }> onchange="this.checked = ! this.checked;" <{/if}>/>
+                           &nbsp; <span id='extendBtn<{$order.order_id}>' style="font-size:16px;font-weight: 700;padding-right: 15px;cursor: pointer;color: blue;" onclick="displayDetail(this);">+</span>
+                           </div>
+                </td>
+                <td class="orderbn"><{$order.order_bn}></td>
+                <td class="paystatus"><{if $order.pay_status ==1 || $order.pay_status==5 || $order.pay_status==4}>已支付<{else}><{if $order.is_cod=='false'}><span style="font-weight: 700;color: red;">未支付</span><{else}>货到付款<{/if}><{/if}></td>
+                <td class="difftime"><{$order.difftime}></td>
+                <td class="memo"><div title="<{$order.mark_text}>" style="text-align:left;height:22px;overflow:hidden;width:100%;" ><{$order.mark_text}></div></td>
+                <td class="mark"><div title="<{$order.custom_mark}>" style="text-align:left;height:22px;overflow:hidden;width:100%;" ><{$order.custom_mark}></div></td>
+                <td class="shipping"><{$order.shipping}></td>
+                <td class="marktype" rowspan="2">
+                <{if $order.mark_type}>
+                <img height="20" width="20" src="<{$base_dir}>/app/ome/statics/remark_icons/<{$order.mark_type}>.gif">
+                <{/if}>
+                </td>
+                <td class="tamount" rowspan="2"><{if $order.total_amount == 0}>-<{else}><{$order.total_amount}><{/if}></td>
+                <td class="amount" rowspan="2"><{if $order.payed == 0}>-<{else}><{$order.payed}><{/if}></td>
+                <td class="cost_freight" rowspan="2"><{$order.cost_freight}></td>
+                <td class='operation' rowspan="2">
+                    <{if $order.process_status != "cancel" }>
+                        <{if $order.abnormal !='true' }>        
+                            <{if $order.ship_status == 0}>
+                                <{if $order.pause == 'true' }> 
+                                    <a href='javascript:void(0);' onclick="doDetailAction(5, <{$order.order_id}>);">恢复</a>
+                                <{else}>
+                                    <a href='javascript:void(0);' onclick="doDetailAction(4, <{$order.order_id}>);">暂停</a>
+                                <{/if}>
+                                <{if $order.flag_edit eq 'true' || $order.order_source eq 'taofenxiao'}>
+                                <a href="javascript:void(0);" onclick="<{ if $order.pause == 'true' }>javascript:window.location='index.php?app=ome&ctl=admin_order&act=view_edit&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>&filter=<{$filter}>'<{else}>alert('请暂停后再进行编辑操作')<{/if}>" >编辑</a>
+                                <{/if}>
+                                <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_order&act=do_abnormal&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>',{width:700,height:300,title:'订单异常',onClose:function(){window.location.reload();}}); ">异常</a>
+                                <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_order&act=do_cancel&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>',{width:700,height:300,title:'订单取消',onClose:function(){window.location.reload();}}); ">取消</a>
+                            <{/if}>
+                        <{else}>
+                        <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_order&act=do_abnormal&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$finder_id}>',{width:700,height:300,title:'订单异常',onClose:function(){window.location.reload();}}); ">异常</a>
+                        <{/if}>
+                    <{/if}>
+                   
+                </td>
+
+            </tr>
+            <tr>
+                <td  colspan=2 id="hightshop_name<{$order.order_id}>" style="text-align:left;">
+                <{$order.shop_name}>
+                  
+                    </td><td id="hightship_name<{$order.order_id}>">
+               
+                  <{$order.member_name}>
+                    </td><td  colspan="3" id="hightaddress<{$order.order_id}>" style="text-align:left;">
+               <{$order.consignee.name}>&nbsp;&nbsp;<{$order.consignee.area|region}> <{$order.consignee.addr}>&nbsp;&nbsp;<span id="highmobile<{$order.order_id}>">(<{$order.consignee.mobile}>)</span>
+                  
+                    </td>
+            </tr>
+            <tr id="detail<{$order.order_id}>" style='display:none'>
+                <td colspan="11">
+                    <div id="present" style="padding-top: 10px;padding-bottom: 10px;padding-left: 5px;padding-right: 5px;">
+                    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                        <thead>
+                        <tr>
+                            <th style="width:12%;">货号</th>
+                            <th>商品名称</th>
+                            <th style="width:15%;">规格</th>
+                            <th style="width:8%;">价格</th>
+                            <th style="width:8%;">小计</th>
+                            <th style="width:6%;">购买数量</th>
+                            <th style="width:6%;">发货数量</th>
+                            <th style="width:6%;">已退货量</th>
+                        </tr>
+                        </thead>
+                        <tbody id="detail<{$order.order_id}>_Node">
+                            <{assign var="index" value=0}>
+                            <{foreach from=$combineOrders[$order.order_id]['items'] item=objs key=obj_type}>
+                                <{include file="admin/order/confirm/{$obj_type}_confirm.html"}>
+                            <{/foreach}>
+                        </tbody>
+                    </table>
+                    <{ if count($order.tbgifts) >0}>
+                    <br/>
+                    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                        <thead>
+                        <tr>
+                            <th>赠品名称</th>
+                            <th style="width:6%;">需送数量</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <{foreach from=$order.tbgifts item=tbgift}>
+                            <th><{$tbgift.name}></th>
+                            <th><{$tbgift.nums}></th>
+                            <{/foreach}>
+                        </tbody>
+                    </table>
+                    <{/if}>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+            <{/if}>
+        <{/foreach}> 
+    </table>
+</div>
+
+<table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+    <tbody>
+        <tr>
+            <td style="width:8%;">选择快递公司</td>
+            <td style="width:12%;nowarp:true;"><div id="c_corpList"><select name="logi_id" id="logi_id"></select></div></td>
+            <td <{if $arrive_conf=='0'}>style="display:none"<{/if}>>是否可达:</td><td <{if $arrive_conf=='0'}>style="display:none"<{/if}>><div id="arrived_info" style="font-weight:bold;color:red"></div></td>
+            <td>商品总重量:</td><td><span id="order_weight">
+            <{if $weight=='0'}>商品未设置重量<br>默认使用首重
+            <{else}>
+            <{$weight}><{/if}> g</span></td>
+            <td style="width:10%;">填写快递单备注</td>
+            <td style="width:20%;"><textarea id="delivery_remark" name="delivery_remark" style="width:99%; height:30px;"></textarea></td>
+            <td style="width:10%;"><div style="margin-left:5px;" align="left">此项可在快递单中打印</div></td>
+            <td style="width:23%;"><div style="margin-left:5px;" align="left">根据您的设置规则，<{if $recommend_branch}><span style="color:red;" id="recommend_branch">推荐用仓库："<{$recommend_branch.name}>"发货</span><{else}><span style="color:red;" id="recommend_branch">没有推荐发货仓库，请手动确认</span><{/if}></div></td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    function update(order_id){
+          var finder_id = '<{$finder_id}>';
+          new Request({
+             url:'index.php?app=ome&ctl=admin_order&act=update_type',
+             method:'get',
+             onComplete:function (rs){
+              console.info(rs);
+                var rs = JSON.decode(rs);
+                if (rs.data.edit_type == 'local')
+                {
+                    _open( 'index.php?app=ome&ctl=admin_order&act=view_edit&p[0]='+order_id+'&finder_id='+finder_id+'&filter=<{$filter}>');
+                }else{
+                    _open( 'index.php?app=ome&ctl=admin_order&act=update_iframe&p[0]='+order_id+'&finder_id='+finder_id);
+                }            
+             }
+          }).send('p[0]='+order_id);
+    }
+
+    $E('#present .master_order_match').hide();
+    var sameAddOrder = $ES('#present .addressorder');
+    if ($defined(sameAddOrder) && sameAddOrder.length > 0) {
+        var sameAddOrderTitle = '与主单同店铺同用户订单 <font color="#fffd54">(共'+sameAddOrder.length+'单)</font>';
+        var sameAddOrderBtn = $('addressOrderTitle');
+        sameAddOrderBtn.setHTML('查看' + sameAddOrderTitle);
+        sameAddOrderBtn.show();
+        sameAddOrder.hide();
+        sameAddOrderBtn.addEvent('click',function(){
+            if (this.hasClass('active')){
+                sameAddOrder.hide();
+                this.removeClass('active');
+                sameAddOrderBtn.setHTML('查看' + sameAddOrderTitle);
+            } else {
+                sameAddOrder.show();
+                this.addClass('active');
+                sameAddOrderBtn.setHTML('隐藏' + sameAddOrderTitle);
+            }
+
+            if ($('memberOrderTitle').hasClass('active') || $('addressOrderTitle').hasClass('active')) {
+                $E('#present .master_order_match').show();
+            } else {
+                $E('#present .master_order_match').hide();
+            };
+        });
+    };
+
+    var sameMemOrder = $ES('#present .memberorder');
+    if ($defined(sameMemOrder) && sameMemOrder.length > 0) {
+        var sameMemOrderTitle = '与主单同店铺同用户订单 <font color="#dd1d1d">(共'+sameMemOrder.length+'单)</font>';
+        var sameMemOrderBtn = $('memberOrderTitle');
+        sameMemOrderBtn.setHTML('查看' + sameMemOrderTitle);
+        sameMemOrderBtn.show();
+        sameMemOrder.hide();
+        sameMemOrderBtn.addEvent('click',function(){
+            if (this.hasClass('active')){
+                sameMemOrder.hide();
+                this.removeClass('active');
+                sameMemOrderBtn.setHTML('查看' + sameMemOrderTitle);
+            } else {
+                sameMemOrder.show();
+                this.addClass('active');
+                sameMemOrderBtn.setHTML('隐藏' + sameMemOrderTitle);
+            }
+            
+            if ($('memberOrderTitle').hasClass('active') || $('addressOrderTitle').hasClass('active')) {
+                $E('#present .master_order_match').show();
+            }else{
+                $E('#present .master_order_match').hide();
+            };
+        });
+
+    };
+
+    function copy_txt(name) {
+         var idInput = name + '_input';
+        $(name).style.display = 'none';
+        $(idInput).style.display = '';
+        $(name + '_ci').value = $(name).title;
+    }
+
+    function copy_finsh(name) {
+        var idInput = name + '_input';
+        $(name).style.display = '';
+        $(idInput).style.display = 'none';
+    }
+
+    function seemingly_hight (_this) {
+        var order_id = _this.value;
+        var has_shopname = _this.get('has_shopname');
+        var has_member_id = _this.get('has_member_id');
+        var has_address = _this.get('has_address');
+        var has_mobile = _this.get('has_mobile');
+        if(_this.checked==true){
+            has_mobile==1 ? $('highmobile'+order_id).addClass('hightshop'): '';
+            has_shopname==1 ? $('hightshop_name'+order_id).addClass('hightshop'): '';
+            has_member_id==1 ? $('hightship_name'+order_id).addClass('hightship_name'): '';
+            has_address==1 ? $('hightaddress'+order_id).addClass('hightaddress') : '';
+        }else{
+            has_mobile==1 ? $('highmobile'+order_id).removeClass('hightshop'): '';
+            has_shopname==1 ? $('hightshop_name'+order_id).removeClass('hightshop'): '';
+            has_member_id==1 ? $('hightship_name'+order_id).removeClass('hightship_name') : '';
+            has_address==1 ? $('hightaddress'+order_id).removeClass('hightaddress') : '';
+        }
+    }
+
+</script>

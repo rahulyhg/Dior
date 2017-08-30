@@ -1,0 +1,459 @@
+<div id="pkg_list" <{if empty($conf.objs)}> style="display:none" <{/if}> >
+  <input type="hidden" name="objtype[]" value="pkg"/>
+  <h5 style="text-align:center;">捆绑商品</h5>
+  
+<{if empty($delivery_list)}>
+  <table class="pkg gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+            <th>货号</th>
+            <th>商品名称</th>
+            <th>规格</th>
+            <th>购买数量</th>
+            <th>商品单价</th>
+            <th>优惠金额</th>
+            <th>销售价格</th>
+            <th>操作</th>
+        </tr>
+     </thead>
+     <tbody>
+        <{foreach from=$conf.objs item=obj}>
+        <{foreach from=$obj.order_items item=item}>
+        <{if $item.delete == 'true'}>
+        <{assign var='pkg_del' value="true"}>
+        <{else}>
+        <{assign var='pkg_del' value="false"}>
+        <{/if}>
+        <{/foreach}>
+        <tr class="bindtitle" pkg-type="pkg" g-id="<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" <{if $pkg_del=='true'}>style="background-color: #D8D8D8;" pkg-del='b'<{else}> pkg-del="a"<{/if}>>
+          <td class="goods_bn"></td>
+          <td class="goods_name"><{$obj.name}></td>
+          <td class="goods_addon">捆绑商品</td>
+          <td class="goods_num"><input type="text" id="pkgnum_<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" aid="<{$obj.goods_id}>" vtype="required&&unsignedint" atype="num_obj" value="<{$obj.quantity}>" name="pkg[num][<{$obj.obj_id}>]" size="4" <{if $pkg_del == 'true'}>disabled="true"<{/if}>  onchange="changetotalpkg(this);total();" /></td>
+          <td class="goods_price"><input type="text" id="pkgpr_<{$obj.goods_id}>" atype="price_obj" aid="<{$obj.goods_id}>" value="<{$obj.price}>" name="pkg[price][<{$obj.obj_id}>]" size="8" <{if $pkg_del == 'true'}>disabled="true"<{/if}> onchange="changetotalpkg(this);total();" /></td>
+
+          <td class="goods_num"><input type="text" id="pkgpmtpr_<{$obj.goods_id}>" pkg-id="" aid="<{$obj.goods_id}>" atype="pmt_price_obj" value="<{$obj.pmt_price|default:0}>" vtype="unsigned" class="goods_pmt_price"  name="pkg[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $pkg_del == 'true'}>disabled="true"<{/if}> onchange="changetotalpkg(this);total();" /></td>
+          <td class="goods_num"><input type="text" class="pkgtotal" style="display:none" id="pkgtotal_<{$obj.goods_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" size="5" id="pkgsalepr_<{$obj.goods_id}>" class="none_input pkgsaleprice" readonly="readonly" value="<{$obj.sale_price}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> ></td>
+
+          <td class="goods_op">
+          <{if $pkg_del == 'true'}>
+            <{button type="button" label="恢复" id="bt_{$obj.goods_id}" onclick="del_pkg('{$obj.goods_id}')" }>
+          <{else}>
+            <{button type="button" label="删除" id="bt_{$obj.goods_id}" onclick="del_pkg('{$obj.goods_id}')" }>
+          <{/if}>
+          </td>
+        </tr>
+        <{foreach from=$obj.order_items item=item}>
+        <tr id="tr_<{$item.item_id}>" pkg-id="<{$obj.goods_id}>" g-pid="<{$item.product_id}>" g-type="<{$item.item_type}>" pkg-type="<{$item.item_type}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>style="background-color: #D8D8D8;" pkg-del="b"<{else}> pkg-del="a"<{/if}>>
+          <td class="item_bn"><{$item.bn}></td>
+          <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" value="<{$item.product_id}>" style="display:none;" /></td>
+          <td class="item_addon"><{$item.addon}></td>
+          <td class="item_num">
+            <input type="hidden" value="<{$item.item_id}>" name="pkg[obj][<{$obj.obj_id}>][]" />
+            <input type="text" class="none_input" id="num_<{$item.item_id}>" name="pkg[inum][<{$obj.obj_id}>]" pg-id="<{$obj.goods_id}>" aid="<{$item.item_id}>" size="4" readonly="true" js="<{$item.quantity/$obj.quantity}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> value="<{$item.quantity/$obj.quantity}>" />
+          </td>
+          <td class="item_price">
+          <input type="text" class="none_input" value="0" id="pr_<{$item.item_id}>" name="pkg[iprice][<{$obj.obj_id}>]" size="8" readonly="true" aid="<{$item.item_id}>" /></td>
+          <td class="goods_num"><input type="text" id="pmtpr_<{$item.item_id}>" pkg-id="" aid="<{$obj.goods_id}>" atype="item_pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price none_input"  vtype="unsigned" name="pkg[item_pmt_price][<{$item.item_id}>]" size="6" readonly="readonly" <{if $pkg_del == 'true'}>disabled="true"<{/if}> onchange="changetotalpkg(this);total();" /></td>
+          <td class="goods_num">-</td>
+          <td class="item_op"></td>
+        </tr>
+        <{/foreach}>
+        <{/foreach}>
+     </tbody>
+</table>
+
+<{else}>
+  <table class="pkg gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+            <th>货号</th>
+            <th>商品名称</th>
+            <th>规格</th>
+            <th>购买数量</th>
+            <th>可编辑数量</th>
+            <th>商品单价</th>
+            <th>优惠金额</th>
+            <th>销售价格</th>
+            <th>操作</th>
+        </tr>
+     </thead>
+     <tbody>
+        <{foreach from=$conf.objs item=obj}>
+        <{foreach from=$obj.order_items item=item}>
+        <{if $item.delete == 'true'}>
+        <{assign var='pkg_del' value="true"}>
+        <{else}>
+        <{assign var='pkg_del' value="false"}>
+        <{/if}>
+        <{/foreach}>
+        <tr class="bindtitle" pkg-type="pkg" g-id="<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" <{if $pkg_del=='true'}>style="background-color: #D8D8D8;" pkg-del='b'<{else}> pkg-del="a"<{/if}>>
+          <td class="goods_bn"></td>
+          <td class="goods_name"><{$obj.name}></td>
+          <td class="goods_addon">捆绑商品</td>
+          
+          <td class="goods_num"><input type="text" id="pkgnum_<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" aid="<{$obj.goods_id}>" vtype="required&&unsignedint" atype="num_obj" value="<{$obj.quantity}>" name="pkg[num][<{$obj.obj_id}>]" size="4" <{if $pkg_del == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$obj.quantity}>" id="old_pkg_nums_<{$obj.goods_id}>" /></td>
+          
+            <td class="pkg_buy_nums">
+            <{if $obj.left_nums <= 0}>
+              <input aid="<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" name="pkg[pkg_buy_nums][<{$obj.goods_id}>]" type="text" size="5" value="<{$obj.left_nums}>" id="pkg_buy_nums_<{$obj.goods_id}>" disabled="true" />
+            <{else}>
+              <input atype="pkg_num_obj" aid="<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" name="pkg[pkg_buy_nums][<{$obj.goods_id}>]" type="text" size="5" value="<{$obj.left_nums}>" id="pkg_buy_nums_<{$obj.goods_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotalpkg(this);total();" />
+            <{/if}>
+            <{if $obj.make_nums}><br />(<font color="#f00;">已发货：<{$obj.make_nums}></font>)<input type="hidden" value="<{$obj.make_nums}>" id="split_pkg_send_<{$obj.goods_id}>" /><{/if}>
+            </td>
+            
+          <td class="goods_price"><input type="text" id="pkgpr_<{$obj.goods_id}>" atype="price_obj" aid="<{$obj.goods_id}>" value="<{$obj.price}>" name="pkg[price][<{$obj.obj_id}>]" size="8" <{if $pkg_del == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalpkg(this);total();"<{/if}> /></td>
+
+          <td class="goods_num"><input type="text" id="pkgpmtpr_<{$obj.goods_id}>" pkg-id="" aid="<{$obj.goods_id}>" atype="pmt_price_obj" value="<{$obj.pmt_price|default:0}>" vtype="unsigned" class="goods_pmt_price"  name="pkg[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $pkg_del == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalpkg(this);total();"<{/if}> /></td>
+          
+          <td class="goods_num"><input type="text" class="pkgtotal" style="display:none" id="pkgtotal_<{$obj.goods_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" size="5" id="pkgsalepr_<{$obj.goods_id}>" class="none_input pkgsaleprice" readonly="readonly" value="<{$obj.sale_price}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> ></td>
+
+          <td class="goods_op">
+            <{if empty($item.make_nums)}>
+                <{if $pkg_del == 'true'}>
+                  <{button type="button" label="恢复" id="bt_{$obj.goods_id}" onclick="del_pkg('{$obj.goods_id}')" }>
+                <{else}>
+                  <{button type="button" label="删除" id="bt_{$obj.goods_id}" onclick="del_pkg('{$obj.goods_id}')" }>
+                <{/if}>
+            <{else}>
+                <span style="color:red;"><{if $obj.left_nums <= 0}>已拆分完<{else}>部分拆分<{/if}></span>
+            <{/if}>
+          </td>
+        </tr>
+        <{foreach from=$obj.order_items item=item}>
+        <tr id="tr_<{$item.item_id}>" pkg-id="<{$obj.goods_id}>" g-pid="<{$item.product_id}>" g-type="<{$item.item_type}>" pkg-type="<{$item.item_type}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>style="background-color: #D8D8D8;" pkg-del="b"<{else}> pkg-del="a"<{/if}>>
+          <td class="item_bn"><{$item.bn}></td>
+          <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" value="<{$item.product_id}>" style="display:none;" /></td>
+          <td class="item_addon"><{$item.addon}></td>
+          <td class="item_num">
+            <input type="hidden" value="<{$item.item_id}>" name="pkg[obj][<{$obj.obj_id}>][]" />
+            <input type="text" class="none_input" id="num_<{$item.item_id}>" name="pkg[inum][<{$obj.obj_id}>]" pg-id="<{$obj.goods_id}>" aid="<{$item.item_id}>" size="4" readonly="true" js="<{$item.quantity/$obj.quantity}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> value="<{$item.quantity/$obj.quantity}>" />
+          </td>
+          <td>-</td>
+          <td class="item_price">
+          <input type="text" class="none_input" value="0" id="pr_<{$item.item_id}>" name="pkg[iprice][<{$obj.obj_id}>]" size="8" readonly="true" aid="<{$item.item_id}>" /></td>
+          <td class="goods_num"><input type="text" id="pmtpr_<{$item.item_id}>" pkg-id="" aid="<{$obj.goods_id}>" atype="item_pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price none_input"  vtype="unsigned" name="pkg[item_pmt_price][<{$item.item_id}>]" size="6" readonly="readonly" <{if $pkg_del == 'true'}>disabled="true"<{/if}> onchange="changetotalpkg(this);total();" /></td>
+          <td class="goods_num">-</td>
+          <td class="item_op"></td>
+        </tr>
+        <{/foreach}>
+        <{/foreach}>
+     </tbody>
+</table>
+<{/if}>
+</div>
+<script>
+
+$('pkg_list').getElements("input[atype]").each(function(e){
+    changetotalpkg(e);
+});
+
+function total_pkg(){
+    var total = 0, amount=0;
+    $('pkg_list').getElements("input.pkgtotal").each(function(item){
+        if(!item.disabled)total += parseFloat(item.value);
+    });
+    $('pkg_list').getElements("input.pkgsaleprice").each(function(item){
+        if(!item.disabled)amount += parseFloat(item.value);
+    });
+    return [total,amount];
+}
+
+function changetotalpkg(e){
+
+    var id = e.get('aid'),l=0,_ca = e.getNext('.error');
+    if(e.disable) return;
+    if (/^\d+(\.\d+)?$/.test(e.value)){
+        if(e.get('atype') == 'num_obj'){
+            if (parseInt(e.value) <= 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else{
+                if (_ca) _ca.remove();
+            }
+            if (e.get('pkg-id') != null || e.get('pkg-id') != ''){
+                $('pkg_list').getElements('input[type=text]').each(function (eee){
+                    if (eee.get('pg-id') == e.get('pkg-id')){
+                        eee.value = eee.get('js')*e.value;
+                    }
+                });
+            }
+            $('pkgtotal_'+id).value = parseFloat($('pkgnum_'+id).value).toFixed(3)*parseFloat($('pkgpr_'+id).value).toFixed(3);
+        }else if (e.get('atype') == 'price_obj'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else{
+                if (_ca) _ca.remove();
+            }
+            $('pkgtotal_'+id).value = parseFloat($('pkgnum_'+id).value).toFixed(3)*parseFloat($('pkgpr_'+id).value).toFixed(3);
+        }else if (e.get('atype') == 'item_pmt_price'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else{
+                if (_ca) _ca.remove();
+            }
+        }else if (e.get('atype') == 'pmt_price_obj'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else {
+                if (_ca) _ca.remove();
+            }
+        }
+        e.getParent('tbody').getElements('tr').each(function(item){
+            if(e.getParent('tr').get('pkg-id') == item.get('pkg-id')){
+                if(item.get('aid')) l += parseFloat($('pmtpr_'+item.get('aid')).value);
+            }
+        });
+        var pkgsalepr_ = (parseFloat($('pkgnum_'+id).value)*parseFloat($('pkgpr_'+id).value) - parseFloat($('pkgpmtpr_'+id).value) - l).toFixed(3);
+        if (/^[-|0-9]*[0-9|.]+$/.test(pkgsalepr_))
+        {
+            $('pkgsalepr_'+id).set('value', pkgsalepr_);
+
+        }
+    }else{
+        if (!_ca){
+            new Element('span',{'class':"error caution notice-inline",html:"请录入数值"}).injectAfter(e);
+            e.set('value', '0');
+        }
+    }
+
+}
+
+//删除捆绑商品
+function del_pkg(id,subtotal,saleprice){
+    $ES('#pkg_list tbody tr').each(function (e){
+        if (e.get('pkg-id') == id){
+            if (e.get('newpkg') == '1'){
+                e.remove();
+            }else {
+                if (e.get('pkg-del') == 'b'){
+                    e.getElements('input[type=text]').each(function (a){a.disabled=false;});
+                    if ($("bt_"+id)) $("bt_"+id).getElement('span').getElement('span').set('text','删除');
+                    e.set('pkg-del','a');
+                    e.setStyle('background-color','');
+                }else {
+                    e.getElements('input[type=text]').each(function (a){a.disabled=true;});
+                    if ($("bt_"+id)) $("bt_"+id).getElement('span').getElement('span').set('text','恢复');
+                    e.set('pkg-del','b');
+                    e.setStyle('background-color','#D8D8D8');
+                }
+            }
+        }
+    });
+    delpkgtotal(id,subtotal,saleprice);
+}
+
+function delpkgtotal(id,pkgtotal,pkgsalepr){
+
+    var total = parseFloat($('total').get('text')).toFixed(3);
+    var total_sale = parseFloat($('total_sale_amount').get('text')).toFixed(3);
+    if (!$('pkgtotal_'+id) || $('pkgtotal_'+id).disabled) {
+
+        var total = (parseFloat(total) - parseFloat(pkgtotal || $('pkgtotal_'+id).value)).toFixed(3);
+        if (total)
+        {
+            $('total').set('text', total);
+            $('cost_amount_show').set('text', '¥'+total);
+        }
+        var total_sale = (parseFloat(total_sale) - parseFloat(pkgsalepr || $('pkgsalepr_'+id).value)).toFixed(3);
+        if (total_sale)
+        {
+            $('total_sale_amount').set('text', total_sale);
+            var total_amount = (parseFloat($('total_amount_show').get('val')) - parseFloat(pkgsalepr || $('pkgsalepr_'+id).value)).toFixed(3);
+            $('total_amount_show').set('text','¥'+total_amount).set('val', total_amount);
+            $('new_total_amount').set('value',total_amount);
+            $('total_pmt').set('value', '¥'+parseFloat(total-total_sale).toFixed(3));
+
+        }
+    }
+    else {
+        var total = (parseFloat(total) + parseFloat(pkgtotal || $('pkgtotal_'+id).value)).toFixed(3);
+        if (total)
+        {
+            $('total').set('text', total);
+            $('cost_amount_show').set('text', '¥'+total);
+        }
+        var total_sale = (parseFloat(total_sale) + parseFloat(pkgsalepr || $('pkgsalepr_'+id).value)).toFixed(3);
+        if (total_sale)
+        {
+            $('total_sale_amount').set('text', total_sale);
+            var total_amount = (parseFloat($('total_amount_show').get('val')) + parseFloat(pkgsalepr || $('pkgsalepr_'+id).value)).toFixed(3);
+            $('total_amount_show').set('text','¥'+total_amount).set('val', total_amount);
+            $('new_total_amount').set('value',total_amount);
+            $('total_pmt').set('value', '¥'+parseFloat(total-total_sale).toFixed(3));
+
+        }
+    }
+
+}
+
+//删除捆绑商品
+function del_pkg_new(id){
+    $ES('#pkg_list tbody tr[pkg-type]').each(function (e){
+        if (e.get('pkg-id') == id){
+            if (e.get('newpkg') == '1'){
+                e.remove();
+            }else {
+                if (e.get('pkg-del') == 'b'){
+                    e.getElements('input[type=text]').each(function (a){a.disabled=false;});
+                    if ($("bt_"+id)) $("bt_"+id).getElement('span').getElement('span').set('text','删除');
+                    e.setProperty('pkg-del','a');
+                    e.setStyle('background-color','');
+                }else {
+                    e.getElements('input[type=text]').each(function (a){a.disabled=true;});
+                    if ($("bt_"+id)) $("bt_"+id).getElement('span').getElement('span').set('text','恢复');
+                    e.setProperty('pkg-del','b');
+                    e.setStyle('background-color','#D8D8D8');
+                }
+            }
+        }
+    });
+    total();
+    if (!$E('#pkg_list tbody').getElement('td')){
+    	$('pkg_list').style.display = "none";
+    }
+}
+
+$('add_pkg_product').addEvent('click',function(e){
+    var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=omepkg&ctl=admin_pkg&act=findPkgProduct');
+    Ex_Loader('modedialog',function() {
+        new finderDialog(url,{params:{url:'index.php?app=omepkg&ctl=admin_pkg&act=getPkgProducts',name:'goods_id[]'},handle:this,width:1000,height:660,
+            onCallback:function(rs){
+                if(!rs)return;
+                rs=JSON.decode(rs);
+                if (rs!=''){
+                    rs.each(function (ee){
+                        createpkg(ee);
+                    });
+                }
+            }
+        });
+    }.bind(this));
+});
+function createpkg(rs){
+    var ishave='false';
+    $ES('#pkg_list tbody tr').each(function (es){
+        if (es.get('g-id') == rs.goods_id){
+            if (es.get('pkg-del')==null || es.get('pkg-del')=='a'){
+                ishave='true'
+                alert("有此捆绑商品："+rs.name);
+                $("pkgnum_"+rs.goods_id).focus();
+            }else {
+                ishave='true'
+                alert("请恢复捆绑商品："+rs.name);
+            }
+        }
+    });
+    if (ishave!='true'){
+
+		<{if $delivery_list}>
+		var ptr = new Element('tr.bindtitle', {"pkg-type":'pkg','g-id':rs.goods_id,"pkg-id":rs.goods_id,'pkg-del':'a','newpkg':'1',html:'<td>'+rs.pkg_bn+'</td><td>'+rs.name+'</td><td>捆绑商品</td><td><input type="text" id="pkgnum_'+rs.goods_id+'" pkg-id="'+rs.goods_id+'" aid="'+rs.goods_id+'" vtype="required&amp;&amp;unsignedint" atype="num_obj" value="1" name="pkg[pkgonum]['+rs.goods_id+']" size="4" onchange="changetotalpkg(this);total();"></td><td>0</td><td><input type="text" id="pkgpr_'+rs.goods_id+'" atype="price_obj" aid="'+rs.goods_id+'" value="0" name="pkg[pkgopr]['+rs.goods_id+']" size="8" onchange="changetotalpkg(this);total();"></td><td><input type="text" id="pkgpmtpr_'+rs.goods_id+'" pkg-id="" aid="'+rs.goods_id+'" atype="pmt_price_obj" value="0" vtype="unsigned" name="pkg[new_obj_pmt_price]['+rs.goods_id+']" size="6" onchange="changetotalpkg(this);total();"></td><td><input type="text" class="pkgtotal" style="display:none" id="pkgtotal_'+rs.goods_id+'" size="2" value="0"><input type="text" size="5" class="none_input pkgsaleprice" readonly="readonly" id="pkgsalepr_'+rs.goods_id+'" value="0" /></td><td><{button type="button" id="bt_'+rs.goods_id+'" onclick="del_pkg_new('+rs.goods_id+')" label="删除"}></td>'}).inject($E('#pkg_list tbody'));
+		<{else}>
+		var ptr = new Element('tr.bindtitle', {"pkg-type":'pkg','g-id':rs.goods_id,"pkg-id":rs.goods_id,'pkg-del':'a','newpkg':'1',html:'<td>'+rs.pkg_bn+'</td><td>'+rs.name+'</td><td>捆绑商品</td><td><input type="text" id="pkgnum_'+rs.goods_id+'" pkg-id="'+rs.goods_id+'" aid="'+rs.goods_id+'" vtype="required&amp;&amp;unsignedint" atype="num_obj" value="1" name="pkg[pkgonum]['+rs.goods_id+']" size="4" onchange="changetotalpkg(this);total();"></td><td><input type="text" id="pkgpr_'+rs.goods_id+'" atype="price_obj" aid="'+rs.goods_id+'" value="0" name="pkg[pkgopr]['+rs.goods_id+']" size="8" onchange="changetotalpkg(this);total();"></td><td><input type="text" id="pkgpmtpr_'+rs.goods_id+'" pkg-id="" aid="'+rs.goods_id+'" atype="pmt_price_obj" value="0" vtype="unsigned" name="pkg[new_obj_pmt_price]['+rs.goods_id+']" size="6" onchange="changetotalpkg(this);total();"></td><td><input type="text" class="pkgtotal" style="display:none" id="pkgtotal_'+rs.goods_id+'" size="2" value="0"><input type="text" size="5" class="none_input pkgsaleprice" readonly="readonly" id="pkgsalepr_'+rs.goods_id+'" value="0" /></td><td><{button type="button" id="bt_'+rs.goods_id+'" onclick="del_pkg_new('+rs.goods_id+')" label="删除"}></td>'}).inject($E('#pkg_list tbody'));
+		<{/if}>
+	  
+	  
+        rs['items'].each(function (e){
+            createpkgproduct(rs,e);
+        });
+    }
+    $('pkg_list').show();
+}
+
+function createpkgproduct(rs,e){
+	<{if $delivery_list}>
+	var trr = new Element('tr', {id:'tr_'+e.product_id,'pkg-id':rs.goods_id,'g-pid':e.product_id,'pkg-type':'pkg','aid':e.product_id,'pkg-del':'a','newpkg':'1',html:'<td>'+e.bn+'</td><td>'+e.name+'<input name="product_ids[]" id="product_ids_'+e.product_id+'" type="text" value="'+e.product_id+'" style="display:none;" /></td><td>-</td><td><input type="hidden" value="'+e.bn+'" name="bn_list[]"><input type="text" class="none_input" id="num_'+e.product_id+'" name="pkg[pkgnum]['+rs.goods_id+']['+e.product_id+']" pg-id="'+rs.goods_id+'" aid="'+e.product_id+'" size="4" readonly="readonly" js="'+e.pkgnum+'" value="'+e.pkgnum+'"></td><td>-</td><td><input type="text" class="none_input" readonly="readonly" value="0" id="pr_'+e.product_id+'" name="pkg[pkgpr]['+rs.goods_id+']['+e.product_id+']" size="8" readonly="true"></td><td><input type="text" id="pmtpr_'+e.product_id+'" pkg-id="" class="goods_pmt_price none_input" aid="'+rs.goods_id+'" atype="pkgpmt_price" value="0" vtype="unsigned" name="pkg[new_item_pmt_price]['+rs.goods_id+']['+e.product_id+']" size="6" onchange="changetotalpkg(this);total();"></td><td>-</td><td>&nbsp;</td>'}).inject($E('#pkg_list tbody'));
+	<{else}>
+    var trr = new Element('tr', {id:'tr_'+e.product_id,'pkg-id':rs.goods_id,'g-pid':e.product_id,'pkg-type':'pkg','aid':e.product_id,'pkg-del':'a','newpkg':'1',html:'<td>'+e.bn+'</td><td>'+e.name+'<input name="product_ids[]" id="product_ids_'+e.product_id+'" type="text" value="'+e.product_id+'" style="display:none;" /></td><td>-</td><td><input type="hidden" value="'+e.bn+'" name="bn_list[]"><input type="text" class="none_input" id="num_'+e.product_id+'" name="pkg[pkgnum]['+rs.goods_id+']['+e.product_id+']" pg-id="'+rs.goods_id+'" aid="'+e.product_id+'" size="4" readonly="readonly" js="'+e.pkgnum+'" value="'+e.pkgnum+'"></td><td><input type="text" class="none_input" readonly="readonly" value="0" id="pr_'+e.product_id+'" name="pkg[pkgpr]['+rs.goods_id+']['+e.product_id+']" size="8" readonly="true"></td><td><input type="text" id="pmtpr_'+e.product_id+'" pkg-id="" class="goods_pmt_price none_input" aid="'+rs.goods_id+'" atype="pkgpmt_price" value="0" vtype="unsigned" name="pkg[new_item_pmt_price]['+rs.goods_id+']['+e.product_id+']" size="6" onchange="changetotalpkg(this);total();"></td><td>-</td><td>&nbsp;</td>'}).inject($E('#pkg_list tbody'));
+	<{/if}>
+}
+
+//[拆单]部分拆分编辑购买数量
+function split_changetotalpkg(e){
+
+    var id = e.get('aid'),l=0,_ca = e.getNext('.error');
+    if(e.disable) return;
+	
+	var split_pkg_buy_nums		= 0;
+	var split_pkg_send_nums		= 0;
+	var split_pkg_edit_nums		= 0;
+	if($('old_pkg_nums_'+id))
+	{
+		split_pkg_buy_nums		= parseInt($('old_pkg_nums_'+id).value);
+	}
+	if($('split_pkg_send_'+id))
+	{
+		split_pkg_send_nums		= parseInt($('split_pkg_send_'+id).value);
+	}
+	
+    if (/^\d+(\.\d+)?$/.test(e.value)){
+        if(e.get('atype') == 'pkg_num_obj'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }
+			else if(parseInt(e.value) == 0 && split_pkg_send_nums == 0)
+			{
+				if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+			}
+			else{
+                if (_ca) _ca.remove();
+            }
+			
+			split_pkg_edit_nums		= split_pkg_send_nums + parseInt(e.value);
+			$('pkgnum_'+id).value		= split_pkg_edit_nums;
+			
+            if (e.get('pkg-id') != null || e.get('pkg-id') != ''){
+                $('pkg_list').getElements('input[type=text]').each(function (eee){
+                    if (eee.get('pg-id') == e.get('pkg-id')){
+                        eee.value = eee.get('js')*split_pkg_edit_nums;
+                    }
+                });
+            }
+            $('pkgtotal_'+id).value = parseFloat($('pkgnum_'+id).value).toFixed(3)*parseFloat($('pkgpr_'+id).value).toFixed(3);
+        }
+		
+        e.getParent('tbody').getElements('tr').each(function(item){
+            if(e.getParent('tr').get('pkg-id') == item.get('pkg-id')){
+                if(item.get('aid')) l += parseFloat($('pmtpr_'+item.get('aid')).value);
+            }
+        });
+        var pkgsalepr_ = (parseFloat($('pkgnum_'+id).value)*parseFloat($('pkgpr_'+id).value) - parseFloat($('pkgpmtpr_'+id).value) - l).toFixed(3);
+        if (/^[-|0-9]*[0-9|.]+$/.test(pkgsalepr_))
+        {
+            $('pkgsalepr_'+id).set('value', pkgsalepr_);
+
+        }
+    }else{
+        if (!_ca){
+            new Element('span',{'class':"error caution notice-inline",html:"请录入数值"}).injectAfter(e);
+            e.set('value', '0');
+        }
+    }
+
+}
+
+</script>

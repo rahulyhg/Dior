@@ -1,0 +1,423 @@
+<style>
+.shop-name{
+    color:red;font-weight:bold;
+}
+</style>
+<div class="tableform">
+  <h3>仓库添加/编辑</h3>
+  <div class="division">
+    <form method="post" action="index.php?app=ome&ctl=admin_branch&act=addbranch" id="form-branch">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+          <tr>
+            <th><em class="c-red">*</em> 仓库名称：</th>
+            <td><input type="text" name="name"  value="<{$branch.name}>" vtype="required"/>
+             仓库在系统中的中文名称标识</td>
+          </tr>
+          <tr>
+            <th><em class="c-red">*</em> 仓库编号：</th>
+            <td><input type="text" name="branch_bn" id="branch_bn" value="<{$branch.branch_bn}>" vtype="required"/>
+              仓库在系统中的编号</td>
+          </tr>
+          <tr>
+            <th><em class="c-red">*</em> 库内存放点编号：</th>
+            <td><input type="text" name="storage_code" id="storage_code" value="<{$branch.storage_code}>" vtype="required"/>
+              库内存放点编号</td>
+          </tr>
+          <tr>
+            <th>仓库对应WMS：</th>
+            <td colspan="2">
+               <ul style='width:600px;'>
+              <{foreach item=wms from=$wms_list}>
+                <li style='float:left; padding:10px;'>
+                <input type="radio" class='wms_type' name="wms_id" id="wms_id" <{if $wms_disabled}>disabled<{/if}> value="<{$wms.wms_id}>" <{if $branch.wms_id == $wms.wms_id}>checked<{/if}> adapter=<{$wms.adapter}>>
+                <span <{if $branch.wms_id == $wms.wms_id}>class="shop-name"<{/if}> title="<{$wms.wms_name}>"><{$wms.wms_name|cut}></span>
+                </li>
+              <{/foreach}>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th><em class="c-red">*</em> 仓库设置：</th>
+            <td><{foreach item=item key=key from=$type}><input type="radio" onclick="changeRdo('<{$key}>')" <{if $branch.type == $key || $branch.type == ''}>checked="checked"<{/if}> name="branch_type" <{if $branch_main_disabled}>disabled='disabled'<{/if}> id="branch_type" value="<{$key}>"><{$item}><{/foreach}>
+             <{help}><{t}>选择仓库类型<{/t}><{/help}> </td>
+          </tr>
+           
+          <tr id="main_branch_Div">
+            <th><em class="c-red">*</em> 请选择主仓库：</th>
+            <td><span id="main_branch_span"></span><span id="main_branch_select">
+            <select id='main_branch' name="main_branch" vtype="required">
+                <{foreach from=$main_branch key=branch_id item=branch_name}>
+                    <option value="<{$branch_id}>" <{if $branch_id == $branch.parent_id}>SELECTED<{/if}>><{$branch_name}></option>
+                <{/foreach}>
+            </select>
+            
+             <{help}><{t}>选择主仓库<{/t}><{/help}>
+             
+             </span> </td>
+          </tr>
+          </table>
+          <table id='main-table'>
+		  <tr>
+            <th>仓库对应店铺：</th>
+            <td colspan="2">
+               <ul style='width:600px;'>
+              <{foreach item=item from=$shop}>
+                <li style='float:left; padding:10px;'>
+                <input type="checkbox" name="shop_config[]" id="shop" value="<{$item.shop_bn}>" <{if in_array($item.shop_bn , $shop_bns,true) }>checked<{/if}> onchange="javascript:if(this.checked){this.getNext('span').addClass('shop-name');}else{this.getNext('span').removeClass('shop-name');}">
+                <span <{if in_array($item.shop_bn , $shop_bns,true) }>class="shop-name"<{/if}> title="<{$item.name}>"><{$item.name|cut}></span>
+                </li>
+              <{/foreach}>
+              </ul>
+            </td>
+          </tr>
+          
+		 
+          <tr>
+            <th>联系人姓名：</th>
+            <td><input type="text" size="12" name="uname" value="<{$branch.uname}>"/>
+              仓库负责人的姓名</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <th>性别：</th>
+            <td><input name="sex" type="radio" value="male" <{if $branch.sex=='male'}>checked="checked" <{/if}>/>
+              男 <input type="radio" name="sex" value="female" <{if $branch.sex=='female'}>checked="checked" <{/if}>/>
+              女</td>
+            <td width="49%"></td>
+          </tr>
+          <tr id='def_dexp'> </tr>
+          <tr id="deliveryAreabox" style="display: none;">
+            <th></th>
+            <td ><table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td><div  id="deliveryArea-<{$branch.branch_id}>" class='deliveryArea'>
+                      <ol style='list-style-type:decimal; margin:0; padding:0;list-style:decimal'>
+                        <li class='division' style="line-height:30px;">
+                          <div class='deliverycity'>
+                            <input style="width:350px;" type='text' name='area_conf[areaGroupName]' readonly=true required="true" value='<{$areas_name}>' onclick="regionSelect(this);">
+                            <input type='hidden' name='area_conf[areaGroupId]' value="<{$area}>" vtype=""  id="branch_area" class="_x_ipt" caution="仓库地区不能为空"/>
+                            <{img class='regionSelect' app="desktop" src='bundle/editcate.gif' style='cursor:pointer;' onclick='regionSelect(this)' alt='地区选择' title="地区选择"}> </div>
+                        </li>
+                      </ol>
+                    </div></td>
+                </tr>
+              </table></td>
+          </tr>
+          <tr>
+            <th>地区：</th>
+            <td colspan="2">
+              <{input type='region' app='eccommon' name="area" value=$branch.area required="true"}>
+            </td>
+          </tr>
+          <tr>
+            <th>地址：</th>
+            <td colspan="2"><input type="text" name="address" value="<{$branch.address}>"/>
+             仓库所在城市的详细地址</td>
+          </tr>
+          <tr>
+            <th>邮编：</th>
+            <td colspan="2"><input type="text" size="6" name="zip" value="<{$branch.zip}>"/></td>
+          </tr>
+          <tr>
+            <th>电话：</th>
+            <td colspan="2"><input type="text" size="15" name="phone" value="<{$branch.phone}>"/>
+              仓库的固定电话</td>
+          </tr>
+          <tr>
+            <th>手机：</th>
+            <td colspan="2"><input type="text" size="12" name="mobile" value="<{$branch.mobile}>"/>
+              仓库负责人的移动联系方式</td>
+          </tr>
+          <tr>
+            <th>阀值：</th>
+            <td colspan="2"><input type="text" size="6" vtype="number" name="stock_threshold" value="<{$branch.stock_threshold}>"/>
+              订单确认界面用来标识当前操作库存状态：无货、紧张、有货 </td>
+          </tr>
+          <tr>
+            <th>仓库属性：</th>
+            <td colspan="2">
+             <input name="attr" type="radio" value="true" id="up" <{if $branch.attr=='true'}>checked="checked" <{/if}>/>线上 
+             <input name="attr" type="radio" value="false" id='down' <{if $branch.attr=='false' || $branch.attr==''}>checked="checked" <{/if}>/>线下
+             <!--  <input type='hidden' name='branch_type' id='branch_type' value="<{if $branch.attr=='false' || $branch.attr==''}>false<{else}><{$branch.attr}><{/if}>" />
+             -->
+             <span style="color:red;">线上仓库的库存系统会和前端店铺保持同步，线下仓库的库存则不会影响前端店铺的可售库存。</span>
+            </td>
+          </tr>
+          <tr>
+             <th>发货属性：</th>
+             <td>
+                 <input type="radio" name="is_deliv_branch" id="is_deliv_branch" value="true" <{if $branch.is_deliv_branch=='true'}>checked="checked" <{/if}>/>发货仓库
+                 <input type="radio" name="is_deliv_branch" id="not_deliv_branch" value="false" <{if $branch.is_deliv_branch !='true' }>checked="checked" <{/if}>/>备货仓库
+                  <span style="color:red;">备货仓库可以库存共享，也可以不共享，但是不具备发货功能</span>
+             </td>
+          </tr>
+          <tr id="selfattr">
+            <th>仓库归属：</th>
+            <td><{input type='radio' name='owner' value=$branch.owner|default:'1' options=$options.owner separator=' '}></td>
+          </tr>
+          <tr>
+            <th>备注：</th>
+            <td colspan="2"><textarea name="memo" rows="6" cols="80"><{$branch.memo}></textarea>
+              <{help}><{t}>对仓库附加的其它说明<{/t}><{/help}> </td>
+          </tr>
+          <tr>
+              <th>权重：</th>
+              <td colspan="2"><{input type="number&&required" value=$branch.weight|default:0 name="weight" size=2}></td>
+          </tr>
+          <tr>
+              <th><em class="c-red">*</em> 是否用于跨境申报：</th>
+              <td colspan="2"><{input type='bool' name='is_declare' value=$branch.is_declare|default:'false'}>&nbsp;&nbsp;<span style="color:red;">* 未使用跨境申报功能，不需要选择。</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-action"><{button label="提交" type="submit" name="submit" id="btn-branch"}> <{button label="提交" style="display:none;" type="button" name="button" id="btn-notice"}>&nbsp;&nbsp; <{button label="关闭" onclick="javascript:void(window.close());" class="btn-secondary" type="button"}></div>
+      <{if $branch.branch_id}>
+      <input type="hidden" name="branch_id" value="<{$branch.branch_id}>">
+      <{/if}>
+    </form>
+  </div>
+</div>
+<script>
+$ES('input[name="is_deliv_branch"]').addEvent('click',function(){
+    if (this.get('value')=='true')
+    {
+        alert('设置发货属性为发货仓库后，该仓库将为前端提供发货服务!');
+    }else{
+        alert('设置发货属性为备货仓库后，该仓库将不提供发货服务，请谨慎使用!');
+    }
+});
+
+function set_vtype(type){
+	if (type == '1'){
+	    $('branch_area').set('vtype', 'required');    
+	}else{
+		$('branch_area').set('vtype', '');    
+	}
+		
+}
+$ES('input[name="attr"]').addEvent('click',function(){
+    if(this.value=='true'){
+        if ($defined($ES('input[name="shop_config[]"]')))
+        {
+            $ES('input[name="shop_config[]"]').set('disabled',false);
+        }
+
+        alert('线下仓改成线上以后，该仓库库存在可售库存之内，并且订单拆分的时候将会显示该仓库');
+    }else{
+        if ($defined($ES('input[name="shop_config[]"]')))
+        {
+             $ES('input[name="shop_config[]"]').set('disabled',true);
+             $ES('input[name="shop_config[]"]').set('checked',false);
+             $ES('input[name="shop_config[]"]').getNext('span').removeClass('shop-name');
+        }
+
+        alert('线上仓改成线下以后，该仓库库存不在可售库存之内，并且订单拆分的时候将不显示该仓库');
+    }
+});
+if ($E('input[name="attr"]:checked').value == 'false')
+{  
+    if ($defined($ES('input[name="shop_config[]"]')))
+    {
+         $ES('input[name="shop_config[]"]').set('disabled',true);
+         $ES('input[name="shop_config[]"]').set('checked',false);
+         $ES('input[name="shop_config[]"]').getNext('span').removeClass('shop-name');
+    }
+}
+
+$('form-branch').store('target',{
+    onRequest:function(){
+       $('btn-branch').set('disabled', 'true');
+       
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn-branch').set('disabled', '');
+       }else{
+           $('btn-branch').set('disabled', 'true');
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           window.close();
+       }
+    }
+});
+
+$('main_branch_Div').setStyle('display','none');
+<{if $branch.type == 'aftersale' || $branch.type == 'damaged'}>
+    $('main_branch_Div').setStyle('display','');
+    $('up').set('disabled','disabled');
+    $('down').set('disabled','disabled');
+    $('down').set('checked','checked');
+    $('is_deliv_branch').set('disabled','disabled');
+    $('not_deliv_branch').set('disabled','disabled');
+    $('not_deliv_branch').set('checked','checked');
+    $$('input[name^=shop_config]').set('disabled','disabled');
+<{/if}>
+
+<{if $branch.type == 'main' || $branch.type == ''}>
+    $('branch_type').set('checked','checked');
+    <{if $branch.attr == 'false'}>
+        $$('input[name^=shop_config]').set('disabled','disabled');
+    <{/if}>
+<{/if}>
+
+<{if $branch.type == 'agentsale'}>
+//$$('select[name^=wms_id]').getParent().getParent().setStyle('display','none');
+$('main_branch_Div').setStyle('display','none');
+<{/if}>
+
+var changeRdo = function (value){
+    if(value=='aftersale' || value=='damaged'){
+        $('main_branch_Div').setStyle('display','');
+        $('up').set('disabled','disabled');
+        $('down').set('disabled','disabled');
+        $('down').set('checked','checked');
+        $('is_deliv_branch').set('disabled','disabled');
+        $('not_deliv_branch').set('disabled','disabled');
+        $('not_deliv_branch').set('checked','checked');
+        $$('input[name^=shop_config]').set('disabled','disabled');
+        //$$('select[name^=wms_id]').getParent().getParent().setStyle('display','');
+
+    }else if(value=='agentsale'){
+        $('main_branch_Div').setStyle('display','');
+        $('up').set('disabled','disabled');
+        $('down').set('checked','checked');
+        //$$('select[name^=wms_id]').getParent().getParent().setStyle('display','none');
+
+        var shop_bns = [<{$agentsale_shop_bns}>];
+        $$('input[name^=shop_config]').each(function(e,index){
+            for(i=0;i<shop_bns.length;i++){
+                if (shop_bns[i] == e.get('value'))
+                {
+                    e.set('disabled','disabled');
+                }
+            }
+        });
+    } else {
+        $('main_branch_Div').setStyle('display','none');
+        $('up').set('disabled','');
+        $('down').set('disabled','');
+        $('down').set('checked','checked');
+        $('is_deliv_branch').set('disabled','');
+        $('not_deliv_branch').set('disabled','');
+        $('not_deliv_branch').set('checked','checked');
+        $$('input[name^=shop_config]').set('disabled','disabled');
+        $('main-table').setStyle('display','');
+        //$$('select[name^=wms_id]').getParent().getParent().setStyle('display','');
+    }
+}
+
+$$('input[name=branch_type]').addEvent('click', function(e){
+    var branch_bn = $('branch_bn').value;
+    var branch_type = this.get('value');
+    var wms_id = $ES("input[name='wms_id']:checked").get('value');
+
+    if (branch_type == 'main' || branch_type == 'agentsale')
+    {
+        $('main_branch_Div').setStyle('display','none');
+        $('btn-branch').setStyle('display','');
+        $('btn-notice').setStyle('display','none');
+        $('main-table').setStyle('display','');
+    }else{
+        $('main_branch_Div').setStyle('display','');
+        show_branch_type(this.get('value'),branch_bn,wms_id);
+    }
+});
+var wms_id = $ES("input[name='wms_id']:checked").get('value');
+<{if $branch.type == 'damaged'}>
+    show_branch_type('damaged','<{$branch.branch_bn}>',wms_id);
+<{/if}>
+
+$('btn-notice').addEvent('click', function(e){
+    alert('请选择主仓！');
+});
+
+function show_branch_type(branch_type,branch_bn,wms_id){
+    W.page('index.php?app=ome&ctl=admin_branch&act=get_branch_type&p[0]=' + branch_type + '&p[1]=' + branch_bn+'&p[2]='+wms_id, {
+        update: $('main_branch'),
+        onComplete: function(e) {
+            if(e == 'false'){
+               $('main_branch_select').setStyle('display','none');
+               $('main_branch_span').setStyle('display','');
+               $('main_branch_span').set('html','已没有可选择的主仓，请添加新的主仓！');
+               $('btn-branch').setStyle('display','none');
+               $('btn-notice').setStyle('display','');
+               
+            }else{
+               $('main_branch_select').setStyle('display','');
+               $('main_branch_span').setStyle('display','none');
+               $('btn-branch').setStyle('display','');
+               $('btn-notice').setStyle('display','none');
+               
+            }
+            $('main-table').setStyle('display','none');
+        }
+    });
+}
+
+$$('.wms_type').addEvent('click',function(e){
+var wms_id = this.value;
+
+var adapter = this.get('adapter');
+
+var branch_bn = $('branch_bn').value;
+var branch_type = $ES("input[name='branch_type']:checked").get('value');
+$$('.wms_type').each(function(item){
+    if(item.checked){
+        item.getNext('span').addClass('shop-name');
+    }else{
+        item.getNext('span').removeClass('shop-name');
+    }
+});
+if (branch_type =='agentsale' || branch_type =='damaged')
+{
+    show_branch_type(this.get('value'),branch_bn,wms_id);
+}
+    show_selfattr(adapter);
+	
+	//不是自有仓储_禁止选择"用于跨境申报"
+	var edit_wms_id	= '<{$branch.wms_id}>';
+	var edit_is_declare	= '<{$branch.is_declare}>';
+	
+	var checked_is_declare	=document.getElementsByName("is_declare");
+	var is_declare_len = checked_is_declare.length; 
+	
+	if(adapter != 'selfwms')
+	{
+		for(var i=0; i < is_declare_len; i++)
+		{
+			checked_is_declare[i].checked = false;
+			checked_is_declare[i].disabled  = true;
+		}
+		checked_is_declare[1].checked = true;
+	}
+	else 
+	{
+		for(var i=0; i < is_declare_len; i++)
+		{
+			checked_is_declare[i].checked = false;
+			checked_is_declare[i].disabled  = false;
+		}
+		
+		//编辑时,默认选中的
+		if((wms_id == edit_wms_id) && (edit_is_declare == 'true'))
+		{
+			checked_is_declare[0].checked = true;
+		}
+		else 
+		{
+			checked_is_declare[1].checked = true;
+		}
+	}
+});
+var adapter = $E("input[name='wms_id']:checked").get('adapter');
+show_selfattr(adapter);
+function show_selfattr(adapter){
+    if (adapter == 'selfwms')
+    {
+        $('selfattr').setStyle('display','');
+    }else{
+        $('selfattr').setStyle('display','none');
+    }
+}
+</script>

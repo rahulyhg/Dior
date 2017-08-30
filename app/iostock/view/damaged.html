@@ -1,0 +1,23 @@
+<div class="tableform">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+<thead>
+     <tr>
+
+	   <td>商品货号</td>
+	   <td>商品名称</td>
+	   <td>残损数量</td>
+	   <td>商品单价</td>
+	   <td>商品金额</td>
+	 </tr></thead><tbody>
+<{foreach from=$items item=item}>
+<tr>
+  <td><{$item.bn}></td>
+  <td><{$pname.name}></td>
+  <td><{$item.nums}></td>
+  <td><{$item.iostock_price}></td>
+  <td><{$item.settlement_money}></td>
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>

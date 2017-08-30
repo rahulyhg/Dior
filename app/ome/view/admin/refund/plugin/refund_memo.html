@@ -1,0 +1,38 @@
+<form enctype="multipart/form-data" id='upload_refuse_message' method='post' action='index.php?app=ome&ctl=admin_refund_apply&act=refuse_message' target="upload" isCloseDialog>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+<tr>
+      <th><{t}>备注：<{/t}></th>
+      <td>
+        <textarea name='memo'></textarea>
+      </td>
+    </tr>
+
+<tr>
+      <th><{t}>上传文件：<{/t}></th>
+      <td>
+        <{input type="sfile" name="attachment" f_type="public" }>  
+      </td>
+    </tr>
+</table>
+<input type='hidden' name='apply_id' value='<{$apply_id}>'>
+ <div class="table-action">
+      <{button label="确定" class="btn-primary" type='submit'}> 
+    </div>
+<input type='hidden' id='finder_id' name='finder_id' value='<{$finder_id}>'>
+</form>
+<script>
+$('upload_refuse_message').store('target',{
+    onComplete:function(resp){
+        rs = JSON.decode(resp);
+        
+        if(rs.error == 'fail'){
+          new MessageBox(rs.msg,{type:'error',autohide:true});
+        }else{
+
+          finderGroup["<{$finder_id}>"].refresh.delay(400,finderGroup["<{$finder_id}>"]);
+          $('upload_refuse_message').getParent('.dialog').retrieve('instance').close();
+        }
+    }
+});
+
+</script>

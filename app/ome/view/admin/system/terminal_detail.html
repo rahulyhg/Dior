@@ -1,0 +1,66 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<div class="tableform">
+           <div class="division">
+
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+
+        <tbody>
+        <tr>
+          <td>店铺编号</td>
+          <td colspan="2"><{$shop.shop_bn}></td>
+        </tr>
+        <tr><td width="26%">名称</td>
+          <td colspan="2"><{$shop.name}>
+
+          <!--
+          <{if $reset_login}>
+            <{$reset_login}>
+            <{help}><{t}>当与前端店铺同步出现session失效或不存在时，请重新登录。<{/t}><{/help}>
+          <{/if}>
+          <{if $shop.node_id}>
+            <a href="index.php?app=ome&ctl=admin_shop&act=unbind&shop_id=<{$shop.shop_id}>&finder_id=<{$finder_id}>" target="dialog::{width:300,height:200,title:'清除本地绑定关系'}" ><b>清除本地绑定关系</b></a>
+            <{help}><{t}>当在查看绑定关系当中没有看到此店铺的绑定关系后，可通过此清除本地的绑定关系。<{/t}><{/help}>
+          <{/if}>
+          -->
+          </td>
+        </tr>
+		<tr>
+		  <td width="26%">店铺类型</td>
+          <td colspan="2"><label>
+          <{$shop_type[$shop.shop_type]}>
+          </label></td>
+		</tr>
+        <tr>
+          <td>地区</td>
+          <td width="25%"><{$shop.area|region}></td>
+          <td width="49%">&nbsp;</td>
+        </tr>
+        <tr>
+          <td>地址</td>
+          <td colspan="2"><{$shop.addr}></td>
+        </tr>
+        <tr>
+          <td>发件人</td>
+          <td colspan="2"><{$shop.default_sender}></td>
+        </tr>
+		<tr>
+          <td>邮编</td>
+          <td colspan="2"><{$shop.zip}></td>
+        </tr>
+		 <tr>
+          <td>电话</td>
+          <td colspan="2"><{$shop.tel}></td>
+        </tr>
+        <tr>
+          <td>手机</td>
+          <td colspan="2"><{$shop.mobile}></td>
+        </tr>
+        </tbody>
+      </table>
+	
+
+  </div>
+    </div>

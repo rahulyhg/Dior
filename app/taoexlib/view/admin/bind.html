@@ -1,0 +1,32 @@
+<div class="tableform">
+    <form action="<{link app=taoexlib ctl=admin_account act=bind}>" method="post" id="enterpriseBind">
+        <table border="0" cellspan="0" colspan="0" width="40%">
+            <tr>
+                <th>&nbsp;</th>
+                <td><h2 class="head-title">短信账户绑定</h2></td>
+            </tr>                
+            <tr>
+                <th><em class="c-red">*</em> Email:</th>
+                <td><{input type="text" name="bindemail" id="bindemail" value="{$regEmail}" }></td>
+            </tr>
+            <tr>
+                <th><em class="c-red">*</em> 密码:</th>
+                <td><{input type="password" name="bindpassword" id="bindpassword" }></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <td><{button type="button" label="绑定" id="bind"}></td>
+            </tr>                                                                                     
+        </table>                
+    </form>
+</div>
+
+<script type="text/javascript">
+    (function(){        
+        var _bindform = $('enterpriseBind');
+        var bindbtn = $('bind');
+        bindbtn.addEvent('click', function(){
+            _bindform.fireEvent('submit',{stop:$empty});
+        })
+    })();
+</script>

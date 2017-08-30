@@ -1,0 +1,15 @@
+<desktop>
+    <permissions>
+		<permission id="customs_manager">跨境电子口岸</permission>
+		<permission id="customs_list">申报订单列表</permission>
+		<permission id="customs_byorder">申报单状态列表</permission>
+    </permissions>
+	
+    <workground name="订单" id="order_center" order="100">
+		<menugroup name="跨境申报管理">
+            <menu controller='admin_setting' action='index' permission='customs_manager' display='true' order='9000100'>跨境电子口岸</menu>
+            <menu controller='admin_orders' action='index' permission='customs_list' display='true' order='9000200'>申报订单列表</menu>
+            <menu controller='admin_orders' action='declare_list' permission='customs_byorder' display='true' order='9000300'>申报单状态列表</menu>
+        </menugroup>
+    </workground>
+</desktop>

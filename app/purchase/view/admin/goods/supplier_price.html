@@ -1,0 +1,36 @@
+
+<div class="tableform">
+    <div class="division">
+      <table cellspacing="0" cellpadding="0" border="0" width="100%" class="gridlist">
+      <{if $supplier_price}>
+      <thead>
+        <tr>
+          <th>供应商</th>
+          <th>当前采购价格</th>
+          <th>最高采购价格</th>
+          <th>最低采购价格</th>
+          <th>历史采购价格</th>
+        </tr>
+       </thead>
+      <{foreach from=$supplier_price item=his}>
+      <tbody>
+        <tr>
+          <td><{$his.name}></td>
+          <td><{$his.currPrice}></td>
+          <td><{$his.highestprice}></td>
+          <td><{$his.lowerestprice}></td>
+          <td><input class="btn btn-primary" type="button" onclick="new Dialog('index.php?app=purchase&amp;ctl=admin_supplier&act=history_price&p[0]=<{$his.supplier_id}>&p[1]=<{$goods_id}>',{width:600,title:'历史记录价格'});" value="查看" ></td>
+        </tr>
+        </tbody>
+      <{/foreach}>
+      <{else}>
+      <thead>
+        <tr>
+          <th>暂无记录</th>
+        </tr>
+      </thead>
+      <{/if}>
+      </table>
+    </div>
+ 
+  </div>

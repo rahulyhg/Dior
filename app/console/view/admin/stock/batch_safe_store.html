@@ -1,0 +1,254 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+
+<!--选项卡-->
+<style>
+.tab_nav {overflow:hidden;padding-left:20px}
+.tab_nav li{float:left;margin-left:10px;cursor:pointer;font-weight:bold;}
+.tab_nav li{background:#F1F3F6;border:1px solid #CCCCCC;padding:3px 25px;}
+.tab_nav li.current {background:#EFEFEF;color:#3A5999;border-bottom:1px solid #EFEFEF;}
+</style>	
+<div>
+	<ul class="tab_nav">
+		<li class="current" id="init_type2"><span>补货点
+        <{help}>依据订货提前期来设置安全库存，当库存低于补货点时，该信息将在补货提醒中可见<{/help}></span></li>
+		<li id="init_type1"><span>警戒库存
+        <{help}>库存值小于等于该值时，库存信息红色报警；该货品信息在补货提醒中可见<{/help}></span></li>
+	</ul>
+    <div style="border-top:1px solid #CCC;margin-top:-1px;background:#EFEFEF;height:4px;overflow:hidden"></div>
+</div>
+
+<input type="hidden" name="init_type" id="init_type" value="2" />
+
+<form method="post" id="form1" action="index.php?app=console&ctl=admin_stock&act=batch_safe_store&finder_id=<{$env.get.finder_id}>">
+</form>
+  <div class="tableform">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="20%" align="right"><span style="color:red">*</span> 选择仓库:</td>
+        <td align="left">
+        	<{if $is_super}>
+                <{if count($branch)=='1'}>
+                    <{$branch.0.name}>
+                    <input type="hidden" name="branch" value="<{$branch.0.branch_id}>" />
+                <{elseif count($branch)>5 }>
+                    <{input type="select" name="branch" vtype="required" rows=$branch valueColumn="branch_id" labelColumn="name" default=$sel_branch_id}> <span style="color:red">*</span>
+                <{else}>
+                    <{foreach from=$branch item=items key=keys}>
+                    <input type="radio" name="branch" vtype="requiredradio" value="<{$items.branch_id}>" <{if ($keys==0&&$sel_branch_id==0)||$sel_branch_id==$items.branch_id}>checked="checked"<{/if}> />
+                    <{$items.name}>　　　　　
+                    <{/foreach}>
+                <{/if}>
+            <{else}>
+                <{if !$branch_list}>
+                    <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+                    <script>
+                       $$("input","button","select").set('disabled',true);
+                    </script>
+                <{else}>
+                    <{if count($branch_list)==1}>
+                        <{$branch_list.0.name}>
+                        <input type="hidden" name="branch" value="<{$branch_list.0.branch_id}>" />
+                    <{elseif count($branch_list)>5}>
+                        <{input type="select" name="branch" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" default=$sel_branch_id}> <span style="color:red">*</span>
+                    <{else}>
+                        <{foreach from=$branch_list item=items key=keys}>
+                        <input type="radio" name="branch" vtype="requiredradio" <{if ($keys==0&&$sel_branch_id==0)||$sel_branch_id==$items.branch_id}>checked="checked"<{/if}> value="<{$items.branch_id}>" />
+                        <{$items.name}>
+                        <{/foreach}> <span style="color:red">*</span>
+                    <{/if}>
+                <{/if}>
+            <{/if}>
+        </td>
+      </tr>
+      <tr>
+        <td align="right"><span style="color:red">*</span> 设置范围:</td>
+        <td align="left">
+        <input name="init_all" id="init_all1" type="radio" value="1" /> <label for="init_all1">全部商品</label>
+        　　　　  　
+        <input name="init_all" id="init_all2" type="radio" value="2" checked="checked" /> <label for="init_all2">只设置安全库存数为0的商品</label>
+        </td>
+      </tr>
+      <tbody id="init_type1_body" style="background-color:#F4F4F4">
+      <tr>
+        <td align="right"><span style="color:red">*</span> 存货周转天数:</td>
+        <td align="left">
+            <{assign var="opt" value=array(1=>1,2=>2,3=>3,4=>4,5=>5,6=>6,7=>7,15=>15)}>
+            <{input type="select" name="days" id="days" required="true" options=$opt default="7"}>
+            天
+            <{help}>设置当前仓库存货周转一次的天数，和货品销售出库的情况密切相关<{/help}>
+            </td>
+      </tr>
+      <tr>
+        <td align="right"><span style="color:red">*</span> 发货截止时间:</td>
+        <td align="left">
+        <{assign var="opt" value=array(0=>"00",1=>"01",2=>"02",3=>"03",4=>"04",5=>"05",6=>"06",7=>"07",8=>"08",9=>"09",10=>10,11=>11,12=>12,13=>13,14=>14,15=>15,16=>16,17=>17,18=>18,19=>19,20=>20,21=>21,22=>22,23=>23)}>
+        <{input type="select" name="hour" id="hour" required="true" options=$opt default="15"}>
+        点
+        <{help}>例：10月1日发货截止后补充库存，则以当日向前推7天计算所得销售出库量回写安全库存；发货截止时间之前补充库存，则从前一天开始计算安全库存<{/help}>
+        </td>
+      </tr>
+      <tr>
+        <td align="right"><span style="color:red">*</span> 补货方式:</td>
+        <td align="left">
+        <input name="supply_type" id="supply_type1" type="radio" value="1" checked="checked" /> <label for="supply_type1">固定订货周期</label>
+        <{help}>适用于固定订货周期下得差值补货；例：每7天来滚动补充库存时；最近7天的销售总量回写安全库存；以保持未来7天的库存供应<{/help}>
+        　　
+        <input name="supply_type" id="supply_type2" type="radio" value="2" /> <label for="supply_type2">供应商补货</label>
+        <{help}>参考供应商到货天数为订货提前期；例:供应商到货天数为3天；则仓库只需准备供三天销售的库存即可，该库存值参考存货周转平均值*到货天数<{/help}>
+        </td>
+      </tr>
+      </tbody>
+      <tbody id="init_type2_body" style="display:none;background-color:#F4F4F4">
+      <tr>
+        <td align="right"><span style="color:red">*</span> 安全库存数:</td>
+        <td align="left"><input name="safe_store" id="safe_store" type="text" value="" class="x-input" size="5"/></td>
+      </tr>
+      </tbody>
+    </table>  
+    
+    <div id="processBars" style="display:none;text-align:center;">
+        <div id="status">正在处理，请耐心等待....</div>
+        <div style="border:1px solid #CCC;width:450px;overflow:hidden;background:#FFF;padding:1px;margin:0 auto;">
+            <div id="processBar" style="background:#7493D1;width:1%;height:25px;">&nbsp;</div>
+        </div>
+    </div>
+    
+    <div id="cc" class="noprint table-action"> 
+    	<button type="button" id="btnSubmit" class="btn"><span><span>开始设置</span></span></button>
+    </div>
+
+  </div>
+
+<script>
+var flag = true;
+/*
+$('btnSubmit').addEvent('click',function(e){
+    var init_type = getRadioVal('init_type');
+    var safe_store = $('safe_store').get('value');
+    if(safe_store == '' && init_type == '1') {
+        alert('请输入安全库存数');
+        $('safe_store').focus();
+        return false;
+    }
+    if(flag){
+        flag = false;	
+        $('form1').fireEvent('submit',e);
+    }
+});
+*/
+
+$('init_type1').addEvent('click',function(e){
+    $('init_type2_body').show();
+    $('init_type1_body').hide();
+    $('init_type1').set('class','current');
+    $('init_type2').set('class','');
+    $('init_type').set('value',1);
+});
+
+$('init_type2').addEvent('click',function(e){
+    $('init_type1_body').show();
+    $('init_type2_body').hide();
+    $('init_type1').set('class','');
+    $('init_type2').set('class','current');
+    $('init_type').set('value',2);
+});
+
+function getRadioVal(name){
+    var e = document.getElementsByName(name);
+    for(var i=0;i<e.length;i++) {
+        if(e[i].checked == true) {
+            return e[i].value;
+        }
+    }
+    if (e.length == 1) {
+        return e[0].value;
+    }
+    return false;
+}
+
+function setProcessBar(id,w){
+    document.getElementById(id).style.width = w;
+}
+
+// ajax分步执行
+(function(){    
+    $('btnSubmit').addEvent('click',function(e){
+        var init_type = $('init_type').get('value');
+        var safe_store = $('safe_store').get('value');
+        var branch = getRadioVal('branch');
+        if(safe_store == '' && init_type == '1') {
+            alert('请输入安全库存数');
+            $('safe_store').focus();
+            return false;
+        }
+        if(branch == '') {
+            alert('请选择仓库');
+            return false;
+        }
+        if(flag){
+            //flag = false;
+            //document.getElementById('cc').style.display = 'none';
+            document.getElementById('processBars').style.display = 'block';
+            ajaxGetAll(0,1);
+        }
+    });
+})();
+
+// 发起ajax请求
+function ajaxGetAll(page_no,total) {
+   
+    // 当前执行的操作 act
+    var task = 'batch_safe_store';
+    
+    if (!page_no) page_no = 0;
+    if (!total) total = 1;
+    
+    // 设置进度条
+    var percent = '1%';
+    percent = 100*(page_no)/total;
+    percent = Math.round(percent);
+    setProcessBar("processBar",percent+'%');
+    
+    // 参数
+    var branch = getRadioVal('branch');
+    var init_all = getRadioVal('init_all');
+    var init_type = $('init_type').get('value');
+    var supply_type = getRadioVal('supply_type');
+    var safe_store = $('safe_store').get('value');
+    var days = $('days').get('value');
+    var hour = $('hour').get('value');
+    
+    var data_str = 'branch='+branch+'&init_all='+init_all+'&init_type='+init_type+'&supply_type='+supply_type+'&safe_store='+safe_store+'&days='+days+'&hour='+hour+"&page_no="+page_no;
+    //alert(data_str);
+    var pingRequest = new Request(
+            {
+                method : "post",
+                url : "index.php?app=console&ctl=admin_stock&act="+task,
+                data:data_str,
+                onSuccess : function(responseText) {
+                    //alert(responseText);
+                    if (responseText == "finish"){
+                        setProcessBar("processBar",'100%');
+                        document.getElementById("status").innerHTML = '全部完成';
+                        //goto next task;
+                    }else{
+                        //document.getElementById("status").innerHTML = "success:"+page_no;
+                        //alert(responseText);
+                        if (page_no == 0) total = parseInt(responseText);
+                        page_no ++;
+                        ajaxGetAll(page_no,total);
+                    }
+                },
+                onFailure : function() {
+                    document.getElementById("status").innerHTML = "failed";
+                }
+            });
+
+    pingRequest.send();
+}
+</script>

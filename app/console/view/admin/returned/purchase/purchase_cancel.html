@@ -1,0 +1,97 @@
+<form name="form1" id="purchase_cancel" method="POST" action="index.php?app=console&ctl=admin_returned_purchase&act=doCancel">
+<script>
+$('t1').set('html', '');
+$('t1').set({'styles':{'color':'red','font-weight':'bold'}});
+var click=0;
+function once(){
+    if (click > 0){
+        return false;
+    }else {
+        click++;
+    }
+    $('t1').set('text', '');
+    $('memo_flag').set('value','1');
+    $('t1').set({'styles':{'color':'black','font-weight':'normal'}});
+}
+
+
+var _form = $('purchase_cancel');
+var btn = $('btn-cancel');
+var finder = finderGroup['<{$env.get.finder_id}>'];
+_form.store('target',{
+onComplete:function(jsontext){
+try{
+    var json = Json.evaluate(jsontext);
+    
+    if(typeof(json.error) != 'undefined'){
+        alert('取消失败');
+    }else{
+        var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+        if(_dialogIns){
+            _dialogIns.close();
+            alert('取消成功');
+            finder.refresh.delay(400,finder);
+        }
+    }
+     }catch(e){}
+
+    
+}
+});
+$('btn-cancel').addEvent('click',function(e){
+
+    new Request({url:'index.php?app=console&ctl=admin_returned_purchase&act=checkCancel&p[0]='+<{$rp_id}>,method:'POST',
+            onRequest:function(){
+                $('btn-cancel').set('disabled', 'true');
+                $('btn-cancel').getElements('span')[1].set('text','正在取消...'); 
+            },
+            onComplete:function(json){
+                if (json != ''){
+                    json = JSON.decode(json);
+                    
+                    if(json.rsp == 'fail'){
+                        if (json.msg_code=='w402'){
+                            if (window.confirm('仓储物流系统无法进行撤销采购退货单操作,是否继续取消采购退货单?\n注：确定继续拒绝将强制撤销本系统未处理的采购退货单，否则请线下联系仓储服务商取消相应的采购退货单'))
+                            {
+                              $('purchase_cancel').fireEvent('submit',{stop:function(){}});
+                            }else{
+                                $('btn-cancel').set('disabled', '');
+                                $('btn-cancel').getElements('span')[1].set('text','确定');
+                            }
+                        }else{
+                            alert('取消失败:'+json.err_msg);
+                            $('btn-cancel').set('disabled', '');
+                            $('btn-cancel').getElements('span')[1].set('text','确定'); 
+                            
+                            return ;
+                        }
+                    }else{
+                        $('purchase_cancel').fireEvent('submit',{stop:function(){}});
+                    }
+                }
+            },
+            }).send();
+
+
+});
+
+</script>
+<div class="division">
+<table width="100%">
+    <tr>
+        <td><b>注意：此操作会将所有要退货商品都取消退货，请慎重操作</b></td>
+    </tr>
+    <tr>
+        <td align="left"><textarea id="t1" name="memo" cols="40" rows="5"></textarea></td>
+    </tr>
+    <tr>
+        <td align="left">经办人：<{input type="text" name="operator" vtype="required" size="15" id="operator" value="{$operator}" }></td>
+    </tr>
+</table>
+</div><table cellspacing="0" cellpadding="0" border="0" align="center" class="tableAction">
+<tr>
+    <td align="center"><b class="submitBtn"><{button type='button' label='拒绝' id="btn-cancel" class="btn btn-primary" }></b></td>
+  </tr>
+</table>
+<input type='hidden' name='rp_id' value='<{$rp_id}>'>
+</form>

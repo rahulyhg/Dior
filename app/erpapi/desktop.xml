@@ -1,0 +1,3 @@
+<desktop>
+    <adminpanel group="desktop_apilog" permission="api_order_log" controller='admin_api_fail' action='retry' display='true' order='1000'>失败重试</adminpanel>
+</desktop>

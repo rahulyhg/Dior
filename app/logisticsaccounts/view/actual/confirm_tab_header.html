@@ -1,0 +1,45 @@
+ <script>
+ $$('#side,#header').dispose();
+ $$('#workground,#main').setStyles({
+    'width':'100%',
+    'left':0
+ });
+
+
+ </script>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td nowrap="nowrap" style="width:auto;">
+   <div class="tabs-wrap select-tabs delivery-cfg-tab">
+   <ul style="margin-top:2px;padding:0;">
+    <li class="tab <{if $env.get.status==''}>current<{/if}>" >
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_confirm&task_id=<{$task_id}>&flt=<{$env.get.flt}>&a=c" type="all"><{t}>汇总信息(<{$actual_status.all.count}>)<{/t}></a></span>
+    </li>
+
+    <li class="tab <{if $env.get.status=='1'}>current<{/if}>">
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_confirm&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=1" type="hasmatched"><{t}>已匹配(<{$actual_status.hasmatched.count}>)<{/t}></a></span>
+    </li>
+ <li class="tab <{if $env.get.status=='2'}>current<{/if}>">
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_confirm&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=2" type="overpayment"><{t}>比预估低(<{$actual_status.overpayment.count}>)<{/t}></a></span>
+    </li>
+     <li class="tab <{if $env.get.status=='3'}>current<{/if}>">
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_confirm&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=3" type="lesspayment"><{t}>比预估高(<{$actual_status.lesspayment.count}>)<{/t}></a></span>
+    </li>
+    <{if $env.get.flt!='confirm'}>
+    <{if $actual_status.accounted.count!=0}>
+     <li class="tab <{if $env.get.status=='4'}>current<{/if}>">
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_confirm&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=4" type="accounted"><{t}>已记账(<{$actual_status.accounted.count}>)<{/t}></a></span>
+    </li>
+    <{/if}>
+    <{if $actual_status.no_match.count!=0}>   
+<li class="tab <{if $env.get.status=='0'}>current<{/if}>" >
+<span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_confirm&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=0" type="no_match"><{t}>未匹配(<{$actual_status.no_match.count}>)<{/t}></a></span>
+    </li><{/if}>
+    <{/if}>
+   </ul>
+   </div>
+
+   <br>
+  </td>
+ </tr>
+ </table>

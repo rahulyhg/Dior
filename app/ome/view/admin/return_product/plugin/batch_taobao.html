@@ -1,0 +1,166 @@
+<style>
+.notice a {color: blue; font-size: 12px; font-weight: 700;margin-left: 4px; margin-right: 4px;}
+</style>
+<div class='division'>
+<{if $chk_msg}>
+    <div class='notice' style="padding-top: 15px;padding-bottom: 15px;">
+        <span style="weight:bold">
+        <{foreach from=$chk_msg item=chk_msg}>
+            <{$chk_msg}><br>
+        <{/foreach}>
+        </span>
+    </div>
+<{/if}>
+</div>
+<{if $error_msg}>
+    <div class='division'>
+        <{foreach from=$error_msg item=error}>
+            <p><{$error}></p>
+        <{/foreach}>
+    </div>
+<{/if}>
+<{if !$chk_msg}>
+<div class="division" id="process_info">
+ <h3>处理信息</h3><br>
+       共 <span style="color:#000000;font-weight:bold">
+            <{$need_return_list_count}>
+       </span> 条记录可以处理,
+        已确认 <span id="iTotal" style="color:#083E96;font-weight:bold">0</span> 条记录,
+        剩 <span id="need_confirm" style="color:green;font-weight:bold"><{$need_return_list_count}></span> 条需确认<br><br>
+        <span id='fail_text' style="display:none">共失败:<span id='fail_return'></span>
+         失败列表如下：<br /><br /><textarea id="iFailInfo" rows="4" cols="100" style="line-height:150%"></textarea>
+         </span>
+    <div id="processBarBg" style="border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;">
+        <div style=" background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;" id='processBar'>
+            &nbsp;
+        </div>
+    </div>       
+</div>
+<div class="table-action">
+ <{if $need_return_list_count>0}>
+     <{if $status_type == 'agree'}>
+     <{button type="button" id="confirm_return_form"  class="btn btn-primary" label="批量同意" }>
+    <{else}>
+    <{button type="button" id="confirm_return_form"  class="btn btn-primary" label="批量拒绝" }>
+    <{/if}>
+ <{/if}>
+<{button type="button" class="btn" id="return-btn" label="关 闭" }>
+
+</div>
+<{/if}>
+
+<script>
+var MaxProcessOrderNum = 20;
+var OrderGroups = <{$need_return_list}>;
+
+var total = <{$need_return_list_count}>;
+var OrderQueue = new Array();
+var doTotal = 0;
+var doFailInfo='';
+if ($('confirm_return_form'))
+{
+    $('confirm_return_form').addEvent('click', function(){
+        doRun();
+    });
+}
+
+function doRun(){
+    initOptQueue();
+    $('confirm_return_form').disabled = true;
+    $('confirm_return_form').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+    doAjaxProcess(1);
+}
+
+    function initOptQueue() {
+        var OrderHash = '';
+        var OrderNum = 0;
+        var OrderKey = '';
+
+        if (OrderGroups == '') {
+            return;
+        }
+        var LeaveProcessOrderNum = total;
+
+        if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+            MaxProcessOrderNum = LeaveProcessOrderNum;
+        }
+
+        for (var i=0;i<OrderGroups.length;i++) {
+
+            if (OrderHash == '')
+                OrderHash = i + '||' + OrderGroups[i];
+            else
+                OrderHash = OrderHash + ';' + i + '||' + OrderGroups[i];
+
+            OrderNum ++;
+
+            if (OrderNum >= MaxProcessOrderNum) {
+                OrderQueue.push(OrderHash);
+                OrderNum =0;
+                OrderHash = '';
+                LeaveProcessOrderNum = LeaveProcessOrderNum - MaxProcessOrderNum;
+                if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+                    MaxProcessOrderNum = LeaveProcessOrderNum;
+                }
+            }
+        }
+
+        if (OrderHash != '') {
+            OrderQueue.push(OrderHash);
+        }
+    }
+    /**
+     * 执行一次AJAX调用
+     */
+    function doAjaxProcess(idx) {
+        if (idx > OrderQueue.length || doTotal >= getTotal()) {
+            $('processBar').setStyle('width', '100%');
+            $('iTotal').set('html',getTotal());
+            $('confirm_return_form').set('html', '<span><span>处理已完成!</span></span>');
+            
+        } else {
+            var params = OrderQueue[idx-1];
+
+            new Request({url:'index.php?app=ome&ctl=admin_return&act=ajax_batch',method:'post',data:{ajaxParams:params,return_id:'<{$need_return_list}>',status_type:'<{$status_type}>'},
+                onComplete:function(result){
+                    if(!result) return;
+                    ret = JSON.decode(result);
+                    doTotal = doTotal + ret['total'];
+                    subTtotal = getTotal()-doTotal;
+                    if(subTtotal<0){
+                        subTtotal=0;
+                    }
+                    $('iTotal').set('html',doTotal);
+                    $('need_confirm').set('html',subTtotal);
+                    $('processBar').setStyle('width', (doTotal*100/(getTotal())) + '%');
+                    $('fail_return').set('html',ret.fail);
+                    for(var key=0; key<ret['error_msg'].length;key++){
+                        
+                        doFailInfo = doFailInfo + ret['error_msg'][key] + '\n';
+                    }
+                    if(doFailInfo){
+                    $('fail_text').setStyle('display','');
+                    $('iFailInfo').set('html', doFailInfo);
+                    }
+                    setTimeout(function(){doAjaxProcess(idx+1);},500);
+                }
+            }).send();
+        }
+    }
+    
+    function getTotal() {
+        return <{$need_return_list_count}>;
+    }
+    if ($('return-btn'))
+    {
+        $('return-btn').addEvent('click',function(e){
+
+         var _this=this;
+
+        _this.getParent('.dialog').retrieve('instance').close();
+        window.finderGroup['<{$finder_id}>'].refresh();
+
+        });
+    }
+    
+</script>

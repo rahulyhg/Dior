@@ -1,0 +1,37 @@
+<{capture name="header"}>
+    <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<div class="division">
+    <h4>操作记录</h4>
+    <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+        <thead>
+        <tr>
+            <th>操作时间</th>
+            <th>IP</th>
+            <th>操作人</th>
+            <th>操作类型</th>
+            <th>操作内容</th>
+        </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$goodslog item=log}>
+        <tr>
+            <td><{$log.operate_time}></td>
+             <td><{$log.ip}></td>
+            <td><{$log.op_name}></td>
+            <td><{$log.operation}></td>
+            <td>
+            <{if $log.operation=='商品修改'}> 
+            <a href='index.php?app=ome&ctl=admin_goods_editor&act=show_history&p[0]=<{$log.log_id}>' target="_blank">查看快照</a><{/if}>
+            <{if  $log.operation=="商品添加"}>商品添加<{/if}>
+            <{if  $log.operation=="商品隐藏"}>商品隐藏<{/if}>
+            <{if  $log.operation=='商品显示'}> 商品显示<{/if}>
+            <{if  $log.operation=='商品导入'}> 批量商品导入<{/if}>
+           </td>
+        </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>
+

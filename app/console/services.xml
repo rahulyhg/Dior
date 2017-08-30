@@ -1,0 +1,46 @@
+<services>
+    <service id="desktop_finder.purchase_mdl_po">
+        <class>console_finder_po</class>
+    </service>
+
+    <service id="extend_filter_purchase_mdl_po">
+        <class>console_finder_extend_filter_po</class>
+    </service>
+	<service id="desktop_finder.purchase_mdl_returned_purchase">
+        <class>console_finder_returned_purchase</class>
+    </service>
+    <service id="desktop_finder.console_mdl_foreign_sku">
+        <class>console_finder_foreign_sku</class>
+    </service>
+	
+	<service id="desktop_finder.console_mdl_inventory_apply">
+        <class>console_finder_inventory_apply</class>
+    </service>
+    <service id="desktop_finder.console_mdl_inventory">
+        <class>console_finder_inventory</class>
+    </service>
+	<service id="desktop_finder.taoguaniostockorder_mdl_iso">
+        <class>console_finder_iso</class>
+    </service>
+	<service id="desktop_finder.console_mdl_stockdump">
+        <class>console_finder_stockdump</class>
+    </service>
+	 <service id="desktop_finder.taoguanallocate_mdl_appropriation">
+        <class>console_finder_appropriation</class>
+    </service>
+	<service id="desktop_finder.console_mdl_products">
+        <class>console_finder_products</class>
+    </service>
+	<service id="desktop_finder.console_mdl_branch_product">
+        <class>console_finder_branch_product</class>
+    </service>
+	<service id="desktop_finder.console_mdl_delivery">
+        <class>console_finder_delivery</class>
+    </service>
+	 <service id="desktop_finder.console_mdl_interface_iostocksearchs">
+        <class>console_finder_iostock</class>
+    </service>
+	<service id="desktop_finder.console_mdl_delivery_send">
+        <class>console_finder_delivery_send</class>
+    </service>
+</services>

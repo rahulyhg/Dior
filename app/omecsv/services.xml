@@ -1,0 +1,43 @@
+<services>
+
+	<service id="omecsv_io">
+        <class>omecsv_io_type_xlsx</class>
+        <class>omecsv_io_type_xls</class>
+        <class>omecsv_io_type_csv</class>
+    </service>
+	<service id="finder_actions.ome_mdl_orders">
+        <class>omecsv_order_actions</class>
+    </service>
+	<service id="finder_actions.ome_mdl_goods">
+        <class>omecsv_goods_actions</class>
+    </service>
+	<service id="finder_actions.ome_mdl_specification">
+        <class>omecsv_specification_actions</class>
+    </service>
+	<service id="finder_actions.ome_mdl_brand">
+        <class>omecsv_brand_actions</class>
+    </service>
+
+	<service id="finder_actions.iostock_mdl_purchase">
+        <class>omecsv_purchase_actions</class>
+    </service>
+
+	<service id="finder_actions.iostock_mdl_purchaseReturns">
+		<class>omecsv_purchaseReturns_actions</class>
+	</service>
+	<service id="finder_actions.iostock_mdl_transfer">
+		<class>omecsv_transfer_actions</class>
+	</service>
+	<service id="finder_actions.iostock_mdl_orderreturns">
+		<class>omecsv_orderreturns_actions</class>
+	</service>
+	<service id="finder_actions.iostock_mdl_inventory">
+		<class>omecsv_inventory_actions</class>
+	</service>
+	<service id="finder_actions.iostock_mdl_damaged">
+		<class>omecsv_damaged_actions</class>
+	</service>
+	<service id="finder_actions.iostock_mdl_changeorderreturns">
+		<class>omecsv_changeorderreturns_actions</class>
+	</service>
+</services>

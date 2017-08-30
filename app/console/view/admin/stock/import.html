@@ -1,0 +1,31 @@
+<form id='upload' action="index.php?app=console&ctl=admin_adjustNumber&act=index&action=to_import" method="post" enctype="multipart/form-data">
+<input type="hidden" name="app" value="console">
+<input type="hidden" name="mdl" value="adjustNumber">
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+<tr>
+    <td style='width:100px;height:30px;'>文件类型：</td>
+	<td style='text-align:left;'><select id='filetype' name='filetype'><{foreach from=$filetype key=k item=v}><option value='<{$k}>'><{$v}></option><{/foreach}></select></td>
+</tr>
+<tr>
+    <td style='width:100px;height:30px;'>导入文件：</td>
+	<td style='text-align:left;'><input id='upload_file' name='import_file' type='file' value='' style='width:240px;'/></td>
+</tr>
+</table>
+</div>
+<div style='margin-top:10px;text-align:center;'><{button class="btn-primary" type="submit" id="create_export_submit" label="导入"}></div>
+
+</form>
+<script>
+$('upload').addEvent('submit', function(e) {
+    $('create_export_submit').set('disabled',true).getElement('span span').set('html','正在导入');
+
+});
+$('upload').store('target', {
+        onComplete: function() {
+            $('create_export_submit').set('disabled',false).getElement('span span').set('html','导入');
+           $('upload_file').value='';
+            }
+});
+
+</script>

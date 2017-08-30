@@ -1,0 +1,72 @@
+<form enctype="multipart/form-data" id='upload_refuse_message' method='post' action='index.php?app=ome&ctl=admin_refund_apply&act=upload_refuse_message' target="upload" isCloseDialog>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+    <tr>
+      <th><{t}>拒绝理由：<{/t}></th>
+      <td>
+        <textarea name='memo' vtype="required"></textarea>
+      </td>
+    </tr>
+
+    <tr>
+      <th><{t}>上传凭证：<{/t}></th>
+      <td>
+        <{input type="sfile" name="attachment" f_type="public" }>  
+      </td>
+    </tr>
+</table>
+<input type='hidden' name='type' value='<{$type}>'>
+<input type='hidden' name='apply_id' value='<{$apply_id}>'>
+<input type='hidden' id='finder_id' name='finder_id' value='<{$finder_id}>'>
+ <div class="table-action">
+      <{button label="确定" class="btn-primary" type='submit'}> 
+    </div>
+</form>
+<script>
+$('upload_refuse_message').store('target',{
+    onComplete:function(resp){
+        rs = JSON.decode(resp);
+        var finder_id = $('finder_id').value;
+        if(rs.error)
+        {
+            errormsg = rs.error;
+            
+            if(errormsg.match("未发货状态下不能操作拒绝") || errormsg.match("未发货")){
+                if (confirm("此退款申请为淘宝未发货订单 ，请再次“确定”是否需要拒绝此申请\n订单发货完成，淘宝上申请才会被关闭! "))
+                {
+                    new Request({
+                        url:'index.php?app=ome&ctl=admin_refund_apply&act=do_updateApply&p[0]=<{$apply_id}>&p[1]=3',
+                        method:'post',
+                        onSuccess:function(response){
+                            alert('操作成功');
+                            
+                        }
+                      }).send();
+                }
+                $('upload_refuse_message').getParent('.dialog').retrieve('instance').close();
+                finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+            }else{
+                if (confirm("线上拒绝失败,是否本地拒绝？! "))
+                {
+                    new Request({
+                        url:'index.php?app=ome&ctl=admin_refund_apply&act=do_updateApply&p[0]=<{$apply_id}>&p[1]=3',
+                        method:'post',
+                        onSuccess:function(response){
+                            alert('操作成功');
+                            
+                        }
+                      }).send();
+                }
+                $('upload_refuse_message').getParent('.dialog').retrieve('instance').close();
+                finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+            }
+            
+            
+        }else{
+          
+            $('upload_refuse_message').getParent('.dialog').retrieve('instance').close();
+            finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+        }
+    }
+});
+
+</script>

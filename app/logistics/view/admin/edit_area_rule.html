@@ -1,0 +1,330 @@
+<style>
+.areabox{padding:2px;}
+.weight_rule li{float:left;padding:4px;text-align:left;}
+.weight_rule ul{width:600px;}
+.weight_left{width:200px;}
+ .weight_right{width:380px;}
+select{width:80px;}
+ul{padding:4px;}
+</style>
+
+下属规则设置<br>
+<div class="tableform">
+<form method="POST" id='area_rule_form' action='index.php?app=logistics&ctl=admin_area_rule&act=editArearule'>
+
+<div class="division">
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+    <tr >
+        <th >地区:</th>
+        <td><{$rule_obj.region_name}></td>
+    </tr>
+    <tr >
+        <th><span style='color:red'>*</span>规则类型:</th>
+        <td>
+            <input type='radio' id='noweighttype' class='first_rule_weight' name='set_type' value='noweight' onclick="showArea('noweight')" <{if $rule_obj.set_type=='noweight'}>checked<{/if}>>按任意重量设置
+            <input type='radio' id='weighttype' class='first_rule_weight' name='set_type' value='weight'  onclick="showArea('weight')" <{if $rule_obj.set_type=='weight'}>checked<{/if}>>按重量区间设置
+        </td>
+    </tr>
+</table>
+</div>
+
+<div class="division" id='first_rule_weight_one'>
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+    <tr >
+        <th>区间类型</th>
+        <td>
+            <span class="spectype"><input type="radio" name="addspectype" class="addspectype" value="weight" checked >普通区间</span>
+            <span class="spectype"><input type="radio" name="addspectype" value="above" class="addspectype">"以上"区间</span>
+            <input type="button" id ='addspec' value='添加'>
+            <{help}>重量请输入整数,<br>请输入连续的区间,重量区间表示:左区间<=重量<右区间<{/help}>
+        </td>
+    </tr>
+
+    <tr>
+        <th></th>
+        <td><div id="spec_body">
+        <{if $rule_obj.set_type=='weight'}>
+        <{foreach from=$rule_obj.items item=items}>
+            <div class='weight_rule' id='<{$items.item_id}>' align="left">
+                <ul>
+                    <li class="weight_left">
+                        重量:<input type="text"  name="min_weight[]" size=8 value="<{$items.min_weight}>" vtype="required&&unsigned">g&nbsp;&nbsp;&nbsp;&nbsp;
+                        <{if $items.max_weight=='-1'}>
+                            <input type="hidden" name="max_weight[]" value="<{$items.max_weight}>" >以上
+                        <{else}>
+                            至<input type="text" name="max_weight[]" size=8 value="<{$items.max_weight}>" vtype="required&&unsigned">g&nbsp;&nbsp;
+                        <{/if}>
+                    </li>
+                    <li class="weight_right">
+                        首选物流公司:
+                        <select name="corp_id[]" id="dlyCorpWeight<{$items.item_id}>" onchange="dlyCorpChange('Weight<{$items.item_id}>')">
+                        <{foreach from=$dly_corp item=dlyCorp1}>
+                            <option value='<{$dlyCorp1.corp_id}>' <{if $dlyCorp1.corp_id==$items.corp_id}>selected<{/if}>><{$dlyCorp1.name}></option>
+                        <{/foreach}>
+                        </select>&nbsp;&nbsp;
+                        <span id="secondSpanWeight<{$items.item_id}>" <{if !in_array($items.corp_id,$elecIds)}>style="display:none;"<{/if}>>
+                        次选物流公司:<select name='second_corp_id[]' id="secondDlyCorpWeight<{$items.item_id}>">
+                            <option value='0'>--请选择--</option>
+                        <{foreach from=$dlyCorpNormal item=dlyCorp2}>
+                            <option value='<{$dlyCorp2.corp_id}>' <{if $items.second_corp_id==$dlyCorp2.corp_id}>selected<{/if}>><{$dlyCorp2.name}></option>
+                        <{/foreach}>
+                        </select>
+                        </span>
+                        <a onclick='deleteArea($(this).getParent("div"))'>删除</a>
+                    </li>
+                </ul>
+            </div>
+            <input type="hidden" name="item_id[]" value="<{$items.item_id}>">
+        <{/foreach}>
+        <{/if}>
+        </div></td>
+    </tr>
+</table>
+</div>
+
+<div class="division" id='first_rule_weight_nothing' style='display:none'>
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+    <tr >
+        <th></th>
+        <td>
+            首选物流公司:
+            <select name='default_corp_id' id='dlyCorpNoweight' onchange="dlyCorpChange('Noweight')">
+                <{foreach from=$dly_corp item=dlyCorp1}>
+                    <option value='<{$dlyCorp1.corp_id}>' <{if $rule_obj.items.0.corp_id==$dlyCorp1.corp_id}>selected<{/if}>><{$dlyCorp1.name}></option>
+                <{/foreach}>
+            </select>
+            <span id="secondSpanNoweight" <{if !in_array($rule_obj.items.0.corp_id,$elecIds)}>style="display:none;"<{/if}>>
+            次选物流公司:<select name='default_second_corp_id' id='secondDlyCorpNoweight'>
+                <option value='0'>--请选择--</option>
+            <{foreach from=$dlyCorpNormal item=dlyCorp2}>
+                <option value='<{$dlyCorp2.corp_id}>' <{if $rule_obj.items.0.second_corp_id==$dlyCorp2.corp_id}>selected<{/if}>><{$dlyCorp2.name}></option>
+            <{/foreach}>
+            </select>
+            </span>
+        </td>
+    </tr>
+</table>
+<{if $rule_obj.set_type=='noweight'}>
+    <input type="hidden" name='default_item_id' value="<{$rule_obj.items.0.item_id}>">
+<{/if}>
+</div>
+
+<div class="table-action">
+    <{button type="button" label="保存" id="create_rule_save" }>
+</div>
+
+<input type="hidden" name="rule_id" value="<{$rule_obj.rule_id}>">
+<input type="hidden" name="rule_type" value="other">
+<input type="hidden" name="obj_id" value="<{$rule_obj.obj_id}>">
+</form>
+</div>
+
+<script>
+var corp_id=<{$dly_corp_list}>;
+var dlyCorpNormal = <{$dlyCorpNormalJson}>;
+var electronIds = <{$electronIds}>;
+
+var addAreaTemp = function(){
+    var p_region_id = "<{$rule.first_city_id}>";
+    var first_city="<{$rule.first_city}>";
+    p_region_array =[];
+    first_city_array=[];
+    p_region_array = p_region_id.split(',');
+    first_city_array = first_city.split(',');
+    temp= '<div><span class="span_x_ipt"  package="mainland"><input id="dom_el_88646801" type="hidden" name="area[]"><select onchange="selectArea(this,this.value,2)">';
+    temp+='<option value="_NULL_">请选择---</option>';
+    p_region_array.each(function(i,index){
+        temp+='<option value='+p_region_array[index]+'  has_c="true">'+first_city_array[index]+'</option>';
+    });
+    temp+='</select></span>';
+    temp+="<a onclick='deleteArea($(this).getParent(\"li\"))'>删除</a></div>";
+
+    return temp;
+}
+
+function showArea(setType){
+    if(setType=='weight'){
+        $('first_rule_weight_one').setStyle('display','');
+        $('first_rule_weight_nothing').setStyle('display','none');
+    }
+
+    if(setType=='noweight'){
+        $('first_rule_weight_nothing').setStyle('display','');
+        $('first_rule_weight_one').setStyle('display','none');
+    }
+}
+
+showArea('<{$rule_obj.set_type}>');
+
+$$('.first_rule_weight').addEvent('click',function(i,index){
+    confirmchange = confirm('切换规则类型,现有类型将会全部删除?');
+    if(confirmchange==false){
+        if(this.value=='weight'){
+            showArea('noweight');
+            this.set('checked',false);
+            $('noweighttype').set('checked',true);
+        }else{
+            this.set('checked',false);
+            $('weighttype').set('checked',true);
+            showArea('weight');
+        }
+    }
+});
+
+$('addspec').addEvent('click',function(e){
+    var add_above=0;
+    $$('.weight_left').each(function(etd){
+        above_max_weight = etd.getChildren('input[name^=max_weight]').get('value')/1;
+        if(above_max_weight=='-1'){
+            add_above++;
+            
+        }
+    });
+
+    if(add_above>=1){
+        return MessageBox.error('<{t}>以上区间存在不可以再添加!<{/t}>');
+    }else{
+        var spectype = $('first_rule_weight_one').getElement("input[name='addspectype']:checked").value;
+        var index = uniqueID();
+        var newRow=new Element('div[class="areabox"]',{html:getTemp(spectype)}).inject($('spec_body'));
+     }
+});
+
+var new_city_item = 0;
+var getTemp = function(type,index){
+    var max_weight_value=0;
+    temp='<div class="weight_rule" align="left"><ul><li class="weight_left">重量:<input type="text"  name="min_weight[]" size=8 vtype="required&&unsigned">g&nbsp;&nbsp;&nbsp;&nbsp;';
+    if(type=='weight'){
+        temp+='至<input type="text" name="max_weight[]" size=8 vtype="required&&unsigned">g &nbsp;&nbsp;';
+    }else{
+        temp+='以上<input type="hidden" name="max_weight[]" size=10 value="-1"> ';
+    }
+
+    temp+='</li><li class="weight_right">首选物流公司:';
+    temp+='<select name="corp_id[]" id="dlyCorp'+index+'" onchange="dlyCorpChange('+index+')">';
+    temp+='<option value="0">--请选择--</option>';
+    if(corp_id){
+        corp_id.each(function(i,index){
+            temp+='<option value='+i.corp_id+'>'+i.name+'</option>';
+        });
+    }
+    temp+="</select>&nbsp;&nbsp;";
+    temp+='<span id="secondSpan'+index+'" style="display:none;">次选物流公司:<select name="second_corp_id[]" id="secondDlyCorp'+index+'">';
+    temp+='<option value="0">--请选择--</option>';
+    if(dlyCorpNormal){
+        dlyCorpNormal.each(function(i,index){
+            temp+='<option value='+i.corp_id+'>'+i.name+'</option>';
+        });
+    }
+    temp+="</select></span>";
+    temp+="<a onclick='deleteArea($(this).getParent(\"div\"))' >删除</a>";
+    temp+="</li></ul></div>";
+
+    return temp;
+};
+
+function dlyCorpChange(index) {
+    var dlyCorp = 'dlyCorp'+index;
+    var secondDlyCorp = 'secondDlyCorp'+index;
+    var secondSpan = 'secondSpan'+index;
+
+    var val = $(dlyCorp).value;
+    if(electronIds.contains(val)) {
+        $(secondSpan).show();
+    } else {
+        $(secondSpan).hide();
+    }
+    $(secondDlyCorp).selectedIndex = 0;
+}
+
+function deleteArea(d){
+    if (!confirm('删除后无法恢复，确定要删除吗？')){
+        return;
+    }
+
+    d.remove();
+    if(d.get('id')){
+        new Request({url:'index.php?app=logistics&ctl=admin_area_rule&act=deleteRule&item_id='+d.get('id'),
+        onComplete:function(rs){
+            var json = Json.evaluate(rs);
+            if (typeof(json.error) != 'undefined'){
+                alert('删除失败');
+            }else{
+                alert('删除成功');
+            }
+        }}).send();
+    }
+}
+
+$('create_rule_save').addEvent('click',function(e){
+    var set_type=$('area_rule_form').getElements("input[name='set_type']:checked").get('value');
+    if(set_type=='weight'){
+        var above_set=0;
+        compareValueFlag = $$('.weight_left').every(function(etd){
+            min_weight = etd.getChildren('input[name^=min_weight]').get('value')/1;
+            max_weight = etd.getChildren('input[name^=max_weight]').get('value')/1;
+            if(max_weight=='-1'){
+                above_set++;
+            }
+            if((min_weight>max_weight || min_weight==max_weight) && max_weight!='-1'){
+                return false;
+            }
+            return true;
+        });
+
+        if(!compareValueFlag )return MessageBox.error('<{t}>重量最小值大于最大值<{/t}>');
+        if(above_set>=2) return MessageBox.error('<{t}>以上区间只能有一个<{/t}>');
+
+        //区间判断重复
+        var length=$$('.weight_left').length;
+        if(length<=0){
+            return MessageBox.error('<{t}>请选择对应的重量区间!<{/t}>');
+        }
+
+        for(i=0;i<length;i++){
+            imin = $$('.weight_left')[i].getChildren('input[name^=min_weight]').get('value');
+            imax = $$('.weight_left')[i].getChildren('input[name^=max_weight]').get('value');
+
+            for(j=i+1;j<length;j++){
+                min=$$('.weight_left')[j].getChildren('input[name^=min_weight]').get('value')/1;
+                max=$$('.weight_left')[j].getChildren('input[name^=max_weight]').get('value')/1;
+                if(imax=='-1'){
+                    if(min>imin/1){
+                        return MessageBox.error(min+'大于'+imin+',<{t}>大于以上区间重量最小值<{/t}>');
+                    }
+                }
+                if(imax>min){
+                    return MessageBox.error(imax+'大于'+min+'<{t}>重复区间存在<{/t}>');
+                }
+            }
+        }
+    }
+
+    var form=this.getParent('form');
+    var _this=this;
+    form.store('target',{
+        onRequest:function(){
+            _this.disabled=true;
+        },
+        onComplete:function(jsontext){
+            try{
+                var json = Json.evaluate(jsontext);
+                if (typeof(json.error) != 'undefined'){
+                    _this.disabled=false;
+                }else{
+                    show_area_list();
+                    _this.getParent('.dialog').retrieve('instance').close();
+                }
+            }catch(e){}
+        }
+    });
+    form.fireEvent('submit',e);
+});
+
+uniqueID = (function () {
+    var id = 0;
+    return function () {
+        return id++;
+    };
+})();
+</script>

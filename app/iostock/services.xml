@@ -1,0 +1,33 @@
+<services>
+  <service id="desktop_finder.iostock_mdl_purchase">
+     <class>iostock_finder_purchase</class>
+  </service>
+   <service id="desktop_finder.iostock_mdl_purchaseReturns">
+     <class>iostock_finder_purchaseReturns</class>
+  </service>
+   <service id="desktop_finder.iostock_mdl_transfer">
+     <class>iostock_finder_transfer</class>
+  </service>
+  <service id="desktop_finder.iostock_mdl_damaged">
+     <class>iostock_finder_damaged</class>
+  </service>
+  <service id="extend_filter_iostock_mdl_iostock">
+       <class>iostock_finder_extend_filter_iostock</class>
+	</service>
+
+	<service id="desktop_finder.iostock_mdl_inventory">
+		<class>iostock_finder_inventory</class>
+	</service>
+	<service id="desktop_finder.iostock_mdl_changeorderreturns">
+		<class>iostock_finder_changeorderreturns</class>
+	</service>
+	<service id="desktop_finder.iostock_mdl_orderreturns">
+		<class>iostock_finder_orderreturns</class>
+	</service>
+	<service id="desktop_finder.iostock_mdl_iostocksearch">
+		<class>iostock_finder_iostocksearch</class>
+	</service>
+   <service id="extend_filter_iostock_mdl_iostocksearch">
+      <class>iostock_finder_extend_filter_iostocksearch</class>
+  </service>
+</services>

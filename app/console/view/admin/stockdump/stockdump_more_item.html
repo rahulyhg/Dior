@@ -1,0 +1,45 @@
+<div class="tableform">
+<h4 style="border:none;">转储详情:</h4>
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+<thead>
+<tr>
+    <th>货号</th>
+    <th>货品名称</th>
+	<th>规格</th>
+    <th>单位</th>
+	<th>入库价格</th>
+    <th>数量</th>
+    <th>已入库数量</th>
+</tr></thead>
+<tbody>
+<{foreach from=$items item=item}>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.product_name}></td>
+	<td><{$item.spec_info}></td>
+	<td><{$item.unit}></td>
+	<td><{$item.appro_price|cur}></td>
+    <td><{$item.num}></td>
+    <td><{$item.in_nums}></td>
+</tr>
+<{/foreach}>
+
+</tbody>
+</table>
+<div class="table-action" id="pager">
+      <{$pager}>
+</div>
+<script language="javascript">
+	var pager = document.getElementById('pager').getElementsByTagName('a');
+	for(var i=0;i<pager.length;i++){
+		pager[i].target = '_self';
+	}
+</script>
+<{capture name="footbar"}>
+<div class="table-action">
+    <{button label="关 闭" type="button" onclick="window.close();"}>
+</div>
+<{/capture}>
+</div>
+</div>

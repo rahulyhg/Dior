@@ -1,0 +1,211 @@
+<{if !$env.get.target}><div class="division" container="true"><{/if}>
+<h3>分配商品</h3>
+<div id="button_select_all" style="display:none;">
+    <a href="javascript:void(0)" onclick="select_all()">全部选中</a>
+    <a href="javascript:void(0)" onclick="no_select_all()">取消选中</a>
+    <div  id="msg"></div>
+</div>
+<input type="hidden" id="count" name="count" value="<{$count}>" />
+<div class='frt' style="width:20%;margin-right:2%">
+    <form action="index.php?app=console&ctl=admin_goodssync&act=dispatch" method="post" id="search_form">
+        <input type="hidden" name="search" value="true" />
+        <input type="hidden" name="wms_id" value="<{$wms_id}>" />
+        <table>
+            <tr>
+                <td>
+                    <select name="search_key" vtype="required" onchange="change_search(this)">
+                        <{foreach from=$search item=item key=key}>
+                            <option <{if $key== $search_key}>selected='selected'<{/if}> class="search" value="<{$key}>"><{$item}></option>
+                        <{/foreach}>
+                    </select>
+                </td>
+                <td>
+                    <{input id="default_show" type="text" style="display:block" name="search_value" vtype="required" value="{$search_value}"}>
+                    <{foreach from=$search_list item=items key=keys}>
+                        <select vtype="required" id="show_<{$keys}>" style="display:none" name="search_value_<{$keys}>" vtype="required" >
+                            <{foreach from=$items item=item key=key}>
+                                <option <{if $item== $search_value_key}>selected='selected'<{/if}> value="<{$key}>"><{$item}></option>
+                            <{/foreach}>
+                        </select>
+                    <{/foreach}>
+                </td>
+                <td>
+                    <a class="finder-search-btn lnk-search" href="javascript:void(0);" onclick="do_search()">
+                        <span><{t}>搜索<{/t}></span>
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<br />
+<br />
+<form action="index.php?app=console&ctl=admin_goodssync&act=do_save" method="post" id="goods_form">
+    <input type="hidden" name="select_all" value="false" id="select_all" />
+    <input type="hidden" name="wms_id" value="<{$wms_id}>"/>
+    <input type="hidden" name="finder_id" value="<{$finder_id}>"/>
+    <input type="hidden" name="search_key" value="<{$search_key}>"/>
+    <input type="hidden" name="search_value" value="<{$search_value_last}>"/>
+    <table cellpadding="0" cellspacing="0" border="0" class="gridlist">
+        <thead>
+            <tr>
+            <th><input type="checkbox" onclick="selectAll()" /></th>
+            <th>货品编码</th>
+            <th>货品名称</th>
+            <th>商品品牌</th>
+            </tr>
+        </thead>
+        <tbody>
+        <{foreach item=item from=$rows}>
+            <tr>
+                <td><input type="checkbox" onclick="selectone()" class="product_item" name="product_id[]" value="<{$item.product_id}>"></td>
+                <td><{$item.bn}></td>
+                <td><{$item.name}></td>
+                <td><{$item.brand_name}></td>
+            </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+    <div class="table-action">
+        <{$pager}>
+    </div>
+</form>
+<{if !$env.get.target}></div><{/if}>
+<{if !$env.get.target}>
+    <{capture name="footbar"}>
+    <div class="table-action">
+        <{button label="确定" type="button" id="submit_button" onclick="do_submit()"}>
+    </div>
+    <{/capture}>
+<{/if}>
+<script>
+change_search();
+var i=0;
+function selectAll(){
+    rs = is_select_all();
+    if(rs == false) return;
+    if(i % 2 =='0'){
+        var j=0;
+        $$('.product_item').each(function(el){
+            el.set('checked','checked');
+            el.set('name','product_id[]');
+            j++;
+        });
+        $('msg').set('text','选中当前'+j+'条数据');
+        $('button_select_all').set('style','display:block;float:left;width:30%');
+    }else{
+        $$('.product_item').each(function(el){
+            el.set('checked','');
+            el.set('name','');
+        });
+        $('button_select_all').set('style','display:none');
+    }
+    i = i+1;
+}
+function select_all(){
+    var count = $('count').get('value');
+    $('select_all').set('value','true');
+    $$('.product_item').each(function(el){
+        el.set('checked','checked');
+        el.set('name','product_id[]');
+        $('msg').set('text','选中全部'+count+'数据');
+    });
+}
+function no_select_all(){
+    $('select_all').set('value','false');
+    window.location.reload(1);
+}
+function selectone(el){
+    rs = is_select_all();
+    if(rs == false) return;
+    var i=0;
+    $$('.product_item').each(function(el){
+        var ch = el.get('checked');
+        if(ch === true){
+            if(i > 0){
+                $('button_select_all').set('style','display:block;float:left;width:30%');
+                $('msg').set('text','选中当前'+(i+1)+'条数据');
+            }
+            i++;
+        }
+    });
+}
+
+function do_submit(flag){
+    new Request({
+        url:$('goods_form').get('action'),
+        data:$('goods_form').toQueryString(),
+        onRequest:function(){
+           $('submit_button').set('disabled', 'true');
+           $('submit_button').getElements('span')[1].set('text','提交中');
+        },
+        onComplete:function(re){
+            opener.finderGroup['<{$env.get.finder_id}>'].refresh();
+            window.close();
+        }
+    }).send();
+    
+}
+
+function do_search(){
+    new Request({
+        url:$('search_form').get('action'),
+        data:$('search_form').toQueryString(),
+        onComplete:function(re){
+            if(!re){
+                alert('请输入搜索条件！');
+                return;
+            }
+            $('main').set('html',re);
+            change_search();
+        }
+    }).send();
+}
+
+function change_search(el){
+    $$('.search').each(function(e){
+        var selected = e.get('selected');
+		
+        if(selected === true ){
+            var value = e.get('value');
+			
+            $('show_brand').set('style','display:none');
+            //$('show_pack').set('style','display:none');
+            $('default_show').set('style','display:none');
+//            if(value == 'type') {
+//                $('show_type').set('style','display:block');
+//                $('default_show').set('value','');
+//            }    
+            if(value == 'brand'){
+                $('show_brand').set('style','display:block');
+                $('default_show').set('value','');
+            }   
+//            if(value == 'pack') {
+//                $('show_pack').set('style','display:block');
+//                $('default_show').set('value','');
+//            }   
+            if(value == 'bn' || value == 'name'){
+                $('default_show').set('style','display:block');
+            }  
+        }
+    });
+}
+document.onkeydown=function(event) 
+{
+    e = event ? event :(window.event ? window.event : null); 
+    if(e.keyCode==13){ 
+    //执行的方法 
+    return false;
+    } 
+}
+
+function is_select_all(){
+    var flag = $('select_all').get('value');
+    if(flag == 'true'){
+        no_select_all();
+        return false;
+    }
+    return true;
+}
+</script>
+

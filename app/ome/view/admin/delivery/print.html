@@ -1,0 +1,186 @@
+<style type="text/css" media="print">
+.noprint{ display : none }
+.salemodes{
+background:#ffffff
+}
+</style>
+<style>
+.float_left{ float:left; text-align:center; width:80%; font-weight:bold;}
+.float_right{ float:right; text-align:center; width:20%;}
+.d_th{ background:#ededed; color:#4e5318;  }
+.d_td{ font-weight:bold; width:120px;}
+.d_table{ margin:20px 10px; color:#4e5318;}
+.d_table table{ border-collapse:collapse;}
+.d_table td{ border:1px solid #ccc; border-collapse:collapse; height:26px; line-height:26px; text-align:center;}
+.d_table th{ border:1px solid #ccc; border-collapse:collapse; height:26px; line-height:26px; text-align:center; color:#4e5318; }
+#print_confirm { width:100%;  height:30px;  border-top:1px solid #999999; padding-top:4px;   background-color:#5473ae; position:absolute; }
+#btn_print { width:71px; height:24px; background-image:url(images/btn_print.gif); cursor:pointer; margin-left:auto; margin-right:auto;}
+#barcode { width:150px; height:50px; background:url(images/bar_code.gif) no-repeat;}
+.salemodes{
+background:#eeeeee
+}
+.price{
+text-align:right;
+}
+</style>
+<link rel="stylesheet" href="<{$desktop_path}>/print.css" type="text/css" media="print"/>
+<input type="hidden" name='printname' id='printname' value="<{$vid}>" />
+<script type="text/javascript">
+
+window.addEvents({
+    "domready":function() {
+		if($("chk_box")){
+            $("chk_box").checked=false;
+            $("chk_box").addEvent('click',function(){
+            $$('.price').setStyle('display',$$('.price')[0].getStyle('display')=="none"?"":"none");
+            if($$('.price')[0].getStyle('display')!="none"){
+                
+                $$('.mode_print').each(function(i,index){
+                    
+                    if(i.value=='salemode' && i.get('checked')==true){
+                        $$('.pkgprice').setStyle('display','none');
+                    }
+                
+                });
+            }
+            
+            });
+            
+        }
+       
+        if($("chk_pic_print")){
+            $("chk_pic_print").addEvent("click",function(e){
+                $$("#print1 img").setStyle("display",(this.checked == false?"none":'inline'));
+            });
+        }
+        if ($("chk_pic_print1")){
+            $("chk_pic_print1").addEvent("click",function(){
+                $$("#print2 img").filter(function(e){return e.className!='x-barcode'}).setStyle("display",(this.checked == false?"none":'inline'));
+               $("print_confirm").setStyle("top",document.documentElement.scrollTop + window.getHeight() - 35);
+            });
+            $("chk_address").addEvent("click",function(){
+                $("print_address").setStyle("display",(this.checked == false?"none":'inline'));
+            });
+        }
+        $("print_confirm").setStyle("top",window.getHeight() - 35);
+        var j =0;
+        $("btn_print").addEvent("click",function()
+        {
+            if(j>0){
+                var confirmprint = confirm('本页面已打印,请不要重复提交,是否仍然打印?');
+                if (confirmprint) {
+                    changePrint();
+                }
+            }else{
+            changePrint();
+            j++;
+            }
+        }
+        );
+        if($$('.mode_print')){
+        $$('.mode_print').addEvent('click',function(e){
+        if(this.value=='salemode'){
+            var pickmode = $('pickmode');
+            if(pickmode){
+                $$('.sale_type').setStyle('display','');
+                $$('.salemode').addClass('salemodes');
+                $$('.pkg').setStyle('display','');
+                $$('.price').setStyle('display','');
+                 $("chk_box").set('checked','');
+                 $$('.salemodename').set('html','&nbsp;&nbsp;&nbsp;&nbsp;');
+                 $$('.pkgprice').setStyle('display','none');
+                 $$('.pick_type').setStyle('display','none');
+                 $$('.salemode').setStyle('display','');
+            }else{ 
+            $$('.salemode').addClass('salemodes');
+            $$('.pkg').setStyle('display','');
+            $$('.price').setStyle('display','');
+             $("chk_box").set('checked','');
+             $$('.salemodename').set('html','&nbsp;&nbsp;&nbsp;&nbsp;');
+             $$('.pkgprice').setStyle('display','none');}
+        }
+        if(this.value=='pickmode'){
+            var pickmode = $('pickmode');
+            if(pickmode){
+                 $$('.salemode').setStyle('display','none');
+                 $$('.salemode').removeClass('salemodes');
+                 $$('.pkg').setStyle('display','none');
+                 $("chk_box").fireEvent('click');
+                 $$('.salemodename').set('html','');
+                 $$('.pkgprice').setStyle('display','');
+                 $$('.price').setStyle('display','none');
+                 $("chk_box").set('checked','checked');
+                 $$('.pick_type').setStyle('display','');
+                 $$('.sale_type').setStyle('display','none');
+            }else{ 
+            $$('.salemode').removeClass('salemodes');
+            $$('.pkg').setStyle('display','none');
+            $("chk_box").fireEvent('click');
+            $$('.salemodename').set('html','');
+            //$$('.pkgprice').setStyle('display','');
+            //$$('.price').setStyle('display','none');
+            $("chk_box").set('checked','checked');
+        }}
+
+        });
+        }
+        
+    },
+    "scroll":function() {
+        $("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+    },
+    "resize":function() {
+        $("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+    }
+});
+window.addEvent('load',function(){
+     $$("img.product").each(function(img){
+         var _imgsrc=img.src;
+         new Asset.image(_imgsrc,{
+          onload:function(){
+                img.set(this.zoomImg(60,60,1)).set('align','absmiddle');
+         }});
+     });
+    if('<{$print_style}>'){
+         if('<{$print_style}>'=='0')
+         {
+            $$('.salemode').addClass('salemodes');
+            $$('.pkg').setStyle('display','');
+            $$('.pkgprice').setStyle('display','none');
+          
+         }else if('<{$print_style}>'=='1'){
+             $$('.salemode').removeClass('salemodes');
+             $$('.pkg').setStyle('display','none');
+             $("chk_box").set('checked','checked');
+             $("chk_box").fireEvent('click');
+         }
+     }
+   
+    
+
+});
+
+
+
+</script>
+<div id="print1">
+</div>
+<div id="print_confirm" class="noprint" style="text-align:center;">
+<{include app=ome file='/admin/print/tmplbtn.html'}>
+<{if $items}>
+<{if $print_version=='1'}>
+<input type="radio" name='mode_print' class='mode_print' value='salemode' <{if $print_style=='0'}>checked<{/if}>>销售清单模式
+<input type="radio" name='mode_print' class='mode_print' value='pickmode' <{if $print_style=='1'}>checked<{/if}>>拣货模式
+<{/if}>
+<label for="chk_box">
+<input type="checkbox" id="chk_box"> 隐藏价格</label>
+
+<{/if}>
+
+<span id="btn_print">
+  <{button type="button" id="b1" label="打 印" class="btn-secondary"}>
+</span>
+</div>
+
+</body>
+</html>

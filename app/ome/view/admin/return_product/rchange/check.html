@@ -1,0 +1,368 @@
+<style>
+.gridlist th{
+  width:140px;
+}
+.reship-detail .gridlist tr td{
+  text-align:left;
+}
+.reship-detail .gridlist tr th{
+  text-align:right;
+}
+.gridlist tr th{  text-align:left;}
+.gridlist tr td{  text-align:left;}
+</style>
+<form action="index.php?ctl=admin_return_rchange&act=<{$act}>&app=ome&finder_id=<{$env.get.finder_id}>" method="post" id="return-apply">
+  <input type="hidden"  name="por_id"  value="<{$por_id}>">
+  <div class="tableform">
+    <div>
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class='reship-detail'>
+        <tr>
+          <td colspan="2">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%" class="gridlist">
+              <tr>
+               <th>销售单:</th>
+              <td><{$reship_data.order_bn}></td>
+               <th>创建日期:</th><td><{$reship_data.createtime|cdate}></td>
+               <th>会员名:</th><td><{$reship_data.member_id}></td>
+               <th style="width:80px;">退回物流公司:</th><td><{$reship_data.return_logi_name}></td>
+              </tr>
+              <tr>
+               <th>物流公司:</th><td><{$reship_data.logi_name|default:'-'}></td>
+               <th>物流单号:</th><td><{$reship_data.logi_no|default:'-'}></td>
+               <th>退换货类型:</th><td><{if $reship_data.return_type eq 'return'}>退货<{else}>换货<{/if}></td>
+               <th>退回物流单号:</th><td><{$reship_data.return_logi_no|default:'-'}></td>
+
+              </tr>
+              <tr>
+               <th>收货人姓名:</th><td><{$reship_data.ship_name|default:'-'}></td>
+               <th>收货人地区:</th><td><{$reship_data.ship_area|default:'-'}></td>
+               <th>收货人地址:</th><td><{$reship_data.ship_addr|default:'-'}></td>
+               <th>收货人邮编:</th><td><{$reship_data.ship_zip|default:'-'}></td>
+              </tr>
+              <tr>
+               <th>收货人固定电话:</th><td><{$reship_data.ship_tel|default:'-'}></td>
+               <th>收货人Email:</th><td><{$reship_data.ship_email|default:'-'}></td>
+               <th>收货人手机:</th><td><{$reship_data.ship_mobile|default:'-'}></td>
+               <th>配送方式:</th><td><{$reship_data.delivery|default:'-'}></td>
+              </tr>
+              <tr>
+                <th>售后服务类型</th><td><{$reship_data.problem_type|default:'-'}></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+            <th><{t}>备注:<{/t}></th>
+            <td><{$reship_data.memo|default:'-'}></td>
+        </tr>
+        <{if $act eq 'save_check'}>
+        <tr>
+            <th><{t}>审核备注:<{/t}></th>
+            <td><{input type="textarea" class="x-input" name="reason" cols="50" rows="5" value=$reship_data.reason.check}></td>
+        </tr>
+        <{/if}>
+      </table>
+            <div class='division diff-div'>
+    <{if $reship_data.return_type=='change'}>
+      <div style='padding-bottom:5px;color:#cc6600;'>公式计算: 合计退款金额=应退商品金额&nbsp;+&nbsp;补差价费用&nbsp;-&nbsp;换出商品金额&nbsp;-&nbsp;折旧(其他费用)&nbsp;-&nbsp;买家承担的邮费</div>
+      <{else}>
+      <div style='padding-bottom:5px;color:#cc6600;'>公式计算: 合计退款金额=应退商品金额&nbsp;-&nbsp;折旧(其他费用)&nbsp;-&nbsp;买家承担的邮费</div>
+    <{/if}>
+
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+        <thead>
+          <th>应退商品金额</th>
+            <th>补偿费用</th>
+          <{if $reship_data.return_type=='change'}>
+          <th>换出商品金额</th>
+          <{/if}>
+          <th>折旧(其他费用)</th>
+          <th>买家承担的邮费</th>
+          <{if $reship_data.diff_order_bn}>
+          <th>补差价费用</th>
+          <{/if}>
+        </thead>
+        <tbody>
+        <tr>
+          <td><{$reship_data.tmoney|cur}></td>
+          <td><{$reship_data.bcmoney|cur}></td>
+          <{if $reship_data.return_type=='change'}>
+          <td><{$reship_data.change_amount|cur}></td>
+          <{/if}>
+          <td><{$reship_data.bmoney|cur}></td>
+          <td><{$reship_data.cost_freight_money|cur}></td>
+        <{if $reship_data.diff_order_bn}>
+          <td>
+             订单：<span ><{$reship_data.diff_order_bn}></span><br/>
+             金额：<span ><{$reship_data.diff_money|cur}></span>
+          </td>
+          <{/if}>
+        </tr>
+        <tr>
+          <td colspan='5' style='text-align:right;'>
+            <{if $reship_data.totalmoney>=0}>
+            <b>需退还用户:</b>
+            <span style='color:red;'>
+            <{$reship_data.totalmoney|cur}>
+            </span>
+            <{else}>
+            <b>还需用户补款:</b>
+            <span style='color:#3333ff;'>
+            <{$reship_data.totalmoney*-1|cur}>
+            </span>
+            <{/if}>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <{tabber}>
+         <{tab name="退入商品"}>
+         <div class="clear division">
+
+          <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+              <thead>
+                <tr>
+                  <th><{t}>货号<{/t}></th>
+                  <th><{t}>商品名称<{/t}></th>
+                  <th><{t}>规格<{/t}></th>
+                  <th><{t}>申请数量<{/t}></th>
+                 
+                  <th><{t}>仓库<{/t}></th>
+                  <th><{t}>良品<{/t}></th>
+                 <th><{t}>不良品<{/t}></th>
+                </tr>
+              </thead>
+              <{foreach from=$reship_data.return item=aGoods name="item" key=key}>
+              <tbody>
+                <tr>
+                  <td><{$aGoods.bn}></td>
+                  <td><{$aGoods.product_name}> </td>
+                  <td><{$aGoods.spec_info}></td>
+                  <td><{$aGoods.num}></td>
+                  <td><{$aGoods.branch_name}></td>
+                  <td><{$aGoods.normal_num}></td>
+                 <td><{$aGoods.defective_num}></td>
+                </tr>
+              </tbody>
+              <{/foreach}>
+        </table>
+
+         </div>
+         <{/tab}>
+      <{if $display_button neq 'accept_returned'}>
+        <{if $reship_data.return_type eq 'change'}>
+         <{tab name="换出商品"}>
+         <div class="clear division">
+
+          <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+                  <thead>
+                    <tr>
+                      <th><{t}>货号<{/t}></th>
+                      <th><{t}>商品名称<{/t}></th>
+                      <th><{t}>申请数量<{/t}></th>
+                      <th><{t}>仓库<{/t}></th>
+                    </tr>
+                  </thead>
+                  <{foreach from=$reship_data.change item=aGoods name="item" key=key}>
+                  <tbody>
+                    <tr>
+                      <td><{$aGoods.bn}></td>
+                      <td><{$aGoods.product_name}> </td>
+                      <td><{$aGoods.num}></td>
+                      <td><{$aGoods.branch_name}></td>
+                    </tr>
+                  </tbody>
+                  <{/foreach}>
+          </table>
+
+         </div>
+         <{/tab}>
+         <{/if}>
+
+         <{if $payments || $refunds}>
+         <{tab name="支付/退款明细"}>
+         <div class="clear division">
+          <{include file="admin/return_product/rchange/paydetail.html" app="ome"}>
+        </div>
+         <{/tab}>
+         <{/if}>
+
+      <{/if}>
+      <{/tabber}>
+    </div>
+  </div>
+</form>
+<{if $display_button eq 'accept_returned'}>  <!--admin_sv_charge-->
+  <form method="post" action="index.php?app=ome&ctl=admin_return_rchange&act=save_accept_returned&p[0]=<{$reship_data.reship_id}>" id="form-change">
+  <div class="tableform">
+  <div class="division">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+  <tr>
+     <td colspan="2">
+       <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+          <tr>
+        <th>快递单号：</th>
+        <td>
+        <input type="text" name="info[shiplogino]" class="x-input" value="<{$pro_detail.process_data.shiplogino}>" />   </td>
+              <th>快递公司：</th>
+              <td>
+			  <{input type="object" name="info[shipcompany]" mdl_object="ome_mdl_dly_corp" cols="name" object="dly_corp" app="ome" style="width:120px" }>
+			  <!--<{*<input type="text" name="info[shipcompany]" class="x-input" value="<{$pro_detail.process_data.shipcompany}>" />*}>--></td>
+              <th>快递费用：</th>
+              <td><input type="text" name="info[shipmoney]" class="x-input" />
+              <input type="checkbox" name="info[daofu]" value="1" class="x-input" />
+              到付</td>
+          </tr>
+       </table>
+     </td>
+  </tr>
+  <tr>
+     <th><{t}>收货备注：<{/t}></th>
+     <td><textarea name="info[memo]" class="x-input" cols="100" rows="5"><{$pro_detail.process_data.memo}></textarea></td>
+  </tr>
+  </table>
+  </div>
+  </div>
+  </form>
+<{/if}>
+
+    <div class="table-action">
+      <{if $display_button eq 'check'}>
+        <{button label="审核通过" class="btn-primary" id="checksubmit" onclick="subCheckForm(event,1);"}> &nbsp; &nbsp;
+      <{elseif $display_button eq 'endcheck'}>
+        <{button label="最终收货" class="btn-primary" onclick="subCheckForm(event,1);"}> &nbsp; &nbsp;
+      <{elseif $display_button eq 'accept_returned'}>
+        <{button label="确认" class="btn-primary" type="sumbit" onclick="accept_returned(event,3);"}> &nbsp; &nbsp;
+        <{button label="拒绝收货" class="btn-primary" onclick="accept_returned(event,4);"}> &nbsp; &nbsp;
+      <{/if}>
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+
+<script>
+
+<{if $display_button eq 'accept_returned'}>
+
+    function accept_returned(event,sign){
+
+       if(!$('form-change'))return;
+       var _form=$('form-change'),_formActionURL=_form.get('action');
+
+       if(sign == '4'){
+            _form.getParent('.dialog').retrieve('instance').close();
+            url = 'index.php?ctl=admin_return_rchange&act=refuse_reason&app=ome&p[0]=<{$reship_data.reship_id}>&p[1]='+sign+'&p[2]=returned&finder_id=<{$env.get.finder_id}>';
+            new Dialog(url,{width:700, height:250, title:'收货拒绝:<{$reship_data.reship_bn}>'});
+       }
+       var target = {
+          onComplete:function(data){
+            var rs =JSON.decode(data);
+            if( rs && rs.success ){
+              if(_form.getParent('.dialog')){
+                 finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+                 _form.getParent('.dialog').retrieve('instance').close();
+              }
+
+            }
+          }
+       };
+
+       _form.store('target',target);
+       _form.set('action',_formActionURL+'&p[0]=<{$reship_data.reship_id}>&p[1]='+sign).fireEvent('submit',new Event(event));
+    }
+
+<{else}>
+var CheckEditFrame = (function(){
+
+  if(!$('return-apply'))return;
+  var _form=$('return-apply'),_formActionURL=_form.get('action');
+  subCheckForm = function (event,sign){
+     var specOBJ='';
+     $('checksubmit').set('disabled',true);
+     var target={onComplete:function(){
+        finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+     }};
+      switch(sign){
+          case 6:
+            $extend(target,{
+              onComplete:function(data){
+                var rs =JSON.decode(data);
+                if( rs && rs.success ){
+                }
+              }}
+            );
+          break;
+          default:
+            $extend(target,{
+              onComplete:function(data){
+                var rs =JSON.decode(data);
+                if( rs && rs.success ){
+                  if($('return-apply').getParent('.dialog')){
+                    window.finderGroup['<{$env.get.finder_id}>'].refresh();
+                    $('return-apply').getParent('.dialog').retrieve('instance').close();
+                  }
+                }
+              }}
+            );
+          break;
+      }
+
+
+
+    _form.store('target',target);
+    _form.set('action',_formActionURL+'&p[0]=<{$reship_data.reship_id}>&p[1]='+sign).fireEvent('submit',new Event(event));
+  };
+});
+
+CheckEditFrame();
+<{/if}>
+
+<{if $display_button eq 'ruku'}>
+
+    function calculate(){
+      var zhengclass = 'zheng';
+      zhengclass ='.'+zhengclass;
+      var fuclass = 'fu';
+      fuclass ='.'+fuclass;
+      var sum= 0;
+      var tsum=0;
+      var bsum=0;
+      $ES(zhengclass).each(function(e){
+        sum -= -e.get('value');
+        tsum -= -e.get('value');
+
+      });
+
+      $ES(fuclass).each(function(e){
+        sum -= e.get('value');
+        bsum -= -e.get('value');
+      });
+      if(sum>=0){
+        /*$('x-return_status_<{$product.return_id}>_4').disabled = false;
+        var el_b = $('x-return_status_<{$product.return_id}>_4').getParent('b');
+        el_b.removeClass('submitBtnoff');
+        el_b.addClass('submitBtn');
+        */
+        $('bu_cha').style.visibility = 'hidden';
+      }else{
+        /*
+        $('x-return_status_<{$product.return_id}>_4').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_4').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');*/
+        $('bu_cha').style.visibility = 'visible';
+      }
+      sum=sum.toFixed(3);
+      $('totalmoney').set('text',sum);
+      $('money').value = sum;
+      tsum=tsum.toFixed(3);
+      $('tmoney').set('text',tsum);
+      $('tmoney').value = tsum;
+
+      bsum=bsum.toFixed(3);
+      $('bmoney').set('text',bsum);
+      $('bmoney').value = bsum;
+    }
+
+<{/if}>
+</script>

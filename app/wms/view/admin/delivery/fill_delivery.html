@@ -1,0 +1,177 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="spage-main-box">
+<div class="tableform">
+
+    <div style="padding-left: 20px; font-size: 2.5em;font-weight: 700;">
+        补打物流单
+    </div>
+	
+    <div class="division">
+    
+        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tbody>
+            <tr>
+                <td width="427"><span id="error" style="color:red; font-weight:bold; font-size:14px;display:none" class="error" ></span></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <span  style="font-size: 1.5em;font-weight: bold;">输入物流单号：</span><br/>
+                    <input type="text" id="logi_no" name="logi_no" vtype="required" style="margin-top: 10px;background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;margin-bottom: 10px;padding-left: 19px;width: 400px;" /></td>
+			  <td width="596" valign="bottom"><br><br><button type="button" id="sendProduct" style="font-size:3.0em;font-weight: 700; height: 50px; width:100px;cursor: pointer;" >确定</button></td>
+            </tr>
+            </tbody>
+        </table>
+    
+	<form method="post" action="index.php?app=wms&ctl=admin_receipts_print&act=addPrintShip" target='_blank'  id="dlyinfo" style="padding-left: 5px; display:none;">
+					<input type="hidden" id="delivery_id" name="delivery_id" value="" />
+					<table cellspacing="0" cellpadding="0" border="0" class="gridlist">
+						<thead>
+							<tr>
+								<th>物流公司</th>
+								<th>物流运单号</th>
+								<th>重量</th>
+								<th>创建时间</th>
+								<th>状态</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="dlyinfotd">
+						</tbody>
+					</table>
+					<table width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:20px;">
+					<tbody>
+					<tr>
+						<td width="120" colspan="2"><span style="font-size: 1.5em;font-weight: bold;">补打数量：</span></td>
+					</tr>
+					<tr>
+						<td width="50" align="center"><input type="text" id="num" name="num" style="margin-top: 15px;background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;width: 50px;"  value="1" /></td>
+					    <td width="30" align="center" valign="middle"><{img src="bundle/icon_asc_3.gif" id="jia" title="加1" app="desktop"  style="cursor:pointer; margin:8px 0px 0px 0px;"}><br><{img src="bundle/icon_desc_3.gif" id="jian" title="减1" app="desktop"  style="cursor:pointer;"}></td>
+				      <td align="left"><br><button type="submit" id="printDelivery" style="font-size:3.0em;font-weight: 700; height: 50px; width:200px;cursor: pointer; margin-left:50px;" >打印物流单</button></td>
+					</tr>
+					</tbody>
+				</table>
+    </form>
+    </div>
+
+</div>
+</div>
+<script>
+$('num').addEvent('keyup',function(e){
+    if(this.value.length==1){
+		this.value=this.value.replace(/[^1-9]/g,'')
+	}else{
+		this.value=this.value.replace(/\D/g,'')
+	};
+	var FirstChar=this.value.substr(0,1);
+    if(FirstChar=="0")
+    {
+       this.value=1; 
+    }
+});
+$('num').addEvent('afterpaste',function(e){
+    if(this.value.length==1){
+		this.value=this.value.replace(/[^1-9]/g,'')
+	}else{
+		this.value=this.value.replace(/\D/g,'')
+	};
+	var FirstChar=this.value.substr(0,1);
+    if(FirstChar=="0")
+    {
+       this.value=1; 
+    }
+});
+
+$('jian').addEvent('click', function(e){
+	var num = parseInt($('num').value);
+	if(num>1){
+		$('num').value = num-1;
+	}
+});
+
+$('jia').addEvent('click', function(e){
+	var num = parseInt($('num').value);
+	$('num').value = num+1;
+});
+
+function trim(str){  //删除左右两端的空格
+    return str.replace(/(^\s*)|(\s*$)/g, '');
+}
+
+function trimAll(str){  //删除所有空格
+    return str.replace(/[\s]+/g, '');
+}
+
+$('logi_no').focus();
+$('logi_no').addEvent('change',function(e){
+    this.value = trimAll(this.value);
+    return true;
+});
+$('logi_no').addEvent('keyup',function(e){
+    if(e.code==13)
+		delivery_info(e);
+});
+$('sendProduct').addEvent('click', function(e){
+	delivery_info(e);
+});
+
+function delivery_info(e){
+	var logi_no = $('logi_no').value;
+    if (logi_no == ''){
+        $('error').show().set('html','请输入物流单号');return ;
+    }
+    new Request({url:'index.php?app=wms&ctl=admin_consign&act=fill_delivery_confirm',data:'logi_no='+logi_no,method:'POST',
+      onRequest: function(){
+          $('error').hide();
+      },
+      onComplete: function(json){
+        if (json != ''){
+            json = JSON.decode(json);
+        }
+        var refund_orders, is_confirm_delivery = false;
+        if (json.status == 'error'){
+            $('error').show().set('html',json.msg['str']);
+        }else{
+            $('dlyinfo').show();
+			$('dlyinfotd').set('html',json.msg['str']);
+			$('delivery_id').value = json.msg['delivery_id'];
+        }
+      }
+    }).send();
+}
+
+function del_deliveryBill($log_id,$delivery_id){
+	if(!confirm('<{t}>确认删除<{/t}>?'))return;
+	new Request({url:'index.php?app=wms&ctl=admin_consign&act=del_deliveryBill',data:'b_id='+$log_id+'&delivery_id='+$delivery_id,method:'POST',
+      onRequest: function(){
+          $('error').hide();
+      },
+      onComplete: function(json){
+        if (json != ''){
+            json = JSON.decode(json);
+        }
+        var refund_orders, is_confirm_delivery = false;
+        if (json.status == 'error'){
+            $('error').show().set('html',json.msg['str']);
+        }else{
+            $('dlyinfo').show();
+			$('dlyinfotd').set('html',json.msg['str']);
+			$('delivery_id').value = json.msg['delivery_id'];
+        }
+      }
+    }).send();
+}
+
+$('printDelivery').addEvent('click', function(e){
+    var num = $('num').value;
+    num  = parseInt(num);
+    if(num >10){
+        alert("每次最多只能补打10单！");
+        return false;
+    }
+});
+</script>

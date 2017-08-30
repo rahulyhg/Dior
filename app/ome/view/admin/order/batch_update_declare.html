@@ -1,0 +1,51 @@
+<form class="tableform" id="form-order" method='post' action='index.php?app=ome&ctl=admin_order&act=doBatchDeclare'>
+    <table width="100%" >
+        <tbody>
+            <tr>
+                <td><input type='hidden' name='order_ids' value='<{$order_ids}>'></input></td>
+                <td><span style="color:red;">*</span>申报条件：
+                <br />
+                　1、只有 “未确认--已付款” 状态的订单才能设置为跨境申报订单！
+                <br />
+                　2、已审核成功的跨境申报订单不能重复申报！
+                <br />
+                　3、已取消的订单不能进行申报！
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="table-action">
+          <table width="100%" cellspacing="0" cellpadding="0">
+            <tbody>
+              <tr>
+                <td><button class="btn btn-primary" id="btn-submit" onclick='dosubmit()'><span><span><{t}>申报选中订单<{/t}></span></span></button></td>
+              </tr>
+            </tbody>
+      </table>
+  </div>
+</form>
+
+<script>
+function dosubmit(){
+    $("form-order").fireEvent('submit',{stop:function(){}});
+}
+(function(){
+  var finder = finderGroup['<{$env.get.finder_id}>'];
+  $('form-order').store('target',{
+      onRequest:function(){
+         $('btn-submit').set('disabled', 'true');
+      },
+      onComplete:function(jsontext){
+         var json = Json.evaluate(jsontext);
+         if (typeof(json.error) != 'undefined'){
+           $('btn-submit').set('disabled', '');
+         }else{
+			 $('btn-submit').set('disabled', 'true');
+             finderGroup['<{$env.get.finder_id}>'].refresh.delay(400, finderGroup['<{$env.get.finder_id}>']);
+             $('btn-submit').getParent('.dialog').retrieve('instance').close();
+         }
+      }
+  });
+})();
+</script>

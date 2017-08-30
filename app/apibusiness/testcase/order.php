@@ -1,0 +1,34 @@
+<?php
+class order extends PHPUnit_Framework_TestCase
+{
+   
+
+    function setUp() {
+        //本测试用例正对于单仓库使用
+        
+    }
+    
+    function getOrder(){
+        $sdf = array ( 'tax_no' => '', 'cur_amount' => '643.00', 'weight' => '0', 'cur_rate' => '1.0', 'from_node_id' => '1092712739', 'ip' => '', 'consignee' => array ( 'r_time' => '', 'addr' => '西湖道花港里5-3-101', 'zip' => '300193', 'mobile' => '13502186063', 'telephone' => '', 'area_city' => '天津市', 'email' => '', 'area_state' => '天津', 'area_district' => '南开区', 'name' => '孟晓楠', ), 'selleralipayid' => '', 'sellerphone' => '', 't_type' => 'fenxiao', 'taxpayeridentity' => '', 'currency' => 'CNY', 'sellermobile' => '', 'tag' => 'None', 'cost_item' => '635.00', 'mark_type' => '', 'bankandaccount' => '', 'consigner' => array ( 'addr' => '', 'zip' => '', 'mobile' => '', 'telephone' => '', 'area_city' => '', 'email' => '', 'area_state' => '', 'area_district' => '', 'name' => '', ), 'is_delivery' => 'Y', 'cost_tax' => '0', 'buyercompanyname' => '', 'lastmodify' => '2013-12-22 11:56:28', 'sellercompanyname' => '', 'pmt_detail' => array ( 'pmt_amount' => 0, 'pmt_describe' => '', ), 'refundpayment' => '', 'title' => '', 'custom_mark' => '', 'id' => '2737309019347', 'selleremail' => '', 'receivephone' => '', 'order_bn' => '2737309019347', 'receiveaddress' => '', 'buyermobile' => '', 'order_objects' => array ( 0 => array ( 'status' => 'TRADE_FINISHED', 'tc_order_id' => NULL, 'obj_type' => 'goods', 'name' => '科蒙博卡2013秋装女款针织衫 V领印花收腰修身纯羊绒针织套头衫', 'weight' => 0, 'pmt_price' => 0, 'bn' => 'F160R2247115', 'oid' => 2737309019347, 'cost_tax' => '635.00', 'amount' => 0, 'order_items' => array ( 0 => array ( 'status' => 'TRADE_FINISHED', 'specId' => '', 'name' => '科蒙博卡2013秋装女款针织衫 V领印花收腰修身纯羊绒针织套头衫', 'weight' => 0, 'price' => '635.00', 'cost_tax' => '635.00', 'product_attr' => array ( 0 => array ( 'value' => '绿底印花，尺码', 'label' => '颜色分类', ), ), 'item_type' => 'product', 'amount' => '', 'score' => 0, 'sale_price' => '', 'original_str' => '颜色分类：绿底印花，尺码：XXL', 'buyer_payment' => '898.00', 'bn' => 'F160R2247115', 'quantity' => 1, ), ), 'buyer_payment' => '898.00', 'refund_fee' => '643.00', 'sub_order_bn' => 2737309019347, 'score' => 0, 'obj_alias' => '', 'distributor_payment' => '635.00', 'price' => '635.00', 'fx_oid' => 2737309019347, 'quantity' => 1, ), ), 'selling_agent' => array ( 'uname' => '人在江湖趟', 'agent' => array ( 'uname' => '人在江湖趟', ), ), 'pay_status' => '1', 'status' => 'finish', 'pmt_goods' => '0', 'invoicecompanyname' => '', 'trade_type' => 'AGENT', 'order_source' => 'tbdx', 'score_u' => '0', 'pmt_order' => '0', 'refundstatus' => '', 'member_info' => array ( 'tel' => '', 'name' => '孟晓楠', 'zip' => '300193', 'mobile' => '13502186063', 'area_city' => '天津市', 'alipay_no' => '', 'uname' => '孟晓楠', 'email' => '南开区', 'area_state' => '天津', 'area_district' => '南开区', 'addr' => '西湖道花港里5-3-101', ), 'payment_detail' => array ( 'trade_no' => 'BO20131221541082172502', 'paymethod' => '分账交易', 'pay_account' => '', 'currency' => 'CNY', 'pay_time' => 1387442011, 'money' => '643.00', ), 'buyerfeedback' => '', 'discount' => '0', 'score_g' => '0', 'order_limit_time' => '', 'tax_title' => '', 'fx_order_id' => '2737309019347', 'buyer_nick' => '', 'to_node_id' => '1363745935', 'tc_order_id' => '487515447466621', 'mark_text' => '已联系拦截', 'total_amount' => '643.0', 'coupons_name' => '', 'ship_status' => '1', 'sellermemberid' => '', 'pay_bn' => '', 'modified' => '1387684588', 'shipping' => array ( 'shipping_name' => '快速', 'cost_protect' => 0, 'is_cod' => 'false', 'is_protect' => 'false', 'cost_shipping' => '8.00', ), 'buyeralipayid' => '', 'payed' => '643.00', 'closereason' => '', 'payinfo' => array ( 'pay_name' => '分账交易', 'cost_payment' => 0, ), 'payments' => array ( 0 => array ( 'trade_no' => 'BO20131221541082172502', 'paymethod' => '分账交易', 'pay_account' => '', 'currency' => 'CNY', 'pay_time' => 1387442011, 'money' => '643.00', ), ), 'is_tax' => 'None', 'buyerphone' => '', 'createtime' => '1387426209', 'shop' => array ( 'shop_id' => '11364907cf269dd2183b64287156072a', 'shop_bn' => '004', 'name' => '科蒙博卡淘宝分销', 'shop_type' => 'taobao', 'config' => 'a:3:{s:3:"url";s:0:"";s:7:"account";s:0:"";s:8:"password";s:0:"";}', 'crop_config' => false, 'last_download_time' => '1387847994', 'last_upload_time' => NULL, 'active' => 'true', 'disabled' => 'false', 'last_store_sync_time' => '1387850290', 'area' => 'mainland:上海/上海市/浦东新区:35', 'zip' => '201206', 'addr' => '川桥路200号B栋3楼', 'default_sender' => '科蒙博卡', 'mobile' => '15900845295', 'tel' => '', 'filter_bn' => 'false', 'bn_regular' => NULL, 'express_remark' => NULL, 'delivery_template' => NULL, 'order_bland_template' => NULL, 'node_id' => '1092712739', 'node_type' => 'taobao', 'api_version' => NULL, 'addon' => array ( 'type' => 'C', 'nickname' => '科蒙羊绒', 'session_start_time' => '2013-09-04 18:33:59', 'session_expire_time' => '2014-09-04 18:33:59', 'session' => '6200b1402941b160e416d8ZZ5a53941dfaf75904e317fe2443482063', 'from_node' => '1363745935', 'to_node' => '1092712739', ), 'alipay_authorize' => 'false', 'business_type' => 'fx', 'tbbusiness_type' => 'other', 'node_version' => NULL, ), );
+        base_rpc_service::$node_id = '1092712739';
+
+        return $sdf;
+    }
+    public function testOrder(){
+        
+        // $a = array ( 'shop_id' => '11364907cf269dd2183b64287156072a', 'shop_bn' => '004', 'name' => '科蒙博卡淘宝分销', 'shop_type' => 'taobao', 'config' => 'a:3:{s:3:"url";s:0:"";s:7:"account";s:0:"";s:8:"password";s:0:"";}', 'crop_config' => false, 'last_download_time' => '1387847994', 'last_upload_time' => NULL, 'active' => 'true', 'disabled' => 'false', 'last_store_sync_time' => '1387850290', 'area' => 'mainland:上海/上海市/浦东新区:35', 'zip' => '201206', 'addr' => '川桥路200号B栋3楼', 'default_sender' => '科蒙博卡', 'mobile' => '15900845295', 'tel' => '', 'filter_bn' => 'false', 'bn_regular' => NULL, 'express_remark' => NULL, 'delivery_template' => NULL, 'order_bland_template' => NULL, 'node_id' => '1092712739', 'node_type' => 'taobao', 'api_version' => NULL, 'addon' => array ( 'type' => 'C', 'nickname' => '科蒙羊绒', 'session_start_time' => '2013-09-04 18:33:59', 'session_expire_time' => '2014-09-04 18:33:59', 'session' => '6200b1402941b160e416d8ZZ5a53941dfaf75904e317fe2443482063', 'from_node' => '1363745935', 'to_node' => '1092712739', ), 'alipay_authorize' => 'false', 'business_type' => 'fx', 'tbbusiness_type' => 'other', 'node_version' => NULL, );
+        // app::get('ome')->model('shop')->save($a);
+        // exit;
+        $sdf = $this->getOrder();
+
+        kernel::single('apibusiness_router_response')->dispatch('order','add',$sdf);
+        exit;
+        $sdf = array(
+            'status' => 'dead',
+            'order_bn' => '201312181610007710',
+        );
+        base_rpc_service::$node_id = '123456';
+
+        kernel::single('apibusiness_router_response')->dispatch('order','status_update',$sdf);
+    }
+}

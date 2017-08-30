@@ -1,0 +1,128 @@
+<style type="text/css">.setting-notice{color:red;padding-left: 20px;}</style>
+
+<h3>系统设置</h3>
+<form method="post" action="index.php?app=ome&ctl=admin_setting&act=index" id="form-setting" >
+    <div class="tableform tableform-tabs">
+        <{tabber}>
+            <{foreach from=$settingTabs item=item key=key}>
+                <{tab name=$item.name url=$item.url}>
+                    <{include file=$item.file_name app=$item.app}>
+
+                    <{if !$item.hidden_default_button}>
+                    <div class="table-action">
+                        <{button label=提交 type="submit" name="button" id="btn-setting-{$key}"}>
+                    </div>
+                    <{/if}>
+                <{/tab}>
+            <{/foreach}>
+        <{/tabber}>
+    </div>
+</form>
+
+<script>
+window.addEvent('domready',function(){
+    function validIntervalTime(){
+        if(this.value.length==1){
+            this.value=this.value.replace(/[^1-9]/g,'')
+        }else{
+            this.value=this.value.replace(/\D/g,'')
+        };
+        var FirstChar=this.value.substr(0,1);
+        if(FirstChar=="0")
+        {
+           this.value=2; 
+        }
+        if(this.value<2){
+            this.value=2; 
+        }        
+    }
+
+    $$('#getOrder','#groupCalibration','#groupCalibration').addEvents({
+        'keyup':function(e){
+            var _fun = validIntervalTime.bind(this);
+            _fun();
+        },
+        'afterpaste':function(e){
+            var _fun = validIntervalTime.bind(this);
+            _fun();
+        },
+        'blur':function(e){
+            var _fun = validIntervalTime.bind(this);
+            _fun();
+        }
+    });
+
+    function check(status){
+        if(status == 1){
+            if($$('input[name=set[ome.product.serial.merge]]:checked').get('value') == 'true'){
+                $('serial_separate').show();
+            }else{
+                $('serial_separate').hide();
+            }
+        }
+    }
+    
+    check(1);
+    $$('input[name=set[ome.product.serial.merge]]').addEvent('click',function(e){
+        check(1);
+    });
+
+    function delivery_weight(setting) {
+        if(setting=='on') {
+            $E('.weight_on').setStyle('display','');
+            // $$('.weightwarn_on').setStyle('display','');
+            //如果开启称重，则隐藏校验后即发货
+            $E('.check_delevery').setStyle('display','none');
+        } else {
+            $E('.weight_on').setStyle('display','none');
+            // $$('.weightwarn_on').setStyle('display','none');
+            //关闭称重，则显示校验完即发货
+            $E('.check_delevery').setStyle('display','');
+        }
+    }
+
+
+    $$('.combine_setting').addEvent('click',function(e){
+        var value = this.value;
+        var checked=this.checked;
+        combine_setting(value,checked)
+    });
+
+    function combine_setting(combine_value,setting){
+        if(combine_value=='member_id'){
+            if(setting==false){
+                $('omeauto_memberidconf').setStyle('display','');
+                $('ome_combine_member_id').set('value',1);
+            }else{
+                $('omeauto_memberidconf').setStyle('display','none');
+                $('ome_combine_member_id').set('value',0);
+            }
+        }
+        if(combine_value=='shop_id'){
+            if(setting==false){
+                $('ome_combine_shop_id').set('value',1);
+            }else{
+                $('ome_combine_shop_id').set('value',0);
+            }
+        }
+    }
+    var arrive_value = $$('input[name=set[ome.logi.arrived]]:checked').get('value');
+    arrived_setting(arrive_value);
+    $$('.arrive_setting').addEvent('click',function(e){
+     var value = this.value;
+
+     arrived_setting(value);
+    
+    });
+    function arrived_setting(arriveauto_value){
+     if (arriveauto_value == '1')
+     {
+         $('arriveauto').setStyle('display','');
+     }else{
+        $('arriveauto').setStyle('display','none');
+     }
+    }
+});
+</script>
+
+

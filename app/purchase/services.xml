@@ -1,0 +1,89 @@
+<services>
+<service id="desktop_finder.ome_mdl_goods">
+        <class>purchase_finder_goods</class>
+    </service>
+    <service id="desktop_finder.purchase_mdl_credit_sheet">
+        <class>purchase_finder_credit_sheet</class>
+    </service>
+
+    <service id="desktop_finder.purchase_mdl_purchase_payments">
+        <class>purchase_finder_purchase_payments</class>
+    </service>
+
+    <service id="desktop_finder.purchase_mdl_purchase_refunds">
+        <class>purchase_finder_purchase_refunds</class>
+    </service>
+
+    <service id="desktop_finder.purchase_mdl_eo">
+        <class>purchase_finder_eo</class>
+    </service>
+
+    <service id="desktop_finder.purchase_mdl_po">
+        <class>purchase_finder_po</class>
+    </service>
+    <service id="desktop_finder.purchase_mdl_appropriation">
+        <class>purchase_finder_appropriation</class>
+    </service>
+    <service id="desktop_finder.purchase_mdl_supplier">
+        <class>purchase_finder_supplier</class>
+    </service>
+
+   <!--  <service id="desktop_finder.purchase_mdl_inventory">
+        <class>purchase_finder_inventory</class>
+    </service> -->
+
+    <service id="extend_filter_ome_mdl_products">
+        <class>purchase_finder_extend_filter_products</class>
+    </service>
+
+    <service id="extend_filter_purchase_mdl_purchase_payments">
+        <class>purchase_finder_extend_filter_payments</class>
+    </service>
+
+    <service id="extend_filter_purchase_mdl_po">
+        <class>purchase_finder_extend_filter_po</class>
+    </service>
+
+    <service id="desktop_finder.purchase_mdl_statement">
+        <class>purchase_finder_statement</class>
+    </service>
+
+    <service id="desktop_finder.purchase_mdl_returned_purchase">
+        <class>purchase_finder_returned_purchase</class>
+    </service>
+
+
+    <service id="purchase_supplier_brand_apps">
+        <class>purchase_supplier_brand</class>
+    </service>
+
+    <service id="user_roles">
+        <class>purchase_roles</class>
+    </service>
+
+    <service id="operation_log">
+        <class>purchase_operation_log</class>
+    </service>
+
+    <service id="ome_group_type">
+        <class>purchase_group_type</class>
+    </service>
+
+     <service id="system_setting">
+        <class>purchase_setting</class>
+    </service>
+
+    <service id="tpl_source.messenger_purchase">
+        <class>purchase_messenger_tmpl</class>
+    </service>
+
+    <service id="purchase.credit_sheet">
+        <class>purchase_credit_sheet</class>
+    </service>
+     <service id="purchase.refunds">
+        <class>purchase_refunds</class>
+    </service>
+     <service id="data_clear">
+        <class>purchase_service_data_clear</class>
+    </service>
+</services>

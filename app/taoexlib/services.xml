@@ -1,0 +1,35 @@
+<services> 
+    <service id="desktop_finder.taoexlib_mdl_queue">
+        <class>taoexlib_finder_queue</class>
+    </service>
+    <service id="data_clear">
+        <class>taoexlib_data</class>
+    </service>
+    <service id="desktop_finder.taoexlib_mdl_ietask">
+        <class>taoexlib_finder_ietask</class>
+    </service>
+    <service id="taoexlib.queue">
+        <class>taoexlib_queue</class>
+    </service>
+    <service id="desktop_background_export">
+        <class>taoexlib_ietask</class>
+    </service>
+    <service id="taoexlib_monitor">
+        <class>taoexlib_monitor</class>
+    </service>
+	<service id="message_setting">
+        <class>taoexlib_setting</class>
+    </service>
+    <service id="desktop_finder.taoexlib_mdl_sms_sample">
+        <class>taoexlib_finder_sms_sample</class>
+    </service>
+    <service id="desktop_finder.taoexlib_mdl_sms_bind">
+        <class>taoexlib_finder_sms_bind</class>
+    </service>
+	<service id="desktop_finder.taoexlib_mdl_sms_sample_items">
+        <class>taoexlib_finder_sms_sample_items</class>
+    </service>
+	<service id="openapi.taoexlib.sms">
+        <class>taoexlib_rpc_sms</class>
+    </service>
+</services>

@@ -1,0 +1,32 @@
+<div class="division" id="subform">
+  <ul>
+  <{foreach from=$corp_list item=item}>
+    <li><input type="radio" name="name[]" cp_name="<{$item.name}>" cp_type="<{$item.type}>" cp_website="<{$item.website}>" cp_request_url="<{$item.request_url}>" /><{$item.name}></li>
+  <{/foreach}>
+  </ul>
+</div>
+
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <{button label="确定" class="btn btn-primary" id="submit"}> &nbsp; <{button label="关闭" class="btn btn-secondary" isCloseDialogBtn='true'}>
+</div>
+<{/area}>
+
+<script>
+  $('submit').addEvent('click',function(){
+    $('subform').getElements('input[type=radio]:checked').each(function(item){
+
+        $('dly_name').value=item.get('cp_name');
+        $('dly_type').value=item.get('cp_type');
+        $('dly_website').value=item.get('cp_website');
+        $('dly_request_url').value=item.get('cp_request_url');
+        if(item.get('cp_type') == 'OTHER'){
+            $('dly_type').set('readOnly',false);
+            $('dly_type').value='';
+        }else{
+            $('dly_type').set('readOnly',true);
+        }
+    });
+    $('subform').getParent('.dialog').retrieve('instance').close();
+  });
+</script>

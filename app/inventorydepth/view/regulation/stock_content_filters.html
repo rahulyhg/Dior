@@ -1,0 +1,99 @@
+<{foreach from=$data.content.filters item=row name=content_filters key=rownum}>
+<div class="clearfix filters" key='<{$rownum}>'>
+
+	<span class='head fl' style="margin-left:5px;">
+		<{if $smarty.foreach.content_filters.first}>当<{else}>且<{/if}>
+	</span>
+	
+	<span class="fl mr15" style="margin-left:5px;">
+		<{input type="select" name="content[filters][{$rownum}][object]" options=$obj value=$row.object required=true}>
+	</span>
+    
+    <span class="fl">
+		<{input type="select" name="content[filters][{$rownum}][comparison]" options=$comparison required=true value=$row[comparison] onchange='incrementAfterShow(this);'}> 
+    </span>
+
+	<span class="fl">
+	<{input type="text" name="content[filters][{$rownum}][compare_increment]" value=$row.compare_increment vtype="unsigned"}>
+	<span class="between" <{if $row.comparison!='between' }>style='display:none;'<{/if}> >-
+		<{input type="text" size="3" name="content[filters][{$rownum}][compare_increment_after]" vtype="unsigned" value=$row.compare_increment_after }>
+	</span>
+	</span>
+
+	<span class="fl filter-objected"  <{if $row.percent!='true'}>style="display:none;"<{/if}>>&nbsp;*&nbsp;
+		<{input type="select" name="content[filters][{$rownum}][objected]" options=$stock value=$row.objected required=true}>
+	</span>
+    
+    <span class="fl">
+        <input type="checkbox" class='x-input' name="content[filters][<{$rownum}>][percent]" value='true' <{if $row.percent=='true'}>checked<{/if}> onchange='objectedShow(this);'>切换成百分比模式
+    </span>
+	<span class="fr">
+
+		<button type="button" class="add-item" <{if !$smarty.foreach.content_filters.first}>style="display:none;"<{/if}>>+</button> 
+		<button type="button" class="del-item" onclick="this.getParent('.filters').destroy();init_translation();" <{if $smarty.foreach.content_filters.first}>style="display:none;"<{/if}>>-</button>
+	</span>
+</div>
+<{/foreach}>
+<script type="text/javascript">
+function incrementAfterShow(e){
+	if (e.value == 'between') {
+		e.getParent('.filters').getElement('.between').show();
+	}else{
+		e.getParent('.filters').getElement('.between').hide();
+	}
+}
+
+function objectedShow(e){
+	if (e.checked) {
+		e.getParent('.filters').getElement('.filter-objected').show().set('disabled',false);
+	}else{
+		e.getParent('.filters').getElement('.filter-objected').hide().set('disabled',true);
+	}
+}
+
+$E('.rules-content .filters .add-item').addEvent('click',function(){
+	var filterLast = this.getParent('#filter-content').getLast('.filters');
+	var filterHTML = filterLast.clone();
+	var key = filterHTML.get('key');
+	var nkey = key.toInt()+1;
+
+	var inputArr = filterHTML.getElements('input,select');
+	inputArr.each(function(item,index){
+		var name = item.name.replace(/\[\d\]/,'['+nkey+']');
+		item.set('name',name);
+		if(item.tagName.toLowerCase() == 'input'){
+			switch(item.type){
+				case 'radio':
+					break;
+				case 'checkbox':
+					item.checked = false;
+					break;
+				default:
+					item.value = '';
+					break;
+			}
+		}
+		if (item.tagName.toLowerCase() == 'select') {
+			item.getElement('option').selected = true;
+		}
+	});
+	inputArr.addEvent('change',function(){
+		init_translation();
+	});
+
+	filterHTML.getElement('.between').hide();
+	filterHTML.getElement('.filter-objected').hide();
+
+	if (key == 0) {
+		filterHTML.getElement('.add-item').hide();
+		filterHTML.getElement('.del-item').show();
+	}
+	filterHTML.getElement('.head').setHTML('且');
+	filterHTML.set('key',nkey);
+	filterHTML.inject(filterLast,'after');
+});
+
+$E('.rules-content #filter-content').getElements('input,select,textarea').addEvent('change',function(){
+	init_translation();
+});
+</script>

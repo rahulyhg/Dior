@@ -1,0 +1,25 @@
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="memo_form" method="post">
+<div class="tableform">
+<h4>售后问题类型</h4>
+<table>
+<tr>
+                <th></th>
+                <td style="border-bottom:none; padding:0">
+                <ul style="margin:0; padding:0">
+                <{foreach from=$problem_type item=item key=key}>
+                    <li style="float:left; font-weight:bold; color:#3C5283;">
+                        <input type="radio" name="problem_id"<{if $refund.problem_id eq $item.problem_id}>checked<{/if}> value="<{$item.problem_id}>"><{$item.problem_name}>
+                    </li>
+                <{/foreach}>
+                </ul>
+                </td>
+              </tr>
+              <tr>
+      <th>&nbsp;</th>
+      <td><{button type="submit" label="保存" }></td>
+    </tr>
+            </table>  
+</div>
+<input type="hidden" name='apply_id' value='<{$refund.apply_id}>'>
+
+</form>

@@ -1,0 +1,23 @@
+<div id="downloading" class="division">
+商品已经分配给所选店铺，您可以前往已分配商品界面查看已分配好的商品，也可以留在此界面继续分配商品。
+</div>
+<div class="table-action">
+    <{button label=$___idm="继续分配商品"|t:'idm' type="button" id="btn_continue"}>
+    <{button label=$___idm="查看已分配商品"|t:'idm' type="button" id="btn_break"}>
+</div>
+
+<script>
+	//继续分配商品
+	$('btn_continue').addEvent('click',function(e){
+		this.getParent('.dialog').retrieve('instance').close();
+		$$('[name^=shopIds[]').set('checked','');
+		$('btn_submit').set('disabled','');
+	});
+
+	//查看已分配商品
+	$('btn_break').addEvent('click',function(e){
+		this.getParent('.dialog').retrieve('instance').close();
+		$('shopForm').getParent('.dialog').retrieve('instance').close();
+		W.page('index.php?app=inventorydepth&ctl=product&act=index_merchan');
+	});
+</script>

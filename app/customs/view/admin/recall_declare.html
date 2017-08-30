@@ -1,0 +1,47 @@
+<form class="tableform" id="form-order" method='post' action='index.php?app=customs&ctl=admin_orders&act=dorecall'>
+    <table width="100%" >
+        <tbody>
+            <tr>
+                <td><input type='hidden' name='cid' value='<{$cid}>'></input></td>
+                <td><span style="color:red;">*</span>本次批量操作可撤消订单共 <b style="color:red;"><{$count}></b> 个！
+                <br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;确认后，请点击<em style="color:red;">“撤消选中订单”</em>按钮？
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="table-action">
+          <table width="100%" cellspacing="0" cellpadding="0">
+            <tbody>
+              <tr>
+                <td><button class="btn btn-primary" id="btn-submit" onclick='dosubmit()'><span><span><{t}>撤消选中订单<{/t}></span></span></button></td>
+              </tr>
+            </tbody>
+      </table>
+  </div>
+</form>
+
+<script>
+function dosubmit(){
+    $("form-order").fireEvent('submit',{stop:function(){}});
+}
+(function(){
+  var finder = finderGroup['<{$env.get.finder_id}>'];
+  $('form-order').store('target',{
+      onRequest:function(){
+         $('btn-submit').set('disabled', 'true');
+      },
+      onComplete:function(jsontext){
+         var json = Json.evaluate(jsontext);
+         if (typeof(json.error) != 'undefined'){
+           $('btn-submit').set('disabled', '');
+         }else{
+           $('btn-submit').set('disabled', 'true');
+             finderGroup['<{$env.get.finder_id}>'].refresh.delay(10,finderGroup['<{$env.get.finder_id}>']);
+             $('btn-submit').getParent('.dialog').retrieve('instance').close();
+         }
+      }
+  });
+})();
+</script>

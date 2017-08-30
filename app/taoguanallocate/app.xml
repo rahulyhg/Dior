@@ -1,0 +1,19 @@
+<app>
+    <name>调拨单</name>
+    <description>调拨单</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0.0</version>
+    <license>shopex license</license>
+    <parent_model_class>dbeav_model</parent_model_class>
+
+	<depends>
+		<app>ome</app>
+		<app>taoguaniostockorder</app>
+	</depends>
+</app>

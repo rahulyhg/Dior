@@ -1,0 +1,267 @@
+<form class="tableform" method="post" action="index.php?app=ome&ctl=admin_order&act=remain_order_cancel" id="ome_remain_cancel_form">
+<input type="hidden" name="order_id" id="order_id" value="<{$order.order_id}>" />
+<input type="hidden" name="remain_order_cancel" value="do" />
+<input type="hidden" id="back_find_id" value="<{$env.get.find_id}>" />
+<input type="hidden" id="back_filter" value="<{$env.get.filter}>" />
+<input type="hidden" id="back_from" value="<{$env.get.from}>" />
+<input type="text" style="display:none;" />
+
+<div class="division">
+  <h3>订单:<{$order.order_bn}> 余单撤销商品明细</h3>
+  <table class="gridlist">
+    <thead>
+      <tr>
+        <th style="width:12%">货号</th>
+        <th>商品名称</th>
+        <th style="width:5%">规格</th>
+        <th style="width:7%">购买数量</th>
+        <th style="width:7%">已发货量</th>
+        <th style="width:7%">已退货量</th>
+        <th style="width:7%">原价</th>
+        
+        <th style="width:7%">销售价</th>
+        <th style="width:7%">优惠额</th>
+        
+        <th style="width:7%">撤销金额</th>
+      </tr>
+    </thead>
+    <tbody id="itemlist">
+    <{foreach from=$item_list item=objs key=obj_type}>
+	    <{foreach from=$objs item=obj}>
+	        <{if $obj_type == 'pkg' || $obj_type == 'giftpackage'}>
+		        <{foreach from=$obj.order_items item=item}>
+		        <{if $item.delete == 'true'}>
+		        <{assign var='pkg_del' value="true"}>
+		        <{else}>
+		        <{assign var='pkg_del' value="false"}>
+		        <{/if}>
+		        <{/foreach}>
+		       <tr class="bindtitle tr_line" title="<{$obj.obj_type}>" pkg-type="pkg" g-id="<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" <{if $pkg_del=='true'}>style="background-color: rgb(216, 216, 216);"  pkg-del="b"<{else}> pkg-del="a"<{/if}> >
+		       <td>-</td>
+		       <td><b><{$obj.name}></b></td>
+		       <td>-</td>
+		       <td><{$obj.quantity}></td>
+		       <td>-</td>
+               <td>-</td>
+		       <td><{$obj.price}></td>
+               
+               <td><{$obj.sale_price/$obj.quantity|cur}></td>
+               <td><{$obj.pmt_price/$obj.quantity|cur}></td>
+               
+		       <td><{if $pkg_del=='true'}>-<{else}><{($item.quantity-$item.sendnum)/($item.quantity/$obj.quantity)*($obj.sale_price/$obj.quantity)}><{/if}></td>
+		       </tr>
+		       <{/if}>
+	       
+	       <{foreach from=$obj.order_items item=item}>
+	       <tr pkg-id="<{$obj.goods_id}>" title="<{$obj.obj_type}>:<{$item.item_type}>" id="tr_<{$item.item_id}>" g-bn="<{$item.bn}>" g-pid="<{$item.product_id}>" g-pname="<{$item.name}>" g-type="<{$item.item_type}>"  pkg-type="<{$item.item_type}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>"  <{if $item.item_type=='pkg'}>class="ColColorBlue"<{/if}> <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);" pkg-del="b"<{else}> pkg-del="a"<{/if}> >
+		       <td <{if $item.item_type == 'gift' || $item.item_type == 'adjunct'}>class="<{$item.item_type}>"<{/if}>><span class="number"><{$item.bn}></span></td>
+		       <td ><span class="goodsname"><{$item.name}></span></td>
+		       <td><{$item.addon}></td>
+		       <td ><{$item.quantity}></td>
+		       <td <{if $item.quantity != $item.sendnum}>style="color:#f00;"<{/if}> ><{$item.sendnum}></td>
+               <td style="color:#F60;"><{$item.return_num}></td>
+		       <td ><{$item.price}></td>
+               
+               <td ><{$item.sale_price/$item.quantity|cur}></td>
+               <td ><{$item.pmt_price/$item.quantity|cur}></td>
+               
+		       <td>
+               <{if $item.sendnum < $item.quantity && $obj_type != 'pkg' && $obj_type != 'giftpackage'}>
+               <{(($item.quantity-$item.sendnum)*($item.sale_price/$item.quantity))|cur}>
+               <{else}>
+               -
+               <{/if}> 
+               </td>
+	       </tr>
+	       <{/foreach}>
+       <{/foreach}>
+    <{/foreach}>
+      </tbody>
+  </table>
+  <table cellspacing="0" border="0" width="100%">
+    <tr>
+      <td>商品总金额：<b class="font14px red"><{$order.cost_item|cur}></b></td>
+      <td>撤销商品总金额：<b class="font14px red"><{$order.diff_price|cur}><input type="hidden" value="<{$order.diff_price}>" name="revock_price"></b></td>
+      <td>商品金额差价：<b class="font14px red"><{($order.cost_item-$order.diff_price)|cur}></b></td>
+      <td>订单总金额：<b class="font14px"><{$order.total_amount|cur}></b></td>
+      <td>订单优惠金额：<b class="font14px red"><{$order.pmt_order|cur}></b></td>
+      <td>商品优惠金额：<b class="font14px red"><{$order.pmt_goods|cur}></b></td>
+      <td>订单折扣：<b class="font14px red"><{$order.discount|cur}></b></td>
+      <td>配送费用：<b class="font14px "><{$order.cost_freight|cur}></b></td>
+      <td>已支付金额：<b class="font14px "><{$order.payed|cur}></b></td>
+      <td>已退款金额：<b class="font14px "><{$order.refunded|cur}></b></td>
+    </tr>
+  </table>
+  <div class="table-form" style="width:240px; text-align:center; margin:0 auto;">
+	<{if $refund_apply}>
+    	<h4>退款金额：<input type="text" id="refund_money" name="refund_money" value="0" size="10" /></h4>
+    <{else}>
+    	<h4>退款金额：<input type="text" id="refund_money" name="refund_money" value="<{if $order.payed>$order.diff_price}><{$order.diff_price}><{else}><{$order.payed}><{/if}>" size="10" /></h4>
+    <{/if}>
+  </div>
+</div>
+
+<{if $delivery_list}>
+<div style="clear:both; height:20px; width:100%;"></div>
+<div id="delivery_box">
+    <div id="present">
+        <h3>未完成发货单列表</h3>
+        <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+          <thead>
+            <tr>
+              <th>发货单号</th>
+              <th>物流单号</th>
+              <th>物流公司</th>
+              <th>是否货到付款</th>
+              <th>是否校验</th> 
+              <th>发货状态</th>      
+            </tr>
+          </thead>
+          <tbody>
+            <{foreach from=$delivery_list key=key item=val}>
+                <tr>
+                    <td><{$val.delivery_bn}></td>
+                    <td><{$val.logi_no}></td>
+                    <td><{$val.logi_name}></td>
+                    <td><{$val.is_cod}></td>
+                    <td style="color:#ff0000;"><{$val.verify}></td>
+                    <td style="color:#ff0000;"><{$val.status}></td>                
+                </tr>
+            <{/foreach}>
+          </tbody>
+        </table>
+    </div>
+    <div style="clear:both; height:10px; width:100%;"></div>
+</div>
+<style type="text/css">
+.delivery_foucs { border:5px solid #F60; }
+</style>
+<{/if}>
+
+<!-- 订单售后情况 BEGIN-->
+<{if $reship_list || $refund_apply}>
+<div class="finder-detail" id="refund_confirm_box" style="border:2px solid #FC0; background:#ffffcc;">
+    <{include file="admin/order/confirm/refund_apply_record.html"}>
+</div>
+<{/if}>
+<!-- 订单售后情况 END-->
+
+<{capture name='footbar'}>
+<div class="table-action">
+<!--<{button label="确认不退款" id="ome_btn_confirm_no" type="button"}>-->
+	<{if $reship_list || $refund_apply}>
+    	<input name="go_continue" type="checkbox" id="go_continue" value="1" /> <b>订单部分退款,已查阅并继续操作！</b> <span id="continue_but_1"><input type="submit" name="button" id="but_continue" disabled="disabled" value="确认并退款" /></span><span id="continue_but_2" style="display:none;"><{button label="确认并退款" id="ome_btn_confirm" type="button"}> <{button label="取消" id="ome_btn_cancel" type="button"}></span>
+    <{else}>
+        <{button label="确认并退款" id="ome_btn_confirm" type="button"}> <{button label="取消" id="ome_btn_cancel" type="button"}>
+    <{/if}>
+</div>
+<{/capture}>
+</form>
+<script>
+  (function(){
+
+    $('ome_remain_cancel_form').store('target',{
+        onRequest:function(e){
+        },
+        onComplete:function(jsontext){
+        	var back_from = $('back_from').value;
+            var back_find_id = $('back_find_id').value;
+            var back_filter = $('back_filter').value;
+            if (back_from == 'order_confirm'){
+                remain_order_cancel_confirm_norefund(back_find_id,back_filter);
+            }else{
+            	try{
+            		opener.finderGroup[back_find_id].refresh.delay(100,opener.finderGroup[back_find_id]);
+                    window.close();
+                }catch(e){
+                    window.close();
+                }
+            }
+        }
+    });
+
+/*<!--    $('ome_btn_confirm_no').addEvent('click',function(){-->
+<!--    	if (confirm("确定不退款直接余单撤销吗?")){-->
+<!--    		$('ome_remain_cancel_form').fireEvent('submit',{stop:function(){}});-->
+<!--        }else{-->
+<!--            return false;-->
+<!--        }-->
+<!--    });-->*/
+
+    function remain_order_cancel_confirm_norefund(back_find_id,back_filter){
+        if (confirm("余单撤消成功，是否回到确认拆分页面，否则将关闭当前窗口?")){
+            var order_id = <{$order.order_id}>;
+            window.location = 'index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]='+order_id+'&filter='+back_filter+'&find_id='+back_find_id;
+            $('ome_btn_confirm').getParent('.dialog').retrieve('instance').close();
+        }else {
+            try{
+            	opener.finderGroup[back_find_id].refresh.delay(500,opener.finderGroup[back_find_id]);
+            }catch(e){}
+            //opener.finderGroup[back_find_id].refresh.delay(500,opener.finderGroup[back_find_id]);
+            window.close();
+        }
+    }
+	
+    $('ome_btn_confirm').addEvent('click',function()
+	{
+		var delivery_flag	= '<{$delivery_flag}>';
+		if(delivery_flag == 'true')
+		{
+			document.getElementById("delivery_box").className	= "delivery_foucs";
+			if(!confirm("订单有未完成的发货单，将会一并撤回？"))
+			{
+				return false;
+			}
+		}
+        var refund_money = $('refund_money').value;
+		refund_money	= parseFloat(refund_money);
+		
+		if(refund_money < 0 || isNaN(refund_money))
+		{
+			alert("退款金额无效并且不能为负数；");
+			return false;
+		}
+		else if(refund_money == 0)
+		{
+			if(!confirm("退款0元，确定不退款直接余单撤销吗？"))
+			{
+				return false;
+			}
+            $('ome_remain_cancel_form').fireEvent('submit',{stop:function(){}});
+        }
+		else
+		{
+            //显示退款窗口
+            var refund_money = $('refund_money').value;
+            ome_refund_dialog(<{$order.order_id}>, refund_money);
+        }
+    });
+
+    function ome_refund_dialog(order_id, refund_money){
+        new Dialog('index.php?app=ome&ctl=admin_order&act=remain_order_cancel_refund&p[0]='+order_id+'&p[1]='+refund_money,{
+            title: '余单撤销退款申请',
+            width: 750,
+            height:400,
+            modal:true,
+            resizeable:false
+      });
+    }
+
+    //取消
+    $('ome_btn_cancel').addEvent('click', function(e){
+    	window.close();
+    });
+    
+  })();
+
+$('go_continue').addEvent('click',function(e){
+	window.location.hash = "#go_return";
+	if($('go_continue').checked){
+		$('continue_but_1').setStyle('display','none');
+		$('continue_but_2').setStyle('display','');
+	}else{
+		$('continue_but_1').setStyle('display','');
+		$('continue_but_2').setStyle('display','none');
+	}
+});
+</script>

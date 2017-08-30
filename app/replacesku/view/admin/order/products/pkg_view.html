@@ -1,0 +1,40 @@
+<div class="division">
+   <h4><{t}>捆绑商品<{/t}></h4>
+      <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+          <th><{t}>规格<{/t}></th>
+          <th><{t}>单位<{/t}></th>
+          <th><{t}>价格<{/t}></th>
+          <th><{t}>购买量<{/t}></th>
+          <th><{t}>已发货量<{/t}></th>
+        </tr>
+      </thead>
+      <tbody>
+        <{foreach from=$objs item=obj}>
+        <tr>
+          <td><strong><{$obj.bn}></strong></td>
+          <td><strong><{$obj.name}></strong></td>
+          <td>捆绑商品&nbsp;</td>
+          <td>件&nbsp;</td>
+          <td><strong><{$obj.price}></strong></td>
+          <td><strong><{$obj.quantity}></strong></td>
+          <td>&nbsp;</td>
+        </tr>
+        <{foreach from=$obj.order_items item=item}>
+        <tr class="ColColorBlue" <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}> >
+          <td><{$item.bn}></td>
+          <td><{$item.name}></td>
+          <td><{$item.addon}></td>
+          <td><{$item.unit}></td>
+          <td><{$item.price}></td>
+          <td><{$item.quantity}></td>
+          <td><{$item.sendnum}></td>
+        </tr>
+        <{/foreach}>
+        <{/foreach}>
+      </tbody>
+     </table>
+</div>

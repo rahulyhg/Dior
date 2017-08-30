@@ -1,0 +1,26 @@
+<{capture name="header"}>
+  <link href="../app/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<div class="division">
+<h4>模板修改记录</h4>
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+    <thead>
+<tr>
+  <th>添加时间</th><th>发送内容</th><th>操作人</th><th>审核状态</th><th>审核时间</th><th>失败原因</th>
+</tr>
+</thead>
+<{foreach from=$items item=items}>
+<tr>
+ <td><{$items['createtime']}></td> <td width="60%"><{$items['content']}></td><td><{$items['op_name']}></td><td>
+  <{if $items['approved']=='0'}>等待审核
+  <{elseif $items['approved']=='1'}>通过
+  <{elseif $items['approved']=='2'}>
+  拒绝
+  <{/if}>
+  </td><td><{$items['approvedtime']}></td><td><{$items['sync_reason']}></td>
+</tr>
+<{/foreach}>
+
+</table>
+</div>
+</div>

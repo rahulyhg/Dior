@@ -1,0 +1,54 @@
+<div class="tableform">
+<{if $shopData.shop_type == 'shopex_b2b'}>
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="shop_dly_crop" method="post">
+<input type="hidden" name="shop_id" value="<{$shopData.shop_id}>"/>
+<div class="division">
+    <input type="radio" onchange="check(1)" name="config[cropBind]" value="0" <{if $shopData.crop_config.cropBind == 0}>checked<{/if}>>关闭
+    <input type="radio" onchange="check(1)" name="config[cropBind]" value="1" <{if $shopData.crop_config.cropBind == 1}>checked<{/if}>>开启
+</div>
+<div id="shop_crop" class="division">
+<{foreach from=$dlyGroups item=item key=key}>
+    <table width="40%" cellspacing="0" cellpadding="0" border="0" >
+    <tbody>
+        <tr>
+            <td colspan="3"><h3><{if $key==0}>所有仓库<{else}><{$item.name}><{/if}></h3></td>
+        </tr>
+        <tr>
+            <td width="150">物流公司</td>
+            <td width="80">物流编号</td>
+            <td>前端物流名称</td>
+        </tr>
+        <{foreach from=$item.dlyCrops item=dlyCrop}>
+        <tr>
+            <td><{$dlyCrop.name}></td>
+            <td><{$dlyCrop.type}></td>
+            <td><input type="hidden" name="corp_id[]" value="<{$dlyCrop.corp_id}>"/>
+                <input type="text" value="<{$shopCrops[$dlyCrop.corp_id]}>" name="crop_name[]" /></td>
+        </tr>
+        <{/foreach}>
+    </tbody>
+    </table>
+<{/foreach}>
+<br />未匹配物流系统自动选择 <input type="checkbox" name="config[sysCrop]" value="1" <{if $shopData.crop_config.sysCrop == 1}>checked<{/if}> />
+</div>
+<{button type='submit' label='确认'}>
+</form>
+<{else}>
+<span class="red">本店铺类型暂不支持物流绑定</span>
+<{/if}>
+</div>
+<script>
+function check(status){
+	if(status == 1){
+		if($$('input[name=config[cropBind]]:checked').get('value') == 1){
+			$('shop_crop').show();
+            $('shop_crop').getFormElements().set('disabled',false);
+		}else{
+			$('shop_crop').hide();
+            $('shop_crop').getFormElements().set('disabled',true);
+		}
+	}
+}
+check(1);
+
+</script>

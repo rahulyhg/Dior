@@ -1,0 +1,89 @@
+<desktop>
+
+	<permissions>
+        <permission id="invoice_purchase_payments">现购单</permission>
+        <permission id="invoice_credit_sheet">赊购单</permission>
+        <permission id="invoice_purchase_refunds">采购退款单</permission>
+        <!--<permission id="invoice_purchase_payments_cancel">单据作废</permission>-->
+        <permission id="invoice_clearingtables">采购结算统计</permission>
+       <!--  <permission id="invoice_countertables">盘点损益汇总表</permission> -->
+
+        <permission id="finance_purchase_payments">付款单查询</permission>
+        <permission id="finance_credit_sheet">赊购单查询</permission>
+        <permission id="finance_purchase_refunds">采购退款单查询</permission>
+        <!-- <permission id="finance_inventory_confirm">损益确认</permission> -->
+
+<!--
+        <permission id="purchase_purchase_io">采购入库</permission>
+		<permission id="purchase_returned_io">采购退货</permission>
+
+        <permission id="purchase_po">采购订单</permission>
+		<permission id="purchase_check">待审核</permission>
+        <permission id="purchase_do_eo">待入库</permission>
+        <permission id="purchase_eo">入库单</permission>
+        <permission id="purchase_returned">采购退货单</permission>-->
+        <permission id="purchase_supplier">供应商</permission>
+       <permission id="purchase_do_need">补货提醒</permission>
+        
+        <!-- 导出权限-->
+        <permission id="purchase_export">采购订单导出</permission>
+        <permission id="supplier_export">供应商导出</permission>
+        <permission id="purchase_checkup">采购单审核</permission>
+        
+
+
+    </permissions>
+<workground name="供应计划" id="console_purchasecenter" order="510">
+  <menugroup name="采购管理">
+   <menu controller='admin_purchase' action='need' permission='purchase_do_need' display='true' order='2000400'>补货提醒
+   </menu>
+    </menugroup>
+
+
+    </workground>
+
+ <!--<workground name="基础档案" id="goods_manager"  order="500">
+        <menugroup name="采购管理">
+            <menu controller='admin_purchase' action='index' permission='purchase_po' display='true' order='1000200'>采购订单</menu>
+            <menu controller='admin_purchase' action='checklist' permission='purchase_check' display='false' order='1000300'>待审核</menu>
+            <menu controller='admin_purchase' action='eoList' permission='purchase_do_eo' display='false' order='1000400'>待入库</menu>
+            <menu controller='admin_eo' action='index' permission='purchase_eo' display='false' order='1000500'>入库单</menu>
+            <menu controller='admin_returned_purchase' action='index' params='p[0]:eo' permission='purchase_returned' display='true' order='1000600'>采购退货单</menu>
+            <menu controller='admin_purchase' action='need' permission='purchase_do_need' display='true' order='1000700'>补货提醒</menu>
+            <menu controller='admin_purchase' action='index' params='action:export' permission='purchase_export' display='false'>采购订单导出</menu>
+            <menu controller='admin_purchase' permission='purchase_checkup' display='false'>采购单审核</menu>
+        </menugroup>
+        <menugroup name="供应商管理">
+            <menu controller='admin_supplier' action='index' permission='purchase_supplier' display='true' order='2000100'>供应商</menu>
+            <menu controller='admin_supplier' action='index'  params='action:export' permission='supplier_export' display='false'>供应商导出</menu>
+        </menugroup>
+    </workground>-->
+ <workground name="基础档案" id="goods_manager"  order="500">
+ <menugroup name="供应商管理">
+            <menu controller='admin_supplier' action='index' permission='purchase_supplier' display='true' order='8000901'>供应商</menu>
+        </menugroup>
+ </workground>
+    <workground name="单据报表" id="invoice_center"  order="900">
+        <menugroup name="财务报表">
+            <menu controller='admin_statement' action='ClearingTables' permission='invoice_clearingtables' display='true' order='1000504'>采购结算统计</menu>
+        </menugroup>
+    </workground> 
+
+    <workground name="单据报表" id="invoice_center"  order="900">
+        <menugroup name="采购单据">
+            <menu controller='admin_purchase_payments' action='index' params='p[0]:2' permission='invoice_purchase_payments' display='true' order='1000300'>现购单</menu>
+            <menu controller='admin_credit_sheet' action='index' params='p[0]:2' permission='invoice_credit_sheet' display='true' order='1000301'>赊购单</menu>
+            <menu controller='admin_purchase_refunds' action='index' params='p[0]:2' permission='invoice_purchase_refunds' display='true' order='1000302'>采购退款单</menu>
+            <!--<menu controller='admin_purchase_payments' action='index' params='p[0]:3' permission='invoice_purchase_payments_cancel' display='true' order='2000400'>单据作废</menu>-->
+
+        </menugroup>
+    </workground>
+    <workground name="财务" id="finance_center"  order="3000">
+        <menugroup name="采购财务">
+            <menu controller='admin_purchase_payments' action='index' params='p[0]:1' permission='finance_purchase_payments' display='true' order='3000103'>现购应付</menu>
+            <menu controller='admin_credit_sheet' action='index' params='p[0]:1' permission='finance_credit_sheet' display='true' order='3000104'>赊购应付</menu>
+            <menu controller='admin_purchase_refunds' action='index' params='p[0]:1' permission='finance_purchase_refunds' display='true' order='3000105'>采购应收</menu>
+        </menugroup>
+    </workground>
+
+</desktop>

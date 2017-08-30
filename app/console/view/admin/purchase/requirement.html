@@ -1,0 +1,178 @@
+<{capture name="header"}>
+<{css app="ome" src="style.css"}>
+<{/capture}>
+<div class="tableform">
+  <h3>补货提醒</h3>
+  <div class="division">
+    <div id="custom_search">
+      <div id="Searchform" class="division">
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr valign="middle">
+              <td align="right" style="vertical-align:middle; background:#f6f6f6;" width="30%">
+
+               仓库：
+            <{if $is_super}>
+                <{if count($branch)=='1'}>
+                    <{$branch.0.name}>
+                    <input type="hidden" id="branch_id" name="branch_id" value="<{$branch.0.branch_id}>" />
+                <{else}>
+                    <{input type="select" name="branch_id" id="branch_id" vtype="required" required="true" rows=$branch valueColumn="branch_id" labelColumn="name" value="{$branchid}"}> <span style="color:red">*</span>
+                <{/if}>
+            <{else}>
+                <{if !$branch_list}>
+                    <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+                    <script>
+                       $$("input","button","select").set('disabled',true);
+                    </script>
+                <{else}>
+                    <{if count($branch_list)==1}>
+                        <{$branch_list.0.name}>
+                        <input type="hidden" id="branch_id" name="branch_id" value="<{$branch_list.0.branch_id}>" />
+                    <{else}>
+                        <{input type="select" id="branch_id" name="branch_id" vtype="required" required="true" rows=$branch_list valueColumn="branch_id" labelColumn="name" value="{$branchid}"}> <span style="color:red">*</span>
+                    <{/if}>
+                <{/if}>
+            <{/if}>
+              </td>
+			<td height="45" align="center" style="vertical-align:middle; background:#f6f6f6;" width="30%">
+			  供应商：<span id="add_supp" style="position:relative;">
+				  <{img id="copy" title="查看供应商列表" class="pointer btn_supplier" app="desktop" src="bundle/zoom_btn.gif"}>
+				  <input type="text" id="supplier_name" name="supplier_name" value="">
+				  <input type="hidden" name="supplier" id="supplier" value="" />
+				</span>
+				</td><td height="45" align="left" style="vertical-align:middle; background:#f6f6f6;" width="40%">
+                货号：<span style="position:relative;"><input type="text" name="bn" value="" size="20" id="condition_input" /></span>
+              <{help}><{t}>按回车键直接搜索货品。<{/t}><{/help}></td>
+            </tr>
+          </thead>
+        </table>
+      </div>
+	<a onClick="getPurchaseInfo()" href="javascript:void(0)"><input type="button" value="导出" style="height=30px;width:45px;"></input></a><br/>
+      <div class="division" id="inventory_items">
+
+      </div>
+
+    </div>
+  </div>
+  <div id="cc" class="noprint table-action">
+    <table width="100%" border="0">
+      <tr>
+        <td align="center"><div id="dis" style="display:none;"><{button label="生成采购单" type="button" id="create"}></div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+<script type="text/javascript">
+(function(){
+
+    viewProduct();
+
+	new Autocompleter.script($E('#supplier_name'),"index.php?app=console&ctl=admin_supplier&act=getSupplier", {
+		'getVar':'name',
+		'fxOptions':false,
+		//'delay':500,
+		callJSON:function(){
+			if (window.autocompleter_json.length == 0 || window.autocompleter_json == null) $("supplier").value = '';
+            return window.autocompleter_json;
+		},
+		injectChoice:function(json){
+			var brief=json["brief"]?"("+json["brief"]+")":"";
+			var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar]+brief)});
+			choice.inputValue = json[this.options.getVar];
+			choice.store('_data',json["supplier_id"]);
+			this.addChoiceEvents(choice).inject(this.choices);
+		},
+		onHide:function(){
+			if(!this.selected){window.autocompleter_json=null;return;}
+			$("supplier").value=this.selected.retrieve("_data");
+	        viewProduct();
+	        if($('note')) $('dis').hide();
+	        else  $('dis').show();
+		},
+		emptyChoices:function(){
+			if (window.autocompleter_json.length == 0 || window.autocompleter_json == null) $("supplier").value = '';
+		}
+	});
+	$ES('#supplier_name,#condition_input').addEvent('enter',function(event){
+        //if(event.key=='enter'){
+            if ($("supplier_name").value == ''){
+                $("supplier").value = '';
+                $('dis').hide();
+            }
+            viewProduct();
+        //}
+    });
+
+	$E(".btn_supplier").addEvent('click',function(e){
+		var url='?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=console&ctl=admin_supplier&singleselect=1");
+		Ex_Loader('modedialog',function() {
+			new finderDialog(url,{params:{url:'index.php?app=console&ctl=admin_supplier&act=getSupplierById',name:'id',type:'radio'},handle:'supplier_name',width:1000,height:500,onCallback:function(){viewProduct()}});
+		});
+	});
+    
+	new Autocompleter.script($E('#condition_input'),'index.php?app=console&ctl=admin_purchase&act=getProducts', {
+		'getVar':'bn',
+		'fxOptions':false,
+		callJSON:function(){return window.autocompleter_json;},
+		injectChoice:function(json){
+			var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+			choice.inputValue = json[this.options.getVar];
+			this.addChoiceEvents(choice).inject(this.choices);
+		}
+	});
+
+    $("branch_id").addEvent('change', function(event){
+    	viewProduct();
+    });
+
+
+    function viewProduct(page){
+		var url="index.php?app=console&ctl=admin_purchase&act=safeStockPreview";
+		if (page) url += '&p[0]='+page;
+		new Request.HTML({
+			update:'inventory_items',
+			url:url,
+			onComplete:function(){
+				if($E(".su_name"))$$('.su_name').addEvent('click',function(e){
+					$("supplier_name").value = this.get('text');
+					$('supplier').value=this.get("id");
+					viewProduct();
+				});
+	        	$$('.pager a').addEvent('click',function(){
+	                var page = this.href.split('page=')[1];
+	                viewProduct(page);
+	                return false;
+	            });
+
+				if($('note')) $('dis').hide();
+	            else if($('supplier').value != '')  $('dis').show();
+            }
+        }).post($('Searchform'));
+    }
+
+    $('create').addEvent('click',function(){
+        var url="index.php?app=console&ctl=admin_purchase&act=createPurchase&p[0]="+$('supplier').value+"&p[1]="+$('branch_id').get('value')+"&p[2]="+$('condition_input').value;
+        _open(url);
+    });
+})();
+	function getPurchaseInfo(){
+		var branch_id = document.getElementById("branch_id");
+		var supplier = document.getElementById("supplier");
+		var supplier_name = document.getElementById("supplier_name");
+		var condition_input = document.getElementById("condition_input");
+		if(branch_id){
+			branch_id = branch_id.value;
+		}
+		if(supplier){
+			supplier = supplier.value;
+		}
+		if(supplier_name){
+			supplier_name = supplier_name.value;
+		}
+		if(condition_input){
+			condition_input = condition_input.value;
+		}
+		new Dialog('index.php?app=console&ctl=admin_po&act=need&action=export',{'title':'<{t}>导出<{/t}>',width:400,height:100,ajaxoptions:{data:{"branch_id":branch_id,"supplier":supplier,"supplier_name":supplier_name,"bn":condition_input},method:'post'}});
+	}
+</script>

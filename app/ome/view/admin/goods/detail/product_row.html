@@ -1,0 +1,17 @@
+<tr product_id="{product_id}" canChange="{canChange}">
+    <td><input type="checkbox" class="pro-visibility-check" tname="goods[product][_PRIMARY_][visibility]" key="visibility" value="{visibility}" disabled="true" status="{visibility}" checked/></td>
+    <td>
+    <input type="text" size="30" maxlength="30" tname="goods[product][_PRIMARY_][bn]" key="bn" value="{bn}" p-bn="{bn}" />
+    <input type="hidden" tname="goods[product][_PRIMARY_][product_id]" key="product_id" value="{product_id}"/></td>
+        {spec_html}
+        <td><input type="text" size="20" tname="goods[product][_PRIMARY_][barcode]" key="barcode" value="{barcode}" /></td>
+        <td><input type="text" size="20" tname="goods[product][_PRIMARY_][picurl]" key="picurl" value="{picurl}" /></td>
+        <td><input type="text" size=8 tname="goods[product][_PRIMARY_][price][price][price]" key="price" value="{price}"/>
+        <span style="display:none" class="sysiconBtn edit">会员价</span><br></td>
+        <td><input type="text" size=10  tname="goods[product][_PRIMARY_][price][cost][price]" key="cost" value="{cost}"/></td>
+        <td style="display:none"><input type="text" size=10  tname="goods[product][_PRIMARY_][price][mktprice][price]" key="mktprice" value="{mktprice}"/></td>
+        <td><input type="text" size="6"  tname="goods[product][_PRIMARY_][weight]" key="weight" value="{weight}" vtype="unsigned" />克(g)</td>
+        <td style="display:none"><input type="text" size="6"  tname="goods[product][_PRIMARY_][alert_store]" key="alert_store" value="{alert_store}" vtype="unsigned" /></td><!-- Now: OME set store to alert_store, if you need it again, just set back or add a new line -->
+        <td style="display:none"><input type="checkbox" tname="goods[product][_PRIMARY_][status]" key="status" status="{status}" class="pro-marketable-check" checked  /></td>
+        <td><img class="operater" alt="删除" src="../app/ome/statics/icons/icon_delete.gif"/></td>
+</tr>

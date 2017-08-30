@@ -1,0 +1,122 @@
+        <{assign var="inv1" value="false"}>
+        <{foreach from=$objs item=obj name="pkg_for1"}>
+          <tr class="bindtitle<{if $smarty.foreach.pkg_for1.first}> tr_line<{/if}>" data-obj_id="<{$obj.obj_id}>">
+			<td><{$obj.bn}></td>
+            <td><strong><{$obj.name}></strong></td>
+            <td><{*$object_alias[$obj_type]|default:'捆绑商品'*}><{t}>捆绑商品<{/t}></td>
+            <td><{$obj.price}></td>
+            <{if $order_delivery_list}>
+            <td class="buycounts"><{$obj.quantity}></td>
+            <td class="amounts"><{$obj.amount}></td>
+            <td class="splited"><{$obj.quantity - $obj.left_nums}></td>
+            <td class="sendnum"><{$obj.left_nums}></td>
+            <{else}>
+            <td class="amounts"><{$obj.amount}></td>
+            <td class="buycounts"><{$obj.quantity}></td>
+            <{/if}>
+            <td class="sendcounts"><{if $obj.left_nums === 0}>-<{else}><{$obj.left_nums}><{/if}></td>
+            <td>&nbsp;</td>
+            <!--<{foreach from=$branch_list item=branch}>
+            <td></td>
+            <{/foreach}>-->
+          </tr>
+          <{foreach from=$obj.order_items item=item}>
+          <{if $item.delete=='false'}>
+          <tr class="bindgoods<{if $item.left_nums == 0}> disabled<{/if}>" data-g_pid="<{$item.product_id}>" data-g_shop_pid="<{$item.shop_product_id}>" data-item_id="<{$item.item_id}>" data-obj_id="<{$obj.obj_id}>" data-item_type="<{$item.item_type}>">
+            <td><span class="number"><{$item.bn}></span></td>
+            <td><span class="goodsname"><{$item.name}></span></td>
+            <td class="addon"><{$item.addon}></td>
+            <td>-</td>
+            <{if $order_delivery_list}>
+            <td class="buycounts" data-js="<{$item.quantity/$obj.quantity}>"><{$item.quantity}></td>
+            <td class="amounts">-</td>
+            <td class="splited"><{if ($item.quantity - $item.left_nums)>0}><{$item.quantity - $item.left_nums}><{else}>-<{/if}></td>
+            <td class="sendnum"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
+            <{else}>
+            <td class="amounts">-</td>
+            <td class="buycounts" data-js="<{$item.quantity/$obj.quantity}>"><{$item.quantity}></td>
+            <{/if}>
+            <td class="sendcounts"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
+            <td style="color:#f60;"><{$item.return_num}></td>
+            <!--<{foreach from=$branch_list item=branch name=bl}>
+            <{if isset($item.branch_store[$branch.branch_id])}>
+            <{assign var="inv1" value="true"}>
+            <td <{if $item.left_nums != 0}>class="branch <{if $item.branch_store[$branch.branch_id] >= $branch.stock_threshold}>ColColorGreen<{elseif $item.branch_store[$branch.branch_id] > 0 && $item.branch_store[$branch.branch_id] < $branch.stock_threshold}>ColColorRed<{else}>ColColorGray<{/if}><{/if}>" data-storeid="<{$branch.branch_id}>"><{$item.branch_store[$branch.branch_id]}></td>
+            <{else}>
+            <td <{if $item.left_nums != 0}>class="ColColorGray"<{/if}>>-<{assign var="inv" value="true"}></td>
+            <{/if}>
+            <{/foreach}>
+            <{if empty($branch_list)}><td>-</td><{/if}>-->
+          </tr>
+          <{/if}>
+          <{/foreach}>
+          <{/foreach}>
+
+<script>
+function pkg_getSendcount(index) {
+    $$('tr.bindtitle:not(.disabled)').each(function(p, i) {
+        var send = p.getElement('.pkg_input'),
+            result = Number.MAX_VALUE;
+        if (!send) return;
+        for (var j = 0, bg = p.getAllNext('.bindgoods[data-obj_id=' + p.get('data-obj_id') + ']'), k = bg.length, v; j < k; j++) {
+            v = bg[j].getElements('td')[index].get('text').trim().toInt();
+            if (isNaN(v) || v <= 0) {
+                result = 0;
+                bg.each(function(b) {
+                    b.getElement('.pkgitem_input').value = 0;
+                });
+                break;
+            }
+            else if (v >= bg[j].getElement('td.buycounts').get('text').trim().toInt()) {
+                result = p.getElement('td.buycounts').get('text').trim();
+            }
+            else {
+                result = Math.floor(Math.min(bg[j].getElements('td')[index].get('text').trim() / bg[j].getElement('td.buycounts').get('data-js')), result);
+            }
+        }
+        if (result < Number.MAX_VALUE) {
+            result = Math.min(result,send.get('max'));
+            send.value = result;
+            send.store('max', result);
+            bg.each(function(b) {
+                b.getElement('.pkgitem_input').value = b.getElement('td.buycounts').get('data-js') * send.value.toInt();
+            });
+        }
+    });
+}
+
+function pkg_doprocess(){
+    var datarow = $$('tr.bindgoods:not(.disabled)').filter(function(item, i) {
+        return item.getElement('.pkgitem_input') && item.getElement('.pkgitem_input').value.toInt() !== 0;
+    });
+
+    if (!datarow.length) return [];
+    var products = [];
+    datarow.each(function(p, i) {
+        var sendcount = p.getElement('.pkgitem_input').value,
+        storehouse = p.getElements('td')[index],
+        store = storehouse ? storehouse.get('text').toInt() : 0;
+
+        products.push({
+            itemid: p.get('data-item_id'),
+            product_id: p.get('data-g_pid'),
+            shop_product_id: p.get('data-g_shop_pid'),
+            bn: p.getElement('.number').get('text').trim(),
+            product_name: p.getElement('.goodsname').get('text').trim(),
+            number: sendcount
+        });
+    });
+
+    return products;
+}
+
+$$('.pkg_input').addEvents({
+    'change': function() {
+        this.value = this.value.toInt().limit(this.get('min'), this.retrieve('max'));
+
+        this.getParent('tr').getAllNext('.bindgoods[data-obj_id=' + this.getParent('tr').get('data-obj_id') +']').each(function(item) {
+            item.getElement('.pkgitem_input').value = item.getElement('.buycounts').get('data-js') * this.value.toInt();
+        }.bind(this));
+    }
+});
+</script>

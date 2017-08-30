@@ -1,0 +1,97 @@
+<{if $goods.product}>
+<{assign var=product value=$goods.product|current}>
+<{/if}>
+<script>
+$('copy').addEvent('click', function(){
+    var huohao = $('huohao').get('value');
+    $('tiaoxm').set('value', huohao);
+});
+//编辑商品时，验证是否能开启规格
+function checkRelationInfo() {
+	//只有当属于编辑商品时，才需要去验证是否能开启规格
+	var type = "<{$goods._typeInfo}>";
+	if('update' == type){
+		var bn = null;
+		//获取货号的值,把这个值传入到后台去验证，验证是否可以开启规格
+		var obj_bn = document.getElementById('huohao');
+		bn = obj_bn.value;
+	    new Request({
+	        url:'index.php?app=ome&ctl=admin_goods_editor&act=checkRelationInfo',
+	        method:'post',
+	        data:'bn='+bn,
+	        onComplete: function(json) {
+	        	if(json){
+	        		alert(json);
+	        	 	return;
+	        	}else{
+	        	    goodsEditor.spec.addCol.bind(goodsEditor)(false,$('gEditor-GType-input').get('value'));
+	        	}
+	        }
+	    }).send();
+	}else{
+		//新增货品时
+		goodsEditor.spec.addCol.bind(goodsEditor)(false,$('gEditor-GType-input').get('value'));
+	}
+}
+
+
+</script>
+<input type='hidden' name='goods[product][0][status]' value='true'/>
+<table border="0" cellpadding="0" cellspacing="0" id="nospec_body">
+<tbody >
+
+  <tr>
+    <th><{t}>销售价：<{/t}><input type='hidden' name='goods[product][0][product_id]' value='<{$product.product_id}>'></th>
+    <td>
+    <{input type="unsigned" value=$product.price.price.price name="goods[product][0][price][price][price]" style="width:60px" maxlength="25" }>
+		<{button type="button" label="编辑会员价格" style="display:none" onclick="goodsEditor.mprice.bind(goodsEditor)(this)" icon="btn_edit.gif" app="desktop"}>
+		<span>
+    <{foreach from=$mLevels item=lv }>
+      <input type="hidden" name="goods[product][0][price][member_lv_price][<{$lv.member_lv_id}>]" level="<{$lv.member_lv_id}>" value="<{if $product.price.member_lv_price[$lv.member_lv_id][custom] == 'true'}><{$product.price.member_lv_price[$lv.member_lv_id][price]}><{/if}>" type="money" vtype="mprice" />
+      <{/foreach}>
+	  </span>
+	  </td>
+  </tr>
+  <tr>
+    <th><{t}>成本价：<{/t}></th>
+    <td><{input type="unsigned" name="goods[product][0][price][cost][price]" maxlength="30" style="width:60px" value=$product.price.cost.price }></td>
+  </tr>
+  <tr style="display:none">
+	<th><{t}>市场价：<{/t}></th>
+	<td><{input type="unsigned" name="goods[product][0][price][mktprice][price]" maxlength="30" value=$product.price.mktprice.price }></td>
+  </tr>
+  <tr>
+    <th><{t}>货号：<{/t}></th>
+    <td><input type="text" class="x-input" vtype='required'  value="<{$product.bn}>" id="huohao" name="goods[product][0][bn]" maxlength="30" <{if $product.bn}><{if $do_edit neq 'true'}>readonly="readonly"<{/if}><{/if}>  /> <em class="c-red">*</em>
+    <{if $product.bn}>
+		<{if $do_edit neq 'true'}>
+			<span style="color:red;">(<{$do_edit}>)
+		<{/if}>
+	<{/if}>
+    </td>
+  </tr>
+  <tr>
+      <th><{t}>条形码：<{/t}></th>
+      <td><input type="text" class="x-input" value="<{$product.barcode}>" id="tiaoxm" name="goods[product][0][barcode]"  />
+       <{img id="copy" title="复制货号" class="pointer" src="icons/paste.gif"}>
+      </td>
+  </tr>
+  <tr>
+    <th><{t}>重量：<{/t}></th>
+    <td><{input type="unsigned" value=$product.weight name="goods[product][0][weight]" style="width:60px" maxlength="25" }><{t}>克(g)<{/t}></td>
+  </tr>
+ <!--
+  <tr>
+    <th><{t}>安全库存：<{/t}></th>
+    <td><{input type="unsigned" value=$product.alert_store name="goods[product][0][alert_store]" maxlength="25" size="5" }></td>
+  </tr>
+ -->
+  <tr class="advui">
+    <th><{t}>规格：<{/t}></th>
+    <td style="padding:4px 0">
+        <{button label="label" app="desktop" icon="btn_add.gif" label="开启规格" onclick="checkRelationInfo();"}>
+        <!-- <span class="notice-inline"><{t}>开启规格前先填写以上重量等信息，可自动复制信息到货品<{/t}></span> -->
+    </td>
+  </tr>
+</tbody>
+</table>

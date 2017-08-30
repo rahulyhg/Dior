@@ -1,0 +1,84 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+
+<form name="form1"  action="index.php?app=console&ctl=admin_iostockorder&act=doDefectiveconfirm" method="post">
+<div class="tableform">
+
+<input type="hidden" name="iso_id" value="<{$iso.iso_id}>">
+<h4>残损入库确认</h4>
+
+
+
+
+</div>
+
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<thead>
+<tr>
+	<th>货号</th>
+    <th>货品名称</th>
+    <th>规格</th>
+	<th>条码</th>
+	<th>入库数量</th>
+ <th>良品数量</th>
+ <th>不良品数量</th>
+</tr>
+</thead>
+<{foreach from=$iso.iso_items item=item}>
+<tbody>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.product_name}></td>
+    <td><{$item.spec_info}></td>
+    <td><{$item.barcode}></td>
+    <td><{$item.nums}></td>
+    <td><{$item.normal_num}></td>
+    <td><{$item.defective_num}></td>
+</tr>
+</tbody>
+<{/foreach}>
+</table>
+<div id="cc" class="noprint table-action"><{button type="button"  id="stock-save-btn" label="确 认"}> &nbsp;
+          <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+</div>
+
+</div>
+
+</form>
+<script>
+$('stock-save-btn').addEvent('click',function(e){
+
+        var _this=this;
+        var form=this.getParent('form');
+        form.store('target',{
+                onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                    try{
+                        var json = JSON.decode(jsontext);
+                        if (typeof(json.error)!='undefined'){
+                            _this.disabled=false;
+                        }else{
+                            _this.disabled=true;
+                            opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',200);
+                        }
+                    }catch(e){}
+                }
+            });
+        form.fireEvent('submit',e);
+    });
+
+</script>

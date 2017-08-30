@@ -1,0 +1,86 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+
+<div class="tableform">
+  新建售后问题类型
+  <div class="division">
+
+    <form method="post" action="index.php?app=ome&ctl=admin_setting&act=addproblem" id='form'>
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+
+        <tbody>
+        <!-- 
+          <tr>
+            <th>是否质量问题：</th>
+            <td><input name="is_problem" type="radio" value="true" <{if $problem.is_problem=='true'}>checked="checked" <{/if}>/>
+              是
+              <input type="radio" name="is_problem" value="false" <{if $problem.is_problem=='false'}>checked="checked" <{/if}>/>
+              否</td>
+          </tr>
+          <tr>
+            <th>类型：</th>
+            <td><input type="radio" name="type" value="problem_type" <{if $problem.type=='problem_type'}>checked="checked" <{/if}>/>
+              问题类型
+              <input type="radio" name="type" value="problem_belong" <{if $problem.type=='problem_belong'}>checked="checked" <{/if}>/>
+              问题归属</td>
+          </tr>
+           -->
+
+          <tr>
+            <th>名称：</th>
+            <td><input type="text" name="problem_name" value="<{$problem.problem_name}>" vtype="required"/></td>
+          </tr>
+          <tr>
+            <th>屏蔽状态：</th>
+            <td><{input type="radio" name="disabled" value=$problem.disabled options=$disabled_type separator="&nbsp;"}></td>
+          </tr>  
+        </tbody>
+      </table>
+      <{if $problem.problem_id}>
+      <input type="hidden" name="problem_id" value="<{$problem.problem_id}>">
+      <{/if}>
+    </form>
+  </div>
+</div>
+
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="submit_btn" ><span><span><{t}>提交<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+(function(){
+    var _form = $('form');//表单ID 
+    var btn   = $('submit_btn');//按钮ID
+    var finder = finderGroup['<{$env.get.finder_id}>'];
+    _form.store('target',{
+        onComplete:function(){
+        },
+        onSuccess:function(response){
+            var hash_res_obj = JSON.decode(response);
+            if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+                try{
+                    var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+                }catch(e){}
+
+                if(_dialogIns){
+                    finder.refresh();
+                    _dialogIns.close();
+                }
+            }
+        }
+    });
+
+    btn.addEvent('click',function(){
+        _form.fireEvent('submit',{stop:$empty});
+    });
+})();
+</script>
+

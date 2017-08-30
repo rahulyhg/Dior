@@ -1,0 +1,356 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<form id="fm1" name="form1" action="index.php?app=wms&ctl=admin_returned_purchase&act=doShift" method="POST">
+<input type="hidden" name="rp_id" value="<{$po.rp_id}>" />
+<div class="tableform">
+  <h3>采购退货出库</h3>
+    <div class="division">
+      <h5>基本信息</h5>
+      <table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+      <thead>
+        <tr>
+          <td width="10%" align="right" nowrap="nowrap">采购退货单名称:</td>
+          <td colspan="3">
+            <{if $po.name}><{$po.name}><{else}><{$cur_date}><{/if}>
+             <{if $po.emergency=='true'}>特别退货<{/if}>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">供应商:</td>
+          <td width="40%"><{$supplier_detail.name}><{input type="text" hidden="hidden" id="supplier" name="supplier" vtype="required" value="{$supplier_detail.name}"}><input type="hidden" name="supplier_id" id="supplier_id" value="<{$supplier_detail.supplier_id}>" />
+          </td>
+          <td width="10%" align="right">退货仓库:</td>
+          <td>
+            <{if $branch_mode=='single'}>
+                <{$po.branch_name}>
+                <input type="hidden" name="branch" value="<{$po.branch_id}>" />
+            <{else}>
+                <{if count($branch)>5}>
+                <{input type="select" name="branch" vtype="required" rows=$branch valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                <{else}>
+                <{foreach from=$branch item=items}>
+                <input type="radio" name="branch" vtype="requiredradio" value="<{$items.branch_id}>" />
+                <{$items.name}>
+                <{/foreach}> <span style="color:red">*</span>
+                <{/if}>
+            <{/if}></td>
+        </tr>
+        <tr>
+          <td align="right" nowrap="nowrap" title="一次性物流费用">物流费用(垫付):</td>
+          <td><{$po.delivery_cost}>元</td>
+          <td align="right" nowrap="nowrap" title="物流单号">物流单号:</td>
+          <td><{$po.logi_no}></td>
+        </tr>
+        </thead>
+      </table>
+
+      <h5 style="margin-top:10px;">采购退货货品</h5>
+      <span id='pfba'>
+      <label>扫描条码:</label>
+      <input type="text" name="some_name" value="" autocomplete="off" id="find-bn"/> <div id='addBn' style="display:inline"><{button type="button" display="none" label="回车键确定" id="add_bn" app="desktop" icon="btn_add.gif"}></div>
+      <{button type="button" label="条码枪扫描" id="Intermec" app="desktop" icon="btn_add.gif"}>
+      <div id='back_addBn' style="display:none"><{button type="button" label="切换到回车键确定" app="desktop" icon="btn_add.gif"}></div>
+      </span>
+      <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th style="width:240px;">货品名称</th>
+            <th>货品规格</th>
+            <th>条形码</th>
+            <th>退货数量</th>
+            <th>出库数量</th>
+            <th>单价</th>
+          </tr>
+        </thead>
+        <tbody id="dataNode">
+          <tr>
+            <td colspan="8" style="padding:0;"><div class="note" style="margin:0;"> 暂无采购退货货品信息 </div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+      <{if $po.memo}>
+      <tr>
+        <td width="10%" align="right">备注：</td>
+        <td align="left"><{foreach from=$po.memo item=items}>
+        <b><{$items.op_content|escape:"HTML"}></b>
+        <{$items.op_time}> by <{$items.op_name}><br/>
+        <{/foreach}></td>
+      </tr>
+      <{/if}>
+      <tr>
+        <td width="10%" align="right"><{if $po.memo}>追加<{/if}>备注:</td>
+        <td align="left"><textarea id="memo" maxth="255" rows="3" cols="80%" name="memo"></textarea></td>
+      </tr>
+      <tr>
+        <td align="right">经办人:</td>
+        <td align="left"><input name="operator" type="text" value="<{$po.operator}>" size="15" vtype="required"/></td>
+      </tr>
+    </table>
+    <div id="cc" class="noprint table-action"> <{button type="button" class="btn" id="purchase-save-btn" label="保 存"}> &nbsp; <{button type="button" class="btn" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+</div>
+</form>
+
+<script>
+(function(){
+var visiTips = new Tips({
+		onShow:function(tip,el){
+			el.addClass('active');
+			tip.setStyle('display','block');
+		},
+		text: function(element){
+			if(element.get('visibility')=='false'){
+				return '隐藏商品';
+			}else{
+				return '';
+			}
+		}
+	});
+  var tpl='<tr key="{product_id}" id="product_{product_id}" status="{delete}" title="{title}">'+
+        '  <td>{bn}</td><td class="product-name" visibility="{visibility}">{name}</td><td>{spec_info}</td><td>{barcode}</td>'+
+        '  <td>{num}</td>'+
+        '  <td><input type="hidden" value="{num}" name="at_o[{product_id}]"/><input name="ids[{product_id}]" type="hidden" value="{item_id}" /><input type="text" value="{num}" id="pro_{product_id}" name="at[{product_id}]" size="6" /></td>'+
+        '  <td><input type="hidden" name="pr[{product_id}]" value="{price}" />{price}元</td>'+
+        '</tr>';
+    var store=[],pag;
+    new Request({url:'index.php?app=purchase&ctl=admin_returned_purchase&act=getEditProducts&p[0]='+<{$po.rp_id}>,
+    onComplete:function(rs){
+        rs=JSON.decode(rs);
+        store.combine(rs);
+        createProduct(store);
+    }}).send();
+
+    var options={
+        'getVar':'bn',
+        'fxOptions':false,
+        callJSON:function(){return window.autocompleter_json;},
+        injectChoice:function(json){
+            var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+            choice.store('_data',json);
+            choice.inputValue = json[this.options.getVar];
+            this.addChoiceEvents(choice).inject(this.choices);
+        },
+        onHide:function(){
+            if(!this.selected) return;
+            var json=this.selected.retrieve('_data');
+            json=$splat(json);
+            init(json);
+            MessageBox.success('加载商品成功!!');
+        },
+        onFocus:function(ipt){
+            ipt.value='';
+        }
+    };
+
+    new Autocompleter.script($E('#supplier'),"index.php?app=purchase&ctl=admin_supplier&act=getSupplier", {
+        'getVar':'name',
+        'fxOptions':false,
+        callJSON:function(){return window.autocompleter_json;},
+        injectChoice:function(json){
+            var brief=json["brief"]?"("+json["brief"]+")":"";
+            var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar]+brief)});
+            choice.inputValue = json[this.options.getVar];
+            this.addChoiceEvents(choice).inject(this.choices);
+            $('supplier_id').set("value",json["supplier_id"]);
+        },
+        onHide:function(){
+          if(!this.selected)return;
+          var json=this.selected.retrieve('_data');
+          $('supplier_id').set("value",json["supplier_id"]);
+        }
+    });
+
+    function emptyData(){
+        var noData='<tr>'+
+            '<td colspan="8" style="padding:0;"><div class="note" style="margin:0;"> 暂无采购退货货品信息 </div></td>'+
+            '</tr>';
+        $('dataNode').set('html',noData);
+    }
+
+    function createProduct(data){
+        pag=new PageData(tpl,data,{'updateMain':$('dataNode'),'pageNum':10000,
+            'onShow':function(){
+                var _this=this;
+			  $ES('.product-name').each(function(item){
+					if(item.get('visibility')=='false'){
+						item.setStyle('color','#808080');
+					}
+			  });
+			  $ES('.product-name').removeEvent('mouseover').addEvent('mouseover',function(e){
+					if (this.get('visibility')=='false')
+					{
+						var e  = new Event(e), el = e.target;
+						visiTips.attach(el);
+						el.addEvent('mouseleave',function(){
+							this.removeClass('active');
+						});
+						el.fireEvent('mouseenter',e);
+					}
+			  });
+           }
+        });
+    }
+    function init(rs){
+        var tmparr=findProduct(rs,'product_id');
+        store.unshift.apply(store,tmparr.reverse());
+        createProduct(store);
+    }
+    function findProduct(arr,PRIMARY){
+        if(!store.length)return arr;
+        store.each(function(a){
+           arr.each(function(b){
+               if(a[PRIMARY]==b[PRIMARY])arr.erase(b);
+           });
+        });
+        return arr;
+    }
+    $('purchase-save-btn').addEvent('click',function(e){
+        var _this=this;
+        var form=this.getParent('form');
+        if(pag){
+            var data=pag.toHideInput($('dataNode').getElement('tr'));
+            form.store('target',{extraData:data,
+              onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                    try{
+                        var json = Json.evaluate(jsontext);
+                        if (typeof(json.error) != 'undefined'){
+                            _this.disabled=false;
+                        }else{
+                            _this.disabled=true;
+                            opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',500);
+                        }
+                    }catch(e){}
+                }
+            });
+        }
+        form.fireEvent('submit',e);
+    });
+
+    $('add_bn').addEvent('click',function(e){
+        var ipt=$('find-bn');
+        if(!ipt.value.trim().length){
+            return new MessageBox('请输入条码.',{type:'error',autohide:true});
+        }
+        if(store.length<=0){
+          return new MessageBox('没找到相关货品.',{type:'error',autohide:true});
+        }
+        var total = 0;
+        for(var i=0;i<store.length;i++){
+          if(ipt.value==store[i].barcode){
+          total++;
+          $('product_'+store[i].product_id).set('style','background:none repeat scroll 0 0 #6699FF;color:#FFFFFF');
+            var c = parseInt($('pro_'+store[i].product_id).value)+1;
+            if(c > store[i].num){
+               new MessageBox('出库数量已满.',{type:'error',autohide:true});
+               $('pro_'+store[i].product_id).set('value', store[i].num);
+            }else{
+                $('pro_'+store[i].product_id).set('value', c);
+            }
+          }else{
+            $('product_'+store[i].product_id).set('style','');
+          }
+        }
+        if(total==0) new MessageBox('未找到相应货品.',{type:'error',autohide:true});
+    });
+    
+    var Intermec = null;//扫描枪开关按钮
+    
+    //使用扫描枪时，出库数全部清0
+    $('Intermec').addEvent('click',function(e){
+    	Intermec = 'true';//开启扫描枪
+    	$('addBn').style.display ='none';
+    	$('back_addBn').style.display ='inline';
+        $('dataNode').getElements("input[id^=pro_]").each(function(item){
+        	item.value = 0;
+        });
+    });
+    //切换到回车键确定时,恢复原来数据
+    $('back_addBn').addEvent('click',function(e){
+    	$('addBn').style.display ='inline';
+    	$('back_addBn').style.display ='none';
+    	
+    	$('dataNode').getElements("input[name^=at_o]").each(function(item){
+    		var item_name = item.name;
+    	    var new_name = item_name.replace('at_o','at');
+    	    var element = "input[name="+new_name+"]";
+    	    //恢复原来数据
+    	    $('dataNode').getElements(element).set('value',item.value); 
+        });
+    	//关闭扫描枪
+    	if(Intermec){
+    		Intermec = null;
+    	}
+    });
+    $('find-bn').addEvent('keyup',function(e){
+    	if(e.code==13){
+        //当开启扫描枪以后，执行以下操作
+    	if(Intermec){
+        	 var barcode = $('find-bn').value;//扫描枪获取的条形码
+    	   	 new Request(
+    	 	    {
+   	 	            url:'index.php?app=console&ctl=admin_returned_purchase&act=getProductId',
+   	 	            method:'POST',
+   	 	            data:{barcode:barcode},
+   	 	            onComplete: function(text) {
+   	 	            	var product_id = text;
+   	 	            	//先设置样式
+   	 	            	for(i=0;i<store.length;i++){
+   	 	                   if(barcode == store[i].barcode){
+    	 	                   $('product_'+store[i].product_id).set('style','background:none repeat scroll 0 0 #6699FF;color:#FFFFFF');
+    	 	                   
+    	 	               }else{
+   	 	                     $('product_'+store[i].product_id).set('style','');
+   	 	                   }
+   	 	            	}
+   	 	            	if(product_id){
+   		 	            	var val = $('pro_'+product_id).value;//页面出库数量
+   		 	            	val = parseInt(val);
+   		 	            	var new_num = val+1;//扫描一次，累加一次
+   		 	            	var _name = 'at_o['+product_id+']';
+   		 	            	//获取原本的退货数量
+   		 	              var old_num = document.getElementsByName(_name).item(0).value; 
+   		 	          		old_num = parseInt(old_num);
+   		 	                if(new_num > old_num){
+   		 	                	new MessageBox('出库数量已满.',{type:'error',autohide:true});
+   		 	                }else{
+   		 	                	$('pro_'+product_id).set('value',new_num);
+   		 	                }
+   	 	            	}else{
+   	 	            		  new MessageBox('未找到相应货品.',{type:'error',autohide:true});
+   	 	            	}
+   	 	            }
+    	 	  }
+         ).send();
+    	} 
+    	}
+    });
+    $('props_box').getElements('input[type=checkbox]').addEvent('change',function(){
+        this.getNext('input[type=hidden]').set('value',this.checked?1:0);       
+  });
+
+    $('find-bn').addEvent('keyup',function(e){
+        if($('find-bn').value=='99999995'){
+          $('purchase-save-btn').fireEvent('click',{stop:$empty});
+        }
+        if($('find-bn').value=='11111115'){
+          window.close();
+        }
+        if(e.code==13){
+          $('add_bn').fireEvent('click');
+        }
+    });
+
+
+})();
+
+</script>

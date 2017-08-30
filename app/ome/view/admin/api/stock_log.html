@@ -1,0 +1,58 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<h3 class="head-title">同步参数</h3>
+<div class="tableform">
+	<div class="division">
+	      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+	        <tbody>
+	       <tr>
+	       	 <th>msg_id：</th>
+	       	 <td><{$api_stock.msg_id}></td>
+	       </tr>
+	       <tr>
+	       	 <th>货号和库存数:</th>
+	       	 <td><font style="color:blue;"><{$api_stock.product_bn}></font>
+             (<{$api_stock.store}>) - <{$api_stock.shop_name}>
+             </td>
+	       </tr>
+	       <tr>
+	          <th>执行方法:</th>
+	          <td><{$api_stock.worker}>
+	          </td>
+	        </tr>
+	        <tr>
+	        <th >状态：</th>
+	          <td>
+	          <{if $api_stock.status == 'success'}>
+                <font color=blue>成功</font>
+                <{elseif $api_stock.status == 'fail'}><font color=red>失败</font>
+                <{else}>
+                    <{$api_stock.status}>
+                <{/if}>
+	          </td>
+	        </tr>
+            <{if $api_stock.status == 'success' || $api_stock.status == 'fail'}>
+            <tr>
+	        <th >返回消息：</th>
+	       	<td><{$api_stock.msg}></td>
+	    	</tr>  
+            <tr>
+	        <th >执行时间：</th>
+	       	<td>
+                <{$api_stock.process_time}>
+                (<{$api_stock.createtime}> ~ <{$api_stock.last_modified}>)</td>
+	    	</tr>
+            <{/if}>
+            <{if ($api_stock.op_user)}>
+            <tr>
+	        <th>批量同步：</th>
+	       	<td>
+                <{$api_stock.op_user}>(<{$api_stock.op_userip}>) @ <{$api_stock.op_time}>
+                </td>
+	    	</tr>
+            <{/if}>
+	        </tbody>
+	      </table>
+	</div>
+</div>

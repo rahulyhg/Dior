@@ -1,0 +1,64 @@
+<style type="text/css">
+<!--
+.STYLE1 {color: red}
+-->
+</style>
+<form method="post" action="index.php?app=ome&ctl=admin_branch&act=index&action=to_export" class="table-form" target='csv_tmpl_form' enctype="multipart/form-data">
+<div class="tableform">
+  <div class="division">
+  <table cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <th><{t}>请选择仓库：<{/t}></th>
+    <td>
+	<select name='_gType'>
+	<{foreach from=$branch item=item}><option value='<{$item.branch_id}>'><{$item.name}></option><{/foreach}></select>
+	 </td>
+  </tr>
+  <tr>
+    <th><{t}>导出仓库库存CSV：<{/t}></th>
+    <td><b class="submitBtn">
+      <input type="submit" value="下载">
+      </b></td>
+  </tr>
+  </table>
+  </div>
+  </div>
+  <input type='hidden' value='csv' name='_io_type'/>
+   <iframe id='csv_tmpl_form' height="0">
+  </iframe>
+</form>
+<form enctype="multipart/form-data" method="post" action="index.php?app=ome&ctl=admin_storageexport&act=import" class="tableform">
+  <h4><{t}>请上传编辑后库存文件(CSV格式)<{/t}></h4>
+ <div class="tableform">
+  <div class="division">
+  <table cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <th><{t}>仓库文件：<{/t}></th>
+    <td><input type="file" name="upload1">&nbsp;&nbsp;文件名类似&nbsp;<font color=red>store-20100113(库存).csv</font></td>
+  </tr>
+  <tr>
+    <th><{t}> 入库方式：<{/t}></th>
+    <td><select name='type'>
+	<option value='1'>累加</option>
+	<option value='2'>覆盖</option>
+	</select><font color=red>store-20100113(库存).csv</font></td>
+  </tr>
+  <tr>
+    <th><{t}>注意：<{/t}></th>
+    <td>请注意文件中每一列的说明:<br>      <span class="STYLE1">第一列表示该csv属于哪个仓库<br>
+      bn 货号<br>
+      name 名称<br> 
+	  store 表示库存<br>
+      sku_property规格属性<br>weight 重量<br>
+      store_position货位名称</span></td>
+  </tr>
+  <tr>
+    <th>&nbsp;</th>
+    <td><b class="submitBtn">
+      <input type="submit" value="上传">
+      </b></td>
+  </tr>
+  </table>
+  </div>
+  </div>
+</form>

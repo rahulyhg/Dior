@@ -1,0 +1,35 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+
+<table cellspacing="10" cellpadding="0" border="0" width="100%">
+  <tr>
+    <td >
+        <div class="division">
+        <h4>批量发货详情</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>快递单号</th>
+                <th>提交时间</th>
+                <th>状态</th>
+                <th>原因</th>
+              </tr>
+            </thead>
+            <tbody>          
+            <{foreach from=$bldData item=dly}>
+              <tr>
+	              <td><{$dly.logi_no}></td>
+	              <td><{$dly.createtime}></td>
+	              <td><{if $dly.status=='success'}><span style="color:blue;">成功</span><{else}><span class="red">失败</span><{/if}></td>
+	              <td><{$dly.memo}></td>
+              </tr> 
+            <{/foreach}>
+			</tbody>
+          </table>
+        </div>
+      </td>
+      </tr>
+</tbody></table>

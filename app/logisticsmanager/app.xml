@@ -1,0 +1,19 @@
+<app>
+    <name>物流管理中心</name>
+    <description>物流单号、快递模板等与物流相关的管理</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>0.1</version>
+    <license>shopex license</license>
+    <parent_model_class>dbeav_model</parent_model_class>
+    <optional app="dev">开发者工具</optional>
+    
+    <depends>
+        <app>ome</app>
+    </depends>
+</app>

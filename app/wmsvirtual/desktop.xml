@@ -1,0 +1,21 @@
+<desktop>
+<permissions>
+        <permission id="stockin_view">入库单</permission>
+        <permission id="stockout_view">出库单</permission>
+        <permission id="reship_view">退货单</permission>
+        <permission id="delivery_view">发货单</permission>
+       
+ </permissions>
+    <workground name="仓储物流" id="wmsvirtual_center" action='show' order="9999999">
+        <menugroup name="仓储状态回传" order='2'>
+		<menu controller='purchase' action='index' permission='stockin_view'   display='true'  order='5'>采购入库单</menu>
+		<menu controller='purchasereturn' action='index' permission='stockin_view'   display='true'  order='5'>采购退货单</menu>
+            <menu controller='stockin' action='index' permission='stockin_view'   display='true'  order='5'>入库单</menu>
+            <menu controller='stockout' action='index' permission='stockout_view'   display='true'  order='6'>出库单</menu>
+           <menu controller='reship' action='index' permission='reship_view'   display='true'  order='8'>退货单</menu>
+            <menu controller='delivery' action='index' permission='delivery_view'   display='true'  order='8'>发货单</menu>
+            
+          </menugroup> 
+       
+    </workground>
+</desktop>

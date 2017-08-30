@@ -1,0 +1,13 @@
+<desktop>
+
+    <permissions>
+        <permission id="setting_wms">第三方仓储管理</permission>
+    </permissions>
+
+     <workground name="系统集成" id="channel_center" order="1100">
+        <menugroup name="第三方仓储">
+            <menu controller='admin_wms' action='index' permission='setting_wms' display='true' order='1001'>第三方仓储管理</menu>
+        </menugroup>
+    </workground>
+    
+</desktop>

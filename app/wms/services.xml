@@ -1,0 +1,57 @@
+<services>
+    <service id="desktop_finder.wms_mdl_delivery">
+        <class>wms_finder_delivery</class>
+    </service>
+
+    <service id="desktop_finder.wms_mdl_delivery_outerlogi">
+        <class>wms_finder_delivery</class>
+    </service>
+
+	
+    <service id="desktop_finder.wms_mdl_inventory">
+        <class>wms_finder_inventory</class>
+    </service>
+      <service id="extend_filter_wms_mdl_delivery">
+        <class>wms_finder_extend_filter_delivery</class>
+    </service>
+	<service id="extend_filter_wms_mdl_branch_product">
+        <class>wms_finder_extend_filter_branch_product</class>
+    </service>
+    <service id="operation_log">
+        <class>wms_operation_log</class>
+    </service>
+   
+	<!-- <service id="desktop_finder.purchase_mdl_po">
+        <class>wms_finder_po</class>
+    </service>-->
+	
+    <service id="system_setting">
+        <class>wms_system_setting</class>
+    </service>
+    
+    <service id="desktop_finder.wms_mdl_print_tmpl">
+        <class>wms_finder_print_tmpl</class>
+    </service>
+    
+    <service id="desktop_finder.wms_mdl_print_tag">
+        <class>wms_finder_print_tag</class>
+    </service>
+    
+    <service id="wms.service.template">
+        <class>wms_service_template</class>
+    </service>
+	<service id="extend_filter_taoguaninventory_mdl_inventory">
+        <class>wms_finder_extend_filter_inventory</class>
+    </service>
+	 <service id="desktop_finder.wms_mdl_products">
+        <class>wms_finder_products</class>
+    </service>
+	<service id="desktop_finder.wms_mdl_branch_product">
+        <class>wms_finder_branch_product</class>
+    </service>
+
+    <service id="data_clear">
+        <class>wms_service_data_clear</class>
+    </service>
+
+</services>

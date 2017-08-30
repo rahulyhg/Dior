@@ -1,0 +1,17 @@
+a:2:{s:7:"type_id";i:1;s:9:"type_name";s:12:"采购入库";}
+a:2:{s:7:"type_id";i:10;s:9:"type_name";s:12:"采购退货";}
+a:2:{s:7:"type_id";i:3;s:9:"type_name";s:12:"销售出库";}
+a:2:{s:7:"type_id";i:30;s:9:"type_name";s:12:"退货入库";}
+a:2:{s:7:"type_id";i:31;s:9:"type_name";s:12:"换货入库";}
+a:2:{s:7:"type_id";i:4;s:9:"type_name";s:12:"调拨入库";}
+a:2:{s:7:"type_id";i:40;s:9:"type_name";s:12:"调拨出库";}
+a:2:{s:7:"type_id";i:5;s:9:"type_name";s:12:"残损出库";}
+a:2:{s:7:"type_id";i:50;s:9:"type_name";s:12:"残损入库";}
+a:2:{s:7:"type_id";i:6;s:9:"type_name";s:6:"盘亏";}
+a:2:{s:7:"type_id";i:60;s:9:"type_name";s:6:"盘盈";}
+a:2:{s:7:"type_id";i:7;s:9:"type_name";s:12:"直接出库";}
+a:2:{s:7:"type_id";i:70;s:9:"type_name";s:12:"直接入库";}
+a:2:{s:7:"type_id";i:100;s:9:"type_name";s:12:"赠品出库";}
+a:2:{s:7:"type_id";i:200;s:9:"type_name";s:12:"赠品入库";}
+a:2:{s:7:"type_id";i:300;s:9:"type_name";s:12:"样品出库";}
+a:2:{s:7:"type_id";i:400;s:9:"type_name";s:12:"样品入库";}

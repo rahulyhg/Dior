@@ -1,0 +1,34 @@
+<{if $branchopts}>
+<form id='goods-sync-form' method='post' action='index.php?app=console&ctl=admin_goodssync&act=sync&wms_id=<{$wms_id}>' >
+<div class="tableform">
+    <{input type='radio' name='branch_bn' options=$branchopts vtype="requiredradio"}>
+    <input type="hidden" name="filter" value="<{$filter}>">
+</div>
+<div class="table-action">
+<{button label="同步" type="botton" id="goods-sync-btn"}>
+<{button label="关闭" type="botton" isCloseDialogBtn="true" }>
+</div>
+</form>
+<script type="text/javascript">
+(function(){
+
+    $('goods-sync-btn').addEvent('click',function(e){
+        var form = $('goods-sync-form'); var _this = this;
+        if(! validate(form)) return;
+
+        new Request({url:form.action,method:'post',data:form,
+            onComplete:function(result){
+                _this.getParent('.dialog').retrieve('instance').close();
+                finderGroup['<{$env.get.finder_id}>'].refresh();
+            },
+            onRequest:function(){
+                _this.disabled=true;
+                _this.set('html', '<span><span>正在同步</span></span>');
+            }
+        }).send();
+    });
+})();
+</script>
+<{else}>
+<h2 style="color:red;">请先建立仓库与仓储的绑定关系</h2>
+<{/if}>

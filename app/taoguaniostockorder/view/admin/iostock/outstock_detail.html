@@ -1,0 +1,99 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+
+<form name="form1" id="memo_form" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+<div class="tableform">
+
+<h4>出库单详情</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<tbody>
+<tr>
+	<th>出库单编号:</th>
+	<td ><{$iso.iso_bn}></td>
+	<th>供应商:</th>
+	<td ><{$iso.supplier_name}></td>
+	<th >经办人:</th>
+	<td ><{$iso.operator}></td>
+    <th >仓库:</th>
+    <td ><{$iso.branch_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<{if $appropriation_no}>
+		<th>调拨单号:</th>
+		<td ><{$appropriation_no}></td>
+	<{/if}
+    <th >金额总计:
+    
+    </th>
+    <td ><font color="orange"><b><{$amount|cur}></b></font></td>
+    <th>商品总额:</th>
+    <td><font color="orange"><b><{$iso.product_cost|cur}></b></font></td>
+    <th >
+        物流费用:
+    </th>
+    <td >
+    <{$iso.iso_price}>
+    </td>
+	<th >&nbsp;</th>
+    <td >&nbsp;</td>
+    
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<th >出库日期:</th>
+	<td ><{$iso.create_time}></td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<th >出库总数</th>
+	<td ><{$iso.total_num}></td>
+    <th ></th>
+    <td ></td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+	<th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+<{if $iso.memo}>
+<tr>
+    <th >备 注</th>
+    <td colspan=20 style="text-align:left">
+        <{$iso.memo}>
+    </td>
+</tr>
+<{/if}>
+</tbody>
+</table>
+</div>
+
+<div class="division">
+	<table border="0" cellspacing="0" cellpadding="0">
+	<tbody>
+	<tr>
+		<th >追加备注：</th>
+		<td><textarea id="memo" maxth="255" rows="4" cols="60" name="memo" vtype="required"></textarea></td>
+	</tr>
+	</tbody>
+	</table>
+	<div class="table-action">
+		<{button type="submit" id="append_memo" label="追加备注" class="btn btn-primary" }>
+		<input type="hidden" name="iso_id" value="<{$iso.iso_id}>" />
+	</div>
+</div>
+
+</div>
+</form>

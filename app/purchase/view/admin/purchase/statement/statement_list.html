@@ -1,0 +1,59 @@
+<div class="division" id="accordion">
+		<table width='50%' cellspacing="0" cellpadding="0">
+            <tr>
+                <td colspan="2"><h4>结算明细</h4></td>
+            </tr>
+        </table>
+		<table width='100%' cellspacing="0" cellpadding="0">
+			<td colspan="10" >
+				<div class="element atStart">
+				<table width='80%' cellspacing="0" cellpadding="0" style="background-color:#EFEFF7;">
+				<tbody>
+					<tr>
+						<td>单据号</td>
+						<td>结算日期</td>
+						<td>业务类型</td>
+						<td>期初应付</td>
+						<td>期初应收</td>
+						<td>本期增加应付</td>
+						<td>本期增加应收</td>
+						<td>本期已付</td>
+						<td>本期已收</td>
+						<td>期末应付</td>
+						<td>期末应收</td>
+						<td>差额</td>
+					</tr>
+						<{foreach from=$statement_list item=sub_item key=sub_key}>
+							<tr>
+							   <td><{$sub_item.object_bn|default:"-"}></td>
+							   <td><{$sub_item.statement_time|date_format:"%Y-%m-%d"}></td>
+							   <td><{$statement_type[$sub_item.object_type]}></td>
+							   <td><{$sub_item.initial_pay|cur}></td>
+							   <td><{$sub_item.initial_receive|cur}></td>
+							   <td><{$sub_item.pay_add|cur}></td>
+							   <td><{$sub_item.receive_add|cur}></td>
+							   <td><{$sub_item.paid|cur}></td>
+							   <td><{$sub_item.received|cur}></td>
+							   <td><{$sub_item.final_pay|cur}></td>
+							   <td><{$sub_item.final_receive|cur}></td>
+							   <td>
+							   <{if $sub_item.object_type==3}>
+							   <font color="red">
+							   <{if $sub_item.difference>'0'}>
+							   -
+							   <{/if}>
+							   <{$sub_item.difference|cur}></font>
+							   <{else}>
+							   <{$sub_item.difference|cur}>
+							   <{/if}>
+							   </td>
+							</tr>
+						<{/foreach}>
+				</tbody>
+				</table>
+				</div>
+			</td>
+			</tr>
+		</table>
+   </div>
+   

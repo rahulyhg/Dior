@@ -1,0 +1,62 @@
+<div class="d_table">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td colspan="6" class="d_th">
+    <div class="float_left">退货底单(物流单号：<{$po.logi_no}>)</div>
+    <div class="float_right">打印日期： <{$time|date_format:"%Y-%m-%d %H:%I:%S"}></div>
+    </td>
+    </tr>
+  <tr>
+    <td class="d_th d_td">退货单号：</td>
+    <td style="font-weight:bold;"><{$po.rp_bn}></td>
+    <td class="d_th d_td">是否特别退货：</td>
+    <td style="font-weight:bold;"><{if $po.emergency=='false'}>否<{else}>是<{/if}></td>
+    <td class="d_th d_td">供应商：</td>
+    <td style="font-weight:bold;"><{$po.supplier}></td>
+  </tr>
+  <tr>
+    <td class="d_th d_td">经办人：</td>
+    <td style="font-weight:bold;"><{$po.operator}></td>
+    <td class="d_th d_td">退货仓库：</td>
+    <td style="font-weight:bold;"><{$po.branch}></td>
+    <td class="d_th d_td">退货日期：</td>
+    <td style="font-weight:bold;"><{$po.returned_time|date_format:"%Y-%m-%d %H:%I:%S"}></td>
+  </tr>
+  <tr>
+    <td class="d_th d_td">物流费用(垫付)：</td>
+    <td style="font-weight:bold;"><{$po.delivery_cost}></td>
+    <td class="d_th d_td">金额总计：</td>
+    <td style="font-weight:bold;"><{$po.amount}></td>
+    <td class="d_th d_td">备注：</td>
+    <td style="font-weight:bold;">
+        <{foreach from=$po.memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+    </td>
+  </tr>
+</table>
+</div>
+<div class="d_table">
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th>商品名称</th>
+    <th>货号</th>
+    <th>规格</th>
+    <th style="width:10%;">条形码</th>
+    <th style="width:10%;">退货数量</th>
+    <th class="price" style="width:10%;">退货单价</th>
+  </tr>
+<{foreach from=$po.po_items item=i}>
+<tr>
+    <td style="font-weight:bold;"><{$i.name}></td>
+    <td style="font-weight:bold; font-size:15px;"><{$i.bn}></td>
+    <td style="font-weight:bold;"><{$i.spec_info}></td>
+    <td style="font-weight:bold;"><{$i.barcode}></td>
+    <td style="font-weight:bold;"><{$i.num}></td>
+    <td style="font-weight:bold;" class="price"><{$i.price}></td>
+</tr>
+<{/foreach}>
+</table>
+</div>

@@ -1,0 +1,34 @@
+
+<h4>退货信息</h4>
+<div class="tableform">
+    
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+    <tbody>
+        <tr>
+            <th>是否退运费</th>
+            <th>是否寄回</th>
+            <th>是否使用默认联系人</th>
+            <th>联系人名称</th>
+            <th>联系人电话</th>
+            <th>联系人地址</th>
+        </tr>
+    </tbody>
+    <tr>
+            <td><{if $return_product_yhd.isdeliveryfee=='1'}>是<{else}>否<{/if}></td>
+            <td><{if $return_product_yhd.sendbacktype=='1'}>是<{else}>否<{/if}></td>
+            <td><{if $return_product_yhd.isdefaultcontactname=='1'}>是<{else}>否<{/if}></td>
+            <td><{$return_product_yhd.contactname}></td>
+            <td><{$return_product_yhd.contactphone}></td>
+            <td><{$return_product_yhd.sendbackaddress}></td>
+        </tr>
+</table>
+</div>
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+    <tbody>
+        <tr>
+            <th><b>拒绝备注:</b><{$return_product_yhd.refuse_memo.refuse_message}></th>
+        </tr>
+    </tbody>
+</table>
+</div>

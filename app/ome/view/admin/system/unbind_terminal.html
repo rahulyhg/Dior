@@ -1,0 +1,31 @@
+<div class="tableform">
+<div class="division">
+    <form method="post" action="index.php?app=ome&ctl=admin_shop&act=unbind&unbind=true&shop_id=<{$shop_id}>" id="ome_shop_terminal">
+    确实要解除与此店铺的绑定关系吗？
+    <div class="table-action">
+	   <{button class="btn-primary" type="submit" id="ome_shop_unbind" name="submit" label="确定"}>
+	   <{button class="btn-primary" type="button" id="ome_shop_cancel" name="button" label="取消"}>
+	</div>
+	</form>
+</div>
+</div>
+<script>
+$('ome_shop_terminal').store('target',{
+    onRequest:function(){
+       $('ome_shop_unbind').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('ome_shop_unbind').set('disabled', '');
+       }else{
+           $('ome_shop_unbind').set('disabled', 'true');
+           parent.finderGroup['<{$finder_id}>'].refresh.delay(400,parent.finderGroup['<{$finder_id}>']);
+           $('ome_shop_terminal').getParent('.dialog').retrieve('instance').close();
+       }
+    }
+});
+$('ome_shop_cancel').addEvent('click', function(){
+	$('ome_shop_terminal').getParent('.dialog').retrieve('instance').close();
+});
+</script>

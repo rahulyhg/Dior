@@ -1,0 +1,118 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<form name="form1" id="memo_form" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+<div class="tableform">
+
+<h4>采购单详情</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+<tbody>
+<tr>
+	<th style='text-align:right;'>采购单编号:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.po_bn}></td>
+	<th style='text-align:right;'>供应商:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.supplier_name}></td>
+	<th style='text-align:right;'>采购员:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.operator}></td>
+    <th style='text-align:right;'>仓库:</th>
+    <td style='text-align:left;padding-left:5px;'><{$po.branch_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+    <th style='text-align:right;'>金额总计:
+    <{if $po.po_type=='cash' or $eo>=1}>
+    <{help}><{t}>金额总计=商品总额+物流费用<{/t}><{/help}>
+    <{/if}>
+    </th>
+    <td style='text-align:left;padding-left:5px;'><font color="orange"><b><{$po.amount|cur}></b></font></td>
+    <th style='text-align:right;'>商品总额:</th>
+    <td style='text-align:left;padding-left:5px;'><font color="orange"><b><{$po.product_cost|cur}></b></font></td>
+    <th style='text-align:right;'>
+        物流费用:
+    <{if $po.po_type=='credit'}>
+	            <{help}><{t}>
+		    <{if count($emslist)>1 }>
+		            物流费用=
+		    <{/if}>
+		    <{foreach from=$emslist item=items key=keys}>
+		            物流费用（入库时间：<{$items.entry_time|date_format:"%Y-%m-%d"}>）
+		     <{if count($emslist)>1 and ($keys+1) < count($emslist) }>+<{/if}>
+		    <{/foreach}>
+	    <{/t}><{/help}>
+	<{/if}>
+    </th>
+    <td style='text-align:left;padding-left:5px;'>
+    <{if $po.po_type=='credit'}>
+    <font color="orange"><b><{$delivery_cost|cur}></b></font>&nbsp;
+    <{else}>
+    <font color="orange"><b><{$po.delivery_cost|cur}></b></font>&nbsp;
+    <{/if}>
+    </td>
+    <{if $po.po_type=='credit'}>
+    <th style='text-align:right;display:none' >单次物流费用</th>
+    <td style='text-align:left;padding-left:5px;display:none' ><font color="orange"><b><{$po.delivery_cost|cur}></b></font></td>
+    <{else}>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+    <{/if}>
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<th style='text-align:right;'>采购日期:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.purchase_time|date_format:"%Y-%m-%d"}></td>
+    <th style='text-align:right;'>到货日期:</th>
+    <td style='text-align:left;padding-left:5px;'><{$po.arrive_time|date_format:"%Y-%m-%d"}></td>
+    <th style='text-align:right;'><{if $po.deposit!=0}>预付款:<{/if}>&nbsp;</th>
+    <td style='text-align:left;padding-left:5px;'><{if $po.deposit!=0}><{$po.deposit}><{/if}>&nbsp;</td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+	<th style='text-align:right;'>采购方式:</th>
+	<td style='text-align:left;padding-left:5px;'><b><font color="orange"><{if $po.po_type=='cash'}>现购<{else}>赊购<{/if}></font></b></td>
+	<th style='text-align:right;'>采购总数</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.total_num}></td>
+    <th ></th>
+    <td ></td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<{if $po.memo}>
+<tr>
+    <th >备注：</th>
+    <td >
+    <div id="memo_show">
+        <{foreach from=$po.memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+    </div>
+    </td>
+</tr>
+<{/if}>
+<tr>
+    <th >追加：</th>
+    <td><textarea id="memo" maxth="255" rows="4" cols="60" name="memo" vtype="required"></textarea></td>
+</tr>
+</tbody>
+</table>
+<div class="table-action"> <{button type="submit" id="append_memo" label="追加备注" class="btn btn-primary" }>
+    <input type="hidden" name="id" value="<{$po.po_id}>" />
+    </div>
+</div>
+</div>
+</form>

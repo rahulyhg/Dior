@@ -1,0 +1,632 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<form method="post" id="fm1" action="index.php?app=console&ctl=admin_returned_purchase&act=doSave">
+  <div class="tableform">
+    <h3>新建采购退货订单</h3>
+    <div class="division">
+      <h5>基本信息</h5>
+      <table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+      <thead>
+        <tr>
+          <td width="10%" align="right" nowrap="nowrap">采购退货单名称:</td>
+          <td><span id="exigence" style="color:red; display:none">！</span>
+            <input type="text" size="32" onblur="checkName(this.value);" id="purchase_name" name="purchase_name" value="<{$cur_date}>" />
+            <input type="checkbox" name="emergency" value="true" onchange="chgexigence(this);" />
+            特别退货</td>
+            <td  align="right" nowrap="nowrap">物流公司:</td>
+                <td><select name="corp_id">
+          <option value=''>请选择</option>
+          <{foreach from=$dly_corp item=corp}>
+          <option value="<{$corp.corp_id}>"><{$corp.name}></option>
+          <{/foreach}>
+          </select></td>
+        </tr>
+        <tr>
+          <td align="right">供应商:</td>
+          <td width="40%">
+            <span id="auto_supp" style="position:relative;">
+              <{img class="pointer btn_supplier" title="查看供应商列表" app="desktop" src="bundle/zoom_btn.gif"}>
+              <input type="text" id="supplier" name="supplier" vtype="required" />
+              <input type="hidden" name="supplier_id" id="supplier_id" value="" />
+            </span>
+            <span style="color:red;">&nbsp;&nbsp;&nbsp;&nbsp;*</span></td>
+          <td align="right" nowrap="nowrap" title="一次性物流费用">物流费用(垫付):</td>
+          <td><input type="text" vtype="number" name="d_cost" size="6"/>
+            元</td>
+        </tr>
+        <tr>
+          <td width="10%" align="right">退货仓库:</td>
+          <td>
+            <{if $is_super}>
+                <{if count($branch)=='1'}>
+                  <{$branch.0.name}>
+                  <input type="hidden" name="branch" value="<{$branch.0.branch_id}>" />
+                <{elseif count($branch)>'5' }>
+                    <{input type="select" name="branch" vtype="required" rows=$branch valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                <{else}>
+                  <{foreach from=$branch item=items key=keys}>
+                  <input type="radio" name="branch" vtype="requiredradio" value="<{$items.branch_id}>" <{if $keys==0}>checked="checked"<{/if}> />
+                  <{$items.name}>
+                  <{/foreach}> <span style="color:red">*</span>
+                <{/if}>
+            <{else}>
+                <{if !$branch_list}>
+                  <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+                  <script>
+                     $$("input","button","select").set('disabled',true);
+                  </script>
+                <{else}>
+                  <{if count($branch_list)==1}>
+                      <{$branch_list.0.name}>
+                      <input type="hidden" name="branch" value="<{$branch_list.0.branch_id}>" />
+                  <{elseif count($branch_list)>5}>
+                      <{input type="select" name="branch" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                  <{else}>
+                      <{foreach from=$branch_list item=items key=keys}>
+                      <input type="radio" name="branch" vtype="requiredradio" <{if $keys==0}>checked="checked"<{/if}> value="<{$items.branch_id}>" />
+                      <{$items.name}>
+                      <{/foreach}> <span style="color:red">*</span>
+                  <{/if}>
+                <{/if}>
+            <{/if}>
+            </td>
+          <td align="right" nowrap="nowrap" title="物流单号">物流单号:</td>
+          <td><input type="text" name="logi_no" size="20"/>
+          </td>
+        </tr>
+        </thead>
+      </table>
+      <h5 style="margin-top:10px;">采购退货货品</h5>
+      <{button label="供应商频道" id="supplier-find-btn" }>
+      <{button label="商品库频道" id="purchase-find-btn" }>
+      <span id='pfba'>
+      <label>按货号索引：</label>
+      <input type="text" name="bn" />
+      </span> <span id='pfba2'>
+      <label>按货品名称索引：</label>
+      <input name="name" type="text" size="35" />
+      </span>
+      <label>按条形码索引：</label>
+        <input type="text" id='barcode' name="barcode" />
+        <input type="hidden" id='oper_type'>
+      <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+        <thead>
+          <tr>
+          <th><input type="checkbox" class='selectall' onclick="this.blur()"></th>
+            <th>货号</th>
+            <th style="width:240px;">货品名称</th>
+            <th>货品规格</th>
+            <th>条形码</th>
+            <th>库存</th>
+            <th>数量</th>
+            <th>单价</th>
+            <th>合计</th>
+            <th style="width:30px;">删除</th>
+          </tr>
+        </thead>
+        <tbody id="dataNode">
+          <tr>
+            <td colspan="9" style="padding:0;"><div class="note" style="margin:0;"> 暂无采购退货货品信息 </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div align="right">
+        退货总量: <span id="buy_count">0</span> 退款总金额: <span id="buy_amount">0</span> &nbsp; <{button label="删除选中" id="purchase-del-btn"}> &nbsp;<{button type="button" id="purchase-delall-btn" label="全部删除" }></div> </div>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+      <tr>
+        <td width="10%" align="right">退货单备注:</td>
+        <td align="left"><textarea id="memo" maxth="255" rows="3" cols="80%" name="memo" type="textarea"></textarea></td>
+      </tr>
+      <tr>
+        <td align="right">经办人:</td>
+        <td align="left"><input name="operator" type="text" value="<{$operator}>" size="15" vtype="required"/></td>
+      </tr>
+    </table>
+    <div id="cc" class="noprint table-action"> <{button type="button" id="purchase-save-btn" label="保 存"}> &nbsp; <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+  </div>
+</form>
+<script>
+(function(){
+var visiTips = new Tips({
+		onShow:function(tip,el){
+			el.addClass('active');
+			tip.setStyle('display','block');
+		},
+		text: function(element){
+			if(element.get('visibility')=='false'){
+				return '隐藏商品';
+			}else{
+				return '';
+			}
+		}
+	});
+
+    var callurl='index.php?app=purchase&ctl=admin_purchase&act=getProducts',store=[];
+    var options={
+    'getVar':'bn',
+    'fxOptions':false,
+    callJSON:function(){return window.autocompleter_json;},
+    injectChoice:function(json){
+        var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+        choice.store('_data',json);
+        choice.inputValue = json[this.options.getVar];
+        this.addChoiceEvents(choice).inject(this.choices);
+        },
+    onHide:function(){
+    if(!this.selected)return;
+          var json=this.selected.retrieve('_data');
+          json=$splat(json);
+          init(json);
+          MessageBox.success('加载商品成功!!');
+     },
+     onFocus:function(ipt){
+        ipt.value='';
+     }
+    };
+    new Autocompleter.script($E('#auto_supp input[type=text]'),"index.php?app=purchase&ctl=admin_supplier&act=getSupplier", $merge(options,{
+		'getVar':'name',
+		injectChoice:function(json){
+			var brief=json["brief"]?"("+json["brief"]+")":"";
+			var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar]+brief)});
+            choice.store('_data',json);
+			choice.inputValue = json[this.options.getVar];
+			this.addChoiceEvents(choice).inject(this.choices);
+			$('supplier_id').set("value",json["supplier_id"]);
+        },
+        onHide:function(){
+          if(!this.selected)return;
+		  var json=this.selected.retrieve('_data');
+          $('supplier_id').set("value",json["supplier_id"]);
+        },
+        onFocus:$empty
+	}));
+    new Autocompleter.script($E('#pfba input'),callurl, options);
+    new Autocompleter.script($E('#pfba2 input'),callurl,$merge(options,{'getVar':'name'}));
+
+    var tpl='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'+
+        '<td><input type="checkbox" class="product_select"></td>  <td>{bn}</td><td class="product-name" visibility="{visibility}">{name}</td><td>{spec_info}</td><td>{barcode}</td>'+
+		'  <td id="store_{product_id}"></td>'+
+    '  <td><input type="text" value="{num}" key="num" vtype="unsigned&amp;&amp;required" tname="at[_PRIMARY_]" size="6"></td>'+
+        '  <td><input type="text" vtype="number&amp;&amp;required"  tname="pr[_PRIMARY_]" key="price" value="{price}" size="8">元</td>'+
+        '  <td class="count">{count}</td>'+
+        '  <td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'+
+        '</tr>';
+//条码添加回车事件累加数量
+$('barcode').addEvent('enter',function(e){
+    new Request({url:'index.php?app=purchase&ctl=admin_purchase&act=getProduct', method:'post',data: {barcode: this.value.trim()},
+          onRequest: function(){
+            MessageBox.show('正在加载...');
+          },
+          onSuccess:function(json){
+            if(!json) return;
+            
+            rs=JSON.decode(json);
+            var product_id = rs[0].product_id;
+            
+            if($('product_'+product_id)){
+            
+                var number = $('product_'+product_id).getElement('input[key=num]').value/1;
+                number = number+1;
+                $('product_'+product_id).getElement('input[key=num]').value=number;
+                
+                
+            }else{
+                init(rs);
+                
+                
+            }
+            $('barcode').focus();
+            $('barcode').value='';
+            $('product_'+product_id).getElement('input[key=num]').store('initval',this.value).fireEvent('change');
+            
+          }
+        }).send();
+    	
+
+});
+//
+    $('purchase-find-btn').addEvent('click',function(e){
+        var branch_select = $$("select[name='branch']");
+        if (branch_select.length>0) {
+            if(!branch_select[0].value){
+                return MessageBox.error("请先选择退货仓库！");
+            }
+        }
+    
+        var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=purchase&ctl=admin_purchase&act=findProduct');
+    	Ex_Loader('modedialog',function() {
+			new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:660,
+				onCallback:function(rs){
+					if(!rs)return;
+					rs=JSON.decode(rs);
+					init(rs);
+				}
+			});
+		});
+    });
+
+    //从供应商查找商品
+    $('supplier-find-btn').addEvent('click',function(){
+        if ($("supplier_id").get("value").trim().length===0){
+			$('supplier').addClass("error_supplier");
+	        return MessageBox.error("请先填写正确的供应商");
+        }
+        var branch_select = $$("select[name='branch']");
+        if (branch_select.length>0) {
+            if(!branch_select[0].value){
+                return MessageBox.error("请先选择退货仓库！");
+            }
+        }
+		$('supplier').removeClass("error_supplier");
+        var supplier_id = $('supplier_id').value;
+        var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=purchase&ctl=admin_purchase&act=findProduct&p[0]='+supplier_id);
+    	Ex_Loader('modedialog',function() {
+			return new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:650,
+				onCallback:function(rs){
+				  if(!rs)return;
+				  rs=JSON.decode(rs);
+				  init(rs);
+			}});
+		});
+    });
+
+	$E(".btn_supplier").addEvent('click',function(e){
+		var url='?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=purchase&ctl=admin_supplier&singleselect=1");
+    	Ex_Loader('modedialog',function() {
+			new finderDialog(url,{params:{url:'index.php?app=purchase&ctl=admin_supplier&act=getSupplierById',name:'id',type:'radio'},handle:'supplier',width:1000,height:500});
+		});
+	});
+
+  function initStore(rs){
+    var branch = $$("input[name='branch']");
+    var branch_id = '';
+    var product_id = '';
+    
+    // 修正仓库数量大于5时，select没有获取仓库id的bug
+    var branch_select = $$("select[name='branch']");
+    if (branch_select.length>0) {
+            branch_id = branch_select[0].value;
+    }else{
+        if(branch.length==1){
+            branch_id = branch[0].value;
+        }else{
+            branch.each(function(i){
+            if(i.get('checked')){
+               branch_id = i.value;
+             }});
+        }
+      }
+      if (rs) {
+          rs.each(function(d){
+                product_id=(product_id =='')?d['product_id']:product_id+'_'+d['product_id'];
+          });
+      }
+      
+      // 获取已经存在的商品id
+      if(pag && pag.data) {
+        var delarr=[];
+        pag.data.each(function(d){
+             product_id=(product_id =='')?d['product_id']:product_id+'_'+d['product_id'];
+        });
+      }
+      
+      new Request({url:'index.php?app=purchase&ctl=admin_returned_purchase&act=getBranchStore', method:'post',data:'branch_id='+branch_id+'&product_id='+product_id,
+        onRequest: function(){
+            MessageBox.show('正在加载...');
+        },
+        onSuccess:function(json){
+          json = JSON.decode(json);
+          $$("td[id^='store_']").each(function(i){
+            var id= i.get('id');
+            id = id.split('_');
+            var store_num='';
+            store_num=(json[id[1]])?json[id[1]]:0;
+            i.set('text', store_num);
+          });
+        }.bind(this)
+      }).send();
+  }
+
+    var pag;
+    function emptyData(){
+        var noData='<tr>'+
+            '<td colspan="8" style="padding:0;"><div class="note" style="margin:0;"> 暂无采购退货货品信息 </div></td>'+
+            '</tr>';
+        $('dataNode').set('html',noData);
+    }
+
+    var _next_key = next_key =  product_id = last_key = null;
+    function createProduct(data){
+		pag=new PageData(tpl,data,{'updateMain':$('dataNode'),'pageNum':10000,
+            'format': function(d) {
+                d.count = (d.num * d.price).toFixed(2);
+                d['price'] = (d.price*1).toFixed(2);    
+            },
+		    'onShow':function(){
+                var _this=this;
+                /*$$('#dataNode input[type]').addEvent('change',function(e){
+                    var pid=this.getParent('tr').get('key'),value=this.value;
+                    _this.editData(pid,[this.get('key'),value]);
+                });*/
+                $$('#dataNode input[tname$="[_PRIMARY_]"]').each(function(item){
+                    item.store('initval',item.value).addEvent('change',function(e){
+                        var patten,
+                            parent = this.getParent('tr'),
+                            pid= parent.get('key'),
+                            value= this.value,
+                            diffval = this.retrieve('initval') - value;
+                        if (/^at\[/.test(this.get('tname'))){
+                            patten = /^[1-9]\d*$/;
+                        }else{
+                            patten = /^\d+(\.*)\d*$/;
+                        }
+                        if(!patten.test(value)){
+                            this.focus();
+                            this.select();
+                            return MessageBox.error('输入格式有误！');
+                        }
+                        this.store('initval', value);
+                        _this.editData(pid,[this.get('key'),value]);
+
+                        var count = parent.getElement('td.count'),
+                            num = _this.selectData(pid).num.toInt(),
+                            pr = (_this.selectData(pid).price.toFloat()*1).toFixed(2),
+                            sums = (num * pr).toFixed(2);
+                            if(this.get('key')=='price') {
+                                this.set('value',pr);
+                            }
+                        count.set('text',sums);
+                        _this.editData(pid,['count',sums]);
+                        if (/^at\[/.test(this.get('tname'))){
+                            $('buy_count').set('text', $('buy_count').get('text') - diffval);
+                            $('buy_amount').set('text', ($('buy_amount').get('text') - diffval * pr).toFixed(2));
+                        }else{
+                            $('buy_amount').set('text', ($('buy_amount').get('text') - diffval * num).toFixed(2));
+                        }
+                    });
+                });
+                /*var state=this.curdata.every(function(d){return d['state']=='checked';});
+                $('purchase-delall-btn').checked=!state?false:true;
+                attachEsayCheck($('dataNode'),'input[type=checkbox]');*/
+                // 绑定删除事件
+                $$('#dataNode tr').each(function(item,i){
+                    item.addEvent('click',function(e){
+                        //e.stop();
+                        if(_next_key ){
+                            $E('#product_'+_next_key).set('style','');
+                            delete _next_key;//马上删除这个临时变量
+                         }
+
+                        this.toggleClass('selected');
+                        _this.selectData(this.get('key')).selected = _this.selectData(this.get('key')).selected && _this.selectData(this.get('key')).selected === true ? false : true;
+                        var selectflag = _this.selectData(this.get('key')).selected;
+                        var selectproduct = item.getElement('.product_select');
+                        if (selectflag)
+                        {
+                            selectproduct.set('checked','checked');
+                        }else{
+                            selectproduct.set('checked','');
+                        }
+
+                    });
+                    item.getElement('.btn-delete-item').addEvent('click',function(e){
+                        e.stop();
+                        product_id = 'product_'+item.get('key');
+                        _next_key = $$('#'+product_id+'+tr').get('key');
+                        if(_this.selectData(item.get('key')) && confirm('确定要删除 '+ _this.selectData(item.get('key'))['name'] +' 吗？')){
+                          compute(item);
+                          _this.delData(item.get('key'));
+                          initStore();
+                          //删除数据后，定位到删除下面的那一条记录
+                          if(isNaN(_next_key) == false){
+                            	next_key = 'product_'+_next_key; 
+                                $E('#'+next_key).set('style','background:none repeat scroll 0 0 #6699FF;color:#FFFFCC');           	
+                            }else{
+                            	_next_key = null;
+                            }
+                          product_id =  next_key = null;
+                        }
+                        if(!$E('#dataNode tr')) emptyData();
+                    });
+                    item.getElement('input[tname^=at]').addEvent('enter',function(e){
+                        $E('#pfba input').focus();
+                    });
+                });
+
+                //var len = this.data.length ? (this.data.length > this.options.pageNum ? (this.options.current == this.getTotal() ? this.data.length-this.options.pageNum*(this.options.current-1) : this.options.pageNum) : this.data.length) : 0;
+                if(this.data.length) {
+                
+                if($('oper_type').value==1){//当是条码搜索时，条码框锁定
+                    $('barcode').focus();
+                    $('barcode').value='';
+                }else{
+                    $E('#dataNode input[key^=num]').focus();
+                }
+                
+                }
+			  $ES('.product-name').each(function(item){
+					if(item.get('visibility')=='false'){
+						item.setStyle('color','#808080');
+					}
+			  });
+			  $ES('.product-name').removeEvent('mouseover').addEvent('mouseover',function(e){
+					if (this.get('visibility')=='false')
+					{
+						var e  = new Event(e), el = e.target;
+						visiTips.attach(el);
+						el.addEvent('mouseleave',function(){
+							this.removeClass('active');
+						});
+						el.fireEvent('mouseenter',e);
+					}
+			  });
+            }
+        });
+    }
+
+    $('purchase-delall-btn').addEvent('click',function(e){
+        delAllProducts(0);
+    });
+    
+    // 删除全部商品
+    function delAllProducts(c){
+        if(!pag||!pag.data)return;
+        var delarr=[];
+		pag.data.each(function(d){
+             delarr.push(d['product_id']);
+        });
+        if(c==1 || (delarr.length && c==0 && confirm('确认删除全部退货商品吗？'))){
+            delProduct(pag,delarr);
+            $('buy_count').set('text',0);
+            $('buy_amount').set('text',0);
+            emptyData();
+        }
+    }
+
+    $('purchase-del-btn').addEvent('click',function(e){
+        if(!pag||!pag.data)return;
+        var delarr=[];
+        pag.data.each(function(d,i){
+			if(pag.selectData(d['product_id']).selected && pag.selectData(d['product_id']).selected === true) delarr.push(d['product_id']);
+		});
+        //获取批量删除中的最后一个节点
+        last_key =  	$$('.selected').getLast();
+        last_key = last_key.get('key');
+
+        if(delarr.length){
+          if(confirm('确认删除选定的退货商品吗？')){
+            var nums=0,prices=0,sums=0;
+            delarr.each(function(id,i){
+              nums += pag.selectData(id).num.toInt();
+              prices += pag.selectData(id).price.toFloat();
+              sums += pag.selectData(id).num.toInt() * pag.selectData(id).price.toFloat();
+            });
+            //找到本次批量删除最后一条记录下面的那条记录
+            product_id = 'product_'+last_key;
+            _next_key = $$('#'+product_id+'+tr').get('key');
+
+            $('buy_count').set('text',$('buy_count').get('text') - nums);
+            $('buy_amount').set('text',($('buy_amount').get('text') - sums).toFixed(2));
+            delProduct(pag,delarr);
+            if(isNaN(_next_key) == false){
+            	next_key = 'product_'+_next_key; 
+                //对本次批量删除最后一条记录下面的那条记录，颜色加深提示
+                $E('#'+next_key).set('style','background:none repeat scroll 0 0 #6699FF;color:#FFFFCC');           	
+            }else{
+            	_next_key = null;
+            }
+            product_id = next_key=last_key = null;
+
+          }
+            if(!$E('#dataNode tr')) emptyData();
+        }
+        else MessageBox.error("请先选择欲删除的退货商品！");
+	});
+    function compute(e){
+      var num = e.getElement('input[tname="at[_PRIMARY_]"]').value.toInt();
+      var pr = e.getElement('input[tname="pr[_PRIMARY_]"]').value.toFloat();
+      var sum = num * pr;
+      $('buy_count').set('text',$('buy_count').get('text') - num);
+      $('buy_amount').set('text',($('buy_amount').get('text') - sum).toFixed(2));
+    }
+
+    function init(rs){
+        initStore(rs);
+        // delAllProducts(1); //重新选择商品时，先删除原有商品
+        var tmparr=findProduct(rs,'product_id');
+         store.unshift.apply(store,tmparr.reverse());
+         createProduct(store);
+    }
+    function findProduct(arr,PRIMARY){
+        if(!store.length)return arr;
+        store.each(function(a){
+            arr.each(function(b){
+                if(a[PRIMARY]==b[PRIMARY])arr.erase(b);
+            });
+        });
+        return arr;
+    }
+    function delProduct(obj,arr){
+        arr.each(function(d){obj.delData(d);});
+        initStore();
+    }
+
+    $('purchase-save-btn').addEvent('click',function(e){
+        var _this=this;
+        var form=this.getParent('form');
+        if(pag){
+            var data=pag.toHideInput($('dataNode').getElement('tr'));
+            form.store('target',{extraData:data,
+                onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                    try{
+                        var json = JSON.decode(jsontext);
+                        if (typeof(json.error)!='undefined'){
+                            _this.disabled=false;
+                        }else{
+                            _this.disabled=true;
+                            if(opener.finderGroup['<{$env.get.finder_id}>']) opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',200);
+                        }
+                    }catch(e){}
+                }
+            });
+        }
+        form.fireEvent('submit',e);
+    });
+})();
+function chgexigence(o){
+	o.checked?$("exigence").show():$("exigence").hide();
+}
+function validSupplier(element){
+	element=$(element);
+	new Element('span',{'class':'error caution notice-inline','html':'本项必填'}).injectAfter(element);
+	element.removeEvents('blur').addEvent('blur',function(){
+	   if(validate(element)) element.removeEvent('blur',arguments.callee);
+	});
+}
+//validSupplier('supplier');
+
+
+
+
+function checkName(thisval){
+	if(/!|！/.test(thisval)){
+		var val = thisval.replace("!","");
+		val = val.replace("！","");
+		$('purchase_name').set('value', val);
+    }
+}
+
+$E('.selectall').addEvent('click',function(e){
+    
+       if (this.checked)
+        {
+            $ES('.product_select').set('checked','checked');
+            $$('.product_select').each(function(item){
+                protr = item.getParent('tr');
+                product_id = protr.get('key');
+                protr.addClass('selected');
+                pag.selectData(product_id).selected=true;
+            
+            });
+        }else{
+            $ES('.product_select').set('checked','');
+            $$('.product_select').each(function(item){
+                protr = item.getParent('tr');
+                product_id = protr.get('key');
+                protr.removeClass('selected');
+                pag.selectData(product_id).selected=false;
+            
+            });
+        }
+        
+});
+
+</script>

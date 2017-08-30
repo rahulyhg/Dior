@@ -1,0 +1,108 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<style>
+    #content_tbl .role_content ul li {width:140px; overflow: hidden; float: left; margin-bottom: 0px; font-size: 12px;}
+    #content_tbl .role_content ul li span {cursor: pointer;}
+    #content_tbl .role_content ul li input {cursor: pointer;}
+    #content_tbl .title  {height: 20px; margin-bottom: 0px; font-size: 12px; font-weight: 700;}
+    #content_tbl .role_content  {margin-top: 6px; height : auto ; padding: 8px;}
+    #content_tbl .title span  {height: 20px; margin-bottom: 5px; margin-left: 20px; color: #999999;}
+    #content_li li {width:90px; overflow: hidden; float: left; margin-bottom: 10px; font-size: 12px; line-height: 20px;}
+    .current-set {color: red; font-weight: 700;  cursor: pointer;}
+    .current-disabled , .current-disabled span {color: #DDDDDD; font-weight: 700;  cursor:auto;}
+</style>
+<form action="index.php?app=omeauto&ctl=branchbind&act=save" method="post">
+    <div class="tableform">
+        <div class="division">
+            <table width="100%" cellspacing="0" cellpadding="0" id="content_tbl">
+                <tbody>
+                    <tr>
+                        <th>备货仓库：</th>
+                        <td colspan="3">
+                            <div class="title">选择要绑定的备货仓库<span>(绑定备货仓库后，审单时货品库存将是主仓库与备货仓库之和)</span></div>
+                            <div class="role_content" id="content_li">
+                                <ul>
+                                    <{foreach from=$branchList item=item}>
+                                    <li>
+                                        <input type="checkbox" name="bind_conf[]" value="<{$item.branch_id}>" id="bindBranch_<{$item.branch_id}>" <{if $item.branch_id|in_array:$branch.bind_conf}>checked<{/if}>/>
+                                        <label for="bindBranch_<{$item.branch_id}>">&nbsp;&nbsp;<span title="<{$item.name}>"><{$item.name}></span></label>
+                                    </li>
+                                    <{/foreach}>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <{if $branch.branch_id}><input type="hidden" name="branch_id" value="<{$branch.branch_id}>"/><{/if}>
+        </div>
+    </div>
+    <div class="table-action">
+        <{button class="btn-primary" label="保存" type="button" id="saveCurrent"}>
+        <{button class="btn-primary" label="取消" type="button" id="cancelBtn"}>
+    </div>
+</form>
+<script>
+    (function(){
+        $('saveCurrent').getParents('form').removeEvents('submit').addEvent('submit', function(e) {
+            e.stop();
+
+            new Request ({
+                url:this.action,
+                onRequest:function(e){
+                    //提交按钮:disabled
+                    $('saveCurrent').set('disabled', 'true');
+                    $('saveCurrent').getElements('span')[1].set('text','正在保存');
+                },
+                onComplete:function(result){
+                    if (result != 'SUCC'){
+                        //提交按钮:enabled
+                        $('saveCurrent').set('disabled', '');
+                        $('saveCurrent').getElements('span')[1].set('text','保存');
+                    }else{
+                        //提交按钮:disabled  
+                        finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                        $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+                        //setTimeout("window.close()",500);
+                    }
+                }
+            })[this.method](this);
+        });
+
+        //保存按钮
+        $('saveCurrent').addEvent('click', function() {
+            //检查对应订单类型
+            var aHasOrder = false;
+            $$('#content_li input[type=checkbox]').each(function(item){
+                if (item.checked) {
+                    aHasOrder = true;
+                }
+            });
+
+            $('saveCurrent').getParents('form').fireEvent('submit', {
+                stop: function(){ 
+                }
+            });
+        });
+
+        //关闭按钮
+        $('cancelBtn').addEvent('click', function(){
+            $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+        });
+
+        //选择订单标红
+        $$('#content_li input[type=checkbox]').addEvent('click',function(item){
+            this.blur();
+            this.getParent()[this.checked?'addClass':'removeClass']('current-set');
+        });
+        $$('#content_li input[type=checkbox]').each(function(item){
+            if (item.get('disabled')) {
+                item.getParent()['addClass']('current-disabled');
+            } else {
+                item.blur();
+                item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+            }
+        });
+    })();
+</script>

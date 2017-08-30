@@ -1,0 +1,20 @@
+<form action="index.php?app=ome&ctl=admin_shop&act=request_config" method="post" class="tableform">
+ <input type="hidden" name="shop_id" value="<{$shop_id}>" />
+  <div class="division">
+      回写前端店铺库存： <input type="radio" name="request_config" value="true" <{if $request_auto_stock=='true'}>checked<{/if}> /> 打开 &nbsp;&nbsp;
+                      <input type="radio" name="request_config" value="false" <{if $request_auto_stock=='false'}>checked<{/if}> /> 关闭 &nbsp;&nbsp;
+                      <{button type="button" label="保存设置" class="btn-secondery" id="btn_save"}>
+  </div>
+</form>
+<script>
+    $('btn_save').addEvent('click',function(){
+        
+      this.disabled = true;
+      this.getParent('form').store('target',{
+        onComplete:function(){
+          //location.reload();
+          try{finderGroup['<{$env.get.finder_id}>'].refresh();}catch(e){}
+        }
+      }).fireEvent('submit',{stop:function(){}});
+    });
+</script>

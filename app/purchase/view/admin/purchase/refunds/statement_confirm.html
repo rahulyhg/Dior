@@ -1,0 +1,79 @@
+<script>
+//关闭当前POP
+$('sub_close_state').addEvent('click', function(event){
+this.getParent('.dialog').retrieve('instance').close();
+});
+//结算操作
+$('sub_statement').addEvent('click',function(event){
+
+//确认结算
+var sTrue = statementConfirm();
+if(sTrue==true){
+    sendForm(event);
+    /*
+    var _form = $('stateForm');
+    var _formActionURL = _form.get('action');
+    _form.set('send', {
+            url: _formActionURL, 
+            method: 'post',
+            onComplete: function(){
+                statementHand();
+            },
+            onError: function(err){
+                alert('提交处理出错');
+            }
+    });
+    _form.send();//发送表单数据
+    */
+    //关闭当前窗口
+    $('sub_statement').getParent('.dialog').retrieve('instance').close();
+}
+});
+var ptype = $('ptype').get('value');//退款类型
+var po_type =  $('po_type').get('value');//付款类型
+if (ptype=="po")
+{
+if (po_type="credit"){
+  $('dixiao').show();
+  $('nodixiao').hide();
+}
+else
+{
+  $('dixiao').hide();
+  $('nodixiao').show();
+}
+}
+$('dx_but').addEvent('click',function(event){
+//确认结算
+var sTrue = statementConfirm();
+if(sTrue==true){
+    sendForm(event);
+}
+//关闭当前窗口
+$('dx_but').getParent('.dialog').retrieve('instance').close();
+});
+</script>
+
+	<div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0">
+			
+			<tr>
+				<td  colspan="2" >
+				<{$html}>
+				</td>
+			</tr>
+			
+            <tr>
+				<td colspan="2" height="45">
+				<span id="dixiao" style="display:none;">
+				  <{button class="btn-primary" type="button" id="dx_but" label="预付款退款结算" }>
+				</span>
+				<span id="nodixiao">
+				<{button class="btn-primary" type="button" id="sub_statement" label="继续结算" }>
+				</span>
+				&nbsp;&nbsp;
+				<{button class="btn-primary" type="button" id="sub_close_state" label="取消结算" }>
+				</td>
+			</tr>
+		</table>
+   </div>

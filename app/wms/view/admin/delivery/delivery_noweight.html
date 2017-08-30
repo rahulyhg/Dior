@@ -1,0 +1,88 @@
+<{capture name="header"}>
+  <link href="../app/wms/statics/wms.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<body>
+<div class="division">
+<div class="tableform" id='notifycontent'>
+<h3><font color="red">该包裹以下货品未录入重量:</font></h3>
+<form id='product-form' method="post" action='index.php?app=wms&ctl=admin_consign&act=index'>
+<table cellspacing="10" cellpadding="0" border="0" width="100%" class="gridlist">
+<thead>
+  <tr>
+    <th >
+        货号
+      </th>
+      <th>
+       商品名称 
+      </th>
+      </tr>
+      </thead>
+      <{foreach from=$product_weight item=product_weight}>
+   <{if $product_weight.obj_type=='pkg' && $product_weight.weight=='0'}>
+<{foreach from=$product_weight.items item=weight_list}>
+ <{if $weight_list.total==0}>
+    <tr>
+    <td >
+       <font color="red"><{$weight_list.bn}></font>
+      </td>
+      <td >
+       <font color="red"><{$weight_list.product_name}></font>
+      </td>
+      </tr>
+     <{/if}>
+      <{/foreach}>
+ <{else}>
+<{foreach from=$product_weight.items item=weight_list}>
+ <{if $weight_list.total==0}>
+    <tr>
+    <td >
+       <font color="red"><{$weight_list.bn}></font>
+      </td>
+      <td >
+       <font color="red"><{$weight_list.product_name}></font>
+      </td>
+      </tr>
+     <{/if}>
+      <{/foreach}>
+  <{/if}>  
+      <{/foreach}>
+</table>
+</form>
+<p>
+<h3><font color="red">请联系管理员补录货品重量</font></h3>
+</p>
+
+</div>
+<table>
+<tr align="center"><td align='right'><button type="button" id="btn-cancel" style="font-size:1.5em;font-weight: 600; height: 40px; width:150px;cursor: pointer;display: -moz-inline-stack;line-height: 30px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>检查后再发货</span></span></button>&nbsp;&nbsp;&nbsp;&nbsp;</td><td  align='left' style="padding-top:10px;"><input type="text" id="barcode" name="barcode" style="height:20px;vertical-align:bottom;" /></td></tr>
+<tr align="center"><td style="padding-top:6px;" colspan="2"><h4><font weight="bold">按键盘任意键或输入任意条形码实现“检查后再发货”操作</font></h4>
+</td></tr>
+</table>
+</div>
+</div>
+<input type="text" value='' id="weightSubmit" style="width:0px;height:0px; border: 0px;"/>
+</body>
+<script>
+$('barcode').focus();
+$('btn-cancel').addEvent('click',function(e){
+  $('product-form').getParent('.dialog').retrieve('instance').close();
+
+
+});
+$('barcode').addEvent('keyup',function(e){
+    var barcode = $('barcode').value;
+    
+    if(barcode!=''){
+        
+        $('btn-cancel').fireEvent('click',e);
+    }
+    return false;
+});
+
+$('notifycontent').onclick = function() {
+        $('weightSubmit').focus();
+};
+$('weightSubmit').addEvent('keyup',function(e){
+    $('btn-cancel').fireEvent('click',e);
+});
+</script>

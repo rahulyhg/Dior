@@ -1,0 +1,163 @@
+<div class="tableform"> 
+<div class="division" >
+<h3>盘点表明细</h3>
+<form enctype="multipart/form-data" id="Searchform" action="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=export_inventory" method="post">
+<input type="hidden" name="inventory_id" value="<{$detail.inventory_id}>">
+<input type="hidden" name="is_auto" value="<{$is_auto}>">
+<table width='100%' cellspacing="0" cellpadding="0" >
+  <tr>
+      <td>盘点名称：<{$detail.inventory_name}></td>
+      <td>盘点单编号：<{$detail.inventory_bn}></td>
+      <td>盘点日期：<{$detail.inventory_date|date_format:"%Y-%m-%d"}></td>
+  </tr>
+  <tr>
+      <td>盘点仓库：<{$detail.branch_name}></td>
+      <td>盘点类别：
+	  <{if $detail.inventory_type=='1'}>自定义<{/if}><{if $detail.inventory_type=='2'}>全盘<{/if}><{if $detail.inventory_type=='3'}>部分盘点<{/if}><{if $detail.inventory_type=='4'}>期初<{/if}></td>
+      <td>业务日期：<{$detail.add_time|date_format:"%Y-%m-%d"}></td>
+</tr>
+  
+  <tr>
+      <td>盘点人：<{$detail.inventory_checker}></td>
+      <td>是否启用货位:<{if $detail.pos==0}>否<{else}>是<{/if}></td>
+      <td> <input type="checkbox" class='shortage_over' id='shortage_over' name="shortage_over" value="1" />只显示盈亏数不等于0的数据
+   
+	<{button label="导出" type="submit"}>
+
+ </td>
+  </tr>
+  <tr>
+  		<td>盘点确认人：<{$detail.confirm_op}></td>
+  </tr>
+ 
+
+</table>
+</form>
+
+<form id='search_inventory' method="post" action="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=detail_inventory&p[0]=<{$detail.inventory_id}>">
+<input type="hidden" name="inventory_id" value="<{$detail.inventory_id}>">
+<input type="hidden" name="branch_id" value="<{$detail.branch_id}>">
+
+	<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<td nowrap="nowrap" style="width:auto;">
+			<div class="tabs-wrap select-tabs delivery-cfg-tab">
+			<ul style="margin-top:2px;padding:0;">
+				<li class="tab <{if $is_auto==''}>current<{/if}>" >
+					<span><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=detail_inventory&p[0]=<{$detail.inventory_id}>"><{t}>全部<{/t}></a></span>
+				</li>
+    <{if $detail.inventory_type==2}>
+<li class="tab <{if $is_auto=='0'}>current<{/if}>" >
+<span><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=detail_inventory&p[0]=<{$detail.inventory_id}>&is_auto=0"><{t}>实盘<{/t}></a></span>
+				</li>
+				<li class="tab <{if $is_auto=='1'}>current<{/if}>">
+					<span><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=detail_inventory&p[0]=<{$detail.inventory_id}>&is_auto=1"><{t}>未盘<{/t}></a></span>
+				</li>
+    <{/if}>
+			</ul>
+			</div>
+		</td>
+	</tr>
+	</table>
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist delivery-cfg-table">
+            <thead>
+            <tr>
+                <th>货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+               <th>帐面数量</th> 
+                <th>实际数量</th>
+                <th>成本价</th>
+                <th>盈(+)亏(-)记录</th>
+                <th>盈(+)亏(-)金额</th>
+                <th style='display:none'>单价</th>
+              </tr>
+            </thead>
+            <{foreach from=$items item=items key=keys}>
+            <tbody id="detail_data">
+            <tr class="toggler<{if $items.shortage_over==0}>show<{/if}>" id="show" <{if $items.is_auto==1}>bgcolor='#cccccc'<{/if}>>
+                <td><{$items.name}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><{$items.accounts_num}></td>                
+                <td><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=detail_inventory_object&item_id=<{$items.item_id}>&product_id=<{$items.product_id}>" target="dialog::{width:400,height:200,title:'盘点明细'}"><{$items.actual_num}></a></td>
+                <td><{$items.price}></td>
+                <td><{$items.shortage_over}></td>
+                 <th><{$items.shortage_over_price}></th>
+                <td style='display:none'><{$items.price|cur}></td>
+              </tr>
+            </tbody>
+            <{/foreach}>
+            <tbody >
+            <tr>
+               <td><b>合计：</b></td>
+               <td>-</td>
+               <td>-</td>
+               <td>-</td>
+              <td><span id="sub_accounts_num"></span><{$total.accounts_num|default:0}></td> 
+              <td><span id="sub_actual_num"></span><{$total.actual_num|default:0}></td>
+              <td><span id="sub_actual_num"></span><{$total.price}></td>
+               <td><span id="sub_shortage_over"></span><{$total.shortage_over|default:0}></td>
+               <td><span id="sub_shortage_over"></span><{$total.shortage_over_price}></td>
+               <td></td>
+              </tr>
+            </tbody>
+        </table>
+        
+        <table width='100%' cellspacing="0" cellpadding="0" >
+		  <tr><td colspan="4" align="center"><b></b></td></tr>
+		  <tr>
+		      <td>复核人：<{$detail.second_checker}></td>
+		      <td>财务负责人：<{$detail.finance_dept}></td>
+              <td>仓库负责人：<{$detail.warehousing_dept}></td>
+		  </tr>
+		</table>
+	
+
+</form>	
+   </div>
+
+<div class="gridlist-footer">
+<{$pager}>&nbsp;&nbsp;共<{$count}>条，每页显示<{$pagelimit}>条 
+</div>
+<div class="table-action">
+	<{if $items}>
+	<{if $detail.confirm_status==1}>
+   <a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=shortage_over&inventory_id=<{$detail.inventory_id}>&branch_id=<{$detail.branch_id}>" target="dialog::{width:800,height:600,title:'预盈亏'}"><{button type="button"  class="btn btn-primary" label="预盈亏" }></a>
+   <{/if}><{/if}>
+<{button type="button" class="btn" id="return-btn" label="关 闭" onclick="javascript:this.getParent('.dialog').retrieve('instance').close();"}>
+</div>
+
+</div>
+
+<script>
+window.addEvent('domready',function(e){
+	if($E('.delivery-cfg-tab li')) new ItemAgg($ES('.delivery-cfg-tab li'),$ES('.delivery-cfg-item'),{
+	  activeName:'current',
+	  itemsClass:'delivery-cfg-item-cur'
+	});
+});
+var shortage_over='<{$env.get.shortage_over}>';
+if(shortage_over==1){
+$('shortage_over').set('checked',true)
+}
+$$('.shortage_over').addEvent('click',function(e){
+if($('shortage_over').checked==true){
+ 
+
+    var action=$('search_inventory').get('action');
+    action=action+'&shortage_over=1';
+    $('search_inventory').set('action',action);
+    $('search_inventory').fireEvent('submit',{stop:$empty});
+
+}else{
+    $('search_inventory').fireEvent('submit',{stop:$empty});
+}
+
+});
+
+
+
+</script>

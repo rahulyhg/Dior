@@ -1,0 +1,121 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<style>
+    #content div a {color: blue; font-size: 14px; }
+    #content div  span {float: right;}
+    #content ul li {height:25px; background: #EEEEEE; margin: 1px; padding-left: 10px; padding-top: 8px;}
+    #content ul li span {float:right; margin-right: 10px;}
+    #content ul li span a {color:blue; text-decoration: underline;}
+    #content ul li div {width:450px; overflow: hidden; height: 16px; float:left;}
+</style>
+<div class="tableform">
+    <div class="division">  
+        <form action="" method="post" id="orderTypeFrm"> 
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr>
+                        <th width="60"><label for="dom_el_bc">类型名称：</label> </th>
+                        <td ><{input type="text&&required" name="name" id='t_name' value=$info.name}>&nbsp;&nbsp;&nbsp;&nbsp;(请使用通俗易懂的名称，如 批发订单、小额订单【100以下】、华东区订单)</td>
+                    </tr>
+                    <tr>
+                        <th width="60"><label for="dom_el_bc">简单说明：</label> </th>
+                        <td><{input type="textarea" cols="100" rows="4" name="memo" id='t_memo' value=$info.memo}><br/>(对此订单类型的简单描述)</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr/></td>
+                    </tr>
+                    <tr>
+                        <th width="60"><label for="dom_el_bc">归类规则：</label> </th>
+                        <td id="content">
+                            <div><a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=order_type&act=addrole&app=omeauto',{width:720,height:420,title:'规则设定'}); ">增加规则</a> <span></span></div>
+                            <ul id="roleList">
+                                <{ foreach from=$info.config item=role key=uid}>
+                                <li id="m_item_<{$uid}>"><div title="<{$role.attr.caption}>"><{$role.attr.caption}> </div><span><a ref='<{$role.json}>' class="edit" href="javascript:void(0);">编辑</a>&nbsp;<a class="del" href="javascript:void(0);">删除</a></span></li>
+                                <{ /foreach }>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" height='5'>
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th width="60"><label for="dom_el_bc">权重：</label> </th>
+                        <td><{input type="number&&required" size="5" name="weight" id='weight' value=$info.weight}></td>
+                    </tr>
+                    <{if !$info}>
+                    <input type="hidden" id='group_type' name="group_type" value="<{$group_type}>">
+                   <{else}>
+                     <input type="hidden" id='group_type' name="group_type" value="<{$info.group_type}>">
+                    <{/if}>
+                    
+                    <tr>
+                        <td colspan="2" align="center">
+                            <{button class="btn-primary" label="确定" type="button" id="msaveBtn"}>
+                            <{button class="btn-primary" label="取消" type="button" id="mcancelBtn"}>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div> 
+</div>
+<script> 
+    (function() {
+        //关闭按钮
+        $('mcancelBtn').addEvent('click', function(){
+            $('mcancelBtn').getParent('.dialog').retrieve('instance').close();
+        });
+        //规则事件
+        $$('#roleList .del').addEvent("click",function(){
+            if (confirm("你确定要删除当前指定规则吗？")) {
+                this.getParent().getParent().destroy();
+            }
+        });
+        $$('#roleList .edit').addEvent("click",function(){
+            var role = this.get('ref');
+            var uid = this.getParent().getParent().id;
+            new Dialog('index.php?ctl=order_type&act=addrole&app=omeauto',{width:720,height:420,title:'规则设定',ajaxoptions:{data:{role:role,uid:uid},method:'post'}});
+        });
+        //保存按钮
+        $('msaveBtn').addEvent('click', function(){
+            
+            var roles = '';
+            $$('#roleList li').each(function(item) {
+                if (roles == '') {
+                    roles = item.getElement('.edit').get('ref');
+                } else {
+                    roles = roles  + "|||" + item.getElement('.edit').get('ref') ;
+                }
+            });
+            new Request ({
+                url:'index.php?app=omeauto&ctl=order_type&act=save&tid=<{$info.tid}>',
+                method:'post',
+                data:{'name':$('t_name').value,'memo':$('t_memo').value,'weight':$('weight').value, 'roles':roles,'group_type':$('group_type').value},
+                onRequest: function () {
+                    $('msaveBtn').set('disabled', 'true');
+                    $('mcancelBtn').set('disabled', 'true');
+                },
+                onSuccess: function(result) {
+                    if (result =='SUCC') {
+                        finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                        $('msaveBtn').getParent('.dialog').retrieve('instance').close();
+                    } else {
+                        $('msaveBtn').set('disabled', '');
+                        $('mcancelBtn').set('disabled', '');
+                        //提示信息
+                        alert(result);
+                    }
+                }
+            }).send();
+        }); 
+    })();
+    uniqueID = (function () { 
+        var id = 0; 
+        return function () { 
+            return id++; 
+        }; 
+    })(); 
+</script>

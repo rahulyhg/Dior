@@ -1,0 +1,439 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<style>
+    .operate{
+        cursor:pointer;
+        margin-right:5px;
+        display:inline-block;
+    }
+	#dataNode td{
+		text-align:left;
+	}
+	.itemDetail 
+	td{
+		text-align:center;
+	}
+    
+</style>
+<form id="fm1" name="form1" action="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=doEditbasic" method="POST">
+<input type="hidden" name="inventory_id" value="<{$inventory_id}>" />
+<input type="hidden" name="branch_id" value="<{$inventory.branch_id}>" />
+<div class="tableform">
+<h3>编辑盘点表</h3>
+    <div class="division">
+	<h5>基本信息</h5>
+	<table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+	<thead>
+  <tr>
+      <td colspan="4">盘点名称：
+<{input type="text" name="inventory_name" value=$inventory.inventory_name vtype="required" size=40}></td>
+      </tr>
+<tr>
+      <td>盘点单编号：<{$inventory.inventory_bn}></td>
+      <td>盘点日期：<{$inventory.inventory_date|date_format:"%Y-%m-%d"}></td>
+      <td  align="left">业务日期：<{$inventory.add_time|date_format:"%Y-%m-%d"}></td>
+      </tr>
+<tr>
+      <td>是否启用货位:<{if $inventory.pos==0}>否<{else}>是<{/if}>
+	    <input type="hidden" name="pos_lock" value="<{$inventory.pos}>"></td>
+      <td>盘点类别：
+      部分<input type="radio" name='inventory_type' value='3' <{if $inventory.inventory_type=='3'}>checked<{/if}>> 
+      全盘<input type="radio" name='inventory_type' value='2' <{if $inventory.inventory_type=='2'}>checked<{/if}>>
+	期初<input type="radio" name='inventory_type' value='4' <{if $inventory.inventory_type=='4'}>checked="checked"<{/if}> >
+	 </td>
+      <td align="left">盘点仓库：<{$inventory.branch_name}></td>
+      </tr>
+  <tr>
+      <td>盘点人：
+       <{$inventory.inventory_checker}></td>
+      <td></td>
+      <td>&nbsp;</td>
+  </tr>
+</thead>
+</table>
+<div id="cc" class="noprint table-action"> 
+
+<{button type="button" class="btn" id="inventory-basic" label="保存盘点信息" }> &nbsp; </div>
+</form>
+<form id="fm2" name="form2" action="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=doEdit" method="POST">
+<input type="hidden" name="inventory_id" value="<{$inventory_id}>" />
+<input type="hidden" name="branch_id" value="<{$inventory.branch_id}>" />
+<h5 style="margin-top:10px;">盘点商品</h5>
+    
+     <!-- <{button label="商品库频道" id="purchase-find-btn" }>-->
+      <span id='pfba1'>搜索方式:
+	   <select id='searchtype' name='searchtype'>
+	  
+	  <option value='barcode'>条码</opton>
+   <option value='bn'>货号</opton>
+	  </select>
+   
+      <input type="text" name="bn" id="product_bn">
+    </span> 
+<!--自增值:
+      <input type="text" name="autonumber" id="autonumber" value='1' />-->
+      <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th style="width:240px;">货品名称</th>
+            <th>货位</th>
+            <th>单位</th>
+            <th>实际数量</th>
+            <th>数量</th>
+          <th>盈(+)亏(-)记录</th>
+            <th style="width:30px;" >删除</th>
+          </tr>
+        </thead>
+        <tbody id="dataNode">
+          <tr>
+            <td colspan="8" style="padding:0;"><div class="note" style="margin:0;"> 暂无盘点货品信息 </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div align="right">
+	 
+     </div> </div>
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+    
+      
+        <tr>
+        <td >复核人:<{$inventory.second_checker}></td>
+        <td align="left">财务负责人:<{$inventory.finance_dept}></td>
+        <td align="left">仓库负责人:<{$inventory.warehousing_dept}></td>
+       </tr>
+    </table>
+    <div id="cc" class="noprint table-action"> <{button type="button" class="btn" id="purchase-save-btn" label="保 存"}> &nbsp;</div>
+
+</div>
+</form>
+
+<script>
+(function(){
+		var pos_lock = $E('input[name^=pos_lock]').value;
+		//var autonumber = $E('input[name^=autonumber]').value;
+        var openIcon = '<{img class="operate" app="desktop" src="bundle/handle-show.gif"}>';
+        var closeIcon = '<{img class="operate" app="desktop" src="bundle/handle-hide.gif"}>';
+        var tpl='<tr key="{product_id}" id="product_{product_id}" tname="{PRIMARY_ID}" status="{delete}" title="{title}" item_id="{item_id}">'+
+                '<td><input type="hidden" name="product_id[{product_id}]" value="{product_id}"><i style="display:{hasItem}"><{img class="operate" app="desktop" src="bundle/handle-show.gif"}></i>{bn}</td><td>{name}</td><td class="product-value-input"><input class="spec-value" type="hidden" value="{product_id}">{spec_info}</td><td>{unit}</td>'+
+                '  <td>{actual_num}</td>'+
+                '  <td>{accounts_num}</td><td>{shortage_over}</td>'+
+            
+                '  <td><div style="display:{deleter};"><{img src="bundle/delecate.gif" app="desktop" class="pointer btn-delete-item" key="state"}></td>'+
+                '</tr>{item_detail}';
+
+            var tplHd='<tr class="itemHd" style="display:none;background-color:#CCFFFF"><th>货号</th><th>条码</th><th>货位</th><th>操作人</th><th>实际数量</th> <th>操作时间</th><th></th><th>操作</th></tr>';
+
+        var tplItem='<tr class="itemDetail" style="display:none;" key="{obj_id}" obj_id="{obj_id}"><td style="text-align:center;">{bn}<input type="hidden" name="pos_id[{product_id}][{obj_id}]" value="{pos_id}"></td><td style="text-align:center;">{barcode}</td><td class="product-value-input" style="text-align:center;">{pos_name}<input class="spec-value" type="hidden" value="{product_id}"><input class="spec-value-id" type="hidden" name="pos_name[{product_id}][{obj_id}]"value="{pos_name}"></td><td style="text-align:center;">{oper_name}</td><td style="text-align:center;"><input type="text" key=num name="cname[{product_id}][{obj_id}]" value="{actual_num}" size="6"></td><td style="text-align:center;">{oper_time}</td><td style="text-align:center;"></td><td style="text-align:center;"><div style="display:{deleter};"><{img src="bundle/delecate.gif" app="desktop" class="pointer btn-delete-item" key="state"}></td></tr>';
+
+        var item_detail='';
+
+        var callurl='index.php?app=taoguaninventory&ctl=admin_inventorylist&act=getProducts',store=[],pag,rows;
+
+    new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventorylist&act=getEditProducts&p[0]='+<{$inventory_id}>,
+    onComplete:function(rs){
+        rs=JSON.decode(rs);
+        store.combine(rs);
+        createProduct(store);
+
+    }}).send();
+
+    var options={
+        'getVar':'bn',
+        'fxOptions':false,
+        callJSON:function(){return window.autocompleter_json;},
+        injectChoice:function(json){
+            var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+            choice.store('_data',json);
+            choice.inputValue = json[this.options.getVar];
+            this.addChoiceEvents(choice).inject(this.choices);
+        },
+        onHide:function(){
+            if(!this.selected) return;
+            var json=this.selected.retrieve('_data');
+            json=$splat(json);
+            init(json);
+            MessageBox.success('加载商品成功!!');
+        },
+        onFocus:function(ipt){
+            ipt.value='';
+        }
+    };
+    $('product_bn').addEvent('enter',function(e){
+    var searchtype = $('searchtype').value;
+    var bn = $('product_bn').value;
+		if(bn){
+			new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventorylist&act=getEditProducts&p[0]='+<{$inventory_id}>+'&searchtype='+searchtype+'&product_bn='+bn,
+			onComplete:function(rs){
+			if(rs){
+        store=[];
+        rs=JSON.decode(rs);
+        init(rs);
+        
+
+    }else{
+				    return MessageBox.error('没有找到对应的商品,请确认输入');
+			  }
+     $('product_bn').value='';
+			 $('product_bn').focus();
+	
+			
+			}}).send();
+		}else{
+    return MessageBox.error('请确认输入');
+  }
+	});
+	
+
+//    $('purchase-find-btn').addEvent('click',function(e){
+//       var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=purchase&ctl=admin_purchase&act=findProduct');
+//	   Ex_Loader('modedialog',function() {
+//		   new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:660,
+//		   onCallback:function(rs){
+//			   if(!rs)return;
+//			   rs=JSON.decode(rs);
+//              
+//               rs.each(function(i){
+//					if(!$('product_'+i.product_id)) {
+//						
+//						pag.addData(i);
+//					} else {
+//						if(pos_lock==0){	
+//
+//					   }else{
+//						pag.addData(i);
+//					   }
+//					 }
+//
+//               });
+//	
+//		   }});
+//	   });
+//    });
+
+    function emptyData(){
+        var noData='<tr>'+
+            '<td colspan="8" style="padding:0;"><div class="note" style="margin:0;"> 暂无货品信息 </div></td>'+
+            '</tr>';
+        $('dataNode').set('html',noData);
+    }
+    var timeData={};
+    function createProduct(data){
+        pag=new PageData(tpl,data,{'updateMain':$('dataNode'),'pageNum':20,PRIMARY_ID:'PRIMARY_ID',
+            'format':function(d){
+                if(d['delete']=="0"){
+                    d.title="不可选择";
+                    d.deleter='none';
+                }else{
+                    d.title="点击选取/反选此条记录";
+                    d.deleter='';
+                }
+                
+                item_detail='';
+                if(d.item){
+                    item_detail+=tplHd;
+					
+                    d.item.each(function(v){
+                       item_detail+=tplItem.substitute(v);
+                    });
+                }else{
+//					d.actual_num = '<input type="text" key="num" name="pname['+d.product_id+'][]" value="'+autonumber+'">';
+//					if(pos_lock==1){
+//						d.spec_info='<input class="spec-value-id" name="ppos_id['+d.product_id+'][]" type="text" vtype="required"/>';
+//						
+//					}else{
+//						d.spec_info = '';
+//					}
+                    d.hasItem='none';
+				}
+
+   
+                d['item_detail'] = item_detail;
+
+    
+            },
+            'onShow':function(){
+				new Hash(timeData).each(function(v,k){
+						if($$('input[name^='+k+']')[0]) $$('input[name^='+k+']')[0].set('value',v);
+				});
+                $$('#dataNode tr').each(function(item,i){
+                    item.getElements('input[type!=hidden]').addEvent('blur',function(){
+                    timeData[this.get('name')] = this.get('value');
+					});
+
+                    //删除事件
+                    if(item.getElement('.btn-delete-item')) item.getElement('.btn-delete-item').addEvent('click',function(e){
+                        e.stop();
+                        if(confirm('确定要删除吗？')){
+          
+							if(item.get('obj_id')){
+							
+								new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventorylist&act=del_inventory&action=del_obj_id&obj_id='+item.get('obj_id')+'&inventory_id='+<{$inventory_id}>,
+								onComplete:function(rs){
+								 rs=JSON.decode(rs);
+								 //alert(rs.message);
+								 return MessageBox.success(rs.message);
+								
+								}}).send();
+							}
+							if(item.get('item_id')){
+								var item_id = item.get('item_id');
+
+								new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventorylist&act=del_inventory&action=del_item_id&item_id='+item_id+'&inventory_id='+<{$inventory_id}>,
+								onComplete:function(rs){
+								 rs=JSON.decode(rs);
+								 return MessageBox.success(rs.message);
+								 
+								
+								}}).send();
+							}
+						
+                            if(item.get('id')){
+                                pag.delData(item.get('tname'));
+                            }else{
+                                var items = pag.selectData(item.getPrevious('tr[id^=product]').get('key')).item;
+
+                                for(var i=0,l=items.length;i<l;i++){
+                                        if(items[i]['obj_id']==item.get('key')){
+                                            if(!item.getNext('tr') || item.getNext('tr').get('class').indexOf('itemDetail')===-1 && item.getPrevious('tr').get('class').indexOf('itemHd')!=-1){
+                                                item.getPrevious('tr[class=itemHd]').dispose();
+               
+                                            }
+                                            item.dispose();
+                                            items.splice(i,1); break;	
+                                   }
+                                }
+                            }
+                        }
+                        if(!$E('#dataNode tr')) emptyData();
+                    });
+                    if(item.getElement('.operate')) item.getElement('.operate').addEvent('click',function(e){
+                        if(this.get('src').test(/show/)){
+                            this.src = new Element('i',{html:closeIcon}).getElement('img').get('src'); 
+                            var el = this.getParent('tr');
+                            while(!!el.getNext('tr')){
+                                if(el.getNext('tr').get('id') && el.getNext('tr').get('id').indexOf('product') != -1) break;
+                                if(el.getNext('.itemHd') || el.getNext('.itemDetail')){
+                                    el.getNext().setStyle('display',''); 
+                                    el = el.getNext(); 
+                                }
+                            }
+                        }else if(this.get('src').test(/hide/)){
+                            this.src = new Element('i',{html:openIcon}).getElement('img').get('src'); 
+                            var el = this.getParent('tr');
+                            while(!!el.getNext('tr')){
+                                if(el.getNext('tr').get('id') && el.getNext('tr').get('id').indexOf('product') != -1) break;
+                                if(el.getNext('.itemHd') || el.getNext('.itemDetail')){
+                                    el.getNext().setStyle('display','none'); 
+                                    el = el.getNext(); 
+                                }
+                            }
+                        }
+                    });
+   
+                });
+ 
+				
+           }
+        });
+    }
+    function init(rs){
+        var tmparr=findProduct(rs,'product_id');
+        store.unshift.apply(store,tmparr.reverse());
+        createProduct(store);
+    }
+    function findProduct(arr,PRIMARY){
+
+        if(!store.length)return arr;
+        store.each(function(a){
+
+           arr.each(function(b){
+               if(a[PRIMARY]==b[PRIMARY])arr.erase(b);
+           });
+        });
+        return arr;
+    }
+
+    function delProduct(obj,arr){
+        arr.each(function(d){obj.delData(d);});
+    }
+    if($('inventory-basic')){
+    $('inventory-basic').addEvent('click',function(e){
+        //var form=this.getParent('form');
+        var form=$('fm1');
+        var _this=this;
+        form.store('target',{
+              onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                try{
+                        var json = Json.evaluate(jsontext);
+                        if (typeof(json.error) != 'undefined'){
+                            _this.disabled=false;
+                        }else{
+					
+                            _this.disabled=true;
+                            opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',500);
+                        }
+                    }catch(e){}
+                }
+            });
+        form.fireEvent('submit',e);
+    
+    });
+ }
+    $('purchase-save-btn').addEvent('click',function(e){
+		var valueHash = new $H({});
+
+		var sameValueFlag = $$('#dataNode tr td[class^=product-value-input]').every(function(etd){
+		
+			var spid = etd.getChildren('input[class^=spec-value-id]').get('value');
+			var spval = etd.getChildren('input[class^=spec-value]').get('value');
+    if( valueHash.has(spid+'-'+spval) )
+				return false;
+			valueHash.set(spid+'-'+spval, '');
+			return true;
+		});
+		valueHash = null;
+		//if( !sameValueFlag )return MessageBox.error('<{t}>有相同的商品和货位存在，请核实<{/t}>');
+
+        var _this=this;
+        //var form=this.getParent('form');
+        var form=$('fm2');
+        if(pag){
+            var data=pag.toHideInput($('dataNode').getElement('tr'));
+            form.store('target',{extraData:data,
+              onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                try{
+                        var json = Json.evaluate(jsontext);
+                        if (typeof(json.error) != 'undefined'){
+                            _this.disabled=false;
+                        }else{
+					
+                            _this.disabled=true;
+                            opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',500);
+                        }
+                    }catch(e){}
+                }
+            });
+        }
+        form.fireEvent('submit',e);
+    });
+    if ('<{$inventory.inventory_type}>'==4)
+    {
+        $('inventory-basic').disabled=true;
+    }
+})();
+
+
+</script>

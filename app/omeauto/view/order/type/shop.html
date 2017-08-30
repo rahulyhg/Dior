@@ -1,0 +1,21 @@
+<style>
+    #con_m_list li {width:90px; overflow: hidden; float: left; margin-bottom: 10px; font-size: 12px; line-height: 20px;}
+    .current-set {color: red; font-weight: 700;}
+</style>
+
+<ul id="con_m_list">
+    <{foreach from=$shops item=item key=key}>
+    <li><label for="m_<{$item.id}>"><span><input type="checkbox" value="<{$item.id}>" id="m_<{$item.id}>" name="shop[]" <{if $item.id|in_array:$init.content}>checked<{/if}>/> <{$item.caption}></span></label></li>
+    <{/foreach}>
+</ul>
+
+<script>
+    $$('#con_m_list input[type=checkbox]').addEvent('click',function(e){
+        this.blur();
+        this.getParent()[this.checked?'addClass':'removeClass']('current-set');
+    });
+    $$('#con_m_list input[type=checkbox]').each(function(item){
+        item.blur();
+        item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+    });
+</script>

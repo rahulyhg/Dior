@@ -1,0 +1,125 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+
+
+<{if $set_abnormal}>
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="form-abnormal" method="post">
+<div class="tableform">
+  <{if $abnormal.abnormal_id}><input type="hidden" name='abnormal[abnormal_id]' value="<{$abnormal.abnormal_id}>"><{/if}>
+  <input type="hidden" name='abnormal[order_id]' value="<{$order_id}>" />
+  <input type="hidden" name='abnormal[op_id]' value="<{$op_id}>" />
+  <input type="hidden" name='abnormal[group_id]' value="<{$group_id}>" />
+  <input type="hidden" name='abnormal[dt_begin]' value="<{$dt_begin}>" />
+  <input type="hidden" name='abnormal[dispatch_time]' value="<{$dispatch_time}>" />
+  <input type="hidden" name='flt' value="<{$flt}>" />
+  <input type="hidden" name='origin_act' value='<{$origin_act}>'>
+  <h4>订单异常备注</h4>
+  <div class="division">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+   <{if $abnormal.is_done == 'true'&& $is_flag == 'true'}>
+    <{else}>
+   <tr>
+   <th ><{t}>异常类型：<{/t}></th>
+   <td >
+   <{foreach from=$abnormal_type item=abt name=ab_type}>
+      <label><input type='radio' name='abnormal[abnormal_type_id]' value='<{$abt.type_id}>' id='<{$abt.type_id}>' <{if $smarty.foreach.ab_type.first}>checked<{/if}>><{$abt.type_name}></label>
+   <{/foreach}>
+   </td>
+   </tr>
+   
+		<{if $ordersdetail.process_status neq 'is_retrial'}>
+        <tr>
+            <th><{t}>处理情况：<{/t}></th>
+            <td>
+                <label><input type='radio' name='abnormal[is_done]' value='false' <{if !$abnormal || $abnormal.is_done != 'true'}>checked<{/if}>/>未处理</label>
+                <label><input type='radio' name='abnormal[is_done]' value='true' <{if $abnormal.is_done == 'true'}>checked<{/if}>/>已处理</label>
+                <{if $ordersdetail.shop_type == 'vjia' && $outstorage == 'fail'}>
+                    <label><input type='radio' name='abnormal[is_done]' value='vjia' />凡客已出库</label>
+                <{/if}>
+            </td>
+        </tr>
+		<{/if}>
+   
+   <{/if}>
+   <{if $abnormal.abnormal_memo}>
+    <tr>
+      <th><{t}>异常备注：<{/t}></th>
+      <td>
+        <{foreach from=$abnormal.abnormal_memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+    <{if $abnormal.is_done == 'true'&& $is_flag == 'true'}>
+    <{else}>
+    
+		<{if $ordersdetail.process_status neq 'is_retrial'}>
+        <tr>
+          <th><{t}>异常备注追加：<{/t}></th>
+          <td><textarea name="abnormal[abnormal_memo]" vtype="required" rows="6" style="width:80%"></textarea>
+          </td>
+        </tr>
+        <{/if}>
+    </table>
+  </div>
+
+	<{if $ordersdetail.process_status neq 'is_retrial'}>
+    <div class="table-action">        
+        <{button label="保存" type="submit" id="btn-submit" class="btn-primary"}>
+    </div>
+    <{/if}>
+    
+<{/if}>
+</div>
+</form>
+<script>
+
+    window.addEvent('domready',function(){
+        if('<{$abnormal.abnormal_type_id}>'!=''){
+            $('<{$abnormal.abnormal_type_id}>').checked = true;
+        }
+    });
+</script>
+<{else}>
+    <div class="tableform">
+  <h4>订单异常备注</h4>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+   <tr>
+   <th ><{t}>异常类型：<{/t}></th>
+   <td >
+       <{foreach from=$abnormal_type item=abt name=ab_type}>
+       <{if $abt.type_id == $abnormal.abnormal_type_id}><{$abt.type_name}><{/if}>
+       <{/foreach}>
+   </td>
+   </tr>
+    <tr>
+      <th><{t}>异常备注：<{/t}></th>
+      <td><{$abnormal.abnormal_memo}></td>
+    </tr>
+    </table>
+    </div>
+<{/if}>
+<script>
+var _form = $('form-abnormal');
+var btn = $('btn-submit');
+//var finder = finderGroup['<{$env.get.finder_id}>'];
+_form.store('target',{
+onComplete:function(){
+
+    try{
+
+        var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+        //console.info(btn,_dialogIns);
+     }catch(e){}
+
+    if(_dialogIns){
+        _dialogIns.close();
+        //finder.refresh.delay(400,finder);
+    }
+}
+});
+</script>

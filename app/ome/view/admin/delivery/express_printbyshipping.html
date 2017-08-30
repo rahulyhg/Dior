@@ -1,0 +1,153 @@
+<{capture name="header"}>
+<style>
+    .order-box{ height:auto; padding:10px; margin:5px 20px; border:1px solid #ddd}
+    .order-box li{ padding:3px 0}
+    .sorder-box{ height:auto; padding:3px; border:1px solid #ddd;margin-bottom: 20px;}
+    .sorder-box li{ padding:3px 3px; font-size: 13px;}
+    .order-tr{  font-size:14px; font-weight:bold; border-bottom:1px solid #ddd}
+    .table-border{ margin:10px 0; border-top:2px solid #333;border-bottom:2px solid #333}
+    .order-box td{ padding:3px 5px}
+    .order-font{ font-size:14px; font-weight:bold; padding:0 5px; clear:both}
+
+    #express_tools{z-index:65535; position:absolute;right:0 ;margin-right:5px; background:#FFFFFF;border:#CCCCCC 1px solid; }
+    #express_tools_hidden{padding:10px; width:10px; }
+    #express_tools_main{
+		padding:10px; 
+		width:350px; 
+		z-index:65535; 
+		position:absolute;
+		right:0 ;
+		margin-right:29px; 
+		background:#FFFFFF;
+		border:#CCCCCC 1px solid; 
+	}
+    .express_tools_main_head{ 
+        cursor: move;
+        font-size: 14px;
+        font-weight: bold;
+        height: 27px;
+        line-height: 27px;
+        overflow: hidden;
+        padding: 0 8px;
+    }
+</style>
+<{/capture}>
+
+
+
+<script type="text/javascript">
+    var err = <{$err}>;
+    if (err==true){
+        new Dialog(new Element("div.tableform",'<div class="division">部分发货单已被合并或者拆分</div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'),{
+            title:'提示',
+            width:230,
+            height:130,
+            modal:true,
+            resizeable:false});
+    }
+
+    function re_finder(){
+        opener.finderGroup['<{$env.get.finder_id}>'].unselectAll();
+        opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+        window.close();
+    }
+
+    var count = <{$count}>;
+    
+    var ExpressCheck = {
+    	hasOnePrint: '<{$hasOnePrint}>',
+    	
+    	alertMsg: function() {
+	    	if(this.hasOnePrint=='true') {
+		    	if(confirm('您的选择含有已打印快递单，你确定要重复打印吗？')==false) {
+		    		window.close();
+		    	}
+	    	}
+    	},
+    	
+    	checkConfirm: function() {
+    		if(this.hasOnePrint=='true') {
+		    	return confirm('您的选择含有已打印快递单，请核对快递面单上的单号和收货人姓名是否对应正确！');
+	    	}
+    		
+    		return true;
+    	}
+    }
+    
+    ExpressCheck.alertMsg();
+    
+
+
+
+</script>
+
+<{ if $err=='false' }>
+<div class="">
+    <div  id= 'information' class="error" style="display:none; font-weight: 700;"></div>
+    <div  id='content' class="order-box" style="display:none"></div>
+    <div  id="formContent" class="order-box">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td>
+                   
+					  <h2><font color="red"><{$logi_name}></font> 打印 <font color="red"><{$count}></font> 份快递单</h2>
+                    <div id ="printPreview" class="note">
+                        
+                        <span style="font-weight:800;margin-left:12px;margin-top: 8px;font-size:16px;"><{$message.tip1}><br>
+
+</span> 
+<span style="font-weight:800;margin-left:12px;margin-top: 8px;font-size:16px;">
+<font color="red"><{$message.tip2}></font>
+</span> 
+ 
+<div style="padding:5px;margin-bottom: 8px;">
+                           <{button label="置为已打印" onclick="doPrint()" id="doprint_btn" class="btn-primary" }><span style="font-weight:800;margin-left:12px;margin-top: 8px;font-size:16px;"><{$message.tip3}>
+
+</span>
+                        </div>
+                    </div>   
+
+                    
+                </td>
+            </tr>
+        </table> 
+        <textarea id="print_data" style="display:none"><{$data}></textarea>
+       
+    </div>
+</div>
+<input type="hidden" name='printname' id='printname' value="<{$vid}>">
+<{ /if }>
+
+<script>
+function doPrint(){
+         var printname= $('printname').value;
+        new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=express&str='+printname,
+            onSuccess:function(json){
+                if (json == 'true'){
+                   alert('打印成功!');
+                   
+                    
+                }else {
+                    $('pause').set('text',json);
+                }
+            }
+        }).send();
+    }    
+
+    
+
+   
+    
+   
+
+    
+    
+
+    
+
+    
+   
+    
+   
+    
+</script>

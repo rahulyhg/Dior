@@ -1,0 +1,81 @@
+<form method="post" enctype="multipart/form-data" id="import_form"
+	action="index.php?app=ome&ctl=admin_branch_product_pos&act=doImport"
+	class="tableform">
+ <input type="hidden" name="app" value="ome" />
+<input type="hidden" name="model" value="branch_product_pos" />
+<div id="information" class="division" style="display:none;">
+    <div style="color:#ff0000;"><b>错误信息如下：</b></div>
+    <div id="errorInfo" style="width:450px;height:150px;padding:5px;overflow-y:auto;line-height:150%;border:1px solid #999;"></div>
+</div>
+<h4>第一步:<{t}>模板下载<{/t}></h4>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<th></th>
+		<td><a target="_blank" href="index.php?app=ome&ctl=admin_branch_product_pos&act=exportTemplate&p[0]=export_branch_pos&p[1]=解绑货位&_finder[finder_id]=1016dd&finder_id=1016dd" label="导出模板">
+<span>点击下载模板 </span>
+</a></td>
+	</tr>
+
+</table>
+</div>
+
+
+
+<h4>第二步:<{t}>上传您要导入的文件<{/t}></h4>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<th><{t}>上传文件：<{/t}></th>
+		<td><input type="file" name="import_file" /></td>
+	</tr>
+	<tr>
+		<th>&nbsp;</th>
+		<td><{button class="btn-primary" id='btn-submit' label="上传" type="button"}></td>
+	</tr>
+</table>
+</div>
+</form>
+
+<script>
+(function(){
+    $('import_form').store('target',{
+        onComplete:function(jsontext){
+            var json = JSON.decode(jsontext);
+            if (json.result == 'succ'){
+                $('btn-submit').set('html', '<span><span>上传</span></span>');
+                $('btn-submit').set('disabled', '');
+                MessageBox.success('解绑货位导入成功！');
+                
+                var errorInfo = '';
+                
+                if(json['errormsg'].length>0){
+                    $('information').style.display ='';
+                    for(var key=0; key<json['errormsg'].length;key++){
+                        errorInfo = errorInfo + json['errormsg'][key] + '<br />';
+                    }
+                    if (errorInfo.length>0)
+                    {
+                        $('errorInfo').set('html', errorInfo);
+                    }
+                }
+                
+            }else{
+                MessageBox.error('导入失败:'+json.msg);
+                
+                $('btn-submit').set('html', '<span><span>上传</span></span>');
+                $('btn-submit').set('disabled', '');
+            }
+        }
+    });
+
+    $('btn-submit').addEvent('click',function(){
+        
+            $('information').style.display ='none';
+            $('errorInfo').set('html', '');
+            $('import_form').fireEvent('submit',{stop:$empty});
+        
+    });
+
+})();
+</script>

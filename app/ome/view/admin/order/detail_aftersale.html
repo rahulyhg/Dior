@@ -1,0 +1,35 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+
+<table cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+      <td>
+          <div class="division">
+          <h4>售后列表</h4>
+            <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+              <thead>
+                <tr>
+                  <th>操作时间</th>
+                  <th>售后编号</th>
+                  <th>操作状态</th>
+                  <th>操作员</th>
+                </tr>
+              </thead>
+              <tbody>              <{foreach from=$return item=return}>
+                <tr>
+                  <td><{$return.operate_time|cdate:FDATE_STIME}></td>
+                  <td>
+				
+	
+<a target="dialog::{width:400,title:'日志详情'}" href="index.php?ctl=admin_order&act=show_aftersale_log&app=ome&p[0]=<{$return.return_id}>"> 
+				<{$return.return_bn}></a></td>
+                  <td><{$return.status_value}></td>
+                  <td><{$return.op_name}></td>
+                </tr>
+              <{/foreach}>
+              </tbody>
+            </table>
+        </div>      </td>
+    </tr>
+</table>

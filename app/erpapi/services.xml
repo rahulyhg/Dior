@@ -1,0 +1,9 @@
+<services>
+    <service id="openapi.asynccallback">
+        <class>erpapi_rpc_service</class>
+    </service>
+    <service id="openapi.process">
+        <class>erpapi_rpc_service</class>
+    </service>
+</services>
+<!-- /openapi/process/handle -->

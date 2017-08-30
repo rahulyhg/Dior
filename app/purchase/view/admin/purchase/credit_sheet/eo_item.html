@@ -1,0 +1,32 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<span id='print'>
+<div class="table-form">
+<div class="division">
+    <table width="100%" class="gridlist" border="0">
+    <thead>
+      <tr>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>货号</th>
+        <th>单位</th>
+        <th>入库数量</th>
+        <th>入库价格</th>
+        </tr>
+        </thead>
+      <{foreach from=$eo.items item=items}>
+      <tbody>
+      <tr>
+        <td><{$items.product_name}></td>
+        <td><{$items.spec_info}></td>
+        <td><{$items.bn}></td>
+        <td><{$items.unit}></td>
+        <td><{$items.nums}></td>
+        <td><{$items.price|cur}></td>
+        </tr>
+      </tbody>
+      <{/foreach}>
+    </table>
+</div>
+</div>

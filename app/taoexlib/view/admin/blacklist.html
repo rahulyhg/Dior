@@ -1,0 +1,19 @@
+<div class="tableform">
+  <h3>免打扰设置</h3>
+  <div class="division">
+    <form method="post" action="index.php?app=taoexlib&ctl=admin_setting&act=blacklist" id="form-branch">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+          <tr>
+            <th><em class="c-red">*</em>免打扰手机号：</th>
+            <td>
+			<{input id="blacklist" type="textarea"  name="set[taoexlib.message.blacklist]"  rows="13" cols="16" value=$setData.taoexlib_message_blacklist vtype='required' }>
+             <span><em class="c-red">*</em> 请已<em class="c-red">##</em>作为分隔符号。</span>
+           </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-action"><{button label="保存" type="submit" name="submit" id="btn-branch"}></div>
+    </form>
+  </div>
+</div>

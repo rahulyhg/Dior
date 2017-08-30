@@ -1,0 +1,43 @@
+<div class="division">
+   <h4><{t}>普通商品<{/t}></h4>
+      <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+          <th><{t}>规格<{/t}></th>
+          <th><{t}>单位<{/t}></th>
+          <th><{t}>价格<{/t}></th>
+          <th><{t}>购买量<{/t}></th>
+          <th><{t}>已发货量<{/t}></th>
+        </tr>
+      </thead>
+      <tbody>
+        <{foreach from=$objs item=obj}>
+        <{if $obj.order_items|@count > 1}>
+      <tr class="ColColorGray" id="tr_<{$obj.obj_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"<{else}>g-del="a"<{/if}>>
+        <td><{$obj.bn}></td>
+        <td><{t}><{$obj.name}><{/t}></td>
+        <td><{t}>商品<{/t}></td>
+        <td><{t}>单位<{/t}></td>
+        <td>-</td>
+        <td>-</td>
+        <td></td>
+      </tr>
+      <{/if}>
+      <{foreach from=$obj.order_items item=item}>
+      <tr <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}> >
+        <td class="item_bn <{$item.item_type}>class">
+          <span class="number"><{$item.bn}></span>
+        <td><{t}><{$item.name}><{/t}></td>
+        <td><{t}><{$item.addon}><{/t}></td>
+        <td><{t}><{$item.unit}><{/t}></td>
+        <td><{$item.price}></td>
+        <td><{$item.quantity}></td>
+        <td><{$item.sendnum}></td>
+      </tr>
+      <{/foreach}>
+      <{/foreach}>
+      </tbody>
+     </table>
+</div>

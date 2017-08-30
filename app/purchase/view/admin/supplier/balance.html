@@ -1,0 +1,41 @@
+<script>
+//关闭POP
+$('close_state').addEvent('click', function(event){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+</script>
+<div class="tableform"> 
+<h4>预付款</h4>
+
+<div id="accordion">
+
+    <table class="gridlist" cellspacing="0" cellpadding="0">
+        <{if !$balance}>
+        <tr>
+            <td colspan="2">
+                <p class="notice">暂无记录</p>
+            </td>
+        </tr>
+        <{else}>
+        <thead>
+            <tr>
+                <th>采购单编号</th>
+                <th>采购日期</th>
+                <th>预付款</th>
+            </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$balance item=item key=key}>
+        <tr class="toggler atStart" >
+            <td><{$item.po_bn}></td>
+            
+            <td><b><{$item.purchase_time|date_format:"%Y-%m-%d"}></b></td>
+            <td><b><{$item.deposit_balance|cur}></b></td>
+        </tr>
+        <{/foreach}>
+        </tbody>
+        <{/if}>
+    </table>
+</div>
+
+</div>

@@ -1,0 +1,9 @@
+<div id="ipt_<{$_input.domid}>" class='clearfix' style=<{$_input.style}>>
+<{input type="inventorydepth_object" object="{$_input.object}" app=$_input.app_id id="sel_{$_input.domid}" data=$_input cols=$_input.cols filter=$_input.filter select=checkbox emptytext=$_input.emptytext}>
+<{if $_input.items && $_input.replacehtml}>
+<{$_input.replacehtml}>
+<{/if}>
+<div class="gridlist rows-body" id="handle_<{$_input.domid}>" <{if $_input.display_datarow != 'true'}>style="display:none;"<{/if}>>
+<{include file="finder/input-row.html" app="inventorydepth"}>
+</div>
+</div>

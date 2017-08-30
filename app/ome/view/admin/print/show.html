@@ -1,0 +1,272 @@
+<h3><{$title}></h3>
+<div class="tableform">
+    <span style="margin-left:1060px;"><{$memo_header}></span><{button id='defaultTmplBtn' name='defaultTmplBtn' value='恢复默认' label="使用默认" type='button' style='float:right;'}>
+    <form method='post' action='index.php?app=ome&ctl=admin_print_otmpl&act=save' id='print-tmpl-form' >
+        <{input type='hidden' name='id' value=$printTmpl.id|default:0  }>
+        <{input type='hidden' name='type' value=$printTmpl.type|default:delivery }>
+
+        <table border="0" cellpadding="0" cellspacing="0">
+            <tbody>
+                <tr>
+                    <th><{t}>开启：<{/t}></th>
+                    <td><{input type='bool' name='open' value=$printTmpl.open|default:'false' vtype='requiredradio'}></td>
+                </tr>
+                <tr>
+                    <th><{t}>默认：<{/t}></th>
+                    <td><{input type='bool' name='is_default' value=$printTmpl.is_default|default:'false' vtype='requiredradio'}></td>
+                </tr>
+                <tr>
+                    <th><{t}>标题：<{/t}></th>
+                    <td><{input type='text' name='title' value=$printTmpl.title|default:'' vtype='required'}></td>
+                </tr>
+                
+                <tr>
+                    <th><{t}>输出参数：<{/t}></th>
+                    <td>
+                        <{if $printParams}>
+                            <div>
+                                <div class="print-params-name" p='0'></div>
+                                <{foreach from=$printParams item=item key=key}>
+                                <div class="print-params-name" p="param<{$key}>" >
+                                    <span><{$item.name}></span>
+                                </div>
+                                <{/foreach}>
+                                <{if $type=='delivery'}>
+                                <{if $print_version=='0'}>
+                                <input type='button' id='default_sale_print' name='default_sale_print' value='默认优惠价发货模板'>
+                                <{else}>
+                                <input type='button' id ='new_sale_print' name='new_sale_print' value='新版本优惠价发货模板'>
+                                <input type='button' id ='pickmode' name='new_sale_print' value='新版拣货模式模板'>
+                                <{/if}>
+                                <{/if}>
+                                <div style="clear:both;"></div>
+                                <{foreach from=$printParams item=item key=key}>
+                                <div id="param<{$key}>" style="width:50%;display:none;" class='print-params'>
+                                    <span>
+                                        <{$item.param|escape:"HTML"}>
+                                    </span>
+                                </div>
+                                <{/foreach}>
+                            </div>
+                        <{/if}>
+                    </td>   
+                </tr>
+                <tr>
+                    <th><{t}>模板样式：<{/t}></th>
+                    <td><{input type='textarea' rows=40 cols="200" name='content' value=$printTmpl.content vtype='required' id='content'}></td>
+                </tr>
+                <tr>
+                    <th><{t}>独立按钮：<{/t}></th>
+                    <td><{input type='bool' name='aloneBtn' value=$printTmpl.aloneBtn|default:'false' }></td>
+                </tr>
+                <tr>
+                    <th><{t}>独立按钮名称：<{/t}></th>
+                    <td><{input type='text' name='btnName' value=$printTmpl.btnName|default:'' vtype='required'}></td>
+                </tr>
+                <tr style="display:none;">
+                    <th><{t}>发货单标识：<{/t}></th>
+                    <td><{input type='text' name='deliIdent' value=$printTmpl.deliIdent|default:''}></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class='table-action'>
+            <{button name='btn' value='确定' label="确定" type='button' id='btn'}>
+        </div>
+    </form>
+</div>
+<style type="text/css">
+#print-tmpl-form .print-params-name{
+float:left;
+margin-right:10px;
+background-color:#66ffff;
+width:90px;
+cursor:pointer;
+text-align:center;
+padding:0px;
+}
+#print-tmpl-form .print-params-name-cur{
+background-color:#0099cc;    
+}
+#print-tmpl-form .print-params{
+margin: 10px 0px 0px 0px;
+color: #cc0033;
+font-size:14px;
+background-color: #adadad;
+}
+</style>
+<script type="text/javascript">
+var aloneBtn = "<{$printTmpl.aloneBtn|default:'false'}>";
+var type = "<{$printTmpl.type}>";
+window.addEvents({
+    'domready':function(){
+        var btnName_tr = $E("#print-tmpl-form input[name='btnName']").getParent('tr');
+        if (aloneBtn=='true') {
+            btnName_tr.show();
+        }else{
+            btnName_tr.hide();
+        }
+
+        var aloneBtn_el = $ES("#print-tmpl-form input[name='aloneBtn']");
+        aloneBtn_el.addEvent('click',function(){
+            var val = this.value;
+            if (val=='true') {
+                btnName_tr.show();
+            }else{
+                btnName_tr.hide();
+            }
+        });
+        textareaEditor ={
+          element:$E('#print-tmpl-form #content'),
+           initRange:function(){
+            this.element.focus();
+            if(!!document.selection) {
+                var range=this.element.createTextRange();
+                range.moveStart('character',this.element.value.length);
+                range.collapse(true);
+                range.select();
+            }
+           },
+           replaceSelection:function (text) {
+            var scrollTop=this.element.scrollTop;
+            if(!!document.selection) {
+               this.element.focus(); 
+                var range=this.range||document.selection.createRange(); 
+                range.text=text;
+            }else if(!!this.element.setSelectionRange) {
+                var selection_start=this.element.selectionStart; 
+                this.element.value=this.element.value.substring(0,selection_start)+text+this.element.value.substring(this.element.selectionEnd); 
+                this.element.setSelectionRange(selection_start+text.length,selection_start+text.length);
+            }
+            this.element.focus();
+            this.element.scrollTop=scrollTop;
+         }
+         };  
+
+        $ES("#print-tmpl-form .print-params-name").addEvent('click',function(event){
+            event.stop();
+            var id = this.get('p');
+            textareaEditor.replaceSelection($(id).getText().trim());
+            /*
+            if (this.hasClass('print-params-name-cur')) {
+                this.removeClass('print-params-name-cur');
+                $(id).hide();
+            }else{
+                $ES("#print-tmpl-form .print-params-name").removeClass('print-params-name-cur');
+                $ES("#print-tmpl-form .print-params").hide();
+
+                this.addClass('print-params-name-cur');
+                $(id).show();
+            }*/
+        
+        });
+
+        $E('#print-tmpl-form #btn').addEvent('click',function(e){
+            /*
+            var content = $E('textarea[ishtml=true]', $('print-tmpl-form')).getValue();
+            content = content.replace(/\r\n || \r || \n/g, '');
+            var data = {};
+            $ES("#print-tmpl-form input").each(function(el){
+                data[el.name] = el.value;
+            });
+            data['content'] = content;
+
+            $ES("#print-tmpl-form input[name='is_default']").each(function(item){
+                if (item.checked) {
+                    data['is_default'] = item.getValue();
+                }
+            });
+            $ES("#print-tmpl-form input[name='aloneBtn']").each(function(item){
+                if (item.checked) {
+                    data['aloneBtn'] = item.getValue();
+                }
+            })
+            $ES("#print-tmpl-form input[name='open']").each(function(item){
+                if (item.checked) {
+                    data['open'] = item.getValue();
+                }
+            })*/
+           // var _formdata = $('print-tmpl-form').toQueryString();
+            //_formdata += '&content=' + content;
+            if(! validate($('print-tmpl-form'))) return;
+            W.page('index.php?app=ome&ctl=admin_print_otmpl&act=save',{
+                method:'post',
+                data:$('print-tmpl-form'),
+                onSuccess:function(resp){
+                    resp = Json.evaluate(resp);
+                    if ($defined(resp.success)) {
+                        window.close();  
+                        opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                    }
+                }
+            });
+
+        });
+
+        $('defaultTmplBtn').addEvent('click',function(){
+           W.page("index.php?app=ome&ctl=admin_print_otmpl&act=getDefaultTmpl&p[0]=<{$printTmpl.type|default:delivery}>",{
+            method:'get',
+            onSuccess:function(resp){
+                resp = Json.evaluate(resp);
+                if (resp.success) {
+                    $E("#print-tmpl-form input[name='title']").set('value',resp.title);
+                    $E("#print-tmpl-form textarea[name='content']").set('value',resp.content);
+                }
+            }
+           }); 
+        });
+        if($('default_sale_print')){
+        $('default_sale_print').addEvent('click',function(){
+            if(confirm('确认加载优惠价模板，并且已备份好当前版本对应模板了吗?')){
+            W.page("index.php?app=ome&ctl=admin_print_otmpl&act=getdefault_sale_print&p[0]=delivery_pmt_old",{
+            method:'get',
+            onSuccess:function(resp){
+                resp = Json.evaluate(resp);
+                if (resp.success) {
+                    //$E("#print-tmpl-form input[name='title']").set('value',resp.title);
+                    $E("#print-tmpl-form textarea[name='content']").set('value',resp.content);
+                }
+            }
+           });
+           }
+        
+        });
+        }
+        if($('new_sale_print')){
+        $('new_sale_print').addEvent('click',function(){
+        if(confirm('确认加载优惠价模板，并且已备份好当前版本对应模板了吗?')){
+        W.page("index.php?app=ome&ctl=admin_print_otmpl&act=getdefault_sale_print&p[0]=delivery_pmt_new",{
+            method:'get',
+            onSuccess:function(resp){
+                resp = Json.evaluate(resp);
+                if (resp.success) {
+                    //$E("#print-tmpl-form input[name='title']").set('value',resp.title);
+                    $E("#print-tmpl-form textarea[name='content']").set('value',resp.content);
+                }
+            }
+           }); 
+        }
+        });
+        }
+        
+        if($('pickmode')){
+            $('pickmode').addEvent('click',function(){
+            if(confirm('确认加载拣货模式模板，并且已备份好当前版本对应模板了吗?')){
+            W.page("index.php?app=ome&ctl=admin_print_otmpl&act=getdefault_sale_print&p[0]=delivery_pickmode",{
+                method:'get',
+                onSuccess:function(resp){
+                    resp = Json.evaluate(resp);
+                    if (resp.success) {
+                        //$E("#print-tmpl-form input[name='title']").set('value',resp.title);
+                        $E("#print-tmpl-form textarea[name='content']").set('value',resp.content);
+                    }
+                }
+               }); 
+            }
+            });
+            }
+        
+        
+        
+    }
+});
+</script>

@@ -1,0 +1,29 @@
+<form id="export_form" enctype="multipart/form-data" method="post" action="index.php?app=ome&ctl=admin_branch_product&view=1&act=index&action=to_export" method="post">
+
+<div class="tableform">
+<div class="division">
+<input type="radio" checked="" value="csv" name="_io_type">
+csv
+<span style="padding:0 10px">
+<button class="btn btn-has-icon" app="desktop" type="submit">
+<span>
+<span>
+<i class="btn-icon">
+<img app="desktop" src="/taoguan/working/src/app/desktop/statics/bundle/btn_get_world.gif">
+</i>
+导出
+</span>
+</span>
+</button>
+</span>
+<br>
+<input type="hidden" value="<{$branch_id}>" name="branch_id">
+<input type="hidden" value="<{$bn}>" name="bn">
+<input type="hidden" value="<{$_actual_store_search}>" name="_actual_store_search">
+<input type="hidden" value="<{$actual_store}>" name="actual_store">
+<input type="hidden" value="<{$_enum_store_search}>" name="_enum_store_search">
+<input type="hidden" value="<{$enum_store}>" name="enum_store">
+
+</div>
+</div>
+</form>

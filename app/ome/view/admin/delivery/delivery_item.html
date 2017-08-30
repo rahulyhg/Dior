@@ -1,0 +1,57 @@
+<{capture name="header"}>
+  <link href="../app/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<form name="form1" method="POST" action="index.php?app=ome&ctl=admin_receipts_print&act=doItemDetail">
+<div class="tableform">
+
+<h4>货品信息:<!-- (填写每种货品在每个货位中需要) --></h4>
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+<thead>
+<tr>
+    <th>货号:</th>
+    <th>货品名称:</th>
+    <th>规格:</th>
+    <th>货品数量:</th>
+    <{if $show_unit == true}><th>计量单位:</th><{/if}>
+  
+   
+   <th>均单价</th>
+   <th>优惠金额:</th>
+   <th>实收</th>
+</tr></thead>
+<tbody><{foreach from=$items item=item}>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.product_name}></td>
+    <td><{$item.spec_info}></td>
+    <td><font color="red"><{$item.number}><input type="hidden" name="num[<{$item.item_id}>]" value="<{$item.number}>" /></font></td>
+    <{if $show_unit == true}><th><{$item.unit}></th><{/if}>
+    
+    <td><{$item.price}></td>
+	<td><{$item.pmt_price}></td>
+    <td><{$item.sale_price}></td>
+	
+    <!--<td>&nbsp;<span>
+    <{foreach from=$item.haspos item=r}>
+    货位<{$r.store_position}>:(<{$r.num}>)
+    <{/foreach}>
+    </span></td>
+    <{if $write != '1' && $dly.process == 'false'}><td align="left">&nbsp;<span>
+    <{foreach from=$item.pos item=i}>
+    货位<{$i.store_position}>:(<{$i.store}>)
+    <input type="text" name="pos[<{$item.item_id}>][<{$i.pos_id}>]" vtype="number" size="2" autocomplete="off" /><br>
+    <{/foreach}>
+    </span></td><{/if}>
+    -->
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>
+</div>
+<{if $write != '1' && $dly.process == 'false'}><input type="hidden" name="delivery_id" value="<{$dly.delivery_id}>" />
+<div style="text-align:center;display:none;"><{button type="submit" label="提交" }></div><{/if}>
+
+</form>

@@ -1,0 +1,73 @@
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr>
+                <th style="width:240px;">货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+                <th style="width:60px;">在途库存</th>
+                <th style="width:60px;">库存</th>
+                <th style="width:60px;">冻结库存</th>
+                <th style="width:60px;">安全库存</th>
+                <th style="width:60px;">需要补货</th>
+                <th>供应商</th>
+            </tr>
+          </thead>
+            <{foreach from=$data item=items key=keys}>
+            <tbody>
+            <tr>
+                <td><{$items.name|visibility:$items.product_id}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><{$items.arrive_store}></td>
+                <td><{$items.store}></td>
+                <td><{$items.store_freeze}></td>
+                <td><{$items.safe_store}></td>
+                <td style="color:red;font-style:italic"><{$items.safe_store + $items.store_freeze - $items.store - $items.arrive_store}></td>
+                <td>
+                    <{if $items.supplier_name != ''}>
+                        <div id="<{$items.supplier_id}>" class="su_name" title="点击供应商查询商品" style="cursor:pointer;color:blue;text-decoration:underline;"><{$items.supplier_name}></div>
+                    <{else}>
+                        ---
+                    <{/if}>
+                </td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+          <{if !$data}>
+          <tbody>
+            <tr>
+              <td colspan="20" style="padding:0;"><div id="note" class="note" style="margin:0;"> 没有查询到相关的货品信息 </div></td>
+            </tr>
+          </tbody>
+          <{/if}>
+        </table>
+        <div class="footer" style="overflow:hidden;"><div style="float:left;line-height:32px;"><{$pager}></div> <div style="float:right; line-height:32px; margin-right:10px;">共<{$count}>条，每页显示<{$pagelimit}>条</div>   </div>
+		<script>
+function visibility(e){
+	var visiTips = new Tips({
+			onShow:function(tip,el){
+				el.addClass('active');
+				tip.setStyle('display','block');
+			},
+			text: function(element){
+				if(element.get('visibility')=='false'){
+					return '隐藏商品';
+				}else{
+					return '';
+				}
+			}
+		});
+
+		var e  = new Event(e), el = e.target;
+		if (el.get('visibility')=='false')
+		{
+			visiTips.attach(el);
+			el.addEvent('mouseleave',function(){
+				el.removeClass('active');
+			});
+			el.fireEvent('mouseenter',e);
+		}
+}
+		</script>

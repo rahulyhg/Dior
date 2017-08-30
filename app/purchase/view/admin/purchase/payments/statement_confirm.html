@@ -1,0 +1,94 @@
+<script>
+//关闭当前POP
+$('sub_close_state').addEvent('click', function(event){
+	this.getParent('.dialog').retrieve('instance').close();
+});
+//结算操作
+$('sub_statement').addEvent('click',function(event){
+
+    //确认结算
+    var sTrue = statementConfirm();
+    if(sTrue==true){
+        sendForm(event);
+        /*
+        var _form = $('stateForm');
+        var _formActionURL = _form.get('action');
+        _form.set('send', {
+                url: _formActionURL, 
+                method: 'post',
+                onComplete: function(){
+                    statementHand();
+                },
+                onError: function(err){
+                    alert('提交处理出错');
+                }
+        });
+        _form.send();//发送表单数据
+        */
+        //关闭当前窗口
+        $('sub_statement').getParent('.dialog').retrieve('instance').close();
+    }
+});
+
+credit = $('credit').get('value');//预付款
+if (credit=='true')
+{
+	$('dixiao').style.display = '';
+	$('nodixiao').style.display = 'none';
+}
+else
+{
+	$('dixiao').style.display = 'none';
+	$('nodixiao').style.display = '';
+}
+
+//抵扣结算
+$('dx_but').addEvent('click',function(event){
+    $('is_deduction').set('value','true');
+    //确认结算
+    var sTrue = statementConfirm();
+    if(sTrue==true){
+        sendForm(event);
+    }
+    //关闭当前窗口
+    $('dx_but').getParent('.dialog').retrieve('instance').close();
+});
+
+//不抵扣结算
+$('nodx_but').addEvent('click',function(event){
+    $('is_deduction').set('value','false');
+    //确认结算
+    var sTrue = statementConfirm();
+    if(sTrue==true){
+        sendForm(event);
+    }
+    //关闭当前窗口
+    $('dx_but').getParent('.dialog').retrieve('instance').close();
+});
+
+</script>
+
+	<div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0">
+			
+			<tr>
+				<td  colspan="2" >
+				<{$html}>
+				</td>
+			</tr>
+			
+            <tr>
+				<td colspan="2" height="45">
+				<span id="dixiao" style="display:none;">
+				  <{button class="btn-primary" type="button" id="dx_but" label="抵扣付款" }>
+				  <{button class="btn-primary" type="button" id="nodx_but" label="不抵扣付款" }>
+				</span>
+				<span id="nodixiao">
+				<{button class="btn-primary" type="button" id="sub_statement" label="继续付款" }>
+				</span>
+				&nbsp;&nbsp;
+				<{button class="btn-primary" type="button" id="sub_close_state" label="取消付款" }>
+				</td>
+			</tr>
+		</table>
+   </div>

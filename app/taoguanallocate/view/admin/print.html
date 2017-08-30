@@ -1,0 +1,49 @@
+<style type="text/css" media="print">
+.noprint{ display : none }
+
+</style>
+<style>
+.float_left{ float:left; text-align:center; width:80%; font-weight:bold;}
+.float_right{ float:right; text-align:center; width:20%;}
+.d_th{ background:#ededed; color:#4e5318;  }
+.d_td{ font-weight:bold; width:120px;}
+.d_table{ margin:20px 10px; color:#4e5318;}
+.d_table table{ border-collapse:collapse;}
+.d_table td{ border:1px solid #ccc; border-collapse:collapse; height:26px; line-height:26px; text-align:center;}
+.d_table th{ border:1px solid #ccc; border-collapse:collapse; height:26px; line-height:26px; text-align:center; color:#4e5318; }
+#print_confirm { width:100%;  height:30px;  border-top:1px solid #999999; padding-top:4px;   background-color:#5473ae; position:absolute; }
+#btn_print { width:71px; height:24px; background-image:url(images/btn_print.gif); cursor:pointer; margin-left:auto; margin-right:auto;}
+
+</style>
+<link rel="stylesheet" href="<{$desktop_path}>/print.css" type="text/css" media="print"/>
+<input type="hidden" name='printname' id='printname' value="<{$vid}>" />
+<script type="text/javascript">
+window.addEvents({
+    "domready":function() {
+        $("print_confirm").setStyle("top",window.getHeight() - 35);
+        $("btn_print").addEvent("click",function(){window.print();});
+        
+    },
+	"scroll":function() {
+		$("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+	},
+	"resize":function() {
+		$("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+	}
+});
+
+
+
+</script>
+<div id="print1">
+</div>
+<div id="print_confirm" class="noprint" style="text-align:center;">
+
+
+<span id="btn_print">
+  <{button type="button" id="b1" label="打 印" class="btn-secondary"}>
+</span>
+</div>
+
+</body>
+</html>

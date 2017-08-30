@@ -1,0 +1,16 @@
+<app>
+    <name>淘管基础库</name>
+    <description>淘管队列,导入导出</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0</version>
+    <license>shopex license</license>
+    <parent_model_class>dbeav_model</parent_model_class>
+    <optional app="dev">开发者工具</optional>
+
+</app>

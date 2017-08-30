@@ -1,0 +1,14 @@
+/*for auto assign*/
+.added_item{line-height:24px; background:#ddd;border:1px solid #d0d0d0;padding:2px 8px;color:#666; margin:2px 0;overflow:hidden;}
+.added_item input.readonly{background:#eee; border:1px solid #7E9DB9;}
+.added_item a{color#4D6184;}
+.added_item .th{float:left;width:100px; text-align:right;}
+.added_item .td{float:left;}
+.added_item .del{float:right;}
+.division .added_item .del a{color:#666; line-height:24px;}
+
+
+/******for order omeauto********/
+.gridlist td.tl{text-align:left !important; padding-left:25px;}
+.gridlist td em{color:#888;}
+.truss-list {line-height:12px; text-align:left; padding: 0 0 8px 0; color:#333; margin:0; white-space:nowrap;}

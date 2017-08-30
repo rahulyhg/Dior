@@ -1,0 +1,535 @@
+<script>
+var mixed_array = JSON.decode('<{$mixed_array}>');
+var checkBnNum = Array();
+var num = 1;
+
+
+function file_download(){
+    var ifm=new IFrame({src:'index.php?app=ome&ctl=admin_return&act=file_download2&p[0]=<{$pro_detail.return_id}>'});
+    ifm.injectAfter(document.body);
+}
+
+window.addEvent('domready', function(){
+$('bn').focus();
+    if(!$('form-process'))return;
+    var _form=$('form-process'),_formActionURL=_form.get('action'); 
+    subCheckForm = function (event,sign){
+        
+       var specOBJ='';
+       $$('input[id^=id_]').set('disabled',true);
+       var data = _form.toQueryString().replace(/\+/g,"%2B");
+       var target={data:data,onComplete:function(){}};
+        
+        var e = new Event(event), el = e.target;
+        el.set('disabled',true);
+        switch(sign){
+            case 8:
+            case 10:
+            case 9:
+              $extend(target,{
+                onRequest:function(){
+                    el.set('disabled',true);
+                },
+                onComplete:function(data){
+                    //el.set('disabled',false);
+                  var rs =JSON.decode(data);
+                  if( rs && rs.success ){
+                    var finder_id = '<{$env.get.finder_id}>';
+                    if($('form-process').getParent('.dialog') && finder_id){
+                        window.finderGroup[finder_id].refresh();
+                        $('form-process').getParent('.dialog').retrieve('instance').close();
+                    }else{
+                        MessageBox.success(rs.success);
+                        if (sign == 8 || sign == 10)
+                        {
+                            window.location.href = 'index.php?app=ome&ctl=admin_return_sv&act=index';
+                        }
+                    }
+                  }else{
+                    MessageBox.error(rs.error);
+                  }
+                }}
+              );
+            break;
+        }
+
+
+
+      //_form.store('target',target);
+      //_form.set('action',_formActionURL+'&p[1]='+sign).fireEvent('submit',new Event(event));
+      new Event(event).stop();
+      W.page(_formActionURL+'&p[1]='+sign,target);
+    };
+
+
+});
+
+$ES('input[name=check_type]').addEvent('click',function(){
+    if($ES('input[name=check_type]:checked').getValue() == 'bn'){
+        $('check_bn').setStyle('display','block');
+        $('check_barcode').setStyle('display','none');
+        $('check_serial_number').setStyle('display','none');
+    }else if($ES('input[name=check_type]:checked').getValue() == 'barcode'){
+        $('check_barcode').setStyle('display','block');
+        $('check_bn').setStyle('display','none');
+        $('check_serial_number').setStyle('display','none');
+    }else{
+        $('check_serial_number').setStyle('display','block');
+        $('check_bn').setStyle('display','none');
+        $('check_barcode').setStyle('display','none');
+    }
+});
+
+$("bn").addEvent('keydown',function(e){
+    if (e.key == 'enter'){
+        check($("bn"),'bn','货号',$('message_bn'));
+        return false;
+    }
+});
+
+$("barcode").addEvent('keydown',function(e){
+    if (e.key == 'enter'){
+        check($("barcode"),'barcode','条形码',$('message_barcode'));
+        return false;
+    }
+});
+
+$("serial_number").addEvent('keydown',function(e){
+    if (e.key == 'enter'){
+        check($("serial_number"),'serial_number','唯一码',$('message_serial_number'));
+        return false;
+    }
+});
+
+function check(obj,obj_type,typename,msg){
+    if(!obj||!obj_type||!msg) return false;
+    var bn = obj.value.trim();
+    var result = '';
+    var _bn = null;
+    msg.set('html','');
+
+    if(bn==''){
+      msg.set('html','请先扫描'+typename);
+      return false;
+    }
+
+    var key = obj_type+'_'+bn;
+    _bn = mixed_array[key];
+
+    if (!_bn)
+    {
+        _bn = mixed_array[key.toLowerCase()] ? mixed_array[key.toLowerCase()] : mixed_array[key.toUpperCase()];
+    }
+
+    if(!_bn){
+       result = '售后申请单中没有'+typename+'为'+bn+'的商品！';
+       msg.set('html',result);
+       return false;
+    }
+
+    var name = $("name_"+_bn).get('text');
+    var add_barcode = $("barcode_"+_bn).get('text');
+    var add_serial_number = $("serial_number_"+_bn).get('text');
+    var add_bn = $("bn_"+_bn).getValue();
+    var num = parseInt($("num_"+_bn).get('text'));
+    var all = parseInt($("all_"+_bn).get('text'));
+    var spec_info = $("spec_info_"+_bn).get('text');
+
+    var pbn = $("bn_"+_bn).value;
+
+    if (num <= all){
+        num++;
+        if(checkBnNum[pbn]){
+            checkBnNum[pbn]++;
+        }else{
+            checkBnNum[pbn] = num;
+        }
+        if(!$('id_'+_bn+checkBnNum[pbn])){
+            msg.set('html','已超出数量,请检查');
+            return false;
+        }
+        var item_id = $('id_'+_bn+checkBnNum[pbn]).value;   
+        
+
+        //var count_num = _bn;
+        var ruku_type = '';
+        var test_bn = "'"+_bn+"'";
+        var string_bn = "'"+_bn+"'";
+
+        var process_num = parseInt($E('input[name=count_num['+_bn+']]').value);
+
+        var input  = new Element('input', {type:'hidden',name:'process_id['+$('id_'+_bn+checkBnNum[pbn]).value+']',value:_bn});
+
+        input.inject('form-process');
+
+
+
+        if(all<=process_num){
+            msg.set('html',typename+'为'+bn+'的商品已扫描完成！如果确认未扫描过，请刷新重新进行操作，否则请继续');                    
+            return false;
+        }
+
+        var online_branch = false;
+        <{foreach from=$pro_detail.StockType item=StockType key=key name=stocktype}>
+            <{if $key == 0}>
+                online_branch = true;
+            <{/if}>
+
+            ruku_type += '<input type="radio" <{if $env.foreach.stocktype.first}>checked="checked"<{/if}> name="store_type['+_bn+item_id+']" value="<{$key}>" <{if $key == 0}>onclick="showOnlineBranch(this,'+string_bn+','+item_id+')"<{else}>onclick="showOfflineBranch(this,'+string_bn+','+item_id+')"<{/if}> vtype="requiredradio"><{$StockType}>';
+
+        <{/foreach}>               
+        ruku_type += '<div id="instock_branch_el_'+item_id+'"></div>';
+
+        if(obj_type == 'serial_number'){
+
+           var serial_input  = new Element('input', {type:'hidden',name:'serial_id['+$('id_'+_bn+checkBnNum[pbn]).value+']',value:bn});
+
+           serial_input.inject('form-process');
+
+            var add_product = new Element('tr',{'html':'<td>'+add_bn+'</td><td>'+add_barcode+'</td><td>'+add_serial_number+'</td><td>'+name+'</td><td>'+spec_info+'</td><td><input name="check_num['+_bn+item_id+']" onblur="add_process('+test_bn+','+item_id+','+num+','+all+',this,'+string_bn+');" vtype="unsigned&amp;&amp;required" type="hidden" value="1" class="test-'+_bn+'">1<span style="color:red" id="error_msg_'+item_id+'"></span></td><td style="text-align:left;">'+ruku_type+'</td><td><textarea name="memo['+_bn+item_id+']" style="width:200px;"></textarea></td>'});
+        }else{
+            var add_product = new Element('tr',{'html':'<td>'+add_bn+'</td><td>'+add_barcode+'</td><td>'+add_serial_number+'</td><td>'+name+'</td><td>'+spec_info+'</td><td><input name="check_num['+_bn+item_id+']" onblur="add_process('+test_bn+','+item_id+','+num+','+all+',this,'+string_bn+');" vtype="unsigned&amp;&amp;required" type="text" value="1" class="test-'+_bn+'"><span style="color:red" id="error_msg_'+item_id+'"></span></td><td style="text-align:left;">'+ruku_type+'</td><td><textarea name="memo['+_bn+item_id+']" style="width:200px;"></textarea></td>'});
+        }
+        
+        if (online_branch)
+        {
+            showOnlineBranch(this,_bn,item_id);
+        } else {
+            showOfflineBranch(this,_bn,item_id);
+        }
+        
+
+        add_product.inject($('sv_product'));
+    }else{
+        msg.set('html',typename+'为'+bn+'的商品已扫描完成！如果确认未扫描过，请刷新重新进行操作，否则请继续');
+        return false;
+    }
+    obj.set('value','');
+    obj.focus();
+    return false;
+}
+
+
+function add_process(bn,item_id,num,all,obj,count_num){
+    $('error_msg_'+item_id).set('html','');
+   // var num = parseInt($("num_"+bn).get('text'));
+   var num = 0;
+        $ES('.test-'+count_num).each(function(e){
+           num += parseInt(e.value);
+        });
+    var old_num = num;
+
+    if(num<=all){
+        
+        var tmp_num = old_num?old_num:0;
+		/*
+        $ES('.test-'+count_num).each(function(e){
+           tmp_num += parseInt(e.value);
+        });*/
+        if(tmp_num <= all){
+            if(tmp_num > all){
+                tmp_num = $('yun').value;
+            }
+            $("num_"+bn).set('text',tmp_num);
+           $E('input[name=count_num['+count_num+']]').set('value',tmp_num);
+        }else{
+           $('error_msg_'+item_id).set('html','校验数量大于申请数量,请重新输入');
+        }
+    }else{
+        $('error_msg_'+item_id).set('html','校验数量大于申请数量,请重新输入');
+    }
+
+}
+
+function showOfflineBranch(el,count_num,item_id){
+    //if(!el.checked)return false;
+    new Request.JSON({url:'index.php?app=ome&ctl=admin_sv_process&act=getOfflineBranch', 
+        method:'post',
+        onSuccess:function(data){ 
+          $('instock_branch_el_'+item_id).set('html','');
+           if(data.length == 1){
+               $('instock_branch_el_'+item_id).set('html',data[0].name + '<input type="hidden" name="instock_branch['+count_num+item_id+']" value="'+data[0].branch_id+'" />');
+           }else{
+               var sel = new Element('select',{'name':'instock_branch['+count_num+item_id+']'});
+               data.each(function(branch){
+                   var varItem = new Option(branch.name, branch.branch_id);      
+                   sel.options.add(varItem);   
+               });
+               sel.inject($('instock_branch_el_'+item_id));
+           }
+           
+        }
+    }).send();
+}
+
+function showOnlineBranch(el,count_num,item_id){
+    //if(!el.checked)return false;
+    new Request.JSON({url:'index.php?app=ome&ctl=admin_sv_process&act=getOnlineBranch', 
+        method:'post',
+        onSuccess:function(data){ 
+          $('instock_branch_el_'+item_id).set('html','');
+           if(data.length == 1){
+               $('instock_branch_el_'+item_id).set('html',data[0].name + '<input type="hidden" name="instock_branch['+count_num+item_id+']" value="'+data[0].branch_id+'" />');
+           }else{
+               var sel = new Element('select',{'name':'instock_branch['+count_num+item_id+']'});
+               data.each(function(branch){
+                   var varItem = new Option(branch.name, branch.branch_id);      
+                   sel.options.add(varItem);   
+               });
+               sel.inject($('instock_branch_el_'+item_id));
+           }
+           
+        }
+    }).send();
+}
+
+function subProcessFail(_this){
+    var dialog = _this.getParent('.dialog');
+    if ($defined(dialog))
+    {
+        dialog.retrieve('instance').close();
+    }
+
+    new Dialog('index.php?ctl=admin_return_rchange&act=refuse_reason&app=ome&p[0]=<{$pro_detail.reship_id}>&p[1]=9&p[2]=sv&finder_id=<{$env.get.finder_id}>',{width:700, height:250, title:'质检拒绝:<{$pro_detail.reship_bn}>'});
+
+}
+
+function subProcessException(_this){
+    var dialog = _this.getParent('.dialog');
+    if ($defined(dialog))
+    {
+        dialog.retrieve('instance').close();
+    }
+
+    new Dialog("index.php?ctl=admin_return_rchange&act=processException&app=ome&p[0]=<{$pro_detail.reship_id}>&finder_id=<{$env.get.finder_id}>",{width:700, height:250, title:"质检异常:<{$pro_detail.reship_bn}>"});
+}
+
+</script>
+
+<style>
+.reds { background-color:#FF0000;}
+.gridlist thead tr th{text-align:left;}
+.gridlist tbody tr td{text-align:left;}
+</style>   
+<form method="post" action="index.php?app=ome&ctl=admin_return_sv&act=tosave&p[0]=<{$pro_detail.reship_id}>" id="form-process">      
+<div class="spage-main-box">
+<div class="tableform"> 
+<{if $from_type eq 'index'}>
+<input type="hidden" name="from_type" value="<{$from_type}>"/>
+<{/if}>
+<{if $order.return_id}>
+<h3><div class="message"><strong>买家说：</strong><{$pro_detail.title}></div></h3>
+<{/if}>
+<div class="division">
+    <table width="100%" border="0" >
+        <tr>
+            <th>平台订单号：</th><td><{$order.order_bn}></td>
+        </tr>
+        <{if $order.return_id}>
+        <tr>
+            <th>订单状态：</th><td><{if $pro_detail.verify=='true'}>已质检<{else}>未质检<{/if}></td>
+        </tr>
+        <{/if}>
+        <tr>   
+            <th>提出申请的时间：</th><td><{$pro_detail.add_time|cdate:FDATE_STIME}></td>
+        </tr>
+        <tr>
+            <th>申请内容：</th><td><{$return_apply.content}></td>
+        </tr>
+        <tr>
+            <th>售后答复：</th><td><{$return_apply.memo}></td>
+        </tr>
+        <tr>
+            <th>退货备注：</th><td><{$pro_detail.memo}></td>
+        </tr>
+        <tr>
+            <th>审核备注：</th><td><{$pro_detail.check_memo}></td>
+        </tr>
+    </table>
+</div>
+<{$plugin_html}>
+<h3>申请售后服务的商品</h3>
+<div class="division">
+    <table width="100%" border="0" class="gridlist">
+        <thead>
+        <tr>
+            <th>货号</th>
+            <th>条形码</th>
+            <th>唯一码</th>
+            <th>商品名称</th>
+             <th>规格</th>
+            <th>可质检数量</th>
+            <th>已校验数量</th>
+            <th>所属仓库</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <{foreach from=$pro_detail.items item=items key=key name=pro_item}>
+
+            <tr>
+                <td>
+                    <{$items.bn}>
+                    <input type="hidden" id="bn_<{$items.bn}>" name="bn_<{$items.bn}>" value="<{$items.bn}>" />
+
+                    <{foreach from=$items.itemIds item=itemId name=pro_item_id}>
+                        <input type="hidden" id="id_<{$items.bn}><{$smarty.foreach.pro_item_id.iteration}>" name="id_<{$items.bn}><{$smarty.foreach.pro_item_id.iteration}>" value="<{$itemId}>" />
+                    <{/foreach}>
+
+                    <input type="hidden" name="count_num[<{$items.bn}>]" value="0">
+                </td>
+                <td><{$items.barcode}> </td>
+                <td style="display:none;"><span id="barcode_<{$items.bn}>"><{$items.barcode}></span></td>
+                <td><{$items.serial_number}> </td>
+                <td style="display:none;"><span id="serial_number_<{$items.bn}>"><{$items.serial_number}></span></td>
+                <td><{$items.name}> </td>
+                <td style="display:none;"><span id="name_<{$items.bn}>"><{$items.name}></span></td>
+                <td><{$items.spec_info}> </td>
+                <td style="display:none;"><span id="spec_info_<{$items.bn}>"><{$items.spec_info}></span></td>
+                <td><span id="all_<{$items.bn}>"><{$items.num}></span></td>
+                <td><span><{if $items.checknum>0}><{$items.checknum}><{else}>0<{/if}></span></td>
+                <td style="display:none;"><span id="num_<{$items.bn}>"><{if $items.checknum>0}><{$items.checknum}><{else}>0<{/if}></span><input type="hidden" name="yun" id="yun" value="<{$items.checknum|default:0}>"></td>
+                <td><{$items.branch_name}></td>
+            </tr>
+        <{/foreach}>
+
+            <!--<tr>
+              <td>bn001</td>
+                <input id="bn_bn001" type="hidden" value="bn001" name="bn_bn001">
+                <input id="id_bn0011" type="hidden" value="18" name="id_bn001">
+                <input type="hidden" value="0" name="count_num[bn001]">
+              <td>barcode001</td>
+              <td style="display:none;">
+                 <span id="barcode_bn001">barcode001</span>
+              </td>
+              <td>unqiue001</td>
+              <td style="display:none;">
+                 <span id="serial_number_bn001">unqiue001</span>
+              </td>
+              <td>productname001</td>
+              <td style="display:none;">
+                 <span id="name_bn001">test0012</span>
+              </td>
+              <td id="all_bn001">1</td>
+              <td>0</td>
+              <td style="display:none;">
+                <span id="num_bn001">0</span>
+                <input id="yun" type="hidden" value="" name="yun">
+              </td>
+              <td>test仓库</td>
+            </tr>-->
+        </tbody>
+    </table>
+</div>
+
+<div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+           <td width="200px;">请选择: <input type="radio" name="check_type" value="barcode" checked>条形码&nbsp;&nbsp; <input type="radio" name="check_type"  value="bn">货号&nbsp;&nbsp;<input type="radio" name="check_type" value="serial_number">唯一码
+           </td>
+        </tr>
+        <tr id="check_bn" style="display:none;">
+            <th>
+                请扫描商品货号：
+            </th>
+            <td>
+                <input type="text" id="bn" name="bn">
+                <span style="color:red" id="message_bn"></span>
+            </td>
+        </tr>       
+        <tr id="check_barcode" style="display:block;">
+            <th>
+                请扫描商品条形码：
+            </th>
+            <td>
+                <input type="text" id="barcode" name="barcode">
+                <span style="color:red" id="message_barcode"></span>
+            </td>
+        </tr>
+        <tr id="check_serial_number" style="display:none;">
+            <th>
+                请扫描商品唯一码：
+            </th>
+            <td>
+                <input type="text" id="serial_number" name="serial_number">
+                <span style="color:red" id="message_serial_number"></span>
+            </td>
+        </tr>
+    </table>
+</div>
+<h3>正在扫描的商品</h3>
+<div class="division">
+    <table width="100%" border="0" class="gridlist" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+            <th>货号</th>
+            <th>条形码</th>
+            <th>唯一码</th>
+            <th>商品名称</th>
+             <th>规格</th>
+            <th>校验数量</th>
+            <th>商品入库类型</th>
+            <th>质检描述</th>
+        </tr>
+        </thead>
+        <tbody id="sv_product">
+        </tbody>
+        
+    </table>
+</div>
+
+
+<div class="division">
+
+<h3>质检备注:</h3>
+    <table width="100%" border="0">
+        <tr>
+            <td> <textarea name="process_memo" class="x-input" cols="190" rows="2"><{$pro_detail.memo}></textarea></td>
+        </tr>
+    </table>
+</div>
+
+
+<{if $pro_detail.attachment!=''}>
+<h3>附件下载</h3>
+<div class="division">
+    <table width="100%" border="0">
+        <tr>
+            <td>
+                <{if $attachment_type!='remote'}>
+                    <a class="margin10" href="javascript:file_download()">请点击下载该附件</a>
+                <{else}>
+                    <a class="margin10" href="<{$pro_detail.attachment}>" target="_blank">请点击下载该附件</a>
+                <{/if}>
+            </td>
+        </tr>
+    </table>
+</div>
+<{/if}>
+
+<{if $pro_detail.content!=''}>
+<h3>详细说明</h3>
+<div class="division">
+    <table width="100%" border="0">
+        <tr>
+            <td> <{$pro_detail.content|escape:"html"}></td>
+        </tr>
+    </table>
+</div>
+<{/if}>
+
+
+    <{input type="hidden" name="por_id" value=$pro_detail.por_id}>
+    <{input type=hidden name=return_id value=$pro_detail.return_id}>
+    <{input type=hidden name=reship_id value=$pro_detail.reship_id}>
+    <div class="table-action">
+        <{button label="确认收货" class="btn-primary"  id="btn-process-succ" type="submit" onclick="subCheckForm(event,8);"}>
+       
+    <!--<{button label="质检异常" class="second-primary" id="btn-process-exception" type="button" onclick='subCheckForm(event,10);'}>-->
+        <{button label="拒绝质检" class="btn-primary" id="btn-process-fail" type="button" onclick='subProcessFail(this);'}>
+    </div>
+
+
+</div>
+</div>
+</form>

@@ -1,0 +1,13 @@
+<form id="dorefund"  class="tableform" method='post' action='index.php?app=ome&ctl=admin_return_refund_apply&act=apply_refund&finder_id=<{$env.get.finder_id}>'>
+    <div class="division">
+    <input type="hidden" name="source" value="<{$source}>">
+<table width="100%" cellspacing="0" cellpadding="0" border="0" id="insert_html">
+     <{include file="admin/return_product/refund/detail.html" app="ome"}>
+</table>
+</div>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+    <{button label='提交' onclick="return submitchk();" id="ome_register_refund" type="button" class="btn btn-primary"}>
+</div>
+<{/area}>
+</form>

@@ -1,0 +1,17 @@
+<div class="tableform">
+    <h3>系统设置</h3>
+    <div class="division">
+    <form method="post" action="index.php?app=ome&ctl=admin_setting&act=index" id="form-setting">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+                <{foreach from=$setView item=view key=key}>
+                    <{$view}>
+                <{/foreach}>
+            </tbody>
+        </table>
+        <div class="table-action">
+            <{button label="提交" type="submit" name="submit" id="btn-setting"}>
+        </div>
+    </form>
+    </div>
+</div>

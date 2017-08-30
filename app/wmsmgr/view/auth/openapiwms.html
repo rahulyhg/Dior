@@ -1,0 +1,21 @@
+<table width="100%" cellspacing="0" cellpadding="0" border="0" >
+  <tbody>
+    <tr>
+      <th ><em class="c-red">*</em>仓储平台：</th>
+      <td>
+        <{input type='select' name='config[node_type]' id="openapi_platform" vtype='required' rows=$platform_list valueColumn=value labelColumn=label value=$config.node_type}>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div id="openapi_platform_config"></div>
+<script type="text/javascript">
+$("openapi_platform").addEvents({
+  'change':function(e){
+    W.page('index.php?app=wmsmgr&&ctl=admin_wms&act=platformconfig&p[0]=<{$wms_id}>&p[1]='+this.value,{update:$('openapi_platform_config'),clearUpdateMap:false});
+  },
+  'domready':function(e){
+    this.fireEvent('change',e);
+  }
+});
+</script>

@@ -1,0 +1,229 @@
+<div class="spage-main-box">
+<div class="tableform"> 
+
+<div class="message"><strong>买家说：</strong><{$pro_detail.title}></div>
+ <div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th>平台订单号:</th><td><{$order.order_bn}></td>
+    </tr>
+    <tr>
+    
+   <th>订单状态:</th><td><{if $pro_detail.recieved=='true'}>已收货<{else}>未收货<{/if}><{if $pro_detail.verify=='true'}>已质检<{else}>未质检<{/if}></td>
+   </tr>
+   <tr>
+    <th>
+    
+    提出申请的时间：</th>
+    <td><{$pro_detail.add_time|cdate:FDATE_STIME}></td>
+  </tr>
+</table>
+</div>
+
+<br />
+
+
+<h3>申请售后服务的商品</h3>
+<div class="division">
+<div class="gridlist">
+<table width="100%" border="0"  cellpadding="0" cellspacing="0">
+ <thead>
+  <tr>
+    <th>货号</th>
+    <th>商品名称</th>
+    <th>数量</th>
+    <th>所属仓库</th>
+  </tr>
+  </thead><tbody>
+  <{foreach from=$pro_detail.items item=items}>  
+  
+  <tr>
+    <td><{$items.bn}></td>
+    <td><{$items.name|visibility:$items.product_id}></td>
+    <td><{$items.num}></td>
+    <td><{$items.branch_name}></td>
+  </tr>
+ 
+  <{/foreach}> 
+   </tbody>
+</table>
+</div>
+</div>
+<{if $pro_detail.attachment!=''}>
+
+<br />
+
+<h3>附件下载</h3>
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+ 
+  <tr>
+    <td> 
+    <{if $attachment_type!='remote'}>
+    <a class="margin10" href="javascript:file_download()">请点击下载该附件</a>
+    <{else}>
+    <a class="margin10" href="<{$pro_detail.attachment}>" target="_blank">请点击下载该附件</a>
+    <{/if}>
+    </td>
+  </tr>
+</table>
+</div>
+<{/if}>
+
+<br />
+
+
+<h3>详细说明</h3>
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+ 
+  <tr>
+    <td> <{$pro_detail.content|escape:"html"}></td>
+  </tr>
+</table>
+</div>
+
+<h4>仓库收货信息</h4>
+<div class="division"> 
+<table width="100%"  class="gridlist" border="0" >
+<thead>
+  <tr>
+    <th>仓库</th>
+    <th>快递公司</th>
+    <th>快递单号</th>
+    <th>快递费用</th>
+    <th>是否到付</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><{$pro_detail.branch_name}></td>
+    <td><{$pro_detail.process_data.shipcompany|default:"-"}></td>
+    <td><{$pro_detail.process_data.shiplogino|default:"-"}></td>
+    <td><{$pro_detail.process_data.shipmoney|default:"-"}></td>
+    <td><{if $pro_detail.process_data.shipdaofu<>'2'}>
+    <{if $pro_detail.process_data.shipdaofu=='0'}>
+       否<{else}>是<{/if}>
+   <{else}>
+   -
+   <{/if}>
+   </td>
+  </tr>
+</tbody>
+</table>
+</div>
+<h4>操作日志</h4>
+<div class="division">
+<table width="100%"  class="gridlist" border="0" cellspacing="0" cellpadding="0" >
+<thead>
+  <tr>
+    <th>操作时间</th>
+    <th>操作员</th>
+    <th>操作内容</th>
+    
+  </tr>
+  </thead>
+  <tbody>
+ <{foreach from=$pro_detail.log item=log}>
+  <tr>
+    <td><{$log.operate_time|cdate:FDATE_STIME}></td>
+    <td><{$log.op_name}></td>
+    <td><{$log.memo}></td>
+    
+  </tr>
+ <{/foreach}>
+ </tbody>
+</table>
+</div>
+<br />
+
+<h3>货号录入</h3>
+<div class="division">
+<form method="post" action="index.php?app=ome&ctl=admin_sv_charge&act=save" id="form-change">
+<input type="hidden" id="bn_list" name="bn_list" value="" />
+<table width="100%" border="0" class="finderInform">
+  <tr>
+    <th width="30%">货号录入：</th>
+    <td width="70%"><textarea name="info[bn]" id="bns" ></textarea></td>
+  </tr>
+  <tr>
+    <th>快递公司：</th>
+    <td><input type="text" name="info[shipcompany]" value="<{$pro_detail.process_data.shipcompany}>" /></td>
+  </tr>
+  <tr>
+    <th>快递单号：</th>
+    <td>
+      <input type="text" name="info[shiplogino]" value="<{$pro_detail.process_data.shiplogino}>" />   </td>
+  </tr>
+  <tr>
+    <th>快递费用：</th>
+    <td><input type="text" name="info[shipmoney]" />
+    <input type="checkbox" name="info[daofu]" value="1" />
+    到付</td>
+  </tr>
+</table>
+<{input type="hidden" name="info[por_id]" value=$pro_detail.por_id}>
+
+
+<div class="tableAction">
+<{button label="确认" class="btn-primary" id="btn-change" type="button"}>
+</div>
+
+</form>
+</div></div>
+
+</div>
+<script>
+$('btn-change').addEvent('click', function(){
+    var bns = $('bns').value.replace(/^[\n\r]*|[\n\r]*$/,'').split(/[\n\r,]+/);
+    $('bn_list').set('value', bns.join(','));
+    $('form-change').fireEvent('submit', {stop:function(){}});
+});
+
+$('form-change').store('target',{
+    onRequest:function(){
+       $('btn-change').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn-change').set('disabled', '');
+       }else{
+           $('btn-change').set('disabled', 'true');
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           window.close();
+       }
+    }
+    });
+
+function file_download(){
+  var ifm=new IFrame({src:'index.php?app=ome&ctl=admin_return&act=file_download2&p[0]=<{$pro_detail.return_id}>'});
+  ifm.injectAfter(document.body);
+}
+
+function visibility(e){
+    var visiTips = new Tips({
+            onShow:function(tip,el){
+                el.addClass('active');
+                tip.setStyle('display','block');
+            },
+            text: function(element){
+                if(element.get('visibility')=='false'){
+                    return '隐藏商品';
+                }else{
+                    return '';
+                }
+            }
+        });
+
+        var e  = new Event(e), el = e.target;
+        if (el.get('visibility')=='false')
+        {
+            visiTips.attach(el);
+            el.addEvent('mouseleave',function(){
+                el.removeClass('active');
+            });
+            el.fireEvent('mouseenter',e);
+        }
+}
+</script>

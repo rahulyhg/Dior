@@ -1,0 +1,40 @@
+<META http-equiv="Content-Type" content="text/html; charset=utf8">
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+<div class="tableform">
+  <h3>冻结详情</h3>
+  <div class="division">
+  <table cellpadding="0" cellspacing="0" border="0" class="gridlist">
+    <thead>
+      <tr>
+   
+      <th>货号</th>
+      <th>仓库</th>
+      <th>库存</th>
+      <th>冻结库存</th>
+  
+      </tr>
+    </thead>
+    <tbody>
+    <{foreach from=$order_lack item=lack}>
+      <tr>
+   
+        <td><{$lack['bn']}></td>
+        <td><{$lack['product_name']}></td>
+        <td><{$lack['store']}></td>
+        <td><{$lack['store_freeze']}></td>
+    </tr>
+<{/foreach}>
+    </tbody>
+  </table>
+ </div>
+<{if !$env.get.target}></div><{/if}>
+<{if !$env.get.target}>
+<{capture name="footbar"}>
+<div class="table-action">
+    <{button label="确 定" type="button" onclick="window.close();"}>
+</div>
+<{/capture}>
+<{/if}>
+</div>

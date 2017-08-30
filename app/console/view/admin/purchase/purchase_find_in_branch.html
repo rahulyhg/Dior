@@ -1,0 +1,70 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<script>
+function checkall() {
+    var arr = $('form1').getElementsByTagName("input");
+    {
+        for (var i = 0; i < arr.length; i++) { 
+            arr[i].checked = $('chkAll').checked;
+        }
+    }
+}
+</script>
+
+<div class="tableform"> 
+
+<div>
+<form name="form2" action="index.php?app=console&ctl=admin_purchase&act=findInBranch" method="POST">
+<div class="gridlist-action clearfix">
+    <div class="span-4">
+        模糊商品名:<{input type="text" name="name" id="name" size="10" }>
+    </div>
+    <div class="span-4">
+        仓库: <{if $branch}>
+            <{input type="select" name="branch" rows=$branch valueColumn="branch_id" labelColumn="name" value=$branch_id}>
+            <{else}>
+        	暂无
+        	<{/if}>
+    </div>
+    <{button type="submit" label="搜索"}>
+</div>
+</form>
+
+<form id="form1" name="form1" action="index.php?app=console&ctl=admin_purchase&act=create" method="POST">
+<table class="gridlist" border="0" cellspacing="0" cellpadding="0" width="80%">
+<col class="col-select" />
+<col />
+<col />
+<col />
+<thead>
+    <tr>
+        <th width="5%"><input type="checkbox" id='chkAll' name="chkAll" value="" onclick="checkall()"></th>
+        <th>商品名称</th>
+        <th width="20%">规格</th>
+        <th width="20%">货号</th>
+    </tr>
+</thead>
+<tbody>
+<{if $data}>
+<{foreach from=$data item=item}>
+<tr>
+    <td><input type="checkbox" name="po_id[]" value="<{$item.product_id}>"></td>
+    <td><{$item.name}></td>
+    <td><{$item.spec_info|default:"-"}></td>
+    <td><{$item.bn|default:"-"}></td>
+</tr>
+<{/foreach}>
+<{else}>
+<tr><td colspan="4">暂无商品</td></tr>
+<{/if}>
+</tbody>
+</table>
+
+<div class="table-action">
+    <{button type="submit" label="确定"}>    
+</div>
+</form>
+</div>
+</div>

@@ -1,0 +1,33 @@
+<div class="tableform">
+    <div class="division">
+      <table cellspacing="0" cellpadding="0" border="0" class="gridlist">
+        <tr>
+          <td>货号</td>
+          <td>货品名称</td>
+          <td style="display:none;">入库单编号</td>
+          <td>采购价格</td>
+          <td>采购日期</td>
+        </tr>
+      <{foreach from=$his_price item=his}>
+      <tbody>
+        <tr>
+          <td><{$his.bn}></td>
+          <td><{$his.name}></td>
+          <td  style="display:none;"><{$his.eo_bn}></td>
+          <td><{$his.purchase_price|cur}></td>
+          <td><{$his.purchase_time|date_format:"%Y-%m-%d"}></td>
+        </tr>
+        </tbody>
+      <{/foreach}>
+      <tr>
+      	<td colspan="4"><{button class="btn btn-primary" type="button" id="closeBut" label="关闭"}></td>
+      </tr>
+      </table>
+    </div>
+</div>
+<script>
+//关闭POP
+$('closeBut').addEvent('click', function(event){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+</script>

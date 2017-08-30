@@ -1,0 +1,86 @@
+<div id='selectStatus'>
+<form method='post' action='index.php?app=customs&ctl=admin_orders&act=do_date_status' id="form-order" name="order_frm" isCloseDialog>
+    <table width="100%" >
+        <tbody>
+            <tr>
+              <td width="50">&nbsp;</td>
+              <td>&nbsp;</td>
+        </tr>
+            <tr>
+                <td><input type='hidden' name='cid' value='<{$cid}>'></input></td>
+                <td>
+                    <label><b>时间范围：</b>&nbsp;&nbsp;&nbsp;</label>
+                    <{input type="date" name="time_from" vtype="required" id="time_from" value="{$dateline.time_from}"}>
+                    &nbsp;&nbsp;&nbsp;至&nbsp;&nbsp;&nbsp;
+                    <{input type="date" name="time_to" vtype="required" id="time_to" value="{$dateline.time_to}"}>
+                </td>
+            </tr>
+            <tr>
+              <td height="40">&nbsp;</td>
+              <td>&nbsp;<span style="color:red;">注：只支持查询开始与结束时间 7天之间的时间段；</span></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="table-action">
+          <table width="100%" cellspacing="0" cellpadding="0">
+            <tbody>
+              <tr>
+                <td>
+                <button class="btn btn-primary" id="btn-submit" onclick='dosubmit()'><span><span><{t}>查询申报单状态<{/t}></span></span></button>
+                </td>
+              </tr>
+            </tbody>
+      </table>
+  </div>
+</form>
+<script>
+var finder = finderGroup['<{$env.get.finder_id}>'];
+
+var _finder = finderGroup['<{$name}>'],
+	dataAction = $('selectStatus'),
+	from = dataAction.getElement('input[name=time_from]'),
+	to = dataAction.getElement('input[name=time_to]');
+
+function dosubmit()
+{
+	check	= check_data(from, to);
+	if(!check)
+	{
+		alert("时间范围选择有误！");
+		return false;
+	}
+	
+    $("form-order").fireEvent('submit',{stop:function(){}});
+}
+
+function check_data(from, to)
+{
+	var data=[],
+	_return=[from,to].every(function(el)
+	{
+	  if(!/^(19|20)[0-9]{2}-([1-9]|0[1-9]|1[012])-([1-9]|0[1-9]|[12][0-9]|3[01])+$/.test(el.value)){
+		new MessageBox('<{t}>请录入日期格式yyyy-mm-dd<{/t}>',{type:'error',autohide:true});
+		el.focus();
+		return false;
+	  }
+	  data.push(Date.parse(el.value.replace(/-/gi,"/")));
+	  return true;
+	});
+	
+	if(!_return)return null;
+	
+	if(data[1] < data[0]){
+	  return MessageBox.error('<{t}>选择开始时间必须早于结束时间<{/t}>');
+	}
+	
+	diff_time	= data[1] - data[0];
+	if(diff_time > 604800000)
+	{
+		return MessageBox.error('<{t}>请选择开始时间与结束时间为7天之内的时间段<{/t}>');
+	}
+	
+	return _return;
+}
+</script>
+</div>

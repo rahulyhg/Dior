@@ -1,0 +1,17 @@
+<desktop> 
+	<permissions>
+        <permission id="iostockorder_allocate_instock">调拨入库</permission>
+        <permission id="iostockorder_other_instock">其他入库</permission>		
+        <permission id="iostockorder_search_instockorder">入库单查询</permission>
+        
+        <permission id="iostockorder_allocate_outstock">调拨出库</permission>
+        <permission id="iostockorder_other_outstock">其他出库</permission>
+		<permission id="iostockorder_search_outstockorder">出库单查询</permission>
+		
+		<!-- 导出 -->
+		<permission id="instockorder_export">入库单导出</permission>
+        <permission id="outstockorder_export">出库单导出</permission>
+
+    </permissions>
+
+</desktop>

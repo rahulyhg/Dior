@@ -1,0 +1,52 @@
+<div id="present">
+    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+          <th style="width:12%;">发货仓</th>
+          <th style="width:8%;">物流公司</th>
+          <th style="width:6%;">发货状态</th>
+          <th style="width:8%;">发货单号</th>
+          <th style="width:10%;">货号</th>
+          <th>商品名称</th>
+          <th style="width:5%;">货品数量</th>          
+        </tr>
+      </thead>
+      <tbody>
+      	<{foreach from=$order_dlylist item=volist}>
+        	<{if $volist.count > 1}>
+                <{foreach from=$volist.list key=key item=val}>
+                    <{if $key == '0'}>
+                        <tr>
+                            <td rowspan="<{$volist.count}>"><{$val.branch_name}></td>
+                            <td rowspan="<{$volist.count}>"><{$val.logi_name}></td>
+                            <td rowspan="<{$volist.count}>"><{$val.status}></td>
+                            <td rowspan="<{$volist.count}>"><{$val.delivery_bn}></td>
+                            <td><{$val.bn}></td>
+                            <td><{$val.product_name}></td>
+                            <td style="color:#ff0000;"><{$val.number}></td>                            
+                        </tr>
+                    <{else}>
+                        <tr>
+                            <td><{$val.bn}></td>
+                            <td><{$val.product_name}></td>
+                            <td style="color:#ff0000;"><{$val.number}></td>
+                        </tr>
+                    <{/if}>
+                <{/foreach}>
+        	<{else}>
+            	<{foreach from=$volist.list key=key item=val}>
+                    <tr>
+                        <td><{$val.branch_name}></td>
+                        <td><{$val.logi_name}></td>
+                        <td><{$val.status}></td>
+                        <td><{$val.delivery_bn}><{if $val.is_bind == 'true'}><a style="color:#ff0000;text-decoration:none;" title="合并发货单">(合)</a><{/if}></td>
+                        <td><{$val.bn}></td>
+                        <td><{$val.product_name}></td>
+                        <td style="color:#ff0000;"><{$val.number}></td>
+                    </tr>
+                <{/foreach}>
+            <{/if}>        
+        <{/foreach}>
+      </tbody>
+    </table>
+</div>

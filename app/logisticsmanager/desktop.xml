@@ -1,0 +1,17 @@
+<desktop>
+    <permissions>
+        <permission id="waybill_manager">电子面单号管理</permission>
+        <permission id="delivery_template_manager">发货面单模板管理</permission>
+    </permissions>
+
+    <workground name="系统" id="setting_tools"  order="1000">
+        <menugroup name="物流管理">
+            <menu controller='admin_express_template' action='stock' permission='delivery_template_manager' display='true' order='3000440'>备货面单管理</menu>
+            <menu controller='admin_express_template' action='delivery' permission='delivery_template_manager' display='true' order='3000450'>发货面单管理</menu>
+            <menu controller='admin_express_template' action='index' permission='waybill_manager' display='true' order='3000500'>快递面单管理</menu>
+            <menu controller='admin_channel' action='index' permission='waybill_manager' display='true' order='3000600'>电子面单来源</menu>
+            <!--<menu controller='admin_waybill_log' action='index' permission='waybill_manager' display='true' order='3000700'>面单异常请求</menu>-->
+            <menu controller='admin_logistics_log' action='index' permission='waybill_manager' display='true' order='3000800'>物流回填日志</menu>
+        </menugroup>
+    </workground>
+</desktop>

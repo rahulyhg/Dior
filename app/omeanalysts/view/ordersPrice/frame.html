@@ -1,0 +1,38 @@
+<{area inject=".mainHead"}>
+    <{css src="style.css" app='omeanalysts'}>
+<{/area}>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+    <td width="100%" valign="top" bgcolor="#E4E4E4" style="padding:12px 8px">
+    <div class="cir_top">
+        <img src="<{$env.app.res_url}>/cir_topleft.jpg" class="cir_left" />
+        <img src="<{$env.app.res_url}>/cir_topright.jpg" class="cir_right" />
+    </div>
+    <div class="cir_rightbox">
+        <h4>
+            <div class="title_left" >
+            <{$path}>&nbsp;<{button label="修改区间设置" id="editarea" type="button"}>
+            </div>
+            <{include file="ordersPrice/search.html"}>
+        </h4>
+
+        <div class="tableform">
+            <div class="division" style="border:1px solid #ccc;">
+              <iframe frameborder="0" src="?app=omeanalysts&ctl=ome_ordersPrice&act=price_interval_map&shop_id=<{$shop_id}>&from=<{$time_from}>&to=<{$time_to}>" scrolling="no" width="100%" height="300" onload="$(this).getParent().removeClass('loading');"></iframe>
+            </div>
+        </div>
+    </div>
+    <div class="cir_bottom">
+        <img src="<{$env.app.res_url}>/cir_bottomleft.jpg" class="cir_left" />
+        <img src="<{$env.app.res_url}>/cir_bottomright.jpg" class="cir_right" />
+    </div>
+    </td>
+</tr>
+</table>
+<script>
+(function(){
+    $('editarea').addEvent('click',function(e){
+      new Dialog('index.php?app=omeanalysts&ctl=ome_ordersPrice&act=edit',{width:700,height:300,title:'修改区间设置'});
+    });
+  })();
+</script>

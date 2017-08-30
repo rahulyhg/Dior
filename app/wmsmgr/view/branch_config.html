@@ -1,0 +1,36 @@
+<div class="tableform">
+<div class="division">
+<form method="post" action="index.php?<{$env.server.QUERY_STRING}>" id="terminal">
+<input type="hidden" name="wms_id" value="<{$wms_id}>">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+        <{foreach from=$branch_list item=branch}>
+       <tr>
+          <th> <{$branch.name}>：</th>
+          <td><{input type="text" size="32" name="wms_branch_bn[{$branch.branch_bn}]" value=$wms_branch[$branch.branch_bn]}>
+          <{help}><{t}>WMS仓库编号<{/t}><{/help}>
+          </td>
+        </tr>
+        <{/foreach}>
+        </tbody>
+      </table>
+<div class="table-action">
+<{if $branch_list}>
+<{button class="btn-primary" type="submit" id="saveterminal" name="submit" label="保存"}>
+<{else}>
+请添加仓库
+<{/if}>
+</div>
+</form>
+</div>
+</div>
+
+<script>
+$('terminal').store('target',{
+    onRequest:function(){
+    },
+    onComplete:function(jsontext){
+      finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+    }
+});
+</script>

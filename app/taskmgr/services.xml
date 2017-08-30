@@ -1,0 +1,8 @@
+<services>
+    <service id="openapi.autotask">
+        <class>taskmgr_rpc_entrance</class>
+    </service>
+    <service id="autotask">
+        <class>taskmgr_misc_task</class>
+    </service>
+</services>

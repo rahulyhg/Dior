@@ -1,0 +1,20 @@
+<app>
+
+    <name>WMS管理</name>
+    <description>第三方仓储添加、绑定管理</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0</version>   
+    <parent_model_class>dbeav_model</parent_model_class>
+    <optional app="dev">开发者工具</optional>
+    
+    <depends>
+        <app>channel</app>
+        <app>middleware</app>
+    </depends>
+</app>

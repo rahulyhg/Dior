@@ -1,0 +1,93 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="tableform">
+
+<h4>采购单详情</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+<tbody>
+<tr>
+	<th style='text-align:right;'>采购单编号:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.po_bn}></td>
+	<th style='text-align:right;'>供应商:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.supplier_name}></td>
+	<th style='text-align:right;'>采购员:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.operator}></td>
+    <th style='text-align:right;'>仓库:</th>
+    <td style='text-align:left;padding-left:5px;'><{$po.branch_name}></td>
+</tr>
+</tbody>
+
+<tbody>
+<tr>
+	<th style='text-align:right;'>采购日期:</th>
+	<td style='text-align:left;padding-left:5px;'><{$po.purchase_time|date_format:"%Y-%m-%d"}></td>
+    <th style='text-align:right;'>到货日期:</th>
+    <td style='text-align:left;padding-left:5px;'><{$po.arrive_time|date_format:"%Y-%m-%d"}></td>
+    <th style='text-align:right;'><{if $po.deposit!=0}>预付款:<{/if}>&nbsp;</th>
+    <td style='text-align:left;padding-left:5px;'><{if $po.deposit!=0}><{$po.deposit}><{/if}>&nbsp;</td>
+    <th >&nbsp;</th>
+    <td >&nbsp;</td>
+</tr>
+</tbody>
+<tbody>
+
+</tbody>
+</table>
+</div>
+
+
+<h4>采购单明细</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<col style="width:6%;"></col>
+<col style="width:6%;"></col>
+<!-- col style="width:10%;"></col -->
+<thead>
+<tr>
+	<th style='text-align:left;padding-left:5px;'>货号</th>
+    <th style='text-align:left;padding-left:5px;'>货品名称</th>
+    <th style='text-align:left;padding-left:5px;'>规格</th>
+	<th style='text-align:left;padding-left:5px;'>条码</th>
+	<th style='text-align:left;padding-left:5px;'>采购数量</th>
+    <th style='text-align:left;padding-left:5px;'>已入库</th>
+    <th style='text-align:left;padding-left:5px;'>入库取消</th>
+    <th style='text-align:left;padding-left:5px;'>不良品</th>
+    <!-- th>采购价格</th -->
+</tr>
+</thead>
+
+<tbody>
+<{foreach from=$po.po_items item=item}>
+<{if ($item.in_num!=$item.num) || $item.defective_num>0}>
+<tr>
+    <td style='text-align:left;padding-left:5px;'><{$item.bn}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.name}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.spec_info}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.barcode}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.num}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.in_num}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.out_num}></td>
+    <th style='text-align:left;padding-left:5px;'><{$item.defective_num}></th>
+    <!--  td><{$item.price|cur}></td -->
+</tr>
+<{/if}>
+<{/foreach}>
+</tbody>
+
+</table>
+</div>
+</div>
+<input type="hidden" name="po_id" value="<{$po.po_id}>">
+<div id="cc" class="noprint table-action">&nbsp;
+          <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+

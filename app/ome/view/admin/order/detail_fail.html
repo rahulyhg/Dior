@@ -1,0 +1,155 @@
+<form action="index.php?app=ome&ctl=admin_order_fail&act=dosave" method="post" id="orderItemForm">
+<input type="hidden" name="order_id" value="<{$orderInfo.order_id}>" />
+
+<div class="action-bar clearfix">
+    <div class="span-auto"><strong class="action-bar-info">订单操作：</strong></div>
+
+    <div class="flt">
+        <{if  $orderInfo.ship_status != 0 || $orderInfo.status != 'active' || $orderInfo.process_status == 'cancel'}>
+            <{button label="订单取消" disabled="disabled"}>&nbsp;
+        <{else}>
+            <{button label="订单取消" onclick="new Dialog('index.php?ctl=admin_order&act=do_cancel&app=ome&p[0]={$orderInfo.order_id}&finder_id={$env.get.finder_id}',{width:700,height:300,title:'订单取消'})"}>&nbsp;
+        <{/if}>
+    </div>
+
+    <div class="flt">
+        <{if ($orderInfo.pay_status != 1 && $orderInfo.pay_status != 3 && $orderInfo.pay_status != 4) || $orderInfo.status != 'active' || $orderInfo.process_status == 'cancel'}>
+            <{button label="退款申请" disabled="disabled"}>&nbsp;
+        <{else}>
+            <{button label="退款申请" onclick="new Dialog('index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]={$orderInfo.order_id}&finder_id={$env.get.finder_id}',{width:800,height:550,title:'订单{$orderInfo.order_bn}的退款申请',onLoad:function(){ $('back_url').set('value','order_confirm'); }})" }>&nbsp;
+        <{/if}>
+    </div>
+</div>
+
+<{foreach from=$item_list item=objs key=obj_type}>
+<div class="division">
+    <h4><{$object_alias[$obj_type]}></h4>
+    <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+            <tr>
+                <th><{t}>货号<{/t}></th>
+                <th><{t}>商品名称<{/t}></th>
+                <th><{t}>购买量<{/t}></th>
+                <th><{t}>调整货号<{/t}></th>
+            </tr>
+        </thead>
+        
+        <{if $obj_type == 'pkg'}>
+        <tbody>
+        <{foreach from=$objs item=obj}>
+            <tr>
+                <td><strong><{$obj.bn}></strong></td>
+                <td><strong><{$obj.name}></strong></td>
+                <td><strong><{$obj.quantity}></strong></td>
+                <td> - </td>
+            </tr>
+            <{foreach from=$obj.order_items item=item}>
+            <tr class="ColColorBlue" <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}> >
+                <td><{$item.bn}>
+                    <{if $item.product_id <= 0}>
+                        <input type="hidden" name="oldPbn[<{$item.item_id}>]" value="<{$item.bn}>" /><{/if}></td>
+                <td><{$item.name}></td>
+                <td><{$item.nums}></td>
+                <td><{if $item.product_id <= 0}>
+                    <{if $shop_type == 'shopex'}>
+                    <input type="hidden" size="10" name="pbn[<{$item.item_id}>]" value="<{$item.bn}>" />
+                    <{$item.bn}><{if $item.status == 0}>货品不存在,请维护<{/if}>
+                    <{else}>
+                    <input type="text" size="10" name="pbn[<{$item.item_id}>]" value="" />
+                    <{/if}>
+                    <{else}>已修正<{/if}></td>
+            </tr>
+            <{/foreach}>
+        <{/foreach}>
+        <{else}>
+        <{foreach from=$objs item=obj}>
+            <{foreach from=$obj.order_items item=item}>
+            <tr <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}>>
+                <td <{if $item.item_type == 'gift' || $item.item_type == 'adjunct'}>class="<{$item.item_type}>"<{/if}>><{$item.bn}>
+                    <{if $item.product_id <= 0}>
+                        <input type="hidden" name="oldPbn[<{$item.item_id}>]" value="<{$item.bn}>" /><{/if}></td>
+                <td><{$item.name}></td>
+                <td><{$item.nums}></td>
+                <td><{if $item.product_id <= 0}>
+                    <{if $shop_type == 'shopex'}>
+                    <input type="hidden" size="10" name="pbn[<{$item.item_id}>]" value="<{$item.bn}>" />
+                    <{$item.bn}><{if $item.status == 0}>货品不存在,请至前端修改或在ERP里新增同货号货品维护<{/if}>
+                    <{else}>
+                    <input type="text" size="10" name="pbn[<{$item.item_id}>]" value="" <{if $orderInfo.process_status == 'cancel' || $orderInfo.edit_status == 'false'}>disabled="disabled"<{/if}> />
+                    <{/if}>
+                    <{else}>已修正<{/if}></td>
+            </tr>
+            <{/foreach}>
+        <{/foreach}>
+        </tbody>
+        <{/if}>
+    </table>
+</div>
+<{/foreach}>
+
+<{if $orderInfo.process_status != 'cancel'}>
+<div class="table-action">
+<{if $orderInfo.edit_status == 'true'}>
+    <{button type="button" id="editsubmit" label="修改提交"}>
+    <{button type="button" id="batchsubmit" label="批量修改提交"}>
+    <span style='color:#999999;'>调整完的货号通批量修改，可以更新全部订单包含的此货号</span>
+<{else}>
+    <{button type="button" id="editsubmit" label="修改提交" disabled="disabled"}>
+    <{button type="button" id="batchsubmit" label="批量修改提交" disabled="disabled"}>
+    <span style='color:#ff0000;'>系统正在处理此订单，暂不能进行调整！</span>
+<{/if}>
+</div>
+<{/if}>
+</form>
+<script>
+(function(){
+function valid(){
+var pbns = $$('[name^=pbn[]');
+    for(var i=0,l=pbns.length; i<l; i++){
+        for (var j=i+1,k=pbns.length; j<k; j++){
+            if( pbns[j].value==pbns[i].value ){
+                if(confirm('订单存在相同的商品，是否继续？')) return true;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+var itemForm = $('orderItemForm');
+$('editsubmit').addEvent('click',function(){
+    //if(!valid()) return;
+    itemForm.action = 'index.php?app=ome&ctl=admin_order_fail&act=dosave';
+    itemForm.fireEvent('submit',{stop:function(){}});
+});
+
+$('batchsubmit').addEvent('click',function(){
+    //if(!valid()) return;
+    itemForm.action = 'index.php?app=ome&ctl=admin_order_fail&act=batchsave';
+    itemForm.fireEvent('submit',{stop:function(){}});
+});
+
+})();
+
+$('orderItemForm').store('target',{
+    onRequest:function(e){
+        $('editsubmit').set('disabled', 'true');
+        $('batchsubmit').set('disabled', 'true');
+        $('editsubmit').getElements('span')[1].set('text','正在处理');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) == 'undefined'){
+           $('editsubmit').set('disabled', 'true');
+           $('batchsubmit').set('disabled', 'true');
+           $('editsubmit').getElements('span')[1].set('text','正在处理');
+       }else{
+           $('editsubmit').set('disabled', '');
+           $('batchsubmit').set('disabled', '');
+           $('editsubmit').getElements('span')[1].set('text','修改提交');
+       }
+    }
+});
+
+</script>

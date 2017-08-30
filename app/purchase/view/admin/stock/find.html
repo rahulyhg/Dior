@@ -1,0 +1,63 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+<input type='hidden' id='sequence'/>
+
+<table border="0" cellspacing="0" cellpadding="0" width="50%">
+<{foreach from=$product item=product}>
+
+<tr>
+    <td><input type="checkbox" class="product_id" id="product_id[]" name="product_id[]" value="<{$product.id}>"><{$product.id}></td>
+    <td >&nbsp;</td>
+    <td >:</td>
+    <td>&nbsp;</td>
+    <td >&nbsp;</td>
+</tr>
+<{/foreach}>
+
+
+</table>
+
+<div class="table-action">
+    <{button label="确定" id="dlg_ok" onclick="addproduct();"}>
+    <{button label="取消" id="dlg_cancel" isclosedialogbtn="true"}>
+</div>
+
+<script>
+function addproduct(){
+	var checkNum = 0;
+	var product_id='';
+	$ES('.product_id').each(function(item, index,itobj){
+		if(item.checked == true){
+			checkNum++;
+			product_id=item.value;
+		}
+	});	
+	if(checkNum>1){
+		alert('对不起一次只可以选择一件商品!');
+		return false;
+}else{
+	
+	new Request.JSON({url:'index.php?app=purchase&ctl=admin_stock&act=get_proinfo&product_id='+product_id, 
+     method:'post',
+     onSuccess:function(data){
+	 	var sequence=$('sequence')
+ 		var sequence_dialog=$('sequence').getParent('.dialog');
+ 		var _inputText=sequence_dialog.retrieve('iptText');
+		var _inputHidden=sequence_dialog.retrieve('iptHidden');
+ 		var _inputbn=sequence_dialog.retrieve('iptbn');
+ 		var _inputunit=sequence_dialog.retrieve('iptunit');//iptspec
+ 		var _inputspec=sequence_dialog.retrieve('iptspec');
+
+ 		_inputText.set('value',data.name);
+		_inputHidden.set('value',data.product_id);
+		_inputbn.set('value',data.bn);
+		_inputunit.set('value',data.unit);
+		_inputspec.set('value',data.spec_value);
+		//$$('.dialog').getLast().retrieve('instance').close();
+	   }
+	}).send(); 
+ 	
+}
+ }
+</script>

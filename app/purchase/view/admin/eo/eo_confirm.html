@@ -1,0 +1,288 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+<form method="post" id="eo_confirm" action="index.php?app=purchase&ctl=admin_eo&act=save_eo_confirm">
+  <div class="tableform">
+    <h3>采购入库 - 传统方式</h3>
+    <div class="division">
+      按
+      <select id="purchase_type">
+        <option value="barcode">条码</option>
+  <!--       <option value="bn">货号</option> -->
+      </select>
+      <input type="text" id="purchase_search" />
+      <{button label="回车键确定" id="add_bn" app="desktop" icon="btn_add.gif"}>
+       &nbsp;&nbsp;&nbsp;<{button type="button" label="切换到条码入库方式" onclick="javascript:window.location='index.php?app=purchase&ctl=admin_eo&act=Barcode_stock&p[0]={$po_id}';" }>
+      <div class="ome-stock" style="clear:both">
+        <input type="hidden" name="po_id" value="<{$po_id}>">
+        <input type="hidden" name="branch_id" value="<{$branch_id}>">
+        <table class="gridlist">
+          <thead>
+            <tr>
+              <th style="width:4%"><input name="checkAll" id="checkAll" type="checkbox" checked="checked" /> 选择 </th>
+              <th>商品名称</th>
+              <th style="width:4%">规格</th>
+              <th style="width:10%">商品编号</th>
+              <th style="width:10%">货号</th>
+              <th style="width:10%">条码</th>
+              <th style="width:4%">单位</th>
+              <th style="width:5%">采购数量</th>
+              <th style="width:6%" nowrap>已入库数量</th>
+              <th style="width:5%" nowrap>入库数量</th>
+              <!-- <th style="width:9%">货位 <{img src="bundle/zoom_btn.gif" app="desktop" id="btn_posview" title="查看货位资源" class="pointer" align="absmiddle"}></th> -->
+             <!--  <th style="width:4%">新品</th> -->
+              <th style="width:13%">商品备注</th>
+            </tr>
+          </thead>
+          <tbody id="ome-stock-data">
+            <{foreach from=$Po_items item=items}>
+            <tr class="row" bn="<{$items.bn}>" barcode="<{$items.barcode}>" key="<{$items.item_id}>">
+              <td>
+                <{if $items.entry_num!=0}>
+                <input name="ids[]" type="checkbox" value="<{$items.item_id}>" <{if $items.entry_num!=0}>checked="checked"<{/if}> />
+                <{/if}>
+              </td>
+              <td><{$items.name|visibility:$items.product_id}></td>
+              <td><{$items.spec_info}></td>
+              <td><{$items.goods_bn}></td>
+              <td><{$items.bn}></td>
+              <td><{$items.barcode}></td>
+              <td><{$items.unit}></td>
+              <td data-num="<{$items.num}>"><{$items.num}></td>
+              <td data-in_num="<{$items.in_num}>"><{$items.in_num}></td>
+              <td class="ome-input"><{if $items.entry_num!=0}>
+                <input type="number" class="number_input" min="0" max="<{$items.num - $items.in_num}>" name="entry_num[<{$items.item_id}>]" size="3" value="<{$items.entry_num}>" /><{/if}></td>
+<!--               <td class="ome-input">
+                <span class="ome-stock-pos"></span>
+                <span class="ome-stock-pos-input">
+                  <input type="text" name="pos_name[<{$items.item_id}>]" class="ome-stock-store-input" value="<{$items.pos_list.0.store_position}>" size="10">
+                  <input type="hidden" name="pos_id[<{$items.item_id}>]" value="<{$items.pos_list.0.pos_id}>" />
+                </span></td> -->
+             <!--  <td class="isNew"><{if $items.is_new=="true"}>是<{else}>否<{/if}></td> -->
+              <td class="ome-input">
+                <{if $items.entry_num!=0}>
+                <input type="text" name="item_memo[<{$items.item_id}>]" value="<{$items.memo}>">
+                <{/if}>
+              </td>
+            </tr>
+            <input type="hidden" name="is_new[<{$items.item_id}>]" value="<{$items.is_new}>">
+            <{/foreach}>
+          </tbody>
+        </table>
+        <div class="ome-stock-title ">共有<{$count}>件商品</div>
+      </div>
+      <div class="division">
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="5%">
+              经办人:
+            </td>
+            <td>
+              <input type="text" name="operator" vtype="required" value="<{$operator}>" size="8" />
+            </td>
+          </tr>
+          <tr>
+            <td>入库单备注: </td>
+            <td>
+              <textarea name="memo" rows="3" cols="60"></textarea>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</form>
+<{capture name='footbar'}>
+<div class="table-action">
+  <{button type="button" id="confirm_btn" label="收货入库" }>
+  <{button type="button" id="close_btn" label="关闭页面" }>
+</div>
+<{/capture}>
+<script>
+  (function(){
+    attachEsayCheck($('ome-stock-data'),'td:nth-child(first)');
+   /*
+    $('btn_posview').addEvent('click',function(e){
+        var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_branch_pos&act=view');
+        Ex_Loader('modedialog',function() {
+			new finderDialog(url,{width:700,height:660,onShow:function(){
+				try{$E('.dialogBtn').hide();}catch(e){}
+			}});
+		});
+	});
+  */
+    $('checkAll').addEvent('click',function(){
+        var itemIds = document.getElements('input[name^=ids]'),
+        num = itemIds.length;
+
+        if (this.checked) {
+            for (var i = 0; i < num; i++) {
+                itemIds[i].checked = "checked";
+            }
+        } else {
+            for (var i = 0; i < num; i++) {
+                itemIds[i].checked = "";
+            }
+        }
+    });
+
+    var dataNode = $('ome-stock-data');
+
+	dataNode.getElements('.isNew').each(function(item,i){
+		if(item.get('text').trim() == '是'){
+			item.setStyles({'background-color':'#ffc',color:'red'});
+			//item.getParent().getElement('input.ome-stock-store-input').value = '';
+		}
+	});
+    var entry = $$('#ome-stock-data input[name^=entry_num[]');
+    entry.addEvent('blur',function(){
+	  this.value = (this.value.toInt()).limit(this.get('min'),this.get('max'));
+      /*var num = this.getParent('tr').getElement('td:data-num').get('data-num');
+      var innum = this.getParent('tr').getElement('td:data-in_num').get('data-in_num');
+      if(this.value > num-innum) this.value = num-innum;
+      else if(this.value <0) this.value =0;*/
+    });
+
+    //关闭页面
+    $('close_btn').addEvent('click', function(){
+      window.close();
+    });
+
+    $('purchase_search').addEvent('keyup',function(e){
+      if(e.code!==13)return;
+      var type=$('purchase_type').value,value=this.value,el;
+      if (type=='barcode' && value==''){
+        alert('请输入需定位的条形码');
+        $('purchase_search').focus();
+        return;
+      }
+      if (type=='bn' && value==''){
+        alert('请输入需定位的货号');
+        $('purchase_search').focus();
+        return;
+      }
+      $$('#ome-stock-data tr').each(function(tr){
+        if(tr.get(type)==value){el=tr;}
+      });
+      if(!el)return MessageBox.error('没找到相应数据');
+      if(preel=this.retrieve('height_el'))preel.removeClass('select');
+      el.addClass('select').getElement('input[type^=text]').focus();
+      this.store('height_el',el);
+    });
+    $('add_bn').addEvent('click',function(){
+      var type=$('purchase_type').value,el;
+      var value=$('purchase_search').get('value');
+      if (type=='barcode' && value==''){
+        alert('请输入需定位的条形码');
+        $('purchase_search').focus();
+        return;
+      }
+      if (type=='bn' && value==''){
+        alert('请输入需定位的货号');
+        $('purchase_search').focus();
+        return;
+      }
+      $$('#ome-stock-data tr').each(function(tr){
+        if(tr.get(type)==value){el=tr;}
+      });
+      if(!el)return MessageBox.error('没找到相应数据');
+      if(preel=this.retrieve('height_el'))preel.removeClass('select');
+      el.addClass('select').getElement('input[type^=text]').focus();
+      this.store('height_el',el);
+    });
+    $('purchase_search').focus();
+
+
+    $$('#ome-stock-data input[type=text]').addEvent('keyup',function(e){
+      if(this.getNext('.error')) this.getNext('.error').destroy();
+      if(e.code!==13)return;
+      var next_td=$(e.target).getParent('td').getNext('.ome-input');
+      if(next_td&&next_td.getElement('input[type=text]')) return next_td.getElement('input[type=text]').focus();
+      $('purchase_search').focus();
+      if(preel=$('purchase_search').retrieve('height_el'))preel.removeClass('select');
+    });
+
+    $('eo_confirm').store('target',{
+      onRequest:function(){
+        $('confirm_btn').set('disabled', 'true');
+        $('confirm_btn').getElements('span')[1].set('text','正在入库');
+      },
+      onComplete:function(jsontext){
+        var json = JSON.decode(jsontext);
+        if (typeof(json.error) != 'undefined'){
+          dataNode.getElements('tr:key').removeClass('highlight');
+          if(json.product_id){
+            dataNode.getElements('tr:key').each(function(tr,i){
+              json.product_id.each(function(v,i){
+                if(tr.get('key') == v){
+                  var error = tr.getElement('span.error') || new Element('span.error').injectAfter(tr.getElement('input.ome-stock-store-input'));
+                  error.setHTML('此商品所在的仓库上不存在该货位！');
+                  if(i===0) tr.getElement('input.ome-stock-store-input').focus();
+                  tr.addClass('highlight');
+                }
+              });
+            });
+          }
+          $('confirm_btn').set('disabled', false);
+          $('confirm_btn').getElements('span')[1].set('text','开始入库');
+        }else{
+          $('confirm_btn').set('disabled', true);
+          $('confirm_btn').getElements('span')[1].set('text','正在入库');
+          opener.finderGroup['<{$env.get.find_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.find_id}>']);
+          setTimeout('window.close()',200);
+        }
+
+      }
+    });
+    $('confirm_btn').addEvent('click',function(e){
+      var flag = [];
+      entry.each(function(item,i){
+        if(item.value < item.getParent('tr').getElement('td:data-num').get('data-num') -  item.getParent('tr').getElement('td:data-in_num').get('data-in_num')){
+          flag.push(item.getParent('tr'));
+        }
+      });
+      if(flag.length){
+        if(confirm('入库数量和采购数量不符，是否确认？')) $('eo_confirm').fireEvent('submit',e);
+        else{
+          $$('#ome-stock-data tr.highlight').removeClass('highlight');
+		  flag.each(function(f,i){
+            f.addClass('highlight');
+            if(i===0) f.getElement('input[name^=entry_num[]').focus();
+		  });
+        }
+      }
+      else $('eo_confirm').fireEvent('submit',e);
+    });
+
+      $$('.ome-input input, .ome-stock-store-input').addEvent('keyup',function(e){
+        if(e.code==13) $('purchase_search').focus();
+      });
+	
+    })();
+function visibility(e){
+	var visiTips = new Tips({
+			onShow:function(tip,el){
+				el.addClass('active');
+				tip.setStyle('display','block');
+			},
+			text: function(element){
+				if(element.get('visibility')=='false'){
+					return '隐藏商品';
+				}else{
+					return '';
+				}
+			}
+		});
+
+		var e  = new Event(e), el = e.target;
+		if (el.get('visibility')=='false')
+		{
+			visiTips.attach(el);
+			el.addEvent('mouseleave',function(){
+				el.removeClass('active');
+			});
+			el.fireEvent('mouseenter',e);
+		}
+	}
+  </script>

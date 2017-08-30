@@ -1,0 +1,115 @@
+
+<{button label="显示所有差异库存" class="btn-primary" id="show_all"}>
+<br />
+<br />
+<input type="hidden" id="show" value="<{$show}>">
+<{if $data}>
+<{button label="修复全部" class="btn-primary" id="repare_all"}>
+<{/if}>
+<!--显示全部差异库存 -->
+<div  id="showall" style="display:none">
+    <form action='index.php?app=console&ctl=admin_stockfreeze&act=showall' method='post' id="do_all">
+        <div class="gray_form" style="margin-top:24px;">
+          <table class="gridlist" style="*width:97%;">
+            <thead>
+              <tr>
+                <th>货品编码</th>
+                <th>当前货品冻结</th>
+                <th>正确货品冻结</th>
+                <th>当前仓库冻结</th>
+                <th>正确仓库冻结</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+                <{foreach from=$data item=items key=key}>
+                    <tr>
+                        <td><{$items.bn}></td>
+                        <td><{$items.local_product_store_freeze}></td>
+                        <td><{$items.real_product_freeze}>&nbsp;</td>
+                        <td><{$items.local_branch_freeze}></td>
+                        <td><{$items.real_branch_freeze}>&nbsp;</td>
+                        <td><a href="javascript:void(0)" onclick="fix_store('<{$key}>','all')">修正</a></td>
+                    </tr>
+                <{/foreach}>
+            </tbody>
+           
+          </table>
+        </div>
+    </form>
+</div>
+<script>
+set_displsy();
+$('show_all').addEvent('click',function(e){
+    $('do_all').fireEvent('submit',{
+        stop: function() {}
+    });
+	$('showall').set('style','display:block');
+    //$('div_one').set('style','display:none');
+});
+function set_displsy(){
+    var show = $('show').value;
+    if(show == 'all'){
+        $('showall').set('style','display:block');
+        //$('div_one').set('style','display:none');
+    }else{
+        //$('div_one').set('style','display:block');
+        $('showall').set('style','display:none');
+    }
+}
+
+function fix_store(product_id,type){
+    new Request({
+                         url:'index.php?app=console&ctl=admin_stockfreeze&act=fix_freeze_store',data:'product_id='+product_id,
+                         method:'post',
+                         onRequest:function(){
+                            return MessageBox.show('正在修改，请稍等...');
+                         },
+                         onComplete:function(re){
+                         var re = JSON.decode(re);
+                          if (re == 'success')
+                          {
+                              if(type == 'one'){
+                                click_one();
+                              }else{
+                                click_all();
+                              }
+                          }else{
+                              alert('操作失败');
+                          }
+                         }
+           }).send();
+}
+function click_all(){
+    $('do_all').fireEvent('submit',{
+        stop: function() {}
+    });
+	$('showall').set('style','display:block');
+    //$('div_one').set('style','display:none');
+}
+if ($('repare_all'))
+{
+
+$('repare_all').addEvent('click',function(e){
+var product_id = '<{$ids}>';
+new Request({
+                         url:'index.php?app=console&ctl=admin_stockfreeze&act=repare_freeze_store',data:'product_ids='+product_id,
+                         method:'post',
+                         onRequest:function(){
+                             $('repare_all').set('disabled',true);
+                            return MessageBox.show('正在修改，请稍等...');
+                         },
+                         onComplete:function(re){
+                         var re = JSON.decode(re);
+                          if (re == 'success')
+                          {
+                              
+                          }else{
+                              alert('操作失败');
+                          }
+                         }
+           }).send();
+
+});
+}
+</script>

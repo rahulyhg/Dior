@@ -1,0 +1,97 @@
+<script>
+/* 销售订单快速搜索之补全搜索*/
+  var options={
+    'getVar':'bn',
+    'fxOptions':false,
+    callJSON:function(){return window.autocompleter_json;},
+    injectChoice:function(json){
+      var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+      choice.store('_data',json);
+      choice.inputValue = json[this.options.getVar];
+      this.addChoiceEvents(choice).inject(this.choices);
+    },
+    onHide:function(){
+      if(!this.selected)return;
+      var json=this.selected.retrieve('_data');
+      json=$splat(json);
+      init(json);
+      MessageBox.success('加载订单信息成功!!');
+        },
+        onFocus:function(ipt){
+      ipt.value='';
+    }
+    };
+    new Autocompleter.script($E('#auto_supp input[type=text]'),"index.php?app=ome&ctl=admin_return_rchange&act=getOrderinfo&source=<{$source}>", $merge(options,{
+    'getVar':'order_bn',
+    selectFirst:false,
+    injectChoice:function(json){
+    
+      var order_id=json["order_id"]?"("+json["order_id"]+")":"";
+      var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar]+order_id)});
+      choice.store('_data',json);
+      choice.inputValue = json[this.options.getVar];
+      this.addChoiceEvents(choice).inject(this.choices);
+        },
+        onHide:function(){
+          if(!this.selected)return;
+          var json=this.selected.retrieve('_data');
+          $('order_id').set("value",json["order_id"]);
+          insert_return_apply(json["order_id"]);
+        },
+        onFocus:$empty
+  }));
+
+/* 销售订单快速搜索之通过dialog查找*/
+  $E(".btn_supplier").addEvent('click',function(e){
+    var url='?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=ome&ctl=admin_return&act=getOrders&source=<{$source}>&singleselect=1&ship_status=1&status=active");
+      Ex_Loader('modedialog',function() {
+      new finderDialog(url,{params:{url:'index.php?app=ome&ctl=admin_return_rchange&act=getOdersById&source=<{$source}>',name:'id',type:'radio'},handle:'supplier',width:1000,height:500,onCallback:function(e){
+        insert_return_apply($('order_id').getValue());
+      }});
+    });
+  });
+
+  function insert_return_apply(rs){
+  W.page('index.php?app=ome&ctl=admin_return&act=apply&p[0]='+rs+'&source=<{$source}>',{
+     method : 'post',
+     data : 'finder_id=<{$env.get.finder_id}>',
+     update : $('insert_return_apply'),
+  });
+
+  }
+  /*
+  function insert_return_apply(rs){
+    var request = new Request.HTML({
+     url : 'index.php?app=ome&ctl=admin_return&act=apply&p[0]='+rs,
+     method : 'post',
+     data : 'finder_id=<{$env.get.finder_id}>',
+     evalScripts : true,
+     update : $('insert_return_apply'),
+    }).send();
+  }*/
+
+</script>
+
+<div class="tableform">
+<div class="division">
+<table>
+    <tr>
+      <th>查询订单号:</th>
+      <td>
+        <span id="auto_supp" style="position:relative;">
+          <{img class="pointer btn_supplier" title="查看订单列表" app="desktop" src="bundle/zoom_btn.gif"}>
+          <input type="text" id="supplier" value="" name="supplier" vtype="required" class="x-input" />
+          <input type="hidden" name="order_id" id="order_id" value="" />
+        </span>
+      </td>
+    </tr>
+</table>
+</div>
+</div>
+<div class='clear'></div>
+<div id="insert_return_apply">
+
+</div>
+<script>
+
+</script>

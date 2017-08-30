@@ -1,0 +1,45 @@
+<div class="tableform">
+ <table border="0">
+      <tbody>
+      <tr>
+            <td>
+              <b>系统检测到存在可以一起发货的发货单,尚未发货，发货单号如下:</b><br>
+              
+              <b><{foreach from=$combine_delivery item=combine_delivery}>
+              <{$combine_delivery}>,
+              <{/foreach}></b><br>
+             
+            </td>
+        </tr>
+     
+        
+        
+      </tbody>
+    </table>
+
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="sso-cancel"><span><span><{t}>去取消发货单,进行合并<{/t}></span></span></button><button class="btn btn-primary" id="sso-submit"><span><span><{t}>不进行合并,单独发货<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<script>
+(function(){
+    $('sso-cancel').addEvent('click',function(e){
+        $('sso-cancel').getParent('.dialog').retrieve('instance').close();
+    });
+
+    $('sso-submit').addEvent('click',function(e){
+        $('sso-cancel').getParent('.dialog').retrieve('instance').close();
+        $('order_split').fireEvent('submit', {
+            stop: function() {
+            }
+        });
+    });
+})();
+</script>

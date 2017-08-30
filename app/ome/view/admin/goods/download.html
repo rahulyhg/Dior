@@ -1,0 +1,24 @@
+<div class="tableform">
+<h3>批量上传</h3>
+<div class="division">
+  <h5>第一步，下载商品CSV模板文件</h5>
+  <form method="post" action="index.php?app=ome&ctl=admin_goods&act=index&action=to_export" class="tableform" target='download' enctype="multipart/form-data">
+    <{t}>请选择商品类型：<{/t}> &nbsp;&nbsp;
+      <select name='_gType'>
+        <{foreach from=$gtype item=item}>
+        <option value='<{$item.type_id}>'><{$item.name}></option>
+        <{/foreach}>
+      </select>
+      <input type='hidden' value='csv' name='_io_type'/>
+    <{button class="btn-primary" label="下载" type="submit"}>
+  </form>
+  <h5>第二步，填写CSV文件</h5>
+  <div class="tableform">打开CSV文件,在里面对应写入上传商品的内容。</div>
+  <h5>第三步，上传填写好的CSV文件</h5>
+  <div style="margin:10px 0 0 28px;border:1px solid #333;color:red;width:580px;padding:6px;background-color:#FFC;line-height:1.5em;">
+    1.商品条形码可以为空，但是不允许重复。<br/>
+    2.商品货号的长度不能超过30个字符。<br/>
+    3.商品名称请避免包含“.”、"-"、“_”等字符,
+    以免造成信息查询和导出结果中，
+    商品显示和匹配出现异常。
+  </div>

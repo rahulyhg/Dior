@@ -1,0 +1,322 @@
+﻿<{capture name="sidebar"}>
+<div class="side-bx" id="template_form" style="border:none;">
+    <input type="hidden" name="template_id" id="template_id" value="<{$tmpl.template_id}>"/>
+    <input type="hidden" name="file_id" id="bg_file_id" value="<{$tmpl.file_id}>"/>
+    <input type="hidden" name="template_type" value="<{$tmpl.template_type}>"/>
+
+    <div class="side-bx-title">
+        <h3><{t}>快递单名称<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <input style="width:100px" id="template_name" name="template_name" size="15" maxlength="30" value="<{$tmpl.template_name}>" />   
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>是否启用？<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select name="status" type="select" >
+            <option value="true" <{if $tmpl.status eq 'true'}>selected="selected"<{/if}>><{t}>是<{/t}></option>
+            <option value="false" <{if $tmpl.status eq 'false'}>selected="selected"<{/if}>><{t}>否<{/t}></option>
+        </select>  
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>纸张尺寸<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <{t}>宽<{/t}>
+        <input id="template_width" name="template_width" size="2" maxlength="4" value="<{$tmpl.template_width}>" style="width:24px">
+        mm <{t}>高<{/t}>
+        <input id="template_height" name="template_height" size="2" maxlength="4" value="<{$tmpl.template_height}>" style="width:24px">
+        mm 
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>单据背景图<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <{button app="desktop" label="添加" class="btn-upload" id="btn-upload" icon="image_new.gif"}>
+        <{button app="desktop" label="清除" id="btn-bgclear"}>
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>单据打印项<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select id="addelement_select" style="width:100px;">
+            <option value="-EMPTY-"><{t}>+添加打印项<{/t}></option>
+
+            <{foreach from=$elements key=key item=item}> 
+                <option value="<{$key}>"><{$item}></span>
+            <{/foreach}>
+        </select>
+    </div>
+
+    <{button app="desktop" label="线条" id="embed_line"}>
+    <{button app="desktop" label="标签" id="embed_label"}><br />
+	<{if $tmpl.template_id && $tmpl.template_type eq 'normal'}>
+		<{button app="desktop" onclick="selfTmpl()" label=$___b2c="商品信息打印项"|t:'b2c'}>
+	<{/if}>
+
+    <{if $tmpl.template_type=='electron'}>
+    <{button app="desktop" label="矩形" id="embed_box"}>
+    <{button app="desktop" label="图片" id="embed_picture"}>
+    <div class="side-bx-title">
+        <h3><{t}>打印条码项<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select id="addbarcode_select" style="width:100px;">
+            <option value="-EMPTY-">+添加条码项</option>
+            <option value="delivery_bn">发货单号</option>
+            <option value="logi_no">物流单号</option>
+            <option value="mailno_barcode">物流单条形码</option>
+            <option value="batch_logi_no">多包裹物流单号</option>
+            <option value="package_wd">集包地编码</option>
+        </select>
+    </div>
+    <div class="side-bx-title">
+        <h3><{t}>二维码项<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select id="qrcode_select" style="width:100px;">
+            <option value="-EMPTY-">+添加二维码项</option>
+            <option value="mailno_qrcode">运单二维码</span>
+            <option value="">用户二维码</span>
+        </select>
+    </div>
+    <div class="side-bx-title">
+        <h3><{t}>公司LOGO<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select id="imagelogo_select" style="width:100px;">
+            <option value="-EMPTY-">+添加公司LOGO</option>
+            <option value="sf.jpg">顺丰</option>
+            <option value="yt.jpg">圆通</option>
+            <option value="zjs.jpg">宅急送</option>
+            <option value="stkd.jpg">申通</option>
+            <option value="ttkd.jpg">天天</option>
+            <option value="quanfeng.jpg">全峰</option>
+            <option value="bsht.jpg">百世汇通</option>
+            <option value="zto.jpg">中通</option>
+            <option value="gto.jpg">国通</option>
+            <option value="chinapost.jpg">中国邮政</option>
+        </select>
+    </div>
+    <br />
+    <br />
+    <!--
+    <{button app="desktop" label="设置" id="embed_settings"}>
+    <{button app="desktop" label="图片" onclick="embed1.picture();"}>
+    <{button app="desktop" label="条码" onclick="embed1.barcode();"}>
+    <{button app="desktop" label="编辑/预览" onclick="embed1.readonly();"}>
+    <{button app="desktop" label="单据背景图" onclick="embed1.setbackground();"}>
+    <{button app="desktop" label="加载模板" onclick="return loadReport();"}>
+    <input type=button value="box" onclick="embed1.box()">
+    <input type=button value="data grid" onclick="embed1.datagrid()">-->
+    <{/if}>
+
+<textarea id="template_data" name="template_data" style="display:none">
+<{if $tmpl.template_data}>
+    <{$tmpl.template_data}>
+<{else}>
+paper:<{$tmpl.template_width}>,<{$tmpl.template_height}>,NONE;
+<{/if}>
+</textarea>
+
+</div>
+<{/capture}>
+
+<{capture name="footbar"}> 
+<div class="table-action">
+    <{button type="button" class="btn btn-primary" label="保存" id="btn-save"}>
+    <{button type="button" class="btn btn-primary" label="打印测试" onclick="embed1.setreadonly(1)"}>
+    <{button type="button" class="btn btn-primary" label="编辑模式" onclick="embed1.setreadonly(0)"}>
+</div>
+<{/capture}>
+
+<div id="print_editor">
+    <{if $userAgent.type == 2}>
+        <embed id="embed1<{$uniqid}>" type="application/ShopexReport-plugin" style="border:3px #ccc solid;" width="2000"height="2000">
+    <{else}>
+       <OBJECT id="embed1<{$uniqid}>" CLASSID="CLSID:54B240AC-6979-42BE-8D80-8672CFDC0E8A" style="border:3px #ccc solid;" width="2000" height="2000"></OBJECT>
+    <{/if}>
+</div>
+<script>
+var embedId = 'embed1<{$uniqid}>';
+var embed1 = $(embedId);
+var company_logo_url = "<{$env.app.res_full_url}>" + "/logo/";
+
+
+/* 表单提交 */
+$('btn-save').addEvent('click', function(){
+    $('template_name').value = $('template_name').value.trim();
+    if(!$('template_name').value) {
+        alert('请填写单据名称');
+        return '';
+    }
+    var textval = embed1.savereport();
+    $("template_data").set('html',textval);
+
+    var _data =$('template_form').toQueryString()+'&finder_id=<{$env.get.finder_id}>';
+    new Request ({
+        url:'index.php?app=logisticsmanager&ctl=admin_express_template&act=saveTmpl',
+        method:'post',
+        data:_data,
+        onRequest:function(e){
+            //提交按钮:disabled
+            $('btn-save').set('disabled', 'true');
+            $('btn-save').getElements('span')[1].set('text','正在保存');
+        },
+        onComplete:function(result){
+            if (result != 'SUCC'){
+                MessageBox.error(result);
+                //提交按钮:enabled
+                $('btn-save').set('disabled', '');
+                $('btn-save').getElements('span')[1].set('text','保存');
+            }else{
+                MessageBox.success("保存成功");
+                //提交按钮:enabled
+                $('btn-save').set('disabled', '');
+                $('btn-save').getElements('span')[1].set('text','保存');
+                var findId = "<{$env.get.finder_id}>";
+                if (findId != '') {
+                    opener.finderGroup[findId].refresh.delay(400,opener.finderGroup[findId]);
+                }
+                window.close();
+            }
+        }
+    }).send();
+});
+
+/* 添加单据打印项 */
+$('addelement_select').addEvent('change',function(){
+    var selected = this.getSelected()[0];
+    if(selected.value!='-EMPTY-'){
+        /* 增加'/0'字符主要是为了chrome兼容 */
+        embed1.fields(selected.value,selected.text);
+        this.selectedIndex = 0;
+    }
+});
+
+/* 上传单据背景图 */
+$('btn-upload').addEvent('click',function(){
+    var url = 'index.php?app=logisticsmanager&ctl=admin_express_template&act=uploadBg';
+    var tid = $('template_id').value;
+    if(tid){
+        url+='&p[0]='+tid;
+    }
+    new Dialog(url,{model:true,title:'<{t}>上传物流单据（快递单）扫描图<{/t}>',height:.7,width:.5});
+});
+
+/* 清除单据背景图 */
+$('btn-bgclear').addEvent('click',function(){
+    embed1.setbackground('NONE');
+    var file_id = $("bg_file_id").value;
+    if(file_id>0) {
+        $("bg_file_id").value = "0";
+        new Request ({
+            url:'index.php?app=logisticsmanager&ctl=admin_express_template&act=deleteBg&p[0]='+file_id,
+            method:'post',
+            data:'_f_type=public',
+        }).send();
+    }
+});
+
+$('embed_line').addEvent('click',function(){
+    embed1.line();
+});
+$('embed_label').addEvent('click',function(){
+    embed1.label();
+});
+
+<{if $tmpl.template_type=='electron'}>
+/* 添加打印条码项 */
+$('addbarcode_select').addEvent('change',function(){
+    var selected = this.getSelected()[0];
+    if(selected.value!='-EMPTY-'){
+        embed1.barcode(selected.value,'123456');
+        this.selectedIndex = 0;
+    }
+});
+$('embed_box').addEvent('click',function(){
+    embed1.box();
+});
+$('embed_picture').addEvent('click',function(){
+    embed1.picture();
+});
+/* 添加二维码 */
+$('qrcode_select').addEvent('change',function(){
+    var selected = this.getSelected()[0];
+    if(selected.value!='-EMPTY-'){
+        embed1.barcode(selected.value,'0',2);
+    }
+});
+/* 添加公司logo */
+$('imagelogo_select').addEvent('change',function(){
+    var selected = this.getSelected()[0];
+    if(selected.value!='-EMPTY-'){
+        var temp_logourl = company_logo_url + selected.value;
+        embed1.picture(temp_logourl);
+    }
+});
+/*$('embed_settings').addEvent('click',function(){
+    embed1.settings();
+});*/
+<{/if}>
+
+/* 加载打印控件编辑器 */
+function loadReport() {
+    var s = document.getElementById("template_data").value;
+    var browerType = parseInt("<{$userAgent.type}>");
+    try {
+        if (browerType == 2) {
+            var vAbout = embed1.LoadReport(s,'',0);
+        }
+        else {
+            setTimeout(function(){var vAbout = embed1.LoadReport(s,'',0);}, 20);
+        }
+    } catch(e) {
+        alert(e.number);
+    }
+    return false;
+}
+loadReport();
+
+/* 设置打印控件编辑器尺寸 */
+function setsize(){
+    var width = $('template_width').value.toInt();
+    var height = $('template_height').value.toInt();
+    if(width && height){
+        var widthPx = (width*96/25.4).toInt();
+        var heightPx = (height*96/25.4).toInt();
+
+        embed1.setStyles({
+            width: widthPx+30,
+            height: heightPx+30,
+        });
+        setTimeout(function(){embed1.setsize(width,height);},20);
+        /* embed1.setsize(width,height); */
+    }
+}
+$('template_width').addEvent('change',function(){
+    setsize();
+});
+$('template_height').addEvent('change',function(){
+    setsize();
+});
+
+/* 加载背景图 */
+<{if $tmpl_bg}>
+    //var tmpl_bg = '<{$tmpl_bg}>';
+    //embed1.setbackground(tmpl_bg);
+<{else}>
+    //embed1.setsize(x,y);
+<{/if}>
+    //自定义打印项
+    function selfTmpl(){
+    	var prt_tmpl_id = "<{$tmpl.template_id}>";
+		var url = 'index.php?app=logisticsmanager&ctl=admin_express_template&act=selfTmpl&prt_tmpl_id='+prt_tmpl_id;
+    	embed1.elments = new Dialog(url,{model:true,title:'<{t}>自定义打印<{/t}>',height:.7,width:.5});
+    }
+</script>

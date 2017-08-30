@@ -1,0 +1,114 @@
+<div id="present">
+    <div class="tableform">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="background:none;"><b><{$return_detail.title}></b></td>
+          </tr>
+        </table>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr>
+              <th>订单编号</th>
+              <th>订单状态</th>
+              <th>申请的时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><{$order.order_bn}></td>
+              <td><{$return_detail.status_value}></td>
+              <td><{$return_detail.add_time|cdate:FDATE_STIME}></td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+    
+    <{if $return_detail.status>3}>
+    <div class="tableform">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="background:none;"><b>申请售后服务的商品</b></td>
+          </tr>
+        </table>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr>
+              <th>货号</th>
+              <th>商品名称</th>
+              <th>规格</th>
+              <th>申请数量</th>
+              <th>剩余数量</th>
+              <th>价格</th>
+              <th>所属仓库</th>
+            </tr>
+          </thead>
+          <tbody>
+          <{foreach from=$return_detail.items item=items}>
+              <{if $items.disabled=='false'}>
+              <tr >
+                <td ><{$items.bn}></td>
+                <td><{$items.name|visibility:$items.product_id}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.num}></td>
+                <td><{$items.effective}></td>
+                <th><{$items.price}></th>
+                <td><{$items.branch_name}></td>
+              </tr>
+              <{/if}>
+          <{/foreach}>
+          </tbody>
+        </table>
+    </div>
+    <{/if}>
+    
+    <{if $return_detail.delivery_id}>
+    <div class="tableform">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+            <tr>
+                <td width='5%' style="text-align:left;">　<b>申请原因</b>：<{$return_detail.content}></td>
+            </tr>
+            <tr>
+                <td width='5%' style="text-align:left;">　<b>申请备注</b>：<{$return_detail.comment}></td>
+            </tr>
+            <tr>
+                <td width='5%' style="text-align:left;">　<b>售后答复</b>：<{$return_detail.memo}></td> 
+            </tr>
+        </table>
+    </div>
+    <{/if}>
+    
+    
+	<{if count($return_detail.check_data)>0}>
+    <div class="tableform">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="background:none;"><b>已处理的申请商品</b></td>
+          </tr>
+        </table>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+              <tr>
+                <th>货号</th>
+                <th>商品名称</th>
+                <th>规格</th>
+                <th>数量</th>
+                <th>商品入库类型</th>
+                <th>质检描述</th>
+              </tr>
+            </thead>
+            <tbody>
+                <{foreach from=$return_detail.check_data item=check key=key}>
+                <tr>
+                  <td><{$check.bn}></td>
+                  <td><{$check.name|visibility:$items.product_id}></td>
+                  <td><{$check.spec_info}></td>
+                  <td>1</td>
+                  <td><{$check.StoreType}></td>
+                  <td><{$check.memo}></td>
+                </tr>
+                <{/foreach}>
+            </tbody>
+        </table>
+	</div>
+    <{/if}>
+</div>

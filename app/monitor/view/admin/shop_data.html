@@ -1,0 +1,46 @@
+<div class="finder-list finder-normal">
+    <table width="100%" cellspacing="0" cellpadding="0">
+        <colgroup>
+            <col style="width:70px">
+            <col style="width:55px">
+            <col style="width:80px">
+            <col style="width:55px">
+            <col style="width:55px">
+            <col style="width:55px">
+            <col style="width:70px">
+            <col style="width:70px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col style="width:50px">
+            <col>
+        </colgroup>
+        <tbody>
+            <{foreach from=$data key=key item=item}>
+            <{if $key!='last_modify'}>
+                <tr class="row <{if $key%2}>odd first<{else}>even<{/if}> ">
+                    <td><div class="cell"><{$item.sel_time}></div></td>
+                    <td><div class="cell"><{$item.all_order}></div></td>
+                    <td><div class="cell"><{$item.cod_order}></div></td>
+                    <td><div class="cell"><{$item.fail_order}></div></td>
+                    <td><div class="cell"><{$item.abnormal_order}></div></td>
+                    <td><div class="cell"><{$item.cancel_order}></div></td>
+                    <td><div class="cell"><{$item.unconfirmed_order}></div></td>
+                    <td><div class="cell"><{$item.confirmed_order}></div></td>
+                    <td><div class="cell"><{$item.all_delivery}></div></td>
+                    <td><div class="cell"><{$item.process_delivery}></div></td>
+                    <td><div class="cell"><{$item.noprocess_delivery}></div></td>
+                    <td><div class="cell"><{$item.unprint_delivery}></div></td>
+                    <td><div class="cell"><{$item.print_delivery}></div></td>
+                    <td><div class="cell"><{$item.unverify_delivery}></div></td>
+                    <td><div class="cell"><{$item.verify_delivery}></div></td>
+                    <td>&nbsp;</td>
+                </tr>
+            <{/if}>
+            <{/foreach}>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,112 @@
+<div class="division">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>订单缓冲时间：</th>
+                <td><select name="set[auto.setting][bufferTime]" >
+                    <option value="10" <{if $setData.auto_setting.bufferTime == '10'}>selected<{/if}>>10分钟</option>
+                    <option value="30" <{if $setData.auto_setting.bufferTime == '30'}>selected<{/if}>>30分钟</option>
+                    <option value="60" <{if $setData.auto_setting.bufferTime == '60'}>selected<{/if}>>1小时</option>
+                    <option value="120" <{if $setData.auto_setting.bufferTime == '120'}>selected<{/if}>>2小时</option>
+                    <option value="180" <{if $setData.auto_setting.bufferTime == '180'}>selected<{/if}>>3小时</option>
+                    <option value="240" <{if $setData.auto_setting.bufferTime == '240'}>selected<{/if}>>4小时</option>
+                </select><span style='margin-left:5px;'>用户下单后需等待一定的时间后才进入处理流程，能有效解决多个订单合并的问题</span></td>
+            </tr>
+            <tr>
+                <th>订单失效时间设置(分钟)：</th>
+                <td><input type="text" name="set[ome.order.failtime]"  value="<{$setData.ome_order_failtime}>" vtype="required"/><span style='margin-left:5px;'>未支付的款到发货订单在设置时间过后将被自动取消</span></td>
+            </tr>
+            <tr>
+                <th>订单未确认提醒设置(分钟)：</th>
+                <td><input type="text" name="set[ome.order.unconfirmtime]"  value="<{$setData.ome_order_unconfirmtime}>" vtype="required"/><span style='margin-left:5px;'>从下单时间开始计算,设置时间过后仍未被确认的订单将被加粗显示</span></td>
+            </tr>
+            <tr>
+                <th>未分派订单获取时间间隔设置(分钟)：</th>
+                <td><input type="text" size="10"  id="getOrder" name="set[ome.getOrder.intervalTime]"  value="<{$setData.ome_getOrder_intervalTime}>" vtype="required"/><span style='margin-left:5px;'>执行未分派的订单中的订单获取时，检测上一次操作改功能的执行时间，设置间隔时间，防止短时间执行该操作发生错误！(时间间隔最短2分钟)</span></td>
+            </tr>
+            <tr>
+                <th>订单金额为0元的是否需要经过付款确认：</th>
+                <td>
+                    <{input type='bool' name='set[ome.payment.confirm]' value=$setData.ome_payment_confirm|default:'false'}><span style='margin-left:5px;color:red'>只支持前端店铺是易开店、ecstore、分销王(本地新建的订单)</span>
+                </td>
+            </tr>
+            <!--  
+            <tr>
+                <th>是否接收物流宝发货订单</th>
+                <td>
+                   <{input type='bool' name='set[ome.delivery.wuliubao]' value=$setData.ome_delivery_wuliubao|default:'true'}>
+                </td>
+            </tr>
+            -->
+            <tr>
+                <th>是否开启物流跟踪</th>
+                <td>
+                   <{input type='bool' name='set[ome.delivery.hqepay]' value=$setData.ome_delivery_hqepay|default:'true'}>
+                </td>
+            </tr> 
+            <tr>
+                <th>合并订单规则:</th>
+                <td>
+                  <input type="checkbox" class="combine_setting" value='member_id' <{if $setData.ome_combine_member_id==0}>checked<{/if}>> 不同会员用户名的订单可以合并
+                  <font color="red">（不选，表示不同会员用户名的订单不可以合并；勾选，表示不同会员用户名、相同收件地址的订单可以通过人工操作合并发货。）</font>
+                
+                  <input type="hidden" id='ome_combine_member_id' name="set[ome.combine.member_id]" value='<{$setData.ome_combine_member_id|default:1}>'>
+                  <input type="hidden" id='ome_combine_shop_id' name="set[ome.combine.shop_id]" value='<{$setData.ome_combine_shop_id|default:1}>'>
+                
+                  
+               
+           
+                </td>
+            </tr>
+             <tr id='omeauto_memberidconf' <{if $setData.ome_combine_member_id==1 || $setData.ome_combine_member_id==''}><{else}>style="display:none"<{/if}>>
+                <th></th>
+                <td>
+                  
+               
+
+                <input type=radio name="set[ome.combine.memberidconf]" value='1' <{if $setData.ome_combine_memberidconf==1}>checked<{/if}>>启用
+                  
+                  
+                  <input type=radio name="set[ome.combine.memberidconf]" value='0' <{if $setData.ome_combine_memberidconf==0 || $setData.ome_combine_memberidconf==''}>checked<{/if}>>不启用
+                 <font color=red>（针对分销、京东、一号店及团购订单等没有购买人信息的订单：“启用”表示可以通过人工操作合单；“不启用”表示不能合单。）（注：没有分销商信息的分销订单，不论“启用”或“不启用”，都无法进行合单操作）</font>
+                  
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <td>
+                  
+                 <input type="checkbox" class="combine_setting" value='shop_id' <{if $setData.ome_combine_shop_id==0|| $setData.ome_combine_shop_id==''}>checked<{/if}>> 不同来源店铺的订单可以合并<font color=red>（不选，表示不同来源店铺的订单不可以合并；勾选，表示不同来源店铺、相同收件地址的订单可以通过人工操作合并发货。） </font>
+                 
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <td>
+                  
+                <font color=red>注意：该合单规则，只能通过人工操作进行合单；当自动审单时，出现满足规则的订单，将转为人工审单处理。</font>
+                 
+                </td>
+            </tr>
+            <tr><th><em class='c-red'>*</em> 相同地址判定：</th>
+            <td>
+                <input type="checkbox" name="set[ome.combine.addressconf][ship_address]" value='0' <{if $setData.ome_combine_addressconf.ship_address==0 || $setData.ome_combine_addressconf.ship_address==''}>checked<{/if}>> 收货地址 
+                <input type="checkbox" name="set[ome.combine.addressconf][mobile]" value="0" <{if $setData.ome_combine_addressconf.mobile==0 || $setData.ome_combine_addressconf.mobile==''}>checked<{/if}>> 手机  <font color="red">（相同地址判断，至少选择一个）</font>
+                <input type='hidden'  vtype='requiredcheckbox'/>
+            </td>
+            </tr>
+            <tr><th><em class='c-red'>*</em> 是否自动合单：</th>
+            <td>
+                <input type="radio" name="set[ome.combine.select]" value='0' <{if $setData.ome_combine_select == '0' || $setData.ome_combine_select ==''}>checked<{/if}>> 是
+                <input type="radio" name="set[ome.combine.select]" value='1' <{if $setData.ome_combine_select == '1'}>checked<{/if}>> 否
+            </td>
+            </tr>
+            <tr><th>物流配送判断是否开启:</th>
+            <td><input type="radio" name="set[ome.logi.arrived]" value='1' <{if $setData.ome_logi_arrived=='1'}>checked<{/if}> class="arrive_setting">是<input type="radio" name="set[ome.logi.arrived]" <{if $setData.ome_logi_arrived =='0' || $setData.ome_logi_arrived ==''}>checked<{/if}> value='0'  class="arrive_setting">否(支持物流：中国邮政、EMS、国通、汇通、快捷、全峰、优速、圆通、宅急送、中通、顺丰、天天、韵达)</td>
+            </tr>
+            <tr id='arriveauto'><th>自动审单是否拦截:</th>
+            <td><input type="radio" name="set[ome.logi.arrived.auto]" value='1' <{if $setData.ome_logi_arrived_auto=='1'}>checked<{/if}>> 是 <input type="radio" name="set[ome.logi.arrived.auto]" value='0' <{if $setData.ome_logi_arrived_auto=='0' || $setData.ome_logi_arrived_auto==''}>checked<{/if}>> 否</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

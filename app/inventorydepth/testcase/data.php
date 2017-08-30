@@ -1,0 +1,127 @@
+<?php
+$data = '{
+   "rsp":"succ",
+   "msg_id":"3463421b2581604c74dcb9b74ffab2e4",
+   "data":{
+     "items":{
+       "item":[{
+            "iid":"200001",
+            "title":"苹果iphone4s1",
+            "outer_id":"123132",
+            "seller_uname":"xxxx",
+            "type":"fixed",
+            "approve_status":"onsale",
+            "shopcat_id":"",
+            "input_pids":"",
+            "input_str":"",
+            "score":"30",
+            "supplier_id":"1234",
+            "supplier_name":"xxx",
+            "barcode":"1212",
+            "is_simple":"true",
+            "valid_thru":"14",
+            "mktprice":"125.00",
+            "costprice":"123.00",
+            "has_showcase":"true",
+            "auto_repost":"false",
+            "auction_point":"30%",
+            "detail_url":"http://shop1.test.shopex.cn:20210/?product-39.html",
+            "bn":"G49B7AF58591B6",
+            "brand_id":"1",
+            "cid":"1",
+            "num":"10",
+            "status":"onsale",
+            "price":"150.00",
+            "unit":"台",
+            "modified":"2010-01-01 20:01:01",
+            "description":"Nokia手机N73,适合年轻人使用",
+            "default_img_url":"http://shop1.test.com/uploaded/i3/T1HXdXXgPSt0JxZ2.8_070458.jpg",
+            "item_imgs":{
+                "item_img":[{
+                    "image_id":"1",
+                    "small_url":"http://shop1.test.com/uploaded/i3/T1HXdXXgPSt0JxZ2.8_070458.jpg",
+                    "thisuasm_url":"http://shop1.test.com/uploaded/i3/T1HXdXXgPSt0JxZ2.8_070458.jpg",
+                    "big_url":"http://shop1.test.com/uploaded/i3/T1HXdXXgPSt0JxZ2.8_070458.jpg",
+                    "is_default":"true"
+                    }]
+            },
+            "prop_imgs":{
+                "propimg":[{
+                    "image_id":"1",
+                    "url":"http://shop1.test.com/uploaded/i3/T1HXdXXgPSt0JxZ2.8_070458.jpg",
+                    "properties":"http://shop1.test.com/uploaded/i3/T1HXdXXgPSt0JxZ2.8_070458.jpg",
+                    "position":"1"
+                    }]
+            },
+            "delist_time":"2010-01-01 20:01:01",
+            "props":"1632501:3679421;20000:29468;",
+            "stuff_status":"new",
+            "country":"中国",
+            "state":"上海",
+            "city":"上海",
+            "district":"徐家汇",
+            "freight_payer":"buyer",
+            "postage_id":"0",
+            "post_fee":"0.20",
+            "express_fee":"15.00",
+            "ems_fee":"20.00",
+            "has_invoice":"true",
+            "has_warranty":"true",
+            "has_discount":"true",
+            "increment":"",
+            "is_virtual":"false",
+            "skus":{
+              "sku":[{
+                "sku_id":"1234",
+                "iid":"200001",
+                "outer_id":"G49B7AF2072AF8-2",
+                "created":"2010-04-27 14:46:57",
+                "status":"normal",
+                "bn":"G49B7AF2072AF8-2",
+                "modified":"2010-04-27 14:46:57",
+                "price":"10.00",
+                "properties":"1627207:3232483;21921:30106",
+                "quantity":"7"
+                },
+                {
+                "sku_id":"1235",
+                "iid":"200001",
+                "outer_id":"pbn1",
+                "created":"2010-04-27 14:46:57",
+                "status":"normal",
+                "bn":"pbn1",
+                "modified":"2010-04-27 14:46:57",
+                "price":"10.00",
+                "properties":"1627207:3232483;21921:30106",
+                "quantity":"7"
+                },
+                {
+                "sku_id":"1236",
+                "iid":"200001",
+                "outer_id":"",
+                "created":"2010-04-27 14:46:57",
+                "status":"normal",
+                "bn":"",
+                "modified":"2010-04-27 14:46:57",
+                "price":"10.00",
+                "properties":"1627207:3232483;21921:30106",
+                "quantity":"7"
+                },
+                {
+                "sku_id":"1237",
+                "iid":"200001",
+                "outer_id":"pbn1",
+                "created":"2010-04-27 14:46:57",
+                "status":"normal",
+                "bn":"pbn1",
+                "modified":"2010-04-27 14:46:57",
+                "price":"10.00",
+                "properties":"1627207:3232483;21921:30106",
+                "quantity":"7"
+                }
+                ]
+            }
+         }]
+      }
+   }
+}';

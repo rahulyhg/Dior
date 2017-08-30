@@ -1,0 +1,110 @@
+<style type="text/css" media="print">
+.noprint, iframe, #message{ display : none }
+</style>
+<style>
+*{ font-size:12px;}
+.float_left{ float:left; text-align:center; width:80%; font-weight:bold;}
+.float_right{ float:right; text-align:center; width:20%;}
+.d_th{ background:#ededed; color:#000;}
+.d_td{ font-weight:bold; width:120px;}
+.d_table{ margin:20px 10px; color:#000;}
+.d_table table{ border-collapse:collapse;}
+.d_table td{ border:1px solid #666; border-collapse:collapse; height:26px; line-height:26px; text-align:center;}
+.d_table th{ border:1px solid #666; border-collapse:collapse; height:26px; line-height:26px; text-align:center; color:#000; }
+#print_confirm { width:100%;  height:30px;border-top:1px solid #999999; padding-top:4px;background-color:#5473ae; position:absolute; text-align:center;}
+#btn_print { width:71px; height:24px; background-image:url(images/btn_print.gif); cursor:pointer; margin-left:auto; margin-right:auto;}
+#barcode { width:150px; height:50px; background:url(images/bar_code.gif) no-repeat;}
+
+/* 避免打印时出现多余的加载完成和横线 */
+#messagebox,#side-r { display:none;}
+</style>
+<script type="text/javascript">
+window.addEvents({
+    "domready":function() {
+        $("print_confirm").setStyle("top",window.getHeight() - 35);
+        $("btn_print").addEvent("click",function(){window.print();});
+        if($("chk_box")){
+            $("chk_box").checked=false;
+            $("chk_box").addEvent('click',function(){$$('.price').setStyle('display',$$('.price')[0].getStyle('display')=="none"?"":"none");});
+        }
+    },
+	"scroll":function() {
+		$("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+	},
+	"resize":function() {
+		$("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+	}
+});
+window.addEvent('load',function(){
+	    if(!$$("img.product").length)return;
+		Element.implement({
+			zoomImg:function(maxwidth,maxheight,v){
+			   if(this.tagName.toLowerCase()!='img')return false;
+			   var thisSize={'width':this.width,'height':this.height};
+			   var overSize,zoomSizeW,zoomSizeH,zommC;
+			   if (thisSize.width>maxwidth){
+				  overSize=thisSize.width-maxwidth;
+				  zoomSizeW=thisSize.width-overSize;
+				  zommC=(zoomSizeW/thisSize.width).toFloat();
+				  zoomSizeH=(thisSize.height*zommC).toInt();
+				  $extend(thisSize,{'width':zoomSizeW,'height':zoomSizeH});
+			   }
+			   if (thisSize.height>maxheight){
+				  overSize=thisSize.height-maxheight;
+				  zoomSizeH=thisSize.height-overSize;
+				  zommC=(zoomSizeH/thisSize.height).toFloat();
+				  zoomSizeW=(thisSize.width*zommC).toInt();
+				  $extend(thisSize,{'width':zoomSizeW,'height':zoomSizeH});
+			   }
+			   if(!v)return this.set(thisSize);
+			   return thisSize;
+			}
+		});
+		var Asset = new Hash({
+			image: function(source, properties){
+				properties = $merge({
+					'onload': $empty,
+					'onabort': $empty,
+					'onerror': $empty
+				}, properties);
+				var image = new Image();
+				var element = $(image) || new Element('img');
+				['load', 'abort', 'error'].each(function(name){
+					var type = 'on' + name;
+					var event = properties[type];
+					delete properties[type];
+					image[type] = function(){
+						if (!image) return;
+						if (!element.parentNode){
+							element.width = image.width;
+							element.height = image.height;
+						}
+						image = image.onload = image.onabort = image.onerror = null;
+						event.delay(1, element, element);
+						element.fireEvent(name, element, 1);
+					};
+				});
+				image.src = element.src = source;
+				if (image && image.complete) image.onload.delay(1);
+				return element.setProperties(properties);
+			}
+		});
+
+     $$("img.product").each(function(img){
+         var _imgsrc=img.src;
+         new Asset.image(_imgsrc,{
+          onload:function(){
+              img.set(this.zoomImg(60,60,1)).set('align','absmiddle');
+         }});
+     });
+});
+
+</script>
+	<div id="print1"></div>
+    <div id="print_confirm" class="noprint">
+      <{include app=ome file='/admin/print/tmplbtn.html'}>
+      <{if $po.po_items || $eo.items}><label for="chk_box"><input type="checkbox" id="chk_box"> 隐藏单价</label><{/if}>
+	  <span id="btn_print"><input type="button" id="b1" value="打 印" /></span>
+	</div>
+</body>
+</html>

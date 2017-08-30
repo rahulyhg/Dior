@@ -1,0 +1,314 @@
+<form enctype="multipart/form-data" action="index.php?ctl=admin_return&act=apply_add&app=ome&finder_id=<{$finder_id}>" method="post" id="return-apply" target="upload" isCloseDialog>
+  <div class="tableform">
+    <div class="division">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr>
+          <th><{t}>服务标题：<{/t}></th>
+          <td >
+            <{input type="text" name="title" value=$product.title size="30" vtype="required"}> 
+            <em class="c-red">*</em>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2"><h4><{t}>货品信息<{/t}></h4></td>
+        </tr>
+        
+        <tr>
+          <th colspan="2" align="left">
+            <table width="100%" border="0" class="gridlist">
+              <thead>
+                <tr>
+                  <th><{t}>选择<{/t}></th>
+                  <th><{t}>货号<{/t}></th>
+                  <th><{t}>商品名称<{/t}></th>
+                  <th><{t}>规格<{/t}></th>
+                  <th><{t}>原价<{/t}></th>
+                  <th><{t}>销售价<{/t}></th>
+                  <th><{t}>剩余数量<{/t}></th>
+                  <th><{t}>申请数量<{/t}></th>
+                  <{if $branch_mode!='single'}>
+                  <th><{t}>仓库<{/t}></th>
+                  <{/if}>
+                </tr>
+              </thead>
+              <{foreach from=$items item=aGoods name="item" key=key}>
+              <{if $aGoods.sendnum > '0'}>
+              <input type="hidden" name="goods_name[<{$aGoods.bn}>]" value="<{$aGoods.name}>">
+              <input type="hidden" name="item_id[<{$aGoods.bn}>]" value="<{$aGoods.item_id}>">
+              <input type="hidden" name="product_id[<{$aGoods.bn}>]" value="<{$aGoods.product_id}>">
+              <input type='hidden' id='effective<{$aGoods.bn}>' name='effective[<{$aGoods.bn}>]' value='<{$aGoods.effective}>'>
+              <tbody>
+                <tr id=s<{$aGoods.bn}>>
+                  <td><{if $aGoods.effective>0}>
+                    <input type="checkbox" <{if $aGoods.disabled eq 'false'}>checked=checked<{/if}>  id="goods_bn" name="goods_bn[]" value='<{$aGoods.bn}>' onclick='choose(this,"<{$aGoods.product_id}>");'><{/if}></td>
+                  <td><{$aGoods.bn}></td>
+                  <td><{$aGoods.name|visibility:$aGoods.product_id}> </td>
+                  <td><{$aGoods.spec_info}></td>
+                  <td><{$aGoods.price|cur}></td>
+                  <td><{$aGoods.sale_price/$aGoods.nums|cur}></td>
+                  <td><{$aGoods.effective}></td>
+                  <td>
+                    <{if $aGoods.effective>0}>
+                      <{if $aGoods.num}>
+                      <input type='text' id='num<{$aGoods.bn}>' name='num[<{$aGoods.bn}>]' value='<{$aGoods.num}>' size='6'>
+                      <{else}>
+                      <input type='text' id='num<{$aGoods.bn}>' name='num[<{$aGoods.bn}>]' value='<{$aGoods.effective}>' size='6'>
+                      <{/if}>
+                    <{/if}>
+                  </td>
+
+                  <{if $branch_mode=='single'}>
+                  <{if $key=='0'}>
+                  <script>
+                    showAddress('<{$aGoods.branch.0.branch_id}>','<{$aGoods.bn}>');
+                  </script>
+                  <{/if}>
+                  <input type="hidden" value="<{$aGoods.branch.0.branch_id}>" />
+                  <input type="hidden" value="<{$aGoods.bn}>" />
+                  <input name="branch_id<{$aGoods.product_id}>" type="hidden" value="<{$aGoods.branch.0.branch_id}>"/>
+                  <span id="canpay<{$aGoods.bn}>"></span>
+                  <{else}>
+                  <td>
+                    <{foreach from=$aGoods.branch item=branch key=keys}>
+                    <{if $aGoods.effective>0}><input name="branch_id<{$aGoods.product_id}>"<{if $aGoods.disabled eq 'false'}>checked=checked<{/if}> type="radio" value="<{$branch.branch_id}>" class="x-pdt-chk-<{$branch.branch_id}>"
+                    onclick="show_delivery('<{$branch.branch_id}>','<{$aGoods.bn}>');"/><{/if}><{$branch.branch_name}>
+                    <{/foreach}>
+                    <span id="canpay<{$aGoods.bn}>"></span>
+                  </td>
+                  <{/if}>
+                </tr>
+              </tbody>
+              <{/if}>
+              <{/foreach}>
+          </table></th>
+        </tr>
+        <tr>
+          <th><{t}>上传文件<{/t}></th>
+          <td>
+            <{input type="sfile" name="attachment" f_type="public" }>    
+            <{if $product.attachment!=''}> 
+              <{if $attachment_type!='remote'}>
+              <a class="margin10" href="javascript:file_download()">请点击下载该附件</a>
+              <{else}>
+              <a class="margin10" href="<{$product.attachment}>" target="_blank">请点击下载该附件</a>
+              <{/if}>
+            <{/if}>        
+          </td>
+        </tr>     
+        <tr>
+          <th><{t}>申请内容<{/t}></th>
+          <td><textarea name="content" cols="90" rows="2" readonly=true><{$product.content}></textarea></td>
+        </tr>
+        <tr>
+          <th><{t}>售后答复<{/t}></th>
+          <td><textarea name="memo" cols="90" rows="2"><{$product.memo}></textarea></td>
+        </tr>
+        
+      </table>
+     <div ><{$plugin_html_show}></div>
+      <h4><{t}>选择收货人信息<{/t}></h4>
+      <table width="100%" border="0" cellpadding="2" cellspacing="0" class="girdlist">
+        <thead>
+          <tr>
+            <td><{t}>选择<{/t}></td>
+            <td><{t}>发货单号<{/t}></td>
+            <td><{t}>收货人姓名<{/t}></td>
+            <td><{t}>收货人地区<{/t}></td>
+            <td><{t}>收货人地址<{/t}></td>
+          </tr>
+        </thead>
+        <tbody class='dly-body' id="dly-body">
+         <{if $product.delivery_id}>
+          <td><input type="radio" checked="checked" id="delivery_id" name="delivery_id" value="<{$product.delivery_id}>"></td>
+          <td><{$product.delivery_bn}></td>
+          <td><{$product.consignee.name}></td>
+          <td><{$product.consignee.area}></td>
+          <td><{$product.consignee.addr}></td>
+         <{/if}>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="table-action">
+      <{button label="售后申请" class="btn-primary" type='submit'}> 
+    </div>
+    <input type="hidden" name="url" value="index.php?app=ome&ctl=admin_return&act=index" />
+    <input type="hidden" name="order_id" value="<{$order_id}>" />
+    <input type="hidden" name="return_id" value="<{$product.return_id}>" />
+    <input type="hidden" name="return_bn" value="<{$product.return_bn}>" />
+    <input type="hidden" name="source" value="<{$source}>">
+  </div>
+</form>
+<script>
+
+
+/*
+$E('#return-apply .btn-primary').addEvent('click',function(){
+    W.page($('return-apply').get('action'),{
+        data:$('return-apply'),
+        method:'post',
+        onComplete:function(resp){alert(resp);
+            resp = JSON.decode(resp);
+            
+        }
+    });
+});
+
+function sub_form(event) {
+    $('return-apply').submit();
+}
+
+$E('#return-apply .btn-primary').addEvent('click',function(){
+    W.page($('return-apply').get('action'),{
+        data:$('return-apply'),
+        method:'post',
+        onComplete:function(resp){
+            resp = JSON.decode(resp);
+
+        }
+    });
+});
+
+$('return-apply').store('target',{
+    onComplete:function(resp){
+        rs = JSON.decode(resp);
+        if(rs.res == 'fail'){
+          new MessageBox(rs.msg,{type:'error',autohide:true});
+        }else{
+          new MessageBox(rs.msg,{autohide:true});
+          finderGroup['<{$finder_id}>'].refresh.delay(400,finderGroup['<{$finder_id}>']);
+          $('return-apply').getParent('.dialog').retrieve('instance').close();
+        }
+    }
+});
+
+$('return-apply').removeEvents('submit').addEvent('submit',function(e){
+  e.stop();
+  new Request({
+    url:$('return-apply').get('action'),
+    data:$('return-apply'),
+    onComplete:function(e){
+       rs = JSON.decode(e);
+       if(rs.res == 'fail'){
+          new MessageBox(rs.msg,{type:'error',autohide:true});
+       }else{
+          new MessageBox(rs.msg,{autohide:true});
+          window.finderGroup['<{$finder_id}>'].refresh();
+          $('return-apply').getParent('.dialog').retrieve('instance').close();
+       }
+    }
+  }).send();
+  return false;
+});
+*/
+
+  
+
+  function file_download(){
+    var ifm=new IFrame({src:'index.php?app=ome&ctl=admin_return&act=file_download2&p[0]=<{$product.return_id}>'});
+    ifm.injectAfter(document.body);
+  }
+
+  function show_delivery(branch_id,bn){
+    $ES('input[name^=goods_bn]').each(function(i,index){
+      if(i.value==bn){
+        //if(i.checked==false){
+          //i.checked=true;
+          //}
+      }
+    });
+
+    showAddress(branch_id,bn);
+  }
+
+  function showAddress(branch_id,bn){
+    bn = bn.replace(/\+/g,"%2B");
+    new Request.JSON({
+      url:'index.php?app=ome&ctl=admin_return&act=check&source=<{$source}>',
+      data:{
+        'branch_id' : branch_id,
+        'bn' : bn,
+        'order_id' : "<{$order_id}>"
+      },
+      method:'get',
+      onSuccess:function(data){
+        var ifadd='yes';
+        $ES('input[name^=delivery_id]').each(function(item,index){
+          if(item.value==data.delivery_id){
+            ifadd='no';
+          }
+        });
+        if(data.ship_area.contains(':')){
+            data.ship_area = data.ship_area.split(':')[1].split('/').join('-');
+        }else{
+            data.ship_area = data.ship_area.split('/').join('-');
+        }
+        var info = "<td><input type=radio checked=checked id=delivery_id name=delivery_id value="+data.delivery_id+"></td><td>"+data.delivery_bn+"</td><td>"+data.ship_name+"</td><td>"+data.ship_area+"</td><td>"+data.ship_addr+"</td>";
+        //$('canpay'+data.bn).set('html','可退数量'+data.refund);
+        //$('canpay'+data.bn).set('html','');
+
+        var newtr=new Element('tr');
+
+        if(ifadd=="yes"){
+          $('dly-body').adopt(newtr);
+          newtr.set('html',info);
+          $('num'+data.bn).value=data.refund;
+          $('effective'+data.bn).value=data.refund;
+        }
+      }
+    }).send();
+  }
+
+  /*
+  *选择商品时选择对应仓库信息
+  *默认取的是第一条
+  */
+  function choose(bn,product_id){
+
+    var s = 'branch_id'+product_id,el;
+    el = $ES('input[name$='+s+']');
+    el.each(function(item,index){
+      if(bn.checked==true){
+        if(index==0){
+          if (el.length==1){
+            item.checked=true;
+          }
+          show_delivery(item.value,bn.value);
+        }
+        if (el.length>1)
+        item.set('vtype', 'requiredradio');
+        }else{
+        item.set('vtype', '');
+        item.checked=false;
+        $('dly-body').empty();
+      }
+
+    });
+  }
+
+  function visibility(e){
+    var visiTips = new Tips({
+            onShow:function(tip,el){
+                el.addClass('active');
+                tip.setStyle('display','block');
+            },
+            text: function(element){
+                if(element.get('visibility')=='false'){
+                    return '隐藏商品';
+                }else{
+                    return '';
+                }
+            }
+        });
+
+        var e  = new Event(e), el = e.target;
+        if (el.get('visibility')=='false')
+        {
+            visiTips.attach(el);
+            el.addEvent('mouseleave',function(){
+                el.removeClass('active');
+            });
+            el.fireEvent('mouseenter',e);
+        }
+}
+</script>

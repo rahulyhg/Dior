@@ -1,0 +1,34 @@
+<form action="index.php?app=ome&ctl=<{$ctl}>&act=<{$act}>&p[0]=<{$reship_id}>&p[1]=<{$status}>&finder_id=<{$finder_id}>" method="post" id="add_link">
+<table cellspacing="0" class="gridlist" cellpadding="0" border="0" >
+  <tr>
+    <th><{$refuse_memo}>理由：</th>
+    <td><{input type="textarea" class="x-input" name="info[refuse_memo]" cols="50" rows="5" vtype="required"}></td>
+    <input type="hidden" name="reship_id" value="<{$reship_id}>">
+    <input type="hidden" name="from_type" value="<{$from_type}>">
+  </tr>
+</table>
+</form>
+<div class="table-action">
+  <{button label='确定' type="button" class="btn-primary" name="submit" onclick="sub_form(event);"}> &nbsp; &nbsp;
+</div>
+<script>
+
+function sub_form(event) {
+    $('add_link').fireEvent('submit',new Event(event));
+}
+
+$('add_link').store('target',{
+    onComplete:function(){
+        var finder_id = '<{$finder_id}>';
+        if($('add_link').getParent('.dialog')){
+            if (finder_id)
+            {
+                window.finderGroup[finder_id].refresh();
+            }
+            $('add_link').getParent('.dialog').retrieve('instance').close();
+        }
+        
+    }
+});
+
+</script>    

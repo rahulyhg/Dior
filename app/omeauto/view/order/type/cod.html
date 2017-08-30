@@ -1,0 +1,8 @@
+<style>
+    #con_m_d_type li {width:130px; font-size: 12px; float: left; overflow: hidden;margin-bottom: 15px;}
+    #con_m_pan #pan_m_d_1, #con_m_pan #pan_m_d_2, #con_m_pan #pan_m_d_3 {position:static; float: none; clear: both; margin-top: 15px;}
+</style>
+<ul id="con_m_d_type">
+    <li><label for="m_d_1"><input id="m_d_1" type="radio" name="is_cod" value="true" <{if $init.content == 'true'}>checked<{/if}>/>货到付款</label></li>
+    <li><label for="m_d_2"><input id="m_d_2" type="radio" name="is_cod" value='false' <{if $init.content == 'false'}>checked<{/if}>/>款到发货</label></li>
+</ul>

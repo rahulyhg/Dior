@@ -1,0 +1,23 @@
+<form action='<{$thisUrl}>&action=to_import' method='post' target="uploadframe" enctype="multipart/form-data" id="import_form" class="tableform">
+<h4><{t}>上传.CSV文件<{/t}></h4>
+<div class="division" >
+<input type='file' name='import_file' id='ImportCSV'/>
+</div>
+<div class="table-action">
+<{button label=$___desktop="导入"|t:'desktop' id="ImportBtn"  type="submit"}>
+</div>
+</form>
+<script>
+(function(){
+	var state;
+	$('ImportBtn').addEvent('click',function(e){
+		if(state||!$('ImportCSV').value.length)return false;
+		state=true;
+		this.style.cursor='not-allowed';
+	});
+	$('ImportCSV').addEvent('change',function(e){
+		state=false;
+		$('ImportBtn').style.cursor='pointer';
+	});
+})();
+</script>

@@ -1,0 +1,248 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{css src="style.css" app="ome"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{/capture}>
+<h5 class="head-title">转储单信息:</h5>
+<div id="stock">
+  <input type="hidden" id="spec" name="spec">
+  <input type="hidden" id="unit" name="unit">
+  <div class="tableform">
+    <div class="division">
+      <table width="100%" border="0">
+        <tbody>
+          <tr>
+            <th>调出仓库：</th>
+            <td>
+            <select id="from_branch_id" class=" x-input-select inputstyle" vtype="required" name="from_branch_id" onchange='change_to_branch(this.value);'>
+            <option></option>
+            <{foreach from=$branch item=v}>
+            <option value='<{$v.branch_id}>'><{$v.name}></option>
+            <{/foreach}>
+            </select> <span style="color:red">*只支持第三方WMS仓储类型的仓库，做库内转储</span> 
+              
+            </td>
+            <th>调入仓库：</th>
+            <td id='to_branch_id_select'>
+            <select id="to_branch_id" class=" x-input-select inputstyle" vtype="required" disabled='disabled' name="to_branch_id" >
+			<option value=''>　　　　</option>
+            </select> <span style="color:red">*</span> 
+            </td>
+          </tr>
+		  
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="division">
+  <div class="gridlist-action"> <{button label="添加商品" id="btn_add_item" type="button" name="Submit"}> </div>
+  <form method="post" id="form1" action="index.php?app=console&ctl=admin_stockdump&act=do_save">
+    <table width="100%" border="0" class="gridlist">
+      <col style="width:3%;" />
+      <col style="width:10%;" />
+      <col style="width:auto;" />
+      <col style="width:6%;" />
+      <col style="width:6%;" />
+      <col style="width:12%;" />
+      <col style="width:4%;" />
+      <col style="width:5%;" />
+
+      <thead>
+        <th>选择</th>
+        <th>货号</th>
+        <th>货品名称</th>
+		<th>规格</th>
+        <th>单位</th>
+        <th>入库金额</th>
+        <th>数量</th>
+        <th>删除</th>
+      </thead>
+      <tbody class='dly-body' id="dly-body">
+      </tbody>
+    </table>
+    <table>
+    
+      <tr>
+        <td align="center">备注</td>
+        <td align="left"><label>
+            <textarea name="memo" cols="40" rows="6"></textarea>
+          </label></td>
+      </tr>
+    </table>
+    <div class="table-action"> <{button class="btn-primary" type="submit" id="saveCurrent" label="提交"}> </div>
+  </form>
+</div>
+<script>
+
+    var callurl = "index.php?app=purchase&ctl=admin_stockdump&act=get_products";
+    var options = {
+        'getVar': 'name',
+        'fxOptions': false,
+        callJSON: function() {
+            return window.autocompleter_json;
+        },
+        injectChoice: function(json) {
+            var choice = new Element('li', {
+                'html': this.markQueryValue(json[this.options.getVar])
+            });
+            choice.inputValue = json[this.options.getVar];
+            choice.store('_data',json);
+            this.addChoiceEvents(choice).inject(this.choices);
+        },
+        onHide: function() {
+            if(!this.selected)return;
+            var _json=this.selected.retrieve('_data');
+            requestData(_json);
+        }
+    };
+
+    $('form1').store('target', {
+        onRequest: function() {
+            //提交按钮:disabled
+            $('saveCurrent').set('disabled', 'true');
+            $('saveCurrent').getElements('span')[1].set('text', '正在提交');
+        },
+        onComplete: function(jsontext) {
+            //jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+            var json = Json.evaluate(jsontext);
+            if (typeof(json.error) != 'undefined') {
+                //提交按钮:enabled
+                $('saveCurrent').set('disabled', '');
+                $('saveCurrent').getElements('span')[1].set('text', '提交');
+            } else {
+                //提交按钮:disabled
+                $('saveCurrent').set('disabled', 'true');
+                $('saveCurrent').getElements('span')[1].set('text', '提交');
+                opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                window.close();
+            }
+        }
+    });
+
+    $('btn_add_item').addEvent('click', function(e) {
+        var url = 'index.php?app=desktop&act=alertpages&goto=' + encodeURIComponent('index.php?app=console&ctl=admin_stockdump&act=findProduct&product_type=normal&singleselect=0');
+
+        var callurl = 'index.php?app=console&ctl=admin_stockdump&act=get_proinfo',
+        store = [];
+        Ex_Loader('modedialog',function(){
+          new finderDialog(url, {
+              params: {
+                  url: callurl,
+                  name: 'product_id[]'
+              },
+              width: 1000,
+              height: 700,
+              onCallback: function(data) {
+                  jsondata = eval("("+data+")");
+                  
+                  requestData(jsondata);
+              }
+          });
+         });
+    });
+    
+    
+    function change_to_branch(branch_id){
+		if(branch_id == ''){
+			$('to_branch_id').set('html',"<option value=''>　　　　</option>");
+			$('to_branch_id').set('disabled','true');
+		}else{
+			new Request({url:'index.php?app=console&ctl=admin_stockdump&act=get_wms_branch',onSuccess:function(rs){
+				document.getElementById('to_branch_id_select').innerHTML = rs;
+			}}).post('branch_id='+branch_id);
+		}
+    }
+
+    function requestData(data) {
+		var length = data.length;
+		var psarr = document.getElementsByName('is_products_id[]');
+		
+		var is;
+		for(var i=0;i<length;i++){
+			is = true
+			for(var s=0 ; s<psarr.length;s++){
+				if(psarr[s].value == data[i].product_id){
+					is = false;
+				}
+			}
+			if(is){
+				toadd(data[i]);
+			}
+		}
+    }
+
+    var n = 0;
+    function toadd(data) {
+        n++;
+
+        var from_branch_name="", to_branch_name="", fromselect, toselect,product_id,to_stock_price;
+        
+
+        to_stock_price = typeof(data.price.current_price) == "undefined"?'0.00':data.price.current_price;
+        product_id = data.product_id;
+		
+        
+        fromselect = $('from_branch_id');
+        if(fromselect.options.length&&fromselect.get('value')!==""){
+            from_branch_name=fromselect.options[fromselect.selectedIndex].text;
+        }
+        else{
+            MessageBox.error('请选择调出仓库');
+            return false;
+        }
+        
+        
+
+        toselect = $('to_branch_id');
+        if(toselect.options.length&&toselect.get('value')!==""){
+            to_branch_name=toselect.options[toselect.selectedIndex].text;
+        }
+        else{
+            MessageBox.error('请选择调入仓库');
+            return false;
+        }
+
+		
+        var product_id = data.product_id;
+        var product_name = data.name;
+        var to_branch_id = toselect.value;
+        var from_branch_id = fromselect.value;
+        var product_bn = data.bn;
+        var product_unit = data.unit == null?'':data.unit;
+        var product_spec = data.spec_info == null?'':data.spec_info;
+
+        var info = '<td><input type="hidden" name="is_products_id[]"  value="' + product_id + '"><input type="checkbox" name="ckid[]" value="' + n + '" checked="checked"><input type="hidden" name="product_id[' + n + ']" class="products_id" value="' + product_id + '"><input type="hidden" name="to_branch_id" value="' + to_branch_id + '"><input type="hidden" name="from_branch_id" value="' + from_branch_id + '"></td><td>' + product_bn + '</td><td>' + product_name + '</td>';
+		
+		info += "<td>" + product_spec + "</td><td>" + product_unit + "</td>";
+
+        info += '<td><input type="text" name="to_stock_price['+n+']" value="'+to_stock_price+'" style="width:80px;" />';
+        info += "</td>";
+
+        info += "<td><input type=text size='4' name=num[" + n + "]></td>";
+        info += "<td>";
+        info += '<{img src="bundle/delecate.gif" class="pointer del" app="desktop"}>';
+        info += "</td>";
+
+        new Element("tr",{html:info}).inject('dly-body').getElement('.del').addEvent('click',function(){
+           del(this);
+        });
+        //$('to_branch_id').set('disabled','true');
+        //$('from_branch_id').set('disabled','true');
+
+    }
+    //删除
+    function del(obj) {
+        var parent = obj.getParent("tr");
+        if (confirm('真的要删除吗?')) {
+            parent.destroy();
+        }
+        if(!$E('#dly-body tr')){
+          $('to_branch_id').set('disabled','');
+        }
+
+    }
+
+
+</script>

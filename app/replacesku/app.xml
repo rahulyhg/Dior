@@ -1,0 +1,20 @@
+<app>
+    <name>淘宝SKU转换</name>
+    <description>把淘宝商品规格为其它颜色请入的转换</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>0.1</version>
+    <license>shopex license</license>
+
+	<depends>
+		<app>base</app>
+		<app>desktop</app>
+		<app>ome</app>
+	</depends>
+
+</app>

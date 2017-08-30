@@ -1,0 +1,42 @@
+<table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+	<col style="width: 30%; align: left;"></col>
+	<col style="width: 12%; align: left;"></col>
+	<thead>
+		<tr>
+			<th>订单号</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	<{foreach from=$orders item=items key=keys}>
+	<tbody>
+		<tr>
+		  <td><{$items.order_bn}></td>
+			<td><{if $items.order_bn==$keywords}> <font
+            color="orange"><b><{$items.order_bn}></b></font> <{else}> <b><{$items.order_bn}></b>
+        <{/if}> <{if $items.ship_status != '0' && $items.ship_status != '4' &&
+        $items.ship_status != '2'}> <{button class="btn-primary" type="button"
+        label="申请"
+        onclick="requestReturn('{$items.order_id}','{$items.order_bn}');" }>
+        <{else}> <font color="gray">(<{if $items.ship_status ==
+        '0'}>未发货<{/if}><{if $items.ship_status == '4'}>全部退货<{/if}><{if
+        $items.ship_status == '2'}>部分发货<{/if}>)</font> <{/if}></td>
+		</tr>
+	</tbody>
+	<{/foreach}>
+	 <{if !$orders}>
+	<tbody>
+		<tr>
+			<td colspan="9" style="padding: 0;">
+			<div class="note" style="margin: 0;"> 没有查询到 "
+<font color="orange"><b><{$keywords}></b></font>
+" 订单信息。</div>
+			</td>
+		</tr>
+	</tbody>
+	<{/if}>
+</table>
+<div class="footer" style="overflow: hidden; line-height: 32px;">
+<div style="float: left;"><{$pager}></div>
+<div style="float: right; margin-right: 10px;">共<{$count}>条，每页显示<{$pagelimit}>条</div>
+</div>
+

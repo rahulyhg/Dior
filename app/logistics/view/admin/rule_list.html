@@ -1,0 +1,100 @@
+<style>
+
+.rule_list tr td, .rule_list tr th { text-align: left; height: 25px; line-height: 25px; border-bottom: 1px solid #e8e8e8; border-right: 1px solid #e8e8e8; white-space: normal; padding: 0 3px; vertical-align: middle; }
+</style>
+<form id='rule_form' method="post" action="index.php?app=logistics&ctl=admin_area_rule&act=batch_del">
+
+
+<table width='100%' cellspacing="2" cellpadding="1" border='0' class="rule_list" id='area_rule_list'>
+            <thead>
+            <tr class="gridlist-head">
+            <td><input type="checkbox" id="sellist" onclick='showAll(this)'></td>
+                <th style="text-align:center">操作</th>
+         
+                <td style="text-align:center">区域</td>
+              <td style="text-align:center">设置类型</td>
+              <td style="text-align:center">规则描述</td>
+              </tr>
+            </thead>
+<{foreach from=$rule_list item=rule_list}>
+            <tr>
+            <td><input type="checkbox" name='obj_id[]' class='sel' value='<{$rule_list.obj_id}>'></td>
+            <td><a href='index.php?app=logistics&ctl=admin_area_rule&act=addArearule&rule_id=<{$rule_id}>&type=<{$env.get.type}>&obj_id=<{$rule_list.obj_id}>&action=edit' target="dialog::{width:800,height:500,title:'编辑'}">编辑</a> | 
+            <a onclick='deleteRule(<{$rule_list.obj_id}>)'>删除</a></td>
+                <td align=left><{$rule_list.region_name_path}></td>
+        
+                <td><{if $rule_list.set_type=='weight'}>重量区间<{else}>非重量区间<{/if}></td>
+               <td><div onmouseover="visibility(event,<{$rule_list.obj_id}>)">
+               <div style='height:50px;overflow:hidden'>
+               <{if $rule_list.set_type=='weight'}>
+               <{foreach from=$rule_list.item_list item=items}>
+               重量:<{$items.min_weight}>g<{if $items.max_weight=='-1'}>以上<{else}>至<{$items.max_weight}>g<{/if}> 首选物流公司:
+               <{$items.corp_name}><{if $items.second_corp_name}>, 次选物流公司:<{$items.second_corp_name}><{/if}><br>
+               <{/foreach}>
+               <{else}>
+               首选物流公司:<{$rule_list.item_list.0.corp_name}>
+               <{if $rule_list.item_list.0.second_corp_name}>, 次选物流公司:<{$rule_list.item_list.0.second_corp_name}><{/if}>
+               <{/if}>
+
+               </div>
+               </div></td>
+                </tr>
+  <{/foreach}>
+  </tbody>
+</table>
+
+</form>
+<div class="gridlist-footer">
+<{$pager}>&nbsp;&nbsp;共<{$count}>条，每页显示<{$pagelimit}>条 
+</div>
+<script>
+function visibility(e,obj_id){
+    var rule_text='';
+    var visiTips = new Tips({
+        onShow:function(tip,el){
+            el.addClass('active');
+            tip.setStyle('display','block');
+        },
+        text: function(element){
+            var rule_text='';
+            new Request({
+                url:'index.php?app=logistics&ctl=admin_area_rule&act=detailAreaRule&p[0]='+obj_id,async:false,
+                onComplete:function(rs){
+                    if(rs){
+                        rs=JSON.decode(rs);
+                        rs.each(function(i,index){
+                            if(i.min_weight && i.max_weight){
+                                rule_text+='重量:'+i.min_weight+'g';
+                                if(i.max_weight=='-1'){
+                                    rule_text+=' 以上';
+                                }else{
+                                    rule_text+='至'+i.max_weight+'g';
+                                }
+                                rule_text+=' 首选物流公司:'+i.corp_name+'';
+                                if(i.second_corp_name) {
+                                    rule_text+=',次选物流公司:'+i.second_corp_name+'';
+                                }
+                                rule_text+='<br>';
+                            }else{
+                                rule_text+='首选物流公司:'+i.corp_name+'';
+                                if(i.second_corp_name) {
+                                    rule_text+=',次选物流公司:'+i.second_corp_name+'';
+                                }
+                            }
+                        });
+                    }
+                }
+            
+            }).send();
+            return rule_text;
+        }
+    });
+
+    var e  = new Event(e), el = e.target;
+    visiTips.attach(el);
+    el.addEvent('mouseleave',function(){
+        el.removeClass('active');
+    });
+    el.fireEvent('mouseenter',e);
+}
+</script>

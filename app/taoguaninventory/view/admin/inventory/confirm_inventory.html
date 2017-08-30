@@ -1,0 +1,274 @@
+<div class="tableform">
+<div class="division" >
+
+<h3>盘点确认 :</h3>
+<input type="hidden" name="branch_id" value="<{$detail.branch_id}>">
+<input type="hidden" name="inventory_id" value="<{$detail.inventory_id}>">
+<input type="hidden" name="inventory_bn" value="<{$detail.inventory_bn}>">
+<input type="hidden" name="inventory_checker" value="<{$detail.inventory_checker}>">
+<input type="hidden" name="op_name" value="<{$detail.op_name}>">
+<input type="hidden" name="memo" value="<{$detail.memo}>">
+<input type="hidden" id="inventory_type" name="inventory_type" value="<{$detail.inventory_type}>">
+<div class="finder-detail">
+<table width='100%' cellspacing="0" cellpadding="0" >
+    <tr>
+        <td>盘点名称：<{$detail.inventory_name}></td>
+        <td>盘点单编号：<{$detail.inventory_bn}></td>
+        <td>盘点日期：<{$detail.inventory_date|date_format:"%Y-%m-%d"}></td>
+    </tr>
+    <tr>
+        <td>盘点仓库：<{$detail.branch_name}></td>
+        <td>盘点类别： <{if $detail.inventory_type=='1'}>自定义<{/if}><{if $detail.inventory_type=='2'}>全盘<{/if}><{if $detail.inventory_type=='3'}>部分盘点<{/if}><{if $detail.inventory_type=='4'}>期初<{/if}></td>
+        <td>业务日期：<{$detail.add_time|date_format:"%Y-%m-%d"}></td>
+    </tr>
+
+    <tr>
+        <td>盘点人：<{$detail.inventory_checker}></td>
+        <td>是否启用货位:<{if $detail.pos==0}>否<{else}>是<{/if}></td>
+        <td> </td>
+    </tr>
+</table>
+</div>
+
+<div id='inventory_content'>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td nowrap="nowrap" style="width:auto;">
+   <div class="tabs-wrap select-tabs delivery-cfg-tab">
+   <ul style="margin-top:2px;padding:0;">
+    <li class="tab <{if $is_auto==''}>current<{/if}>" >
+     <span><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=confirm_inventory&p[0]=<{$detail.inventory_id}>"><{t}>全部<{/t}></a></span>
+    </li>
+    <{if $detail.inventory_type==2}>
+<li class="tab <{if $is_auto=='0'}>current<{/if}>" >
+<span><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=confirm_inventory&p[0]=<{$detail.inventory_id}>&is_auto=0"><{t}>实盘<{/t}></a></span>
+    </li>
+    <li class="tab <{if $is_auto=='1'}>current<{/if}>">
+     <span><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=confirm_inventory&p[0]=<{$detail.inventory_id}>&is_auto=1"><{t}>未盘<{/t}></a></span>
+    </li>
+    <{/if}>
+   </ul>
+   </div>
+  </td>
+ </tr>
+ </table>
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist delivery-cfg-table">
+            <thead>
+            <tr>
+                <th>货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+               <th>帐面数量</th> 
+                <th>实际数量</th>
+                <th>成本价</th>
+                <th>盈(+)亏(-)记录</th>
+                <th>盈(+)亏(-)金额</th>
+                <th style='display:none'>单价</th>
+              </tr>
+            </thead>
+            <{foreach from=$items item=items key=keys}>
+            <tbody>
+            <tr class="toggler" <{if $items.shortage_over<0}>id="toggler"<{/if}> <{if $items.is_auto==1}>bgcolor='#cccccc'<{/if}>>
+                <td><{$items.name}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><{$items.accounts_num}></td>                <td><a href="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=detail_inventory_object&item_id=<{$items.item_id}>&product_id=<{$items.product_id}>" target="dialog::{width:400,height:200,title:'盘点明细'}"><{$items.actual_num}></a></td>
+                <td><{$items.price}></td>
+                <td><{$items.shortage_over}></td>
+                <th><{$items.shortage_over_price}></th>
+                <td style='display:none'><{$items.price|cur}></td>
+                </tr>
+            </tbody>
+   <{foreachelse}>
+   
+   <tr><td colspan='8'>暂时没有盘点商品</td></tr>
+            <{/foreach}>
+            <tbody >
+            <tr>
+               <td><b>合计：</b></td>
+               <td>-</td>
+               <td>-</td>
+               <td>-</td>
+              <td><{$total.accounts_num}></td>
+               <td><{$total.actual_num}></td>
+               <td><{$total.price}></td>
+               <td><{$total.shortage_over}></td>
+               <th><{$total.shortage_over_price}></th>
+                <td>-</td> 
+              </tr>
+            </tbody>
+        
+        </table>
+        
+        <table width='100%' cellspacing="0" cellpadding="0" >
+    <tr><td colspan="4" align="center"></td></tr>
+    <tr>
+        <td>复核人：<{$detail.second_checker}></td>
+        <td>财务负责人：<{$detail.finance_dept}></td>
+              <td>仓库负责人：<{$detail.warehousing_dept}></td>
+    </tr>
+  </table>
+  <div class="gridlist-footer">
+<{$pager}>&nbsp;&nbsp;共<{$count}>条，每页显示<{$pagelimit}>条 
+</div>
+</div>
+</div>
+<{if $need_inventorylist_count>0}>
+
+ <div class="division" id="process_info" style="display:none">
+ <h3>处理信息</h3><br>
+       共 <span style="color:#000000;font-weight:bold"><{$need_inventorylist_count}></span> 条记录,
+        已确认 <span id="iTotal" style="color:#083E96;font-weight:bold">0</span> 条记录,
+        剩 <span id="need_confirm" style="color:green;font-weight:bold"><{$need_inventorylist_count}></span> 条需确认<br><br>
+        <span id='fail_text' style="display:none">
+         失败货号列表如下：<br /><br /><textarea id="iFailInfo" rows="4" cols="40" style="line-height:150%"></textarea>
+         </span>
+<div id="processBarBg" style="border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;">
+                <div style=" background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;" id='processBar'>
+                    &nbsp;
+                </div>
+</div>       
+</div>
+
+ <{/if}>
+
+</div>
+
+ <div class="table-action">
+ <{if $need_inventorylist_count>0}>
+ 
+ <{button type="button" id="confirm_inventory_form"  class="btn btn-primary" label="确认" }>
+
+ <{/if}>
+<{button type="button" class="btn" id="return-btn" label="关 闭" }>
+</div>
+
+<script>
+    var MaxProcessOrderNum = 20;
+    var OrderGroups = <{$need_inventoryList}>;
+    var total = <{$need_inventorylist_count}>;
+    var OrderQueue = new Array();
+    var doTotal = 0;
+    var doFailInfo='';
+    var inventory_type = $('inventory_type').value;
+    if($('confirm_inventory_form')){
+    $('confirm_inventory_form').addEvent('click', function(){
+    new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventorylist&act=filter_inventory',method:'post',data:{inventory_id:'<{$detail.inventory_id}>'},
+            onComplete:function(result){
+                if(!result) return;
+                ret = JSON.decode(result);
+                if(ret['result']=='fail'){
+                    alert(ret['message']);
+                }else{
+                    
+                    if( inventory_type ==2 ){
+                        if (confirm("此盘点单类型为全部盘点，确认此操作吗，如果确认,其它商品库存将被清0!")){
+                            doRun();
+                        }
+                    }else{
+                        doRun();
+                    }
+
+                }
+            }
+            }).send();
+       });
+    }
+
+    function doRun(){
+        $('inventory_content').setStyle('display','none');
+        $('process_info').setStyle('display','');
+        initOptQueue();
+        $('confirm_inventory_form').disabled = true;
+        $('confirm_inventory_form').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+        doAjaxProcess(1);
+    }
+    function initOptQueue() {
+        var OrderHash = '';
+        var OrderNum = 0;
+        var OrderKey = '';
+
+        if (OrderGroups == '') {
+            return;
+        }
+        var LeaveProcessOrderNum = total;
+
+        if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+            MaxProcessOrderNum = LeaveProcessOrderNum;
+        }
+
+        for (var i=0;i<OrderGroups.length;i++) {
+            if (OrderHash == '')
+                OrderHash = i + '||' + OrderGroups[i];
+            else
+                OrderHash = OrderHash + ';' + i + '||' + OrderGroups[i];
+
+            OrderNum ++;
+
+            if (OrderNum >= MaxProcessOrderNum) {
+                OrderQueue.push(OrderHash);
+                OrderNum =0;
+                OrderHash = '';
+                LeaveProcessOrderNum = LeaveProcessOrderNum - MaxProcessOrderNum;
+                if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+                    MaxProcessOrderNum = LeaveProcessOrderNum;
+                }
+            }
+        }
+        if (OrderHash != '') {
+            OrderQueue.push(OrderHash);
+        }
+    }
+    /**
+     * 执行一次AJAX调用
+     */
+    function doAjaxProcess(idx) {
+        if (idx > OrderQueue.length || doTotal >= getTotal()) {
+            $('processBar').setStyle('width', '100%');
+            $('iTotal').set('html',getTotal());
+            $('confirm_inventory_form').set('html', '<span><span>处理已完成!</span></span>');
+            
+        } else {
+            var params = OrderQueue[idx-1];
+
+            new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventorylist&act=ajaxDoConfirminventory',method:'post',data:{ajaxParams:params,branch_id:'<{$detail.branch_id}>',inventory_id:'<{$detail.inventory_id}>',inventory_bn:'<{$detail.inventory_bn}>',inventory_type:'<{$detail.inventory_type}>',op_name:'<{$detail.op_name}>'},
+                onComplete:function(result){
+                    if(!result) return;
+                    ret = JSON.decode(result);
+                    doTotal = doTotal + ret['total'];
+                    subTtotal = getTotal()-doTotal;
+                    if(subTtotal<0){
+                        subTtotal=0;
+                    }
+                    $('iTotal').set('html',doTotal);
+                    $('need_confirm').set('html',subTtotal);
+                    $('processBar').setStyle('width', (doTotal*100/(getTotal())) + '%');
+                    for(var key=0; key<ret['fallinfo'].length;key++){
+                        
+                        doFailInfo = doFailInfo + ret['fallinfo'][key] + ',货号不存在\n';
+                    }
+                    if(doFailInfo){
+                    $('fail_text').setStyle('display','');
+                    $('iFailInfo').set('html', doFailInfo);
+                    }
+                    setTimeout(doAjaxProcess(idx+1),500);
+                }
+            }).send();
+        }
+    }
+    
+    function getTotal() {
+        return <{$need_inventorylist_count}>;
+    }
+
+    $('return-btn').addEvent('click',function(e){
+
+     var _this=this;
+
+    _this.getParent('.dialog').retrieve('instance').close();
+    window.finderGroup['<{$env.get.find_id}>'].refresh();
+
+    });
+   </script>

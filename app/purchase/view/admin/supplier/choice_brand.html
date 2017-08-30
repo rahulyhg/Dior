@@ -1,0 +1,83 @@
+<script>
+//关闭函数
+function closeCurr(This)
+{
+	This.getParent('.dialog').retrieve('instance').close();
+}
+
+//关闭POP
+$('cancelBut').addEvent('click', function(event){
+	closeCurr(this);
+});
+
+//选择品牌
+$('choicceDo').addEvent('click',function(){
+	//获取选择的品牌
+	var brand = $('brandForm').getElements('input[type=checkbox]');
+	var brandStr_choiced = '';
+	brand.each(function(item){
+		if ($chk(item.get('checked'))) {
+			brandStr_choiced += '<input type=\"checkbox\" style=\"display:none;\" name=\"brand[]\" id=\"brand[]\" label=\"'+ item.get('label') +'\" checked=\"checked\" onclick=\"dislodge(this.value);\" value=\"'+ item.get('value') +'\" />' + item.get('label') + '&nbsp;&nbsp;';
+		}
+	});
+	//改变选择按钮名称
+	//if (brandStr_choiced){
+	    //$('choice_brand').set('value','修改2');
+	//}else{
+		//$('choice_brand').set('value','选择2');
+	//}
+	//显示品牌名称
+	$('brand_span').setHTML(brandStr_choiced+'<br/>');
+	//设置为已选择
+	$('choice_flag').set('value','1');
+	//关闭当前窗口
+	closeCurr(this);
+});
+
+//将已选中的品牌打勾
+var choice_flag = $('choice_flag').get('value');
+if (choice_flag=='1')
+{
+	var cbrand = $('brand_span').getElements('input[type=checkbox]');
+	var sub_brand = $('brandForm').getElements('input[type=checkbox]');
+    var sel_val = ',';
+	cbrand.each(function(key,item){
+		if (key.get('checked')){
+            sel_val += key.get('value')+',';
+		}
+	});
+    if (sel_val != ',') {
+        sub_brand.each(function(key,item){
+            if (sel_val.indexOf(','+key.get('value')+',')>=0){
+                sub_brand[item].set('checked','checked');
+            }
+        });
+    }
+}
+
+</script>
+<form id="brandForm" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+	<div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0">
+			
+			<tr>
+				<td>
+				  <{if $brand}>
+					  <{foreach from=$brand item=item key=key}>
+					   <input type="checkbox" label="<{$item.brand_name}>" name="sub_brand" value="<{$item.brand_id}>" /> <{$item.brand_name}>
+					  <{/foreach}>
+				  <{else}>
+				             暂无品牌供选择
+				  <{/if}>
+				</td>
+			</tr>
+			
+            <tr>
+				<td>
+				<{button class="btn-primary" type="button" id="choicceDo" label="确定"}>
+				<{button class="btn-primary" type="button" id="cancelBut" label="取消"}>
+				</td>
+			</tr>
+		</table>
+   </div>
+</form>

@@ -1,0 +1,54 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<div class="tableform"> 
+<h4>采购单信息:</h4><hr>
+<div class="division">
+<form name="form2" action="index.php?app=purchase&ctl=admin_purchase&act=findInSupplier" method="POST">
+<table border="0" cellspacing="0" cellpadding="0" width="80%">
+<tr>
+	<td align="right" width="15%">模糊商品名:</td>
+	<td align="left" width="10%"><{input type="text" name="name" id="name" size="10" }></td>
+    <td align="right" width="15%">供应商:</td>
+    <td align="right" width="10%"><{input type="select" name="supplier" rows=$supplier valueColumn="supplier_id" labelColumn="name" value=""}></td>
+	<td align="right" width="10%"><{button type="submit" label="搜索"}></td>
+    <td align="right">&nbsp;</td>
+</tr>
+</table>
+</form>
+
+<form id="form1" name="form1" action="index.php?app=purchase&ctl=admin_purchase&act=create" method="POST">
+<table border="0" cellspacing="0" cellpadding="0" width="80%">
+<tr>
+    <td align="right" width="5%"><input type="checkbox" id='chkAll' name="chkAll" value="" onclick="checkall()"></td>
+    <td align="right">&nbsp;商品id</td>
+    <td align="right">&nbsp;商品名称</td>
+    <td align="right" width="20%">&nbsp;</td>
+</tr>
+<{foreach from=$data item=item}>
+<tr>
+    <td align="right"><input type="checkbox" name="po_id[]" value="<{$item.product_id}>"></td>
+    <td align="right" ><{$item.product_id}></td>
+    <td align="right"><{$item.name}></td>
+    <td align="right">&nbsp;</td>
+</tr>
+<{/foreach}>
+<tr>
+    <td align="right">&nbsp;</td>
+    <td align="right">&nbsp;</td>
+    <td align="right"><{button type="submit" label="确定"}></td>
+    <td align="right">&nbsp;</td>
+</tr>
+</table>
+</form>
+</div>
+</div>
+<script>
+function checkall() {
+    var arr = $('form1').getElementsByTagName("input");
+    arr.each(function(item){
+        item.checked=$('chkAll').checked;
+    })
+}
+</script>

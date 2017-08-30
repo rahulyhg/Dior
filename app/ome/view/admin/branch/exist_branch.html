@@ -1,0 +1,29 @@
+<div class="tableform">
+  <h3><{$name}></h3>
+  <div class="division">
+    <h5>请选择仓库</h5>
+    <form action="<{$url}>" method="<{$method}>" >
+      <div class="gray_form">
+        <ul class="branch_list">
+        <{if (!$branch_list)}>
+            <li><label for="1">无仓库信息</label></li>
+        <{else}>
+        <{foreach from=$branch_list index=index item=item}>
+
+          <li><label for="branch_id_<{$item.branch_id}>"><input type="radio" name="branch_id" id="branch_id_<{$item.branch_id}>" value="<{$item.branch_id}>"> <{$item.name}></label></li>
+
+        <{/foreach}>
+        <{/if}>
+        </ul>
+        <!-- <div align="right"><a href="javascript:void(0);" id="btn_more">点击展开更多&gt;&gt;</a></div> -->
+      </div>
+      <!-- <div class="division" align="center"><{button type="submit" class="btn-primary" label="确 定"}></div> -->
+    </form>
+  </div>
+</div>
+
+<script>
+$ES('input[name=branch_id]').addEvent('click', function (e){
+    this.getParent('form').fireEvent('submit',{stop:function(){}});
+});
+</script>

@@ -1,0 +1,33 @@
+        <{assign var="inv1" value="false"}>
+        <{foreach from=$objs item=obj}>
+        <{foreach from=$obj.order_items item=item}>
+        <{if $item.delete=='false'}>
+        <tr class="goods<{if $item.left_nums == 0}> disabled<{/if}>" data-g_pid="<{$item.product_id}>" data-g_shop_pid="<{$item.shop_product_id}>"  data-item_id="<{$item.item_id}>" data-obj_id="<{$obj.obj_id}>" data-item_type="<{$item.item_type}>">
+          <td class="number <{if $item.item_type == 'gift' || $item.item_type == 'adjunct'}><{$item.item_type}><{/if}>"><{$item.bn}></td>
+          <td class="goodsname"><{$item.name}></td>
+          <td class="addon"><{$item.addon}></td>
+          <td class="price"><{$item.price}></td>
+          <{if $order_delivery_list}>
+          <td class="buycounts"><{$item.quantity}></td>
+          <td class="amounts"><{$item.amount}></td>
+          <td class="splited"><{if ($item.quantity - $item.left_nums)>0}><{$item.quantity - $item.left_nums}><{else}>-<{/if}></td>
+          <td class="sendnum"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
+          <{else}>
+          <td class="amounts"><{$item.amount}></td>
+          <td class="buycounts"><{$item.quantity}></td>
+          <{/if}>
+          <td class="sendcounts"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
+          <td style="color:#f60;"><{$item.return_num}></td>
+          <!--<{foreach from=$branch_list item=branch name=bl}>
+          <{if isset($item.branch_store[$branch.branch_id])}>
+          <{assign var="inv1" value="true"}>
+          <td <{if $item.left_nums != 0}>class="branch <{if $item.branch_store[$branch.branch_id] >= $branch.stock_threshold}>ColColorGreen<{elseif $item.branch_store[$branch.branch_id] > 0 && $item.branch_store[$branch.branch_id] < $branch.stock_threshold}>ColColorRed<{else}>ColColorGray<{/if}><{/if}>" data-storeid="<{$branch.branch_id}>"><{$item.branch_store[$branch.branch_id]}></td>
+          <{else}>
+          <td <{if $item.left_nums != 0 }>class="ColColorGray"<{/if}>>-<{assign var="inv" value="true"}></td>
+          <{/if}>
+          <{/foreach}>
+          <{if empty($branch_list)}><td>-</td><{/if}>-->
+        </tr>
+        <{/if}>
+        <{/foreach}>
+        <{/foreach}>

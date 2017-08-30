@@ -1,0 +1,667 @@
+<div id="goods_list" <{if empty($conf.objs)}> style="display:none" <{/if}>>
+  <input type="hidden" name="objtype[]" value="goods"/>
+  <h5 style="text-align:center;">商品</h5>
+  
+<{if empty($delivery_list)}>
+  <table class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+    <thead>
+      <tr>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>购买数量</th>
+        <th>商品单价</th>
+        <th>优惠价格</th>
+        <th>销售价格</th>
+        <{foreach from=$branch_list item=branch}>
+          <th style="width:7%;" data-storeid="<{$branch.branch_id}>" <{if $branch.branch_id == $selected_branch_id}>class="selected"<{/if}>><a href="javascript:void(0);" class="select_branch" title="<{t}>联系人：<{/t}><{$branch.uname}>&#13;
+<{t}>电话：<{/t}><{$branch.phone}>&#13;
+<{t}>手机：<{/t}><{$branch.mobile}>"><{$branch.name}></a></th>
+          <{/foreach}>
+          
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <{foreach from=$conf.objs item=obj}>
+      <{if $obj.order_items|@count > 1}>
+      <tr class="ColColorGray" id="tr_<{$obj.obj_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"  <{else}>g-del="a"<{/if}>>
+        <td class="goods_bn"><{$obj.bn}></td>
+        <td class="goods_name"><{$obj.name}></td>
+        <td class="goods_addon">商品</td>
+        <td class="goods_num"><input type="text" id="obj_pmt_<{$obj.obj_id}>" aid="<{$obj.obj_id}>" vtype="unsigned" atype="obj_pmt_price" class="goods_pmt_price" value="<{$obj.pmt_price|default:0}>" name="goods[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $g_del == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" />(额外)</td>
+        <td class="goods_price"><input type="text" style="display:none" id="goodstotal_<{$obj.obj_id}>" size="2" value="0" /><input type="text" size="5" id="goodssalepr_<{$obj.obj_id}>" class="none_input goodssaleprice" readonly="readonly" value="<{$obj.sale_price}>"></td>
+        <td class="goods_op"></td>
+
+
+      </tr>
+      <{/if}>
+      <{foreach from=$obj.order_items item=item}>
+      <tr id="tr_<{$item.item_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"  class='disabled'<{else}>g-del="a"<{/if}> g-type="<{$item.item_type}>" g-pid="<{$item.product_id}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>" g-bn="<{$item.bn}>" g-pname="<{$item.name}>" >
+        <td class="item_bn <{$item.item_type}>class">
+          <span class="number"><{$item.bn}></span>
+          <input type="hidden" value="<{$item.bn}>" name="bn_list[]" /></td>
+        <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" value="<{$item.product_id}>" style="display:none;" /></td>
+        <td class="item_addon"><{$item.addon}></td>
+        <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="goods[obj][<{$obj.obj_id}>][]" />
+          <input atype="num" aid="<{$item.item_id}>" name="goods[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" /></td>
+        <td class="item_price"><input name="goods[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" atype="price" id="pr_<{$item.item_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" /></td>
+
+        <td class="goods_num"><input type="text" id="pmt_<{$item.item_id}>" aid="<{$item.item_id}>" vtype="unsigned" atype="pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price"  name="goods[item_pmt_price][<{$item.item_id}>]" size="6" <{if $item.delete == 'true'}>disabled="true"<{/if}>  onchange="changetotalgoods(this);total();" /></td>
+        
+        <td class="goods_num"><input type="text" class="goodstotal" style="display:none" id="goodstotal_<{$item.item_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" size="5" id="goodssalepr_<{$item.item_id}>" readonly="readonly" <{if $item.delete == 'true'}>disabled="true"<{/if}> class="none_input<{if $obj.obj_type != 'gift' && $obj.order_items|@count == '1'}> goodssaleprice<{/if}>" value="<{$item.sale_price}>"></td>
+
+
+        <{foreach from=$branch_list item=branch}>
+            <td class="branch ColColorGreen">
+                <{$combineOrders[$item.order_id][items][goods][$obj.obj_id][order_items][$item.item_id][branch_store][$branch.branch_id]}>
+            </td>
+        <{/foreach}>
+        
+        <td class="item_op" objid="<{$obj.obj_id}>">
+          <{if $item.delete == 'false'}>
+          <{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }></td>
+        <{else}>
+        <{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }></td>
+      <{/if}>
+      </tr>
+      <{/foreach}>
+    <{/foreach}>
+    <tr><td colspan="9" style="background:#f0f0f0;height:10px;"></td></tr>
+  </tbody>
+</table>
+
+<{else}>
+  <table class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+    <thead>
+      <tr>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>购买数量</th>
+        <th>可编辑数量</th>
+        <th>商品单价</th>
+        <th>优惠价格</th>
+        <th>销售价格</th>
+        <{foreach from=$branch_list item=branch}>
+          <th style="width:7%;" data-storeid="<{$branch.branch_id}>" <{if $branch.branch_id == $selected_branch_id}>class="selected"<{/if}>><a href="javascript:void(0);" class="select_branch" title="<{t}>联系人：<{/t}><{$branch.uname}>&#13;
+<{t}>电话：<{/t}><{$branch.phone}>&#13;
+<{t}>手机：<{/t}><{$branch.mobile}>"><{$branch.name}></a></th>
+          <{/foreach}>
+          
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <{foreach from=$conf.objs item=obj}>
+      <{if $obj.order_items|@count > 1}>
+      <tr class="ColColorGray" id="tr_<{$obj.obj_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"  <{else}>g-del="a"<{/if}>>
+        <td class="goods_bn"><{$obj.bn}></td>
+        <td class="goods_name"><{$obj.name}></td>
+        <td class="goods_addon">商品</td>
+        <td class="goods_num"><input type="text" id="obj_pmt_<{$obj.obj_id}>" aid="<{$obj.obj_id}>" vtype="unsigned" atype="obj_pmt_price" class="goods_pmt_price" value="<{$obj.pmt_price|default:0}>" name="goods[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $g_del == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" />(额外)</td>
+        <td class="goods_price"><input type="text" style="display:none" id="goodstotal_<{$obj.obj_id}>" size="2" value="0" /><input type="text" size="5" id="goodssalepr_<{$obj.obj_id}>" class="none_input goodssaleprice" readonly="readonly" value="<{$obj.sale_price}>"></td>
+        <td class="goods_op"></td>
+
+
+      </tr>
+      <{/if}>
+      <{foreach from=$obj.order_items item=item}>
+      <tr id="tr_<{$item.item_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"  class='disabled'<{else}>g-del="a"<{/if}> g-type="<{$item.item_type}>" g-pid="<{$item.product_id}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>" g-bn="<{$item.bn}>" g-pname="<{$item.name}>" >
+        <td class="item_bn <{$item.item_type}>class">
+          <span class="number"><{$item.bn}></span>
+          <input type="hidden" value="<{$item.bn}>" name="bn_list[]" /></td>
+        <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" value="<{$item.product_id}>" style="display:none;" /></td>
+        <td class="item_addon"><{$item.addon}></td>
+        
+        <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="goods[obj][<{$obj.obj_id}>][]" /><input atype="num" aid="<{$item.item_id}>" name="goods[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$item.quantity}>" id="old_goods_nums_<{$item.item_id}>" /></td>
+        
+        <td class="item_buy_nums">
+        <{if $item.left_nums <= 0}>
+        	<input aid="<{$item.item_id}>" name="goods[item_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="item_buy_nums_<{$item.item_id}>" disabled="true" />
+        <{else}>
+        	<input atype="num" aid="<{$item.item_id}>" name="goods[item_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="item_buy_nums_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotalgoods(this);total();" />
+        <{/if}>
+        <{if $item.make_nums}><br />(<font color="#f00;">已发货：<{$item.make_nums}></font>)<input type="hidden" value="<{$item.make_nums}>" id="split_send_<{$item.item_id}>" /><{/if}>
+        </td>
+        
+        <td class="item_price"><input name="goods[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" atype="price" id="pr_<{$item.item_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalgoods(this);total();"<{/if}> /></td>
+
+        <td class="goods_num"><input type="text" id="pmt_<{$item.item_id}>" aid="<{$item.item_id}>" vtype="unsigned" atype="pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price"  name="goods[item_pmt_price][<{$item.item_id}>]" size="6" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalgoods(this);total();"<{/if}> /></td>
+        
+        <td class="goods_num"><input type="text" class="goodstotal" style="display:none" id="goodstotal_<{$item.item_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" size="5" id="goodssalepr_<{$item.item_id}>" readonly="readonly" <{if $item.delete == 'true'}>disabled="true"<{/if}> class="none_input<{if $obj.obj_type != 'gift' && $obj.order_items|@count == '1'}> goodssaleprice<{/if}>" value="<{$item.sale_price}>"></td>
+
+
+        <{foreach from=$branch_list item=branch}>
+            <td class="branch ColColorGreen">
+                <{$combineOrders[$item.order_id][items][goods][$obj.obj_id][order_items][$item.item_id][branch_store][$branch.branch_id]}>
+            </td>
+        <{/foreach}>
+        
+        <td class="item_op" objid="<{$obj.obj_id}>">
+        <{if empty($item.make_nums)}>
+            <{if $item.delete == 'false'}>
+            	<{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }>
+            <{else}>
+            	<{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }>
+            <{/if}>
+        <{else}>
+        	<span style="color:red;"><{if $item.left_nums <= 0}>已拆分完<{else}>部分拆分<{/if}></span>
+        <{/if}>
+        </td>
+      </tr>
+      <{/foreach}>
+    <{/foreach}>
+    <tr><td colspan="10" style="background:#f0f0f0;height:10px;"></td></tr>
+  </tbody>
+</table>
+<input type="hidden" name="is_split" value="1"/>
+<{/if}>
+</div>
+<script>
+if($$('.adjunctclass,.giftclass').length){
+    $$('.adjunctclass,.giftclass').each(function(e){
+      var div = new Element('div').inject(e,'top');
+      new Element('div').inject(div);
+    });
+}
+$('add_product').addEvent('click',function(e){
+    var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_order&act=findProduct');
+    Ex_Loader('modedialog',function() {
+      new finderDialog(url,{params:{url:'index.php?app=ome&ctl=admin_order&act=getProducts',name:'product_id[]'},handle:this,width:1000,height:660,
+          onCallback:function(rs){
+              if(!rs)return;
+              rs=JSON.decode(rs);
+              init(rs);
+          }
+      });
+    }.bind(this));
+});
+var callurl='index.php?app=ome&ctl=admin_order&act=getProducts',store=[];
+var options={
+       'getVar':'bn',
+       'fxOptions':false,
+       callJSON:function(){return window.autocompleter_json;},
+       injectChoice:function(json){
+           var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+           choice.store('_data',json);
+           choice.inputValue = json[this.options.getVar];
+           this.addChoiceEvents(choice).inject(this.choices);
+       },
+       onHide:function(){
+               if(!this.selected)return ;
+              var _json=this.selected.retrieve('_data');
+               _json=$splat(_json);
+               init(_json);
+               MessageBox.success('加载商品成功!');
+      },onFocus:function(ipt){
+               ipt.value='';
+      }
+}
+Ex_Loader('autocompleter',function() {
+  new Autocompleter.script($E('#pfba input'),callurl, options);
+  new Autocompleter.script($E('#pfba2 input'),callurl,$merge(options,{'getVar':'name'}));
+});
+
+function init(rs){
+    rs.each(function (i){
+        var pid = i.product_id,ishave='false',aid='';
+        $ES('#goods_list tbody tr').each(function (e){
+            if (e.get('g-pid') == pid && e.get('g-type') == 'product'){
+                ishave='true';
+                aid=e.get('aid');
+            }
+        });
+        if (ishave=='true'){
+            if ($("num_"+aid).disabled){
+                alert("请恢复货品："+i.name);
+            }else {
+                alert("有此货品："+i.name);
+                $("num_"+aid).focus();
+            }
+            return;
+        }else {
+            create(pid,i);
+        }
+    });
+    if ($('goods_list').style.display=='none'){
+        $('goods_list').style.display = "";
+    }
+};
+
+function create(pid,rs){
+	<{if $delivery_list}>
+    var trr = new Element('tr', {id:'tr_'+pid,oid:pid,'aid':pid,'g-pid':pid,'g-type':'product','g-del':'a',html:'<td>'+rs.bn+'</td><td>'+rs.name+'<input name="product_ids[]" id="product_ids_'+pid+'" type="text" value="'+rs.product_id+'" style="display:none;" /></td><td>'+(rs.spec_info||'-')+'</td><td><input type="text" onchange="changetotalgoods(this);total();" id="num_'+pid+'" vtype="required&amp;&amp;unsignedint" value="1" size="5" name="goods[newnum]['+pid+']" aid="'+pid+'" atype="num"></td><td>0</td><td><input type="text" onchange="changetotalgoods(this);total();" id="pr_'+pid+'" vtype="required&amp;&amp;unsigned" value="'+rs.price+'" size="8" name="goods[newprice]['+pid+']" aid="'+pid+'" atype="price" value="0"></td><td><input type="text" onchange="changetotalgoods(this);total();" size="6" name="goods[new_item_pmt_price]['+pid+']" value="0" atype="pmt_price" vtype="unsigned" aid="'+pid+'" id="pmt_'+pid+'"></td><td><input type="text" value="0" size="2" id="goodstotal_'+pid+'" style="display:none;" class="goodstotal"><input type="text" size="5" class="none_input goodssaleprice" value="0" readonly="readonly" id="goodssalepr_'+pid+'"></td><td><button class="btn" onclick="del_goods_new('+pid+');" id="d_'+pid+'" type="button"><span><span>删除</span></span></button></td>'}).inject($E('#goods_list tbody'));
+	<{else}>
+    var trr = new Element('tr', {id:'tr_'+pid,oid:pid,'aid':pid,'g-pid':pid,'g-type':'product','g-del':'a',html:'<td>'+rs.bn+'</td><td>'+rs.name+'<input name="product_ids[]" id="product_ids_'+pid+'" type="text" value="'+rs.product_id+'" style="display:none;" /></td><td>'+(rs.spec_info||'-')+'</td><td><input type="text" onchange="changetotalgoods(this);total();" id="num_'+pid+'" vtype="required&amp;&amp;unsignedint" value="1" size="5" name="goods[newnum]['+pid+']" aid="'+pid+'" atype="num"></td><td><input type="text" onchange="changetotalgoods(this);total();" id="pr_'+pid+'" vtype="required&amp;&amp;unsigned" value="'+rs.price+'" size="8" name="goods[newprice]['+pid+']" aid="'+pid+'" atype="price" value="0"></td><td><input type="text" onchange="changetotalgoods(this);total();" size="6" name="goods[new_item_pmt_price]['+pid+']" value="0" atype="pmt_price" vtype="unsigned" aid="'+pid+'" id="pmt_'+pid+'"></td><td><input type="text" value="0" size="2" id="goodstotal_'+pid+'" style="display:none;" class="goodstotal"><input type="text" size="5" class="none_input goodssaleprice" value="0" readonly="readonly" id="goodssalepr_'+pid+'"></td><td><button class="btn" onclick="del_goods_new('+pid+');" id="d_'+pid+'" type="button"><span><span>删除</span></span></button></td>'}).inject($E('#goods_list tbody'));
+	<{/if}>
+
+    changetotalgoods($('pr_'+pid));
+    total();
+}
+
+
+function changetotalgoods(e){
+    var id = e.get('aid'),l=0,_ca = e.getNext('.error');
+    if(e.disable) return;
+    if (/^\d+(\.\d+)?$/.test(e.value)){
+        if(e.get('atype') == 'num'){
+            if (parseInt(e.value) <= 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else{
+                if (_ca) _ca.remove();
+            }
+
+            $('goodstotal_'+id).value = parseFloat($('num_'+id).value * $('pr_'+id).value).toFixed(3);
+
+            var goodssalepr_ = (parseFloat($('num_'+id).value)*parseFloat($('pr_'+id).value) - parseFloat($('pmt_'+id).value)).toFixed(3);
+            if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr_))
+            {
+                $('goodssalepr_'+id).set('value', goodssalepr_);
+            }else{
+                return;
+            }
+
+            var ptr,oid,m=0;
+            if((ptr = e.getParent('tr').getPrevious('tr.ColColorGray'))) {
+                oid = ptr.get('oid');
+                ptr.getAllNext('tr').each(function(item){
+                    if(oid == item.get('oid')){
+                        m += parseFloat($('num_'+item.get('aid')).value)*parseFloat($('pr_'+item.get('aid')).value) - parseFloat($('pmt_'+item.get('aid')).value);
+                    }
+                });
+                var goodsalepr = (m - parseFloat($('obj_pmt_'+oid).value)).toFixed(3);
+                if (/^[-|0-9]*[0-9|.]+$/.test(goodsalepr))
+                {
+                  $('goodssalepr_'+oid).set('value', goodsalepr);
+                }else{
+                    return;
+                }
+            }
+            if($('goodstotal_'+oid)){
+                var goodstotalsub = 0;
+                $('goodstotal_'+oid).getParent('tr').getAllNext('tr[oid='+oid+']').length && $('goodstotal_'+oid).getParent('tr').getAllNext('tr[oid='+oid+']').each(function(e){
+                    goodstotalsub += parseFloat(e.getElement('[id^=goodstotal_]').value);
+                });
+                $('goodstotal_'+oid).value = parseFloat(goodstotalsub).toFixed(3);
+            }
+
+        }else if (e.get('atype') == 'price'){
+
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else{
+                if (_ca) _ca.remove();
+            }
+
+            $('goodstotal_'+id).value = parseFloat($('num_'+id).value).toFixed(3)*parseFloat($('pr_'+id).value).toFixed(3);
+  
+            var goodssalepr_ = (parseFloat($('num_'+id).value)*parseFloat($('pr_'+id).value) - parseFloat($('pmt_'+id).value)).toFixed(3);
+			
+            if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr_))
+            {
+
+                $('goodssalepr_'+id).set('value', goodssalepr_);
+            }else{
+                return;
+            }
+
+            var ptr,oid,m=0;
+            if((ptr = e.getParent('tr').getPrevious('tr.ColColorGray'))) {
+                oid = ptr.get('oid');
+                ptr.getAllNext('tr').each(function(item){
+                    if(oid == item.get('oid')){
+                        m += parseFloat($('num_'+item.get('aid')).value)*parseFloat($('pr_'+item.get('aid')).value) - parseFloat($('pmt_'+item.get('aid')).value);
+                    }
+                });
+                
+                var goodssalepr = (m - parseFloat($('obj_pmt_'+oid).value)).toFixed(3);
+                if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr))
+                {
+                    $('goodssalepr_'+oid).set('value', goodssalepr);
+                }else{
+                    return;
+                }
+            }
+            if($('goodstotal_'+oid)){
+                var goodstotalsub = 0;
+                $('goodstotal_'+oid).getParent('tr').getAllNext('tr[oid='+oid+']').each(function(e){
+                    goodstotalsub += parseFloat(e.getElement('[id^=goodstotal_]').value);
+                });
+                $('goodstotal_'+oid).value = parseFloat(goodstotalsub).toFixed(3);
+            }
+        }else if (e.get('atype') == 'pmt_price'){
+
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else {
+                if (_ca) _ca.remove();
+            }
+
+            var goodssalepr = (parseFloat($('num_'+id).value)*parseFloat($('pr_'+id).value) - parseFloat($('pmt_'+id).value)).toFixed(3);
+            if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr))
+            {
+                $('goodssalepr_'+id).set('value', goodssalepr);
+            }else{
+                return;
+            }
+
+            var ptr,oid,aid,m=0;
+            if((ptr = e.getParent('tr').getPrevious('tr.ColColorGray'))) {
+                oid = ptr.get('oid');
+                ptr.getAllNext('tr').each(function(item){
+                    aid = item.get('aid');
+                    if(oid == item.get('oid')){
+                        m += parseFloat($('num_'+aid).value)*parseFloat($('pr_'+aid).value) - parseFloat($('pmt_'+aid).value);
+                    }
+                });
+                
+                var goodssalepr = (m - parseFloat($('obj_pmt_'+oid).value)).toFixed(3);
+                if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr))
+                {
+                    $('goodssalepr_'+oid).set('value', goodssalepr);
+                }else{
+                    return;
+                }
+            }
+        }else if (e.get('atype') == 'obj_pmt_price'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }else {
+                if (_ca) _ca.remove();
+            }
+            e.getParent('tr').getAllNext('tr').each(function(item){
+                if(e.getParent('tr').get('oid') == item.get('oid')){
+                    l += parseFloat($('num_'+item.get('aid')).value)*parseFloat($('pr_'+item.get('aid')).value) - parseFloat($('pmt_'+item.get('aid')).value);
+                }
+            });
+            
+            var goodssalepr = (l - parseFloat($('obj_pmt_'+id).value)).toFixed(3);
+            if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr))
+            {
+                $('goodssalepr_'+id).set('value', goodssalepr);
+            }else{
+                return;
+            }
+        }
+    }else{
+        if (!_ca){
+            new Element('span',{'class':"error caution notice-inline",html:"请录入数值"}).injectAfter(e);
+            e.set('value', '0');
+        }
+    }
+}
+
+
+$('goods_list').getElements("input[atype]").each(function(e){
+    changetotalgoods(e);
+});
+
+function total_goods(){
+    var total = 0,amount = 0;
+    $('goods_list').getElements("input.goodstotal").each(function(item,k){
+        if(!item.disabled)total += parseFloat(item.value);
+    });
+    $('goods_list').getElements('.goodssaleprice').each(function(item,k){
+        if(!item.disabled)amount += parseFloat(item.value);
+    });
+    return [total,amount];
+ }
+
+  function del_goods(id){
+    
+    var oid = $("tr_"+id).get('oid');
+    var subtotal = 0;
+    var saleprice = 0;
+    var lesssub = 0;
+    var lesssale = 0;
+    if($('tr_'+id).get('g-del') == 'a'){
+      if(($("tr_"+id).get('g-type') == 'product') && $('tr_'+oid) && ($("tr_"+id).get('g-bn') == $('tr_'+oid).get('g-bn'))){
+        $$('#goods_list tbody tr[oid='+oid+']').each(function(e){
+            if(e.hasClass('disabled')){
+                lesssub += parseFloat(e.getElement('[id^=goodstotal_]').value);
+                lesssale += parseFloat(e.getElement('[id^=goodssalepr_]').value);
+            }
+            else {
+              e.addClass('disabled').set('g-del','b');
+              e.getElements('input').length && e.getElements('input[type=text]').set('disabled',true);
+              e.get('g-type') == 'adjunct' || e.get('g-type') == 'gift' ? e.getElement('button').hide() : e.getElement('button') && e.getElement('button').getElement('span span').set('text','恢复');            
+            }
+        });
+        if(lesssub >0){
+            subtotal = parseFloat($('goodstotal_'+oid).value) - lesssub;
+            saleprice = parseFloat($('goodssalepr_'+oid).value) - lesssub;
+        }
+      }
+      else {
+        subtotal = $('goodstotal_'+id).value;
+        saleprice = $('goodssalepr_'+id).value;
+        $("num_"+id).disabled=true;
+        $("pr_"+id).disabled=true;
+        $("pmt_"+id).disabled=true;
+        $("goodstotal_"+id).disabled=true;
+        $("goodssalepr_"+id).disabled=true;
+		
+		$("product_ids_"+id).disabled=true;
+		
+        $("tr_"+id).addClass('disabled').set('g-del','b');
+        $("d_"+id).getElement('span span').set('text','恢复');
+      }
+    }
+    else if($('tr_'+id).get('g-del') == 'b'){
+      if(($("tr_"+id).get('g-type') == 'product') && $('tr_'+oid) && ($("tr_"+id).get('g-bn') == $('tr_'+oid).get('g-bn'))) {
+        $$('#goods_list tbody tr[oid='+oid+']:not(:disabled)').each(function(e){
+            if(!e.hasClass('disabled')){
+                lesssub += parseFloat(e.getElement('[id^=goodstotal_]').value);
+                lesssale += parseFloat(e.getElement('[id^=goodssalepr_]').value);
+            }
+            else {
+              e.removeClass('disabled').set('g-del','a');
+              e.getElements('input').length && e.getElements('input[type=text]').set('disabled',false);
+              e.getElement('button') && e.getElement('button').show().getElement('span span').set('text','删除');
+            }
+        });
+        if(lesssub >0){
+            subtotal = parseFloat($('goodstotal_'+oid).value) - lesssub;
+            saleprice = parseFloat($('goodssalepr_'+oid).value) - lesssub;
+        }
+      }
+      else {
+        if($('tr_'+oid) && $('tr_'+oid).hasClass('disabled')) return;
+        $("num_"+id).disabled=false;
+        $("pr_"+id).disabled=false;
+        $("pmt_"+id).disabled=false;
+        $("goodstotal_"+id).disabled=false;
+        $("goodssalepr_"+id).disabled=false;
+		
+		$("product_ids_"+id).disabled=true;
+		
+        $("tr_"+id).removeClass('disabled').set('g-del','a');
+        $("d_"+id).getElement('span span').set('text','删除');
+        subtotal = $('goodstotal_'+id).value;
+        saleprice = $('goodssalepr_'+id).value;
+      }
+    }
+    delgoodstotal(id,subtotal,saleprice);
+
+  }
+
+function delgoodstotal(id,subtotal,saleprice){
+    var goodstotal = 0;
+    var goodssaleprice = 0;
+    var oid = $("tr_"+id).get('oid');
+    var total = parseFloat($('total').get('text')).toFixed(3);
+    var total_sale = parseFloat($('total_sale_amount').get('text')).toFixed(3);
+
+    if (!$('goodstotal_'+id) || $('goodstotal_'+id).disabled) {
+        if($('goodstotal_'+oid) && $('tr_'+id).get('g-del') == 'b'){
+            if($("tr_"+id).get('g-type') == 'product'){
+                goodstotal = $('goodstotal_'+oid).value;
+                goodssaleprice = $('goodssalepr_'+oid).value;
+            }
+        }
+        else {
+            goodstotal = $('goodstotal_'+id).value;
+            goodssaleprice = $('goodssalepr_'+id).value;
+        }
+        total = (parseFloat(total) - parseFloat(subtotal || goodstotal)).toFixed(3);
+        if (total>=0){
+           $('total').set('text', total);
+           $('cost_amount_show').set('text', '¥'+total).set('val', total);
+        }
+        total_sale = (parseFloat(total_sale) - parseFloat(saleprice || goodssaleprice)).toFixed(3);
+        if (total_sale){
+            $('total_sale_amount').set('text', total_sale);
+            var total_amount = (parseFloat($('total_amount_show').get('val')) - parseFloat(saleprice || goodssaleprice)).toFixed(3);
+			
+            $('total_amount_show').set('text','¥'+total_amount).set('val', total_amount);
+            $('new_total_amount').set('value',total_amount);
+            $('total_pmt').set('value', '¥'+parseFloat(total-total_sale).toFixed(3));
+
+        }
+    }
+    else{
+        if($('tr_'+id).get('g-del') == 'a'){
+            if($('goodstotal_'+oid) && $("tr_"+id).get('g-type') == 'product'){
+                goodstotal = $('goodstotal_'+oid).value;
+                goodssaleprice = $('goodssalepr_'+oid).value;
+            }
+        }
+        else {
+            goodstotal = $('goodstotal_'+id).value;
+            goodssaleprice = $('goodssalepr_'+id).value;
+        }
+        total = (parseFloat(total) + parseFloat(subtotal || goodstotal)).toFixed(3);
+        if (total>=0){
+           $('total').set('text', total);
+           $('cost_amount_show').set('text', '¥'+total).set('val', total);
+
+        }
+        total_sale = (parseFloat(total_sale) + parseFloat(saleprice || goodssaleprice)).toFixed(3);
+        if (total_sale){
+            $('total_sale_amount').set('text', total_sale);
+            var total_amount = (parseFloat($('total_amount_show').get('val')) + parseFloat(saleprice || goodssaleprice)).toFixed(3);
+            $('total_amount_show').set('text','¥'+total_amount).set('val', total_amount);
+            $('new_total_amount').set('value',total_amount);
+
+            $('total_pmt').set('value', '¥'+parseFloat(total-total_sale).toFixed(3));
+        }
+    }
+
+
+}
+
+//删除新增商品
+function del_goods_new(id){
+
+    var subtotal = $('goodstotal_'+id).value;
+    var saleprice = $('goodssalepr_'+id).value;
+    $('tr_'+id).set('g-del','b');
+    delgoodstotal(id,subtotal,saleprice);
+    $("tr_"+id).remove();
+    if (!$E('#goods_list tbody').getElement('td')){
+        $('#goods_list').hide();
+    }
+	total();
+}
+
+//[拆单]部分拆分编辑购买数量
+function split_changetotalgoods(e){
+    var id = e.get('aid'),l=0,_ca = e.getNext('.error');
+    if(e.disable) return;
+	
+	var split_buy_nums		= 0;
+	var split_send_nums		= 0;
+	var split_edit_nums		= 0;
+	if($('old_goods_nums_'+id))
+	{
+		split_buy_nums		= parseInt($('old_goods_nums_'+id).value);
+	}
+	if($('split_send_'+id))
+	{
+		split_send_nums		= parseInt($('split_send_'+id).value);
+	}
+	
+    if (/^\d+(\.\d+)?$/.test(e.value)){
+        if(e.get('atype') == 'num'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }
+			else if(parseInt(e.value) == 0 && split_send_nums == 0)
+			{
+				if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+			}
+			else{
+                if (_ca) _ca.remove();
+            }
+			
+			split_edit_nums		= split_send_nums + parseInt(e.value);
+			$('num_'+id).value  = split_edit_nums;
+			
+            $('goodstotal_'+id).value = parseFloat($('num_'+id).value * $('pr_'+id).value).toFixed(3);
+
+            var goodssalepr_ = (parseFloat($('num_'+id).value)*parseFloat($('pr_'+id).value) - parseFloat($('pmt_'+id).value)).toFixed(3);
+            if (/^[-|0-9]*[0-9|.]+$/.test(goodssalepr_))
+            {
+                $('goodssalepr_'+id).set('value', goodssalepr_);
+            }else{
+                return;
+            }
+
+            var ptr,oid,m=0;
+            if((ptr = e.getParent('tr').getPrevious('tr.ColColorGray'))) {
+                oid = ptr.get('oid');
+                ptr.getAllNext('tr').each(function(item){
+                    if(oid == item.get('oid')){
+                        m += parseFloat($('num_'+item.get('aid')).value)*parseFloat($('pr_'+item.get('aid')).value) - parseFloat($('pmt_'+item.get('aid')).value);
+                    }
+                });
+                var goodsalepr = (m - parseFloat($('obj_pmt_'+oid).value)).toFixed(3);
+                if (/^[-|0-9]*[0-9|.]+$/.test(goodsalepr))
+                {
+                  $('goodssalepr_'+oid).set('value', goodsalepr);
+                }else{
+                    return;
+                }
+            }
+            if($('goodstotal_'+oid)){
+                var goodstotalsub = 0;
+                $('goodstotal_'+oid).getParent('tr').getAllNext('tr[oid='+oid+']').length && $('goodstotal_'+oid).getParent('tr').getAllNext('tr[oid='+oid+']').each(function(e){
+                    goodstotalsub += parseFloat(e.getElement('[id^=goodstotal_]').value);
+                });
+                $('goodstotal_'+oid).value = parseFloat(goodstotalsub).toFixed(3);
+            }
+
+        }
+    }else{
+        if (!_ca){
+            new Element('span',{'class':"error caution notice-inline",html:"请录入数值"}).injectAfter(e);
+            e.set('value', '0');
+        }
+    }
+}
+</script>

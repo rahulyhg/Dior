@@ -1,0 +1,7 @@
+<{foreach from=$item_list item=objs key=obj_type}>
+    <{if empty($configlist.$obj_type) }>
+        <{include app="ome" file="admin/order/products/goods_view.html"}>
+    <{else}>
+        <{include app="{$configlist.$obj_type.app}" file="{$configlist.$obj_type.html}"}>
+    <{/if}>
+<{/foreach}>

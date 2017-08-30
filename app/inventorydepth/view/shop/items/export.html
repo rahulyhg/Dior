@@ -1,0 +1,51 @@
+<form action="index.php?app=inventorydepth&ctl=shop_frame&act=index&action=to_export" method='post' id='export_form' enctype="multipart/form-data">
+<div class="tableform">
+<div class="division" >
+<{if $ids}>
+     <{foreach from=$ids  item=id }>
+             <input  type="hidden" name='id[]' value='<{$id}>'>
+     <{/foreach}>
+ <{/if}>
+
+ <{if $filter.shop_bn}>
+    <input type='hidden' name='_shop_bn_search' value='<{$filter._shop_bn_search}>'>
+    <input type='hidden' name='shop_bn' value='<{$filter.shop_bn}>'>
+<{/if}>
+    <{if $filter.title}>
+    <input type='hidden' name='title' value='<{$filter.title}>'>
+<{/if}>
+ <{if $filter.approve_status}>
+    <input type='hidden' name='approve_status' value='<{$filter.approve_status}>'>
+<{/if}>
+ <{if $filter.shop_store}>
+    <input type='hidden' name='_shop_store_search' value='<{$filter._shop_store_search}>'>
+    <input type='hidden' name='shop_store' value='<{$filter.shop_store}>'>
+<{/if}>
+ <{if $filter.approve_status}>
+    <input type='hidden' name='approve_status' value='<{$filter.approve_status}>'>
+<{/if}>
+ <{if $filter.taog_store}>
+    <input type='hidden' name='_taog_store_search' value='<{$filter._taog_store_search}>'>
+    <input type='hidden' name='taog_store' value='<{$filter.taog_store}>'>
+<{/if}>
+ 
+<input type='hidden' name='export_in_backend' value='true'>
+<input type='hidden' name='shop_id' value="<{$shop_id}>">
+<input type='radio' name='_io_type' value='csv' checked/>csv
+<span style="padding:0 10px">
+<{button type="submit" label=$___desktop="导出"|t:'desktop' app="desktop" icon="btn_get_world.gif" id='shop-item-export'}>
+</span><br/>
+
+</div></div>
+</form>
+<script>
+    $('shop-item-export').addEvent('click',function(e){
+        e.stop();
+        if (confirm('为了数据准确性，请先去前端店铺同步商品！现在前往同步？'))
+        {
+            location.href = 'index.php?app=inventorydepth&ctl=shop&act=index';
+        } else {
+            this.form.fireEvent('submit',e);
+        }
+    });
+</script>

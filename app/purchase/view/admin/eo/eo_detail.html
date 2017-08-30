@@ -1,0 +1,76 @@
+<div class="tableform">
+<h4>采购单详情</h4>
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<thead>
+      <tr>
+        <th>供应商:</th>
+        <td><{$eo.supplier_name}></td>
+        <th>经办人:</th>
+        <td><{$eo.detail.operator}></td>
+      </tr>
+      <tr>
+        <th>结算方式 :</th>
+        <td><{if $eo.po_type=='cash'}>现款<{else}>赊账 <{/if}></td>
+        <th>采购日期:</th>
+        <td><{$eo.purchase_time|date_format:"%Y-%m-%d"}></td>
+      </tr>
+      <tr>
+        <th>退货仓库:</th>
+        <td><{$eo.branch_name}></td>
+        <th>到货日期:</th>
+        <td><{$eo.arrive_time|date_format:"%Y-%m-%d"}></td>
+      </tr>
+      <tr>
+        <th>金额总计:</th>
+        <td><{$eo.limit_money}></td>
+        <th>备注:</th>
+        <td>
+        <div id="memo_show">
+        <{foreach from=$eo.memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+        </div>
+        </td>
+      </tr>
+</thead>
+</table>
+</div>  
+  
+<h4>入库商品明细</h4>
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<thead>
+      <tr>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>货号</th>
+        <th>单位</th>
+        <th>采购数量</th>
+        <th>可退货数量</th>
+        <th>退货价格</th>
+        <th>货位</th>
+        <th>新品</th>
+        </tr>
+        </thead>
+        <tbody>
+	  <{foreach from=$eo.items item=items}>
+      <tr>
+        <td><{$items.product_name}></td>
+        <td><{$items.spec_info}></td>
+        <td><{$items.bn}></td>
+        <td><{$items.unit}></td>
+        <td><{$items.entry_num}></td>
+        <td><{$items.over_num}></td>
+        <td><{$items.price}></td>
+        <td><{$items.store_position}></td>
+        <td><{if $items.is_new=="true"}>是<{else}>否<{/if}></td>
+        </tr>
+	  <{/foreach}>
+	  </tbody>
+</table>
+</div>
+
+</div>

@@ -1,0 +1,48 @@
+<div class="tableform">
+<h4><{t}>盘点单详情:<{/t}></h4>
+<div class="division">
+<table cellpadding="0"  cellspacing="0" class="gridlist" cellpadding="0">
+<thead>
+<tr>
+<th>货号</th>
+<th>货品名称</th>
+<th>盘点结果</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<{foreach from=$rows item=item}>
+<tr>
+<td><{$item.bn}></td>
+<td><{$item.name}></td>
+<td><{$item.quantity}></td>
+<td><{$item.memo}></td>
+</tr>
+<{/foreach}>
+<{if $many == 'true'}>
+<tr>
+<td align="right" colspan="4"><{button type="button" label="查看更多" id="b1" }></td>
+</tr>
+<{/if}>
+</tbody>
+</table>
+</div></div>
+
+<script>
+if ($('b1')){
+	$('b1').addEvent('click', function(e){
+		var url_ = "index.php?app=console&ctl=admin_inventory&act=view_item&inventory_id="+<{$inventory_id}>;
+	    //window.open(url_);
+	    var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent(url_);
+	    Ex_Loader('modedialog',function() {
+	      new finderDialog(url,{params:{url:'',name:'product_id[]'},handle:this,width:1000,height:660,
+	          onCallback:function(rs){
+	              //if(!rs)return;
+	              //rs=JSON.decode(rs);
+	              //init(rs);
+	          }
+	      });
+	    }.bind(this));
+	});
+}
+</script>

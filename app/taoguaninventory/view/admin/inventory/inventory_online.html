@@ -1,0 +1,253 @@
+<div class="tableform">
+  <h3>在线盘点</h3>
+  <form action="index.php?app=taoguaninventory&ctl=admin_inventory&act=updateBranchProductPos" method="post" id="onlineForm">
+    <input type="hidden" name="branch_id" id="branch_id" value="<{$branch_id}>" />
+    <input type="hidden" name="in_online_inv"  value="1" />
+    <div class="division">
+      <div>
+        <table>
+           <tr>
+            <td>商品名称：<strong id="goods_name" style="font-size: 26px;"></strong> &nbsp;规格：<strong class="blue" id="goods_spec" style="font-size: 26px;"></strong></td>
+          </tr>
+        </table>
+      </div>
+      <div class="division scan_input">
+        <label for="label">条码：</label>
+        <input type="text" name="barcode" id="bar_ipt" size="45" vtype="required" />
+        <{help}><{t}><b>操作提示：</b>手动输入信息，完成后需要按Enter键(回车)提交数据，才可进行下一步操作。<{/t}><{/help}>
+        <input type="hidden" id="pro_id" name="product_id" value="" /><br />
+        <label for="label">数量：</label>
+        <input type="text" name="num" id="num_ipt" size="15" vtype="required&&unsigned" disabled="disabled" /> <input type="hidden" name="number" value="" />
+      关联货位：<span id="asso_pos_el"></span>
+      </div>
+      <div class="gray_form">
+        <table border="0" class="inventory_info" style="width:70%">
+         
+          <!-- <tr>
+            <td>盘点商品货号：<strong id="goods_bn"></strong></td>
+            <td width="130">库存总数：<strong id="goods_num"></strong></td>
+          </tr> -->
+          <tr>
+            <td colspan="2"><table class="gridlist" style="width:100%">
+                <thead>
+                  <tr>
+                    <th>账面数量</th>
+                    <th>实际数量</th>
+                    <th>盈(+)亏(-)记录</th>
+                  </tr>
+                </thead>
+                <tbody id="dataNode">
+                </tbody>
+              </table></td>
+          </tr>
+        </table>
+       
+      </div>
+      <table border="0">
+        <tr>
+          <td width="20%">仓库：<{$branch_name}></td>
+          <td width="20%">盘点人：<{$op_name}></td>
+          <td>盘点时间：<{$date}></td>
+        </tr>
+      </table>
+     
+      <div class="table-action"> <{button label="确认" type="button" id="btn_submit" disabled='disabled'}> &nbsp; &nbsp; <{button label="清空" id="btn_reset" type="reset"}> </div>
+    </div>
+  </form>
+</div>
+<script>
+  (function(){
+    var node = $('dataNode'),
+    bar_ipt = $('bar_ipt'),
+    //pos_ipt = $('pos_ipt'),
+    num_ipt = $('num_ipt'),
+    //more = $('more_info'),
+    //delItem = more.getElement('.flt input[type=checkbox]'),
+    submit = $('btn_submit'),
+    reset = $('btn_reset');
+
+    bar_ipt.focus();
+
+    function message(msg,el,type,delay,id){
+      msg = msg || '';
+      type = type || 'error';
+      delay = $chk(delay) ?delay : 4000;
+      id = id || 'error_msg';
+      var bool = type == 'show' ? null : type == 'success' ? true : false;
+      var err;
+      err = $(id) || new Element('span.'+type+'#'+id);
+      err.setHTML(msg).injectAfter(el);
+      if(delay) err.destroy.delay(delay,err);
+      if(!bool) try{el.select();}catch(e){}
+      return bool;
+    }
+    function validData(ipt,msg,type){
+      type = type || 'trim';
+      if (!ipt.value) return message('请输入' + msg,ipt);
+      //if (type == 'trim' && ipt.value.test(/^[\s 　]+|[\s 　]+$/)) return message(msg + '信息无法识别',ipt);
+      if (type == 'number' && !ipt.value.test(/^\d+$/)) return message(msg + '请输入数字',ipt);
+      return true;
+    }
+    function getEmpty(){
+      return '<tr><td colspan="4" class="empty">没有货位信息，可在线盘点新建货位！</td></tr>';
+    }
+    function getDataTpl(j){
+      return '<tr key='+j.product_id+' class="associated"><td><span class="hasstore" style="display:none;">'+j.num+'</span><span class="store">-</span></td><td class="num fb">-</td><td class="diff fontcolorGreen">-</td></tr>';
+    }
+    function requestData(json){
+      json = json || node.retrieve('jsondata') || {};
+      var data = '';
+      
+      data = getDataTpl(json);
+
+      node.setHTML(data);
+
+     
+
+      num_ipt.set('disabled',false).focus();
+      MessageBox.success('加载成功');
+    }
+
+    bar_ipt.addEvent('enter',function(e){
+      //if(e.key == 'enter'){
+        cleanup(true);
+        setBtn(1);
+        submitData();
+        ///num_ipt.set('disabled',true);
+        if(!validData(this,'条码')) return;
+
+        new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventory&act=getProduct', method:'post',data: this.name +"="+ this.value.trim() +"&branch_id="+ $('branch_id').value,
+          onRequest: function(){
+            MessageBox.show('正在加载...');
+          },
+          onSuccess:function(json){
+            if(json == 'false'){
+              message('商品信息在系统中不存在',this);
+              return MessageBox.error('加载失败');
+            }
+            json = JSON.decode(json);
+            node.store('jsondata',json);
+            $E('input[name=product_id]').value = json.product_id;
+            $('goods_name').setText(json.name);
+            $('goods_spec').setText(json.spec_info);
+            
+            if(json.asso_pos){
+            	var html = '';
+            	json.asso_pos.each(function(item){
+            		//html += '<input type="checkbox" name="asso_pos[]" value="'+item.pos_id+'" checked="checked" />'+item.pos_name+' &nbsp ';
+            		html += '<span title="'+item.create_time+'">' +item.pos_name+'</span> &nbsp ';
+            		
+            	});
+               $('asso_pos_el').setHTML(html);
+            }
+            //$('goods_bn').setText(json.bn);
+            //$('goods_num').setText(json.num);
+            requestData(json);
+            if((tr = node.getElement('tr[key='+json.product_id+']'))){
+                selectbind(tr,true);
+            }
+          }.bind(this)
+        }).send();
+      //}
+    });
+    function selectbind(tr,bool){
+      tr.addClass('selected').getSiblings('.selected').removeClass('selected');
+      num_ipt.addEvent('enter',function(e){
+        //if(e.key == 'enter'){
+          process(this,tr,bool);
+        //}
+      });
+    }
+    function process(num_ipt,tr,bool){
+      if(!validData(num_ipt,'数量','number')){
+        tr.getElement('.num').setText('-');
+        tr.getElement('.diff').setText('-');
+        return false;
+      }
+      if(tr.match('.selected')){
+        tr.getElement('.hasstore').show();
+        tr.getElement('.store').hide();
+        tr.getElement('.num').setText(num_ipt.value.toInt());
+        
+        var diff_num = num_ipt.value.toInt() - tr.getElement('.hasstore').get('text').toInt();
+        var diff_color = 'red';
+        if(diff_num > 0){
+            diff_color = 'fontcolorGreen';
+        }
+        
+        tr.getElement('.diff').removeClass('fontcolorGreen');
+        tr.getElement('.diff').addClass(diff_color);
+        tr.getElement('.diff').setText(num_ipt.value.toInt() - tr.getElement('.hasstore').get('text').toInt());
+      }
+      $E('input[name=number]').value = num_ipt.value;
+      num_ipt.set('disabled',true);
+      if(bool){
+        setBtn();
+      }
+      else submit.set('disabled',false).focus();
+      submit.removeEvents('click').addEvent('click',function(){
+          this.disabled=true;
+        this.getParent('form').fireEvent('submit',{stop:$empty});
+      });
+
+      return true;
+    }
+    function init(el){
+      if(!el) return;
+      el.getElement('.hasstore').hide();
+      el.getElement('.store').show();
+      el.getElement('.num').setText('-');
+      el.getElement('.diff').setText('-');
+    }
+
+   
+
+    //submitData();
+
+    reset.addEvent('click',function(){
+      cleanup();
+      setBtn(1);
+      submitData();
+    });
+
+    function submitData(bool){
+      submit.removeEvents('click').addEvent('click',function(e){
+        if(bool){
+          //var json = node.retrieve('jsondata').item || {};
+          var diff_color = 'red';
+          if(num_ipt.value.toInt()>0){
+        	  diff_color = 'fontcolorGreen';
+          }
+          var tpl='<td><span class="hasstore">0</span><span class="store" style="display:none;">-</span></td><td class="num fb">'+num_ipt.value.toInt()+'</td><td class="diff '+ diff_color +'">'+num_ipt.value.toInt()+'</td>';
+          var newtr= $E('tr[key='+$E('input[name=product_id]').value+']') || new Element('tr[key='+$E('input[name=product_id]').value+'].noassociated').inject(node,'top');
+          newtr.setHTML(tpl);
+          selectbind(newtr);
+        }else if(!process(num_ipt,node.getElement('tr[key = '+$E('input[name=product_id]').value+']'),true)) return;
+        setBtn();
+        num_ipt.set('disabled',true);
+        $E('[name=number]').set('value',num_ipt.value);
+        submit.removeEvents('click').addEvent('click',function(){
+            this.disabled=true;
+          this.getParent('form').fireEvent('submit',{stop:$empty});
+        });
+      });
+    }
+    function cleanup(bool){
+      if(bool){
+        $$('#onlineForm input[type=text]').erase(bar_ipt).set('value','');
+      }
+      else {
+        $$('#onlineForm input[type=text]').set('value','');
+
+        node.setHTML('');
+      }
+    }
+    function setBtn(bool){
+      var v;
+      if(bool) v = ['确认','清空','blur'];
+      else v = ['确认','返回','focus'];
+      submit.set('html','<span><span>' + v[0] + '</span></span>').set('disabled',!!bool)[v[2]]();
+      reset.set('html','<span><span>' + v[1] + '</span></span>');
+    }
+  })();
+</script>

@@ -1,0 +1,110 @@
+<{switch from=$way }>
+<{case value='single'}>
+  <div class='division info release-dialog'>
+    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <col style='width:40px;'/>
+    <col />
+    <tbody>
+    <tr>
+      <th><{img src='loading_medium.gif' app='inventorydepth'}></th>
+      <td style='font-size:14px;font-weight:bold;'>正在发布，请耐心等待...</td>
+    </tr>
+    </tbody>
+    </table>
+  </div>
+<{area inject='.mainFoot'}>
+<div class='table-action'>
+<{button label='确定' isCloseDialogBtn="true"}>
+</div>
+<{/area}>
+  <script type="text/javascript">
+void function(){
+  var waring = "<{$warning}>";
+  if (waring == true) {
+    if (!confirm('发布库存大于可售库存，确认发布吗？')) {
+      $E('.info').setHTML('<div style="color:red;font-size:30px;">发布取消!</div>');
+      return;
+    }
+  }
+
+  var limit = 0;
+  function getResult(){
+    if (!$defined($E('.release-dialog'))) {
+      return;
+    }
+    if (limit>60)
+    {
+      $E('.info').setHTML('<div style="color:red;font-size:30px;">请求超时</div>');
+      return false;
+    }
+    new Request.JSON({
+      url:"index.php?app=inventorydepth&ctl=shop_adjustment&act=getResult",
+      data:"<{$post}>",
+      onComplete:function(resp){
+        if (resp.error) {
+          $E('.info').setHTML('<div style="color:red;font-size:30px;">'+resp.error+'</div>');
+          return;
+        }
+
+        if(resp.finish){
+          $E('.info').setHTML('<div style="color:green;font-size:30px;">'+resp.finish+'</div>');
+          return;
+        }
+        limit += 3;
+        setTimeout(getResult,3000);
+      }
+    }).send();
+  }
+
+    new Request.JSON({
+      url:"index.php?app=inventorydepth&ctl=shop_adjustment&act=singleRelease",
+      data:"<{$post}>",
+      onComplete:function(resp){
+        if (resp.error) {
+          $E('.info').setHTML('<div style="color:red;font-size:30px;">'+resp.error+'</div>');
+          return;
+        }
+        
+        setTimeout(getResult,3000); 
+      }
+    }).send();
+
+}();
+  </script>
+<{case value='batch'}>
+<style>
+.info{
+font-weight:bold;
+font-size:30px;
+}
+</style>
+  <div class='division info'>
+  批量发布会先进队列，稍后执行，确认吗？
+  </div>
+<{area inject='.mainFoot'}>
+  <div class='table-action'>
+    <{button label='确定' type='button' id='submitbtn'}>
+    <{button label='取消' type='button' isCloseDialogBtn='true'}>
+  </div>
+<{/area}>
+  <script type="text/javascript">
+    $('submitbtn').addEvent('click',function(){
+      new Request.JSON({
+        url:"index.php?app=inventorydepth&ctl=shop_adjustment&act=batchRelease",
+        data:"<{$post}>",
+        onComplete:function(resp){
+          if (resp.error) {
+            $E('.info').setHTML('<div style="color:red;font-size:30px;">'+resp.error+'</div>');
+            return;
+          }
+          MessageBox.success('成功插入队列！');
+          $E('.info').getParent('.dialog').retrieve('instance').close();
+        }
+      }).send();
+    });
+  </script>
+<{case}>
+  <div class='notice' style="color:red;font-size:30px;">
+    您尚未选择店铺商品！！！
+  </div>
+<{/switch}>

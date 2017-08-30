@@ -1,0 +1,369 @@
+<link rel="stylesheet" type="text/css" href="<{$env.app.res_url}>/style.css" media="screen" />
+<form action="index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=save" method="post" id="order_frm" name="order_frm">
+    <div id="gEditor-Body">
+      <div class="spage-main-box">
+          <div class="tableform">
+          <div id="x-g-basic" class="goods-detail">
+            <div class="edit_box">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+                  <thead>
+                  <tr>
+                    <th align="left">跨境申报信息</th>
+                  </tr>
+                  </thead>
+                </table>
+              <div class="h_10px"></div>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="90" align="right" nowrap="nowrap"><strong>&nbsp;&nbsp;&nbsp;申报单号：</strong></td>
+                      <td><strong>&nbsp;<{$item.declare_bn}></strong></td>
+                        <td width="130" align="right"><strong>&nbsp;&nbsp;&nbsp;订单号：</strong></td>
+                        <td><span class="red"><{$item.order_bn}></span></td>
+                    </tr>
+                    <tr>
+                      <td align="right" nowrap="nowrap"><strong>购物网站：</strong></td>
+                      <td>
+                        <select name="item[shop_type]" class="x-input-select inputstyle" id="shop_type" type="select">
+                            <option value="">=请选择=</option>
+                            <{foreach from=$type_list.shop_type key=key item=val}>
+                            <option value="<{$key}>" <{if $item.shop_type eq $key}>selected="selected"<{/if}> ><{$val.shop_name}></option>
+                            <{/foreach}>
+                        </select>
+                        <em><font color="red">*</font></em>
+                      </td>
+                      <td align="right"><strong>来源店铺：</strong></td>
+                      <td>&nbsp;<{$item.shop_name}></td>
+                    </tr>
+                    <tr>
+                      <td align="right" nowrap="nowrap"><strong>支付方式：</strong></td>
+                      <td>
+                        <select name="item[payment]" class="x-input-select inputstyle" id="payment" type="select">
+                            <option value="">=请选择=</option>
+                            <{foreach from=$type_list.payment key=key item=val}>
+                            <option value="<{$key}>" <{if $item.payment eq $key}>selected="selected"<{/if}> ><{$val}></option>
+                            <{/foreach}>
+                        </select>
+                        <em><font color="red">*</font></em>
+                      </td>
+                      <td align="right"><strong>币种：</strong></td>
+                      <td>
+                      	<select name="item[currency]" class="x-input-select inputstyle" id="currency" type="select">
+                            <option value="">=请选择=</option>
+                            <{foreach from=$type_list.currency key=key item=val}>
+                            <option value="<{$key}>" <{if $item.currency eq $key}>selected="selected"<{/if}> ><{$val}></option>
+                            <{/foreach}>
+                        </select>
+                        <em><font color="red">*</font></em>
+                      </td>
+                    </tr>
+                    <tr>
+                        <td align="right" nowrap="nowrap"><strong>支付单号：</strong></td>
+                        <td><{input type="title" size="25" name="item[payment_bn]" id="payment_bn" maxlength="45" required='required' value=$item.payment_bn}>&nbsp;<em style="color:red;">*</em></td>
+                        <td align="right"><strong>支付时间：</strong></td>
+                        <td>&nbsp;<{$item.t_end}></td>
+                    </tr>
+                    
+                    <tr>
+                        <td align="right" nowrap="nowrap"><strong>实付金额：</strong></td>
+                    <td>&nbsp;&yen;<{$item.payed}></td>
+                        <td align="right"><strong>运　费：</strong></td>
+                        <td>&nbsp;&yen;<{$item.cost_freight}></td>
+                    </tr>
+                    <tr>
+                        <td align="right" nowrap="nowrap"><strong>物流公司：</strong></td>
+                        <td>
+                        <select name="item[logis_id]" class="x-input-select inputstyle" id="logis_id" type="select">
+                            <option value="">=请选择=</option>
+                            <{foreach from=$type_list.logistics key=key item=val}>
+                            <option value="<{$key}>" <{if $item.logis_id eq $key}>selected="selected"<{/if}> ><{$val}></option>
+                            <{/foreach}>
+                        </select>
+                        <em><font color="red">*</font></em>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td align="right" nowrap="nowrap"><b>申报通道：</b></td>
+                        <td>
+                        <select name="item[shop_sid]" class="x-input-select inputstyle" id="shop_sid" type="select">
+                            <option value="">==请选择==</option>
+                            <{foreach from=$customs_shop key=key item=val}>
+                            <option value="<{$val.sid}>" <{if $item.shop_sid eq $val.sid}>selected="selected"<{/if}> ><{$val.company_name}></option>
+                            <{/foreach}>
+                        </select>
+                        <em><font color="red">*</font></em>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </table>
+                <div class="h_20px"></div>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+                  <thead>
+                        <tr>
+                          <th>申报人信息</th>
+                        </tr>
+                  </thead>
+              </table>
+              <div class="h_10px"></div>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              		<tr>
+                        <td align="right"><strong>身份证号：</strong></td>
+                      <td><{input type="title" size="25" name="item[card_no]" id="card_no" maxlength="20" required='required' value=$item.card_no}>&nbsp;<em style="color:red;">*</em>必填项!</td>
+                        <td align="right">&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td width="90" align="right" nowrap="nowrap"><strong>姓　名：</strong></td>
+                        <td><{input type="title" size="16" name="item[member_name]" id="member_name" maxlength="16" required='required' value=$item.member_name}>&nbsp;<em style="color:red;">*</em>必填汉字!</td>
+                        <td width="130" align="right"><strong>用户名：</strong></td>
+                        <td><span class="lnk"><{$item.member_uname}></span></td>
+                    </tr>
+                    <tr>
+                    	<td align="right" nowrap="nowrap"><strong>手机号码：</strong></td>
+                        <td><{input type="title" size="13" name="item[member_mobile]" id="member_mobile" maxlength="11" required='required' value=$item.member_mobile}>&nbsp;<em style="color:red;">*</em></td>
+                        <td align="right"><strong>联系电话：</strong></td>
+                        <td><{input type="title" size="20" name="item[member_tel]" id="member_tel" maxlength="20" required='required' value=$item.member_tel}>&nbsp;<em style="color:red;">*</em></td>
+                    </tr>
+                    <tr>
+                        <td align="right" nowrap="nowrap"><strong>邮　箱：</strong></td>
+                        <td><{input type="title" size="30" name="item[member_email]" id="member_email" maxlength="30" required='required' value=$item.member_email}>&nbsp;<em style="color:red;">*</em></td>
+                        <td align="right">&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </table>
+                
+                <div class="table-action text_left">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td width="260">&nbsp;</td>
+                        <td><{button label="保存申报信息" type="button" id="btn_submit" name="btn_submit"}><{input type="hidden" name="item[cid]" value=$item.cid}></td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </table>
+                </div>
+            </div>
+          </div>
+          </div>
+      </div>
+    </div>
+</form>
+<style type="text/css">
+.dialog .dialog-content-body { background:#fff; border:none; }
+.dialog .tableform { background: none repeat scroll 0 0 #F8F8F8; border: 1px solid #D9D9D9; }
+.gridlist thead th { height:27px; line-height:27px; padding-left:12px;  }
+.edit_box { padding:10px 20px 5px 20px; }
+.h_10px { clear:both; width:100%; height:10px; }
+.h_20px { clear:both; width:100%; height:20px; }
+</style>
+<script language="javascript">
+function submit_frm()
+{
+	var shop_type		= document.getElementById("shop_type").value;
+	var payment			= document.getElementById("payment").value;
+	var currency		= document.getElementById("currency").value;
+	var card_no			= document.getElementById("card_no").value;
+	var payment_bn		= document.getElementById("payment_bn").value;
+	
+	var logis_id		= document.getElementById("logis_id").value;
+	var shop_sid	= document.getElementById("shop_sid").value;
+	
+	var member_name		= document.getElementById("member_name").value;
+	var member_mobile	= document.getElementById("member_mobile").value;
+	var member_tel		= document.getElementById("member_tel").value;
+	var member_email	= document.getElementById("member_email").value;
+	var reg = /^[\u4e00-\u9fa5]+$/i;
+	var myreg = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+	
+	if(!shop_type)
+	{
+		alert("请选择购物网站.");
+		document.getElementById("shop_type").focus();
+		return false;
+	}
+	if(!payment)
+	{
+		alert("请选择支付方式.");
+		document.getElementById("payment").focus();
+		return false;
+	}
+	if(!currency)
+	{
+		alert("请选择币种.");
+		document.getElementById("currency").focus();
+		return false;
+	}	
+	if(!payment_bn)
+	{
+		alert("请填写支付单号.");
+		document.getElementById("payment_bn").focus();
+		return false;
+	}
+	if(!card_no)
+	{
+		alert("请填写身份证号");
+		document.getElementById("card_no").focus();
+		return false;
+	}
+	chk_card	= validateIdCard(card_no);
+	if(chk_card == 'fail')
+	{
+		alert("身份证格式不正确!");
+		document.getElementById("card_no").focus();
+		return false;
+	}
+	else if(chk_card == 'error')
+	{
+		alert("身份证号码错误！");
+		document.getElementById("card_no").focus();
+		return false;
+	}
+	
+	if(!member_name)
+	{
+		alert("请填写申报人真实姓名,必须为汉字！");
+		document.getElementById("member_name").focus();
+		return false;
+	}
+	if(!reg.test(member_name))
+	{
+		alert("申报人姓名必须为汉字！");
+		document.getElementById("member_name").focus();
+		return false;
+	}
+	if(member_name.length < 2)
+	{
+		alert("申报人姓名错误");
+		document.getElementById("member_name").focus();
+		return false;
+	}
+	if(!member_mobile && !member_tel)
+	{
+		alert("请填写申报人手机号码 或者 联系电话");
+		document.getElementById("member_mobile").focus();
+		return false;
+	}
+	if(member_mobile && member_mobile.length < 11)
+	{
+		alert("手机号码填写有误");
+		document.getElementById("member_mobile").focus();
+		return false;
+	}
+	if(member_tel && member_tel.length < 5)
+	{
+		alert("联系电话填写有误");
+		document.getElementById("member_tel").focus();
+		return false;
+	}
+	if(!member_email)
+	{
+		alert("请填写申报人邮箱地址.");
+		document.getElementById("member_email").focus();
+		return false;
+	}
+	if(!myreg.test(member_email))
+	{
+		alert("请输入有效的E_mail.");
+		document.getElementById("member_email").focus();
+		return false;
+	}
+	
+	if(!logis_id)
+	{
+		alert("请选择物流公司.");
+		document.getElementById("logis_id").focus();
+		return false;
+	}
+	if(!shop_sid)
+	{
+		alert("请选择所属跨境店铺.");
+		document.getElementById("shop_sid").focus();
+		return false;
+	}
+	
+	return true;
+}
+
+(function()
+{
+	var _form	= $('order_frm');
+	var btn		= $('btn_submit');
+	var finder	= finderGroup['<{$env.get.finder_id}>'];
+
+	
+	_form.store('target',{
+		onSuccess:function(response){
+			var hash_res_obj = JSON.decode(response);
+		
+			if (hash_res_obj.success != undefined && hash_res_obj.success != "")
+			{
+				try{
+					var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+				}catch(e){}
+				
+				if(_dialogIns)
+				{
+					_dialogIns.close();
+					window.finderGroup['<{$env.get.finder_id}>'].refresh();
+				}
+			}
+		}
+	});
+	
+    $('btn_submit').addEvent('click',function()
+	{
+		var flag		= submit_frm();
+		if(flag)
+		{
+			_form.fireEvent('submit',{stop:$empty});	
+		}
+    });
+	
+	$ES("input[type=text]").each(function(el,i)
+	{
+        el.addEvent('keydown',function(e)
+		{
+			if(e.code==13){
+				var flag		= submit_frm();
+				if(flag)
+				{
+					_form.fireEvent('submit',{stop:$empty});	
+				}
+			}
+        });
+    });	
+})();
+
+function validateIdCard(idCard)
+{
+	 var regIdCard=/^(^[1-9]\d{7}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}$)|(^[1-9]\d{5}[1-9]\d{3}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])((\d{4})|\d{3}[Xx])$)$/;
+	 if(regIdCard.test(idCard)){
+		  if(idCard.length==18){
+			   var idCardWi=new Array( 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 );
+			   var idCardY=new Array( 1, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2 );
+			   var idCardWiSum=0;
+			   for(var i=0;i<17;i++){
+				   idCardWiSum+=idCard.substring(i,i+1)*idCardWi[i];
+			   }
+			   var idCardMod=idCardWiSum%11;
+			   var idCardLast=idCard.substring(17);
+			   if(idCardMod==2){
+					if(idCardLast=="X"||idCardLast=="x"){
+						return 'success';
+					}else{
+						return 'error';
+					}
+			   }else{
+					if(idCardLast==idCardY[idCardMod]){
+						return 'success';
+					}else{
+						return 'error';
+					}
+			   }
+		  } 
+	 }else{
+		 return 'fail';
+	 }
+}
+</script>

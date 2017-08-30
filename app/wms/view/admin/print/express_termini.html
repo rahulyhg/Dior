@@ -1,0 +1,129 @@
+<form action="index.php?app=wms&ctl=admin_print_termini&act=save" method="post">
+    <div class="tableform">
+        <div class="division">
+            <table width="100%" cellspacing="0" cellpadding="0" id="content_tbl">
+                <tbody>
+                    <tr>
+                        <th><label for="tagName">名称：</label></th>
+                        <td colspan="3">
+                            <{input type="text&&required" name="name" id="tagName" value="{$data.name}" size="30" }>
+                            (请使用通俗易懂的名称，如申通物流大头笔、韵达大头笔)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="tagIntro">简单描述：</label></th>
+                        <td colspan="3">
+                            <textarea name="intro" id="tagIntro" cols="60" rows="3" class="x-input"><{$data.intro|escape}></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>设置显示格式：</th>
+                        <td align="right">当是直辖市时：</td>
+                        <td colspan="2">
+                            <input type="radio" name="config[zhixiashi]" value='0' <{if $data.config.zhixiashi != '1'}>checked<{/if}>/>&nbsp;&nbsp;市+区/县
+                            <input type="radio" name="config[zhixiashi]" value="1" <{if $data.config.zhixiashi == '1'}>checked<{/if}>/>&nbsp;&nbsp;区/县
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="2">当是港澳台时：</td>
+                        <td colspan="2">
+                            <input type="radio" name="config[areaGAT]" value="0" <{if $data.config.areaGAT != '1'}>checked<{/if}>/>&nbsp;&nbsp;一级+二级
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="config[areaGAT]" value="1" <{if $data.config.areaGAT == '1'}>checked<{/if}>/>&nbsp;&nbsp;二级
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="2">是否显示一级省份的名称：</td>
+                        <td colspan="2">
+                            <input type="radio" name="config[province]" value='0' <{if $data.config.province != '1'}>checked<{/if}>/>&nbsp;&nbsp;不显示
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="config[province]" value='1' <{if $data.config.province == '1'}>checked<{/if}>/>&nbsp;&nbsp;显示
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" colspan="4">（以下设置二、三级地区显示格式）</td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="2">XX市（自治州、地区）XX区时：</td>
+                        <td colspan="2">
+                            <input type="radio" name="config[district]" value='0' <{if $data.config.district != '1'}>checked<{/if}>/>&nbsp;&nbsp;市+区名称
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="config[district]" value='1' <{if $data.config.district == '1'}>checked<{/if}>/>&nbsp;&nbsp;市名称
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="2">XX市（自治州、地区）XX市时：</td>
+                        <td colspan="2">
+                            <input type="radio" name="config[city]" value='0' <{if $data.config.city != '1'}>checked<{/if}>/>&nbsp;&nbsp;二级市名称
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="config[city]" value='1' <{if $data.config.city == '1'}>checked<{/if}>/>&nbsp;&nbsp;一级+二级市
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right" colspan="2">XX市（自治州、地区）XX县时：</td>
+                        <td colspan="2">
+                            <input type="radio" name="config[county]" value='0' <{if $data.config.county != '1'}>checked<{/if}>/>&nbsp;&nbsp;市+县名称
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="config[county]" value='1' <{if $data.config.county == '1'}>checked<{/if}>/>&nbsp;&nbsp;县名称
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <{if $data.tag_id}><input type="hidden" name="tag_id" value="<{$data.tag_id}>"/><{/if}> 
+        </div>
+    </div>
+    <div class="table-action">
+        <{button class="btn-primary" label="保存" type="button" id="saveCurrent"}>
+        <{button class="btn-primary" label="取消" type="button" id="cancelBtn"}>
+    </div>
+</form>
+<script>
+(function(){
+    $('saveCurrent').getParents('form').removeEvents('submit').addEvent('submit', function(e) {
+        e.stop();
+
+        new Request ({
+            url:this.action,
+            onRequest:function(e){
+                //提交按钮:disabled
+                $('saveCurrent').set('disabled', 'true');
+                $('saveCurrent').getElements('span')[1].set('text','正在保存');
+            },
+            onComplete:function(result){
+                if (result != 'SUCC'){
+                    //提交按钮:enabled
+                    $('saveCurrent').set('disabled', '');
+                    $('saveCurrent').getElements('span')[1].set('text','保存');
+                }else{
+                    //提交按钮:disabled
+                    var findId = "<{$env.get.finder_id}>";
+                    if (findId != '') {
+                        finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                    }
+                    $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+                    //setTimeout("window.close()",500);
+                }
+            }
+        })[this.method](this);
+    });
+
+    //保存按钮
+    $('saveCurrent').addEvent('click', function() {
+        //检查规则名称
+        var aName = $('tagName').value.trim();
+        if (aName == '') {
+            alert("请输入大头笔名称，使用通俗易懂的名称，如申通物流大头笔、韵达大头笔。");
+            return;
+        }
+
+        $('saveCurrent').getParents('form').fireEvent('submit', { 
+            stop: function(){}
+        });
+    });
+
+    //关闭按钮
+    $('cancelBtn').addEvent('click', function(){
+        $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+    });
+})();
+</script>

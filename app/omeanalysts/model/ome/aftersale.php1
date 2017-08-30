@@ -1,0 +1,251 @@
+<?php
+class omeanalysts_mdl_ome_aftersale extends dbeav_model{
+    
+	public function get_nums($filter=null) {
+		$sql = 'SELECT SUM(num) AS num FROM '.
+            kernel::database()->prefix.'ome_reship_items i,'.
+            kernel::database()->prefix.'ome_reship r '.
+            'WHERE r.reship_id=i.reship_id AND '.$this->b_filter($filter);
+		$row = $this->db->select($sql);
+		$this->tidy_data($row,'*');
+		return intval($row[0]['num']);
+	}
+	
+	public function get_rate($filter=null) {
+		$sql = 'SELECT SUM(num) AS num FROM '.
+            kernel::database()->prefix.'ome_reship_items i,'.
+            kernel::database()->prefix.'ome_reship r '.
+            'WHERE r.reship_id=i.reship_id AND '.$this->b_filter($filter);
+		$row = $this->db->select($sql);
+		$this->tidy_data($row,'*');
+		foreach ($row as $v){
+		$sql_n = 'SELECT SUM(nums) AS nums FROM '.kernel::database()->prefix.'ome_order_items';
+		$row_n = $this->db->select($sql_n);
+		$this->tidy_data($row_n,'*');
+		foreach ($row_n as $v_n){
+			if ($v_n['nums'] == 0){
+				$rate = 0; 
+			}else{
+				$rate = substr(($v['num']/$v_n['nums']*100),0,4)."%";
+			}
+		  }
+		}
+		return $rate;
+	}
+	
+	public function b_filter($filter) {
+		$where = array(1);
+    	if (isset($filter['time_from']) && $filter['time_from']) {
+    		$where[] = " r.t_end >=".strtotime($filter['time_from']);
+    	}
+    	if (isset($filter['time_to']) && $filter['time_to']) {
+    		$where[] = " r.t_end <=".(strtotime($filter['time_to'])+86400);
+    	}
+    	return implode($where,' AND ');
+	}
+	
+	public function get_problems_nums($product_bn){
+		$sql = "SELECT v.cat_name,count(t.product_id) AS nums FROM ".
+            kernel::database()->prefix."ome_return_product_problem v,".
+            kernel::database()->prefix."ome_return_product_problem_type t,".
+            kernel::database()->prefix."ome_products p ".
+            "WHERE v.problem_id=t.problem_id AND t.product_id=p.product_id AND p.bn='".addslashes($product_bn)."' GROUP BY v.problem_id ";
+		$row = $this->db->select($sql);
+		$this->tidy_data($row,'*');
+		return $row;
+	}
+	
+	public function searchOptions(){
+		$columns = array();
+		foreach ($this->_columns() as $k=>$v) {
+			if (isset($v['searchtype']) && $v['searchtype']){
+				$colums[$k] = $v['label'];
+			}
+		}
+		
+		$ext_columns = array(
+			's_name'=>$this->app->_('商品名称'),
+			's_bn'=>$this->app->_('商品编号'),
+			'bn'=>$this->app->_('货品编号'),
+			'problem'=>$this->app->_('售后问题类型'),
+		);
+		return array_merge($columns,$ext_columns);
+	}
+	
+	public function count($filter=null){
+        $sql = 'SELECT COUNT(*) AS _count FROM (SELECT I.bn AS bn FROM '.
+            kernel::database()->prefix.'ome_reship_items AS I LEFT JOIN '.
+            kernel::database()->prefix.'ome_reship AS R ON I.reship_id =R.reship_id GROUP BY product_name) AS tb';
+
+        $row = $this->db->select($sql);
+        return intval($row[0]['_count']);
+    }
+
+    public function getlist($cols='*', $filter=array(), $offset=0, $limit=-1, $orderType=null){
+        $sql = 'SELECT p.name AS name,i.bn,SUM(i.num) AS reship_num,SUM(i.num) AS num,SUM(o.nums) AS nums FROM '.
+            kernel::database()->prefix.'ome_reship_items i,'.
+            kernel::database()->prefix.'ome_order_items o,'.
+            kernel::database()->prefix.'ome_reship r,'.
+            kernel::database()->prefix.'ome_products p '.
+            'WHERE i.bn=o.bn AND r.reship_id=i.reship_id AND r.order_id=o.order_id AND i.bn=p.bn AND '.$this->_filter($filter).' GROUP BY i.bn';
+
+        if($orderType)$sql.=' ORDER BY '.(is_array($orderType)?implode($orderType,' '):$orderType);
+
+        $rows = $this->db->selectLimit($sql,$limit,$offset);
+        $this->tidy_data($rows, $cols);
+        $data = array();
+        foreach ($rows as $v){
+        	$sql_n = 'SELECT SUM(num) AS nums FROM '.kernel::database()->prefix.'ome_reship_items';
+        	$row = $this->db->select($sql_n);
+        	$this->tidy_data($row,$cols);
+        	foreach ($row as $v_n){
+                $v['reship_ratio'] = 0;
+                if ($v_n['nums'] == 0){
+                    $v['reship_ratio_all'] = 0;
+                }else{
+                    $v['reship_ratio_all'] = substr(($v['reship_num']/$v_n['nums']*100),0,4)."%";
+                }
+        	}
+        	$data[] = $v;
+        }
+       		$Data = array();
+       		foreach ($data as $d) {
+       			$sql_r = 'SELECT i.bn,SUM(o.nums) AS nums FROM '.
+                    kernel::database()->prefix.'ome_order_items o,'.
+                    kernel::database()->prefix.'ome_reship_items i,'.
+                    kernel::database()->prefix.'ome_reship r '.
+                    'WHERE i.bn=o.bn AND r.reship_id=i.reship_id GROUP BY i.bn';
+       			$row_r = $this->db->select($sql_r);
+       			$this->tidy_data($row_r,$cols);
+       			foreach ($row_r as $v_r){
+       				if ($v_r['bn'] == $d['bn'])
+       				if ($v_r['nums'] == 0){
+       					$d['reship_ratio'] = 0;
+       				}else{
+       					$d['reship_ratio'] = substr(($d['num']/$v_r['nums']*100),0,4)."%";
+       				}
+       			}
+       			$Data[] = $d;
+       		}
+       		return $Data;
+    }
+    
+    public function _filter($filter,$tableAlias=null,$baseWhere=null){
+    	$where = array(1);
+    	if (isset($filter['time_from']) && $filter['time_from']) {
+    		$where[] = " r.t_end >=".strtotime($filter['time_from']);
+    	}
+    	if (isset($filter['time_to']) && $filter['time_to']) {
+    		$where[] = " r.t_end <".(strtotime($filter['time_to'])+86400);
+    	}
+    	if (isset($filter['bn']) && $filter['bn']) {
+    		$where[] = ' i.bn LIKE \''.addslashes($filter['bn']).'%\'';
+    	}
+    	if (isset($filter['s_name']) && $filter['s_name']) {
+    		$sql_n = 'SELECT goods_id FROM '.kernel::database()->prefix.'ome_goods WHERE name LIKE \'%'.addslashes($filter['s_name']).'%\'';
+    		$row_n = $this->db->select($sql_n);
+    		$this->tidy_data($row_n,'*');
+    		$where[] = " p.goods_id = '".$row_n[0]['goods_id']."'";
+    	}
+    	if (isset($filter['s_bn']) && $filter['s_bn']) {
+    		$sql_b = 'SELECT goods_id FROM '.kernel::database()->prefix.'ome_goods WHERE bn LIKE \''.addslashes($filter['s_bn']).'%\'';
+    		$row_b = $this->db->select($sql_b);
+    		$this->tidy_data($row_b,'*');
+    		$where[] = " p.goods_id = '".$row_b[0]['goods_id']."'";
+    	}
+    	if (isset($filter['problem']) && $filter['problem']){
+    		$sql_p = 'SELECT t.product_id 
+					FROM '.kernel::database()->prefix.'ome_return_product_problem v,'.kernel::database()->prefix.'ome_return_product_problem_type t
+					WHERE  v.problem_id=t.problem_id  AND  v.cat_name LIKE \'%'.addslashes($filter['problem']).'%\'';
+    		$row_p = $this->db->select($sql_p);
+    		$this->tidy_data($row_p,'*');
+    		$where[] = " p.product_id = '".$row_p[0]['product_id']."'";
+    	}
+    	return implode($where,' AND ');
+    }
+
+    public function get_schema(){
+        $schema = array (
+            'columns' => array (
+                'name' => array (
+                    'type' => 'varchar(200)',
+                    'pkey' => true,
+                    'label' => '货品名称',
+                    'width' => 210,
+                    'searchtype' => 'has',
+                    'editable' => false,
+                    'in_list' => true,
+                    'default_in_list' => true,
+                    'realtype' => 'varchar(200)',
+                ),
+                'bn' => array (
+                    'type' => 'varchar(50)',
+                    'required' => true,
+                    'default' => 0,
+                    'label' => '货品编号',
+                    'width' => 120,
+                    'searchtype' => 'has',
+                    'editable' => true,
+                    'filtertype' => 'bool',
+                    'filterdefault' => 'true',
+                    'in_list' => true,
+                    'default_in_list' => true,
+                    'realtype' => 'varchar(50)',
+                ),
+                'reship_num' => array (
+                    'type' => 'varchar(200)',
+                    'default' => 1,
+                    'required' => true,
+                    'label' => '退换货量',
+                    'orderby' => false,
+                    'width' => 110,
+                    'editable' => true,
+                    'filtertype' => 'yes',
+                    'in_list' => true,
+                    'default_in_list' => true,
+                    'realtype' => 'mediumint(8) unsigned',
+                ),
+                'reship_ratio' => array (
+                    'type' => 'varchar(200)',
+                    'label' => '退换货率',
+                    'width' => 110,
+                    'orderby' => false,
+                    'editable' => false,
+                    'filtertype' => 'time',
+                    'filterdefault' => true,
+                    'in_list' => true,
+                    'default_in_list' => true,
+                    'realtype' => 'varchar(50)',
+                ),
+                'reship_ratio_all' => array (
+                    'type' => 'varchar(200)',
+                    'label' => '占所有退换货货品比例',
+                    'width' => 130,
+                    'orderby' => false,
+                    'editable' => false,
+                    'filtertype' => 'time',
+                    'filterdefault' => true,
+                    'in_list' => true,
+                    'default_in_list' => true,
+                    'realtype' => 'varchar(50)',
+                ),
+            ),
+            'idColumn' => 'bn',
+            'in_list' => array (
+                0 => 'name',
+                1 => 'bn',
+                2 => 'reship_num',
+                3 => 'reship_ratio',
+                4 => 'reship_ratio_all',
+            ),
+            'default_in_list' => array (
+                0 => 'name',
+                1 => 'bn',
+                2 => 'reship_num',
+                3 => 'reship_ratio',
+                4 => 'reship_ratio_all',
+            ),
+        );
+        return $schema;
+    }
+}

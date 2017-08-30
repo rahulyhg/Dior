@@ -1,0 +1,45 @@
+<{if !$env.get.target}><div class="division" container="true"><{/if}>
+  <h3>库存查看<span class="num">(货品冻结量:<strong><{$store_freeze_num}></strong>)</span></h3>
+  <table cellpadding="0" cellspacing="0" border="0" class="gridlist">
+    <thead>
+      <tr>
+      <th>序号</th>
+      <th>订单号</th>
+      <th>来源店铺</th>
+      <th>创建时间</th>
+      <th>支付状态</th>
+      <th>发货状态</th>
+      <th>购买数量</th>
+      <th>已发货数量</th>
+      </tr>
+    </thead>
+    <tbody>
+	<{assign var=num value=1}>
+	<{foreach item=item from=$rows}>
+      <tr>
+        <td><{$num}></td>
+        <td><{$item.order_bn}></td>
+        <td><{$item.shop_name}></td>
+        <td><{$item.createtime}></td>
+        <td><{$item.pay_status}><{if $item.pay_status=='未支付'}>(失效时间:<{$item.order_limit_time}>)<{else}>(付款时间:<{$item.paytime}>)<{/if}></td>
+        <td><{$item.status}></td>
+        <td><{$item.nums}></td>
+        <td><{$item.sendnum}></td>
+		<input type="hidden" value=<{$num++}>></input>
+      </tr>
+	<{/foreach}>
+    </tbody>
+  </table>
+  <div class="table-action">
+      <{$pager}>
+  </div>
+
+<{if !$env.get.target}></div><{/if}>
+<{if !$env.get.target}>
+<{capture name="footbar"}>
+<div class="table-action">
+    <{button label="确 定" type="button" onclick="window.close();"}>
+</div>
+<{/capture}>
+<{/if}>
+

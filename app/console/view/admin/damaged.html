@@ -1,0 +1,94 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+<div class="tableform">
+    <h3>报残</h3>
+    <br />
+    <div class="division">
+        <div class="gray_form">
+            <form id="add_form" method='post' action="index.php?app=console&ctl=admin_damaged&act=do_action">
+                选择仓库：
+                <select id="select_branch" name="branch_id" vtype='required' onchange="change_branch()">
+                    <option value="0">----请选择----</option>
+                    <{foreach from=$branch_list item=item key=key}>
+                        <option value="<{$item.branch_id}>"><{$item.name}></option>
+                    <{/foreach}>
+                </select>
+                <div id="error_msg" style="float:right;background-color:#FBC2C4;width:14%;margin-right:3%;"></div><br />
+                <div style="float:right">货号:<input type="text" id='product_bn' /><{button id="add_btn" label="添加"}></div>
+                <br />
+                <table class="gridlist">
+                    <thead>
+                      <tr>
+                        <th>货号</th>
+                        <th>商品名称</th>
+                        <th>库存数量</th>
+                        <th style="width:100px;">删除</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dataNode">
+
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+<{area inject=".mainFoot"}>
+    <div class="table-action">
+      <{button type="button" class="btn-primary" id="btn_submit" label="确认"}>
+    </div>
+<{/area}>
+<script>
+document.onkeydown=function(event) 
+{
+    e = event ? event :(window.event ? window.event : null); 
+    if(e.keyCode==13){
+        find_product();
+        return false;
+    } 
+}
+
+$('btn_submit').addEvent('click', function (e){
+    $('add_form').fireEvent('submit', {
+        stop: function() {}
+    });
+});
+
+
+$('add_btn').addEvent('click',function(e){
+    find_product();
+});
+
+function find_product(){
+    new Request({
+        url:'index.php?app=console&ctl=admin_damaged&act=add_products',
+        method: 'post',
+        data:'product_bn='+$('product_bn').value+'&branch_id='+$('select_branch').value,
+        onSuccess:function(rs){
+            res = JSON.decode(rs);
+            if(res.res == 'false'){
+                $('error_msg').set('text',res.msg);
+                return ;
+            }else{
+                $('error_msg').set('text','');
+            }
+            var html = "<td id=delete_"+res.data.product_id+">"+res.data.bn+"</td><td>"+res.data.name+"</td><td><input name='num["+res.data.product_id+"]' type='text' value="+res.data.num+" /><input name='name["+res.data.product_id+"]' type='hidden' value="+res.data.name+" /><input name='bn["+res.data.product_id+"]' type='hidden' value="+res.data.bn+" /><input name='price["+res.data.product_id+"]' type='hidden' value="+res.data.price+" /></td><td><a href='javascript:void(0)' onclick='do_delete("+res.data.product_id+")'>删除</a></td>";
+            var dataNode = $('dataNode');
+            if(res.data){
+                if(!$('delete_'+res.data.product_id)){
+                    new Element('tr[class=product]',{html:html}).inject('dataNode');
+                }
+            }
+        },
+    }).send();
+}
+
+function do_delete(e){
+    $('delete_'+e).getParent('tr').remove();
+}
+
+function change_branch(){
+    $('dataNode').set('html','');
+}
+</script>

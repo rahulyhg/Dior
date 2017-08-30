@@ -1,0 +1,123 @@
+<div class="division">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+              <th>是否对修改订单进行复审：</th>
+              <td><{input type='bool' name='set[ome.order.is_retrial]' value=$setData.ome_order_is_retrial|default:'false'}>&nbsp;&nbsp;<font color="red">（订单复审不支持前端店铺是：易开店、Ecstore、分销王。）</font></td>
+            </tr>
+            <tr>
+              <th>复审日志保留：</th>
+              <td>
+              <input type="radio" name="set[ome.order.clean_day]" value="180" <{if $setData.ome_order_clean_day != '90'}> checked<{/if}>>180天
+              <input type="radio" name="set[ome.order.clean_day]" value="90" <{if $setData.ome_order_clean_day == '90'}> checked<{/if}>>90天
+              </td>
+            </tr>
+            <tr>
+              <th><p>复审规则：</p></th>
+              <td>
+              	<input type="checkbox" name="set[ome.order.retrial][product]" value='1' <{if $setData.ome_order_retrial.product=='1'}>checked<{/if}>> <span style="color:#ff0000;">商品变化</span>的订单进行复审<br /><br />
+                <input type="checkbox" name="set[ome.order.retrial][order]" value='1' <{if $setData.ome_order_retrial.order=='1'}>checked<{/if}>> <span style="color:#ff0000;">订单金额变化</span>的订单进行复审<br /><br />
+                <input type="checkbox" name="set[ome.order.retrial][delivery]" value='1' <{if $setData.ome_order_retrial.delivery=='1'}>checked<{/if}>> <span style="color:#ff0000;">配送信息变化</span>的订单进行复审
+              </td>
+            </tr>
+            <tr><th height="1" style="padding:0px;"></th><td height="1" style="padding:0px;"></td></tr>
+            <tr>
+              <th>是否开启价格监控：</th>
+              <td><{input type='bool' name='set[ome.order.is_monitor]' value=$setData.ome_order_is_monitor|default:'false'}></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+       		  <td><input type="checkbox" name="set[ome.order.cost_multiple][flag]" value='1' <{if $setData.ome_order_cost_multiple.flag==1}>checked<{/if}>> 监控最低价格为商品<span style="color:#ff0000;">成本价</span>的<input type="text" size="6" maxlength="5" name="set[ome.order.cost_multiple][value]"  value="<{if $setData.ome_order_cost_multiple.value}><{$setData.ome_order_cost_multiple.value}><{else}>1.05<{/if}>" vtype="required" onkeyup="if(isNaN(value))execCommand('undo')" onafterpaste="if(isNaN(value))execCommand('undo')" />倍<br /><br />
+                  <input type="checkbox" name="set[ome.order.sales_multiple][flag]" value='1' <{if $setData.ome_order_sales_multiple.flag==1}>checked<{/if}>> 监控最高价格为商品<span style="color:#ff0000;">销售价</span>的<input name="set[ome.order.sales_multiple][value]" type="text" value="<{if $setData.ome_order_sales_multiple.value}><{$setData.ome_order_sales_multiple.value}><{else}>1.5<{/if}>" size="6" maxlength="5" vtype="required" onkeyup="if(isNaN(value))execCommand('undo')" onafterpaste="if(isNaN(value))execCommand('undo')" />倍
+				</td>
+            </tr>
+            <tr>
+              <th>&nbsp;</th>
+              <td>
+                  <span style="color:#ff0000;">注：此功能是对整单销售价格进行监控，只要整单价格不超出商品成本价最小值相加，则不会预警（整体订单不亏钱就能出货的原则）<br />
+                  启用此功能商品中必须输入成本价或者销售价，如果没设置启动此功能会导致订单价格异常，请设置好成本价或销售价再进行使用。
+                  </p>
+              </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+$$('input[name=set[ome.order.is_retrial]]').addEvent('click',function(e)
+{
+	var value = this.value;
+	var check_product	= document.getElementsByName("set[ome.order.retrial][product]");
+	var check_order	= document.getElementsByName("set[ome.order.retrial][order]");
+	var check_delivery	= document.getElementsByName("set[ome.order.retrial][delivery]");
+	
+	if(value == 'false')
+	{
+		for(var i=0; i<check_product.length;i++)
+		{
+			check_product[i].checked = false;
+			check_product[i].disabled = true;
+		}
+		for(var i=0; i<check_order.length;i++)
+		{
+			check_order[i].checked = false;
+			check_order[i].disabled = true;
+		}
+		for(var i=0; i<check_delivery.length;i++)
+		{
+			check_delivery[i].checked = false;
+			check_delivery[i].disabled = true;
+		}
+	}
+	else
+	{
+		for(var i=0; i<check_product.length;i++)
+		{
+			check_product[i].checked = false;
+			check_product[i].disabled = false;
+		}
+		for(var i=0; i<check_order.length;i++)
+		{
+			check_order[i].checked = false;
+			check_order[i].disabled = false;
+		}
+		for(var i=0; i<check_delivery.length;i++)
+		{
+			check_delivery[i].checked = false;
+			check_delivery[i].disabled = false;
+		}
+	}
+});
+$$('input[name=set[ome.order.is_monitor]]').addEvent('click',function(e)
+{
+	var value = this.value;
+	var cost_multiple	= document.getElementsByName("set[ome.order.cost_multiple][flag]");
+	var sales_multiple	= document.getElementsByName("set[ome.order.sales_multiple][flag]");
+	
+	if(value == 'false')
+	{
+		for(var i=0; i<cost_multiple.length;i++)
+		{
+			cost_multiple[i].checked = false;
+			cost_multiple[i].disabled = true;
+		}
+		for(var i=0; i<sales_multiple.length;i++)
+		{
+			sales_multiple[i].checked = false;
+			sales_multiple[i].disabled = true;
+		}
+	}
+	else
+	{
+		for(var i=0; i<cost_multiple.length;i++)
+		{
+			cost_multiple[i].checked = false;
+			cost_multiple[i].disabled = false;
+		}
+		for(var i=0; i<sales_multiple.length;i++)
+		{
+			sales_multiple[i].checked = false;
+			sales_multiple[i].disabled = false;
+		}
+	}
+});
+</script>

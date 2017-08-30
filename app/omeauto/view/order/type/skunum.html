@@ -1,0 +1,58 @@
+<style>
+    #con_m_d_type li {width:130px; font-size: 12px; float: left; overflow: hidden;margin-bottom: 15px;}
+    #con_m_pan #pan_m_d_1, #con_m_pan #pan_m_d_2, #con_m_pan #pan_m_d_3, #con_m_pan #pan_m_d_4 {position:static; float: none; clear: both; margin-top: 15px;}
+</style>
+<ul id="con_m_d_type">
+    <li><label for="m_d_1"><input id="m_d_1" type="radio" name="type" value="1" <{if $init.content.type == 1}>checked<{/if}>/>小于指定种类数</label></li>
+    <li><label for="m_d_2"><input id="m_d_2" type="radio" name="type" value='2' <{if $init.content.type == 2}>checked<{/if}>/>大于等于指定种类数</label></li>
+    <li><label for="m_d_3"><input id="m_d_3" type="radio" name="type" value='3' <{if $init.content.type == 3}>checked<{/if}>/>位于二个种类数之间</label></li>
+    <li><label for="m_d_4"><input id="m_d_4" type="radio" name="type" value='4' <{if $init.content.type == 4}>checked<{/if}>/>等于指定种类数</label></li>
+</ul>
+<div id="con_m_pan">
+    <div id="pan_m_d_1">
+        <input type="hidden" value="1" name="min_skunum_1"/>
+        商品种类数小于&nbsp;<input type="text" size="5" name="max_skunum_1" <{if $init.content.type == 1}>value="<{$init.content.max}>"<{/if}>/>&nbsp;个
+    </div>
+    <div id="pan_m_d_2">
+        <input type="hidden" value="1" name="max_skunum_2"/>
+        商品种类数大于等于&nbsp;<input type="text" size="5" name="min_skunum_2" <{if $init.content.type == 2}>value="<{$init.content.min}>"<{/if}>/>&nbsp;个
+    </div>
+    <div id="pan_m_d_3">
+        商品种类数位于&nbsp;<input type="text" size="5" name="min_skunum_3" <{if $init.content.type == 3}>value="<{$init.content.min}>"<{/if}>/>&nbsp;个(包含)&nbsp; - &nbsp;<input type="text" size="5" name="max_skunum_3" <{if $init.content.type == 3}>value="<{$init.content.max}>"<{/if}>/>&nbsp;个(不包含)之间
+    </div>
+    <div id="pan_m_d_4">
+        <input type="hidden" value="1" name="max_skunum_4"/>
+        商品种类数等于&nbsp;<input type="text" size="5" name="min_skunum_4" <{if $init.content.type == 4}>value="<{$init.content.min}>"<{/if}>/>&nbsp;个
+    </div>
+</div>
+<script>
+    (function(){
+        function getIndex() {
+            var idx = -1;
+            $$("#con_m_d_type input[type=radio]").each(function(item) {  
+                if (item.checked) { 
+                    idx = item.value;
+                }
+            });
+            return idx; 
+        } 
+        
+        function changeDetail() {
+            var selectIndex = getIndex(); 
+            if (selectIndex == -1) {
+                $('m_d_1').checked = true;
+                selectIndex = 1;
+            }
+            $$('#con_m_pan div').each(function(item){
+                item.setStyle('display', 'none');
+            });
+            $('pan_m_d_'+selectIndex).setStyle('display', '');
+        }
+        
+        changeDetail();
+        
+        $$("#con_m_d_type input[type=radio]").addEvent('change',function(){
+            changeDetail();
+        });
+    })();
+</script> 

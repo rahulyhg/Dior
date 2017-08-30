@@ -1,0 +1,102 @@
+<script hole='true' language="javascript"> 
+    function PrintPreview() {
+        printActivex.PrintBgImg = '<{$bgImg}>';
+        printActivex.PrintConfig = $('printSetup').value;
+        printActivex.PrintField = $('printField').value;
+        printActivex.PrintShipData = $('printShipData').value;
+        printActivex.Preview();
+    }
+
+    function doPrint() {
+        
+        printActivex.print();
+    }
+
+    function changePrint()
+    {
+        var printname= $('printname').value;
+        new Request({url:'index.php?app=wms&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=express&str='+printname+'&sku=<{$sku}>',
+            onSuccess:function(json){
+                if (json == 'true'){
+                   showBindLogi();
+                }else {
+                    alert(json);
+                }
+            }
+        }).send();
+    }
+
+
+
+    function changePrintMode(mode) {
+
+        if (mode==1) {
+            mode = 'flash';
+        } else {
+            mode = 'activex';
+        }	
+        new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=setPrintMode',method:'post',data:'mode='+mode,
+            onSuccess:function(json){
+                if (json == 'true'){
+                    window.location.reload();
+                }else {
+                    alert(json);
+                }
+            }
+        }).send();
+    }
+
+
+
+    function downloadActivex() {
+        window.open("http://www.fh.taoex.com/files/TaoExPrint_Setup.exe");
+    }
+
+    if (window.ActiveXObject) {
+
+        if (eval("printActivex.PrintBgImg") != undefined) { 
+            PrintPreview();	
+        } else {
+
+            $('form1').style.display='none';
+            $('formContent').innerHTML = '<table width="100%" border="0" cellspacing="0" cellpadding="0">' +
+                '<tr><td><div class="note"><h5>你需要先安装ACTIVEX打印控件：</h5>' +
+                '当前系统没有安装ACTIVEX的打印控件，你需要安装后才能正常进行打印工作。<br\>' +
+                '<font color="red">在安装完ACTIVEX后，请点击<{button label="重新加载" onclick="window.location.reload();" id="doReload_btn"}>'+
+                '（注意：如重新加载后异常，请关闭浏览器重新打开。）</font>' + 
+                '<br><br><{button label="安装ACTIVEX控件" onclick="downloadActivex();" id="doChangPrintMode_btn"}>'+
+                '&nbsp;&nbsp;&nbsp;&nbsp;'+
+                '</td></tr></table> ';	
+        }
+    } else {
+
+        $('form1').style.display='none';
+        $('formContent').innerHTML = '<table width="100%" border="0" cellspacing="0" cellpadding="0">' +
+            '<tr><td><div class="note"><h5>浏览器和当前选择打印模式不兼容：</h5>' +
+            '<b style="color:red;">当前浏览器不支持  ACTIVEX 控件，我们建议使用IE7,IE8浏览器进行打印工作，您将获得最佳的使用体验。</b><br\><br\>' + 
+            '如果您使用的是非IE浏览器，请点击<{button label="切换至 FLASH 打印模式" onclick="changePrintMode(1)" id="doChangPrintMode_btn"}>'+
+            '</td></tr></table> ';
+    }
+       <{ if $errIds }>
+        var alertMsg = '';
+        <{ foreach from=$errIds item=cid }>
+        alertMsg = alertMsg + "<{$errBns[$cid]}>：" + "<{$errInfo[$cid]}> <br/>" ;
+        alertMsg = alertMsg + '';
+        <{/foreach}>
+        
+        alertMsg = alertMsg + '<br/>以上发货单在本次打印列表中已被剔除，请在处理后重新打印。';
+
+        $('information').style.display='';
+    if ($('information').innerHTML != '')
+        $('information').innerHTML = $('information').innerHTML + alertMsg;
+    else
+        $('information').innerHTML = alertMsg;
+        <{ /if }>
+
+</script>
+
+
+
+<script hold="true" language="javascript" event="OnPrintFinsh" for="printActivex">
+    changePrint();
+</script>

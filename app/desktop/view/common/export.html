@@ -1,0 +1,98 @@
+<style>
+.tableform table tr th{text-align:left;}
+</style>
+<form action='<{$thisUrl}>&action=to_export' method='post' id='export_form' enctype="multipart/form-data">
+<div class="tableform">
+<{if $has_export_cnf}>
+        <div class="division" >
+            <label>导出模板：</label>
+            <input type='radio' id='exportmb1' name='_export_mb' value='1' checked />自定义模板
+            <input type='radio' id='exportmb2' name='_export_mb' value='2' />已有模板
+        </div>
+        <div id="expmbcustom" class="division" style="display:block;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr id="cnfList">
+                    <td class="cnfItem" colspan=2><div title="fields"><{$export_fields_msg}><input type="hidden" name="export_fields" value="<{$export_fields}>"></div></td>
+                </tr>
+                <tr>
+                    <th>是否包含明细：</th>
+                    <td>
+                        <input type="radio" class="need_detail" name="need_detail" value="1" checked="checked" /><label>包含</label>
+                        <input type="radio" class="need_detail" name="need_detail" value="2" /><label>不包含</label>
+                    </td>
+                </tr>
+            </table>
+            <div class='table-action' id='cnfaddbtn'>
+                <button type="button"class='btn cnf-btn'>
+                    <span>
+                        <span>配置</span>
+                    </span>
+                </button>
+                <button type="button"class='btn save-btn' ref='<{$export_cnf}>' >
+                    <span>
+                        <span>保存</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+        <div id="expmbnormal" class="division" style="display:none;">
+        </div>
+<script>
+window.addEvent('domready', function(){
+    $('exportmb1').addEvent('click',function(e){
+        if(this.checked){
+            $('expmbcustom').setStyle('display','block');
+            $('expmbnormal').setStyle('display','none');
+        }
+    });
+
+    $('exportmb2').addEvent('click',function(e){
+        if(this.checked){
+            $('expmbcustom').setStyle('display','none');
+            $('expmbnormal').setStyle('display','block');
+
+            var url="index.php?app=desktop&ctl=export&act=getTemps&type=<{$export_type}>";
+            new Request.HTML({
+                update:'expmbnormal',
+                url:url,
+                onComplete:function(){
+                }
+            }).send();
+        }
+    });
+
+    $('cnfaddbtn').getElement('.save-btn').addEvent('click',function(){
+        var cnf = this.get('ref');
+        var info = Json.evaluate(cnf);
+        var need =''
+        $('expmbcustom').getElements('.need_detail').each(function(e){
+            if(e.checked){
+                need = e.value;
+            }
+        });
+
+        new Dialog('index.php?app=desktop&ctl=export&act=addTemp',{width:400,height:150,title:'配置保存',ajaxoptions:{data:{type:info.type,content:info.content,need_detail:need},method:'post'}});
+    });
+
+    $('cnfaddbtn').getElement('.cnf-btn').addEvent('click',function(){
+        var url = "<{$thisUrl}>&action=exportcnf&finder_aliasname=<{$finder_aliasname}>";
+        new Dialog(url,{width:300,title:'配置'});
+    });
+});
+</script>
+<{/if}>
+
+<div class="division" >
+<{if $change_type}>
+<{t}>导出类型<{/t}>
+<input type='radio' name='_export_type' value='1' <{if $change_type==1}>checked<{/if}>/>type1  &nbsp;
+<input type='radio' name='_export_type' value='2' <{if $change_type==2}>checked<{/if}>/>type2<br/>
+<{/if}>
+<{foreach from=$ioType item=io}>
+<input type='radio' name='_io_type' value='<{$io}>' <{if $io=='csv'}>checked<{/if}>/><{$io}><span style="padding:0 10px">
+<{button type="submit" label=$___desktop="导出"|t:'desktop' app="desktop" icon="btn_get_world.gif"}>
+</span><br/>
+<{/foreach}>
+<{toinput from=$env.post}>
+</div></div>
+</form>

@@ -1,0 +1,98 @@
+<div class="title_right"  id="dataAction">
+<form action="<{$form_action}>" method="post" id="filter_form">
+    <{if $timeFilter != 'false'}>
+    <div class="date_area">
+        <{button class="dataBtn btn-fourthly" time_from=$timeBtn.yesterday time_to=$timeBtn.yesterday label="昨日"}>
+        <{button class="dataBtn btn-fourthly" time_from=$timeBtn.sevenday_from time_to=$timeBtn.sevenday_to label="最近7天"}>
+        <{button class="dataBtn btn-fourthly" time_from=$timeBtn.this_month_from time_to=$timeBtn.this_month_to label="本月"}>
+        <{button class="dataBtn btn-fourthly" time_from=$timeBtn.this_week_from time_to=$timeBtn.this_week_to label="本周"}>
+    </div>
+    <div class="date_date_cx">
+        <{input type="date" vtype="date" name="time_from" style="width:76px; font-family:arial;" value=$time_from}>
+        <span>至</span>
+        <{input type="date" vtype="date" name="time_to" style="width:76px; font-family:arial;" value=$time_to}>
+        <{button class="filterBtn btn-thirdly" label="查询"}>
+
+    </div>
+    <{/if}>
+
+    <div class="date_date_cx">
+        <select name="ext_type_id" id="ext_select_type">
+        <option value="" selected="selected">所有店铺</option>
+            <{foreach from=$shopList key=key item=item}>
+                <option value="<{$item.shop_id}>" <{if $shop_id == $item.shop_id}>selected="selected"<{/if}>><{$item.name}></option>
+            <{/foreach}>
+        </select>
+    </div>
+
+    <{if $typeData}>
+    <div class="date_date_cx" style="float:right">
+        <select name="type_id" id="select_type">
+            <{foreach from=$typeData key=key item=item}>
+                <option value="<{$item.type_id}>" <{if $select_type == $item.type_id}>selected="selected"<{/if}>><{$item.name}></option>
+            <{/foreach}>
+        </select>
+    </div>
+    <{/if}>
+</form>
+</div>
+<script>
+  (function(){
+    var dataAction= $('dataAction'),
+        from=dataAction.getElement('input[name=time_from]'),
+        to=dataAction.getElement('input[name=time_to]');
+
+    function setChartData(flag,e){
+        if(from && to){
+            if(!check_data(from,to))return;
+        }
+        $('filter_form').fireEvent('submit',{stop:$empty});
+    }
+
+    if($('select_type')) $('select_type').addEvent('change',function(e){setChartData(true);});
+    if($('ext_select_type')) $('ext_select_type').addEvent('change',function(e){setChartData(true);});
+    dataAction.getElement('.filterBtn').addEvent('click',function(e){setChartData(true);});
+
+    function check_data(from,to){
+      var data=[],
+      _return=[from,to].every(function(el){
+        if(!/^(19|20)[0-9]{2}-([1-9]|0[1-9]|1[012])-([1-9]|0[1-9]|[12][0-9]|3[01])+$/.test(el.value)){
+          new MessageBox('<{t}>请录入日期格式yyyy-mm-dd<{/t}>',{type:'error',autohide:true});
+          el.focus();
+          return false;
+        }
+        data.push(Date.parse(el.value.replace(/-/gi,"/")));
+        return true;
+      });
+
+      if(!_return)return null;
+      if(data[1]<data[0]){
+        return MessageBox.error('<{t}>选择开始时间必须早于结束时间<{/t}>');
+      }
+      return _return;
+    }
+
+    var dataBtn=dataAction.getElements('.dataBtn');
+    dataBtn.each(function(el,i){
+      if(el.get('time_from')==from.value && el.get('time_to')==to.value)
+          el.addClass('btn-fourthly-cur');
+      el.addEvent('click',function(e){
+        from.value=this.get('time_from');
+        to.value=this.get('time_to');
+        /* ['time_from','time_to'].each(function(v){
+         *   dataAction.getElements('input[name='+v+']').value=this.get(v);
+         * },this); */
+        dataAction.getElement('.filterBtn').fireEvent('click');
+      });
+    });
+
+  })();
+
+function change_chart(target){
+    var iframe=$('line_frame'),
+        url = '?app=taocrm&ctl=admin_analysis_chart&act=chart_line&service=<{$service}>&time_from=<{$time_from}>&time_to=<{$time_to}>';
+        <{if $line_shop}>url = url + '&line_shop=' + <{$line_shop}>;<{/if}>
+        <{if $select_type}>url = url + '&shopId=' + "<{$select_type}>";<{/if}>
+    iframe.src=url+'&target='+target;
+}
+</script>

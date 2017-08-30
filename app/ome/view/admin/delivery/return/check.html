@@ -1,0 +1,38 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<div class="tableform">
+
+    <div id="main" class="division">
+    <form method="post" action="index.php?app=ome&ctl=admin_delivery_back&act=check">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tbody>
+                <tr>
+                    <td width="55px">&nbsp;</td>
+                    <td>
+                    <span style="color:red;font-size: 1.5em;font-weight: bold;">注：只支持款到发货已发货的订单进行发货追回服务处理。</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="55px">&nbsp;</td>
+                    <td>
+                    <span style="color:red;"><{$error_msg}></span>
+                    </td>
+                </tr>
+            <tr>
+                <td width="55px">&nbsp;</td>
+                <td>
+                    <span style="font-size: 1.5em;font-weight: bold;">请输入订单号：</span>(建议使用条码枪扫描)<br />
+                    <input type="text" id="delivery_refuse" vtype="required" name="order_bn" style="margin-top: 10px;background: none repeat scroll 0 0 #FAFAFA;border: 2px solid #CCCCCC;border-radius: 10px 10px 10px 10px;color: #069CBC;font-size: 30px;height: 45px;line-height: 40px;margin-bottom: 10px;padding-left: 19px;width: 400px;" > <span style="color: red;"></span>
+                    <button type="submit" id="submit" style="margin-top: -10px;margin-left: 25px;font-size:3.0em;font-weight: 700; height: 50px; width:120px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>确定</span></span></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+    </div>
+</div>
+<script>
+$('delivery_refuse').focus();
+</script>

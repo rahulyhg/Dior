@@ -1,0 +1,42 @@
+<form id="import_form" class="tableform" enctype="multipart/form-data" target="uploadframe" method="post" action="index.php?app=logisticsaccounts&ctl=admin_actual_task&act=index&action=to_import&flt=accounted">
+<input type="hidden" name="app" value="logisticsaccounts" />
+<input type="hidden" name="model" value="actual_task" />
+<input type="hidden" name='task_id' value="<{$actual_task.task_id}>">
+<input type="hidden" name='task_bn' value="<{$actual_task.task_bn}>">
+<h4><{t}>您现在导入的：<{/t}></h4>
+<div class="division">
+<table border="0" cellpadding="0" cellspacing="0">
+    
+	
+	<tr>
+		<th >仓库：</th>
+		<td ><{$actual_task.branch_name}>
+		</td>
+	</tr>
+	<tr>
+		<th >物流公司:</th>
+		<td ><{$actual_task.logi_name}>
+		</td>
+	</tr>
+</table>
+</div>
+
+<h4><{t}>第二步：上传您要导入的文件<{/t}></h4>
+<div class="division">
+
+<table cellpadding="0" cellspacing="0" border="0">
+
+	<tr>
+		<th><{t}>上传文件：<{/t}></th>
+		<td><input id="ImportCSV" type="file" name="import_file"></td>
+	</tr>
+	<tr>
+		<th>&nbsp;</th>
+		<td><{button class="btn-primary" label="上传" type="submit"}></td>
+	</tr>
+</table>
+</div>
+
+</form>
+
+

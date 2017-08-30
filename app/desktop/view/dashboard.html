@@ -1,0 +1,280 @@
+<div class="notice clearfix tableform" id="browser_notice" style="display:none;">
+<div class="flt">
+<b class="f-14">	我们强烈建议您升级或更换到新型浏览器，提升后台操作体验（响应速度更快、视觉效果更佳）!</b>
+<p>被推荐的浏览器有：
+	Google <a href="http://www.google.com/chrome?hl=zh-cn" target="_blank"><b class="c-blue">Chrome</b></a>、
+	Apple  <a href="http://www.apple.com.cn/safari/download/" target="_blank"><b class="c-blue">Safari</b></a>、
+	Mozilla <a href="http://www.mozillaonline.com/" target="_blank"><b class="c-blue">Firefox</b></a>、
+	Microsoft <a href="http://www.microsoft.com/china/windows/internet-explorer/" target="_blank"><b class="c-blue">IE7＋</b></a>
+</p>
+</div>
+<div class="frt">
+	<span class="btn pointer close" onclick="$('browser_notice').dispose();"><span><span>知道了</span></span></span>
+</div>
+</div>
+
+<script>
+void function(){
+	if(window.ie6){
+		if('know'==Cookie.read('browser-notice'))return;
+		$('browser_notice').show();
+		$$('#browser_notice .close').addEvent('click',function(){
+				Cookie.write('browser-notice','know',{duration:1});
+		});
+		
+	
+	}
+}();	
+</script>
+<div class="widgets clearfix"> 
+	<div id="t-1" class="wcol t-1 clearfix">
+		<{foreach from=$widgets_3 item=widget name="widget"}>
+		  <div class="item <{$widget.className}>" id="<{$widget.class_full_name}>">
+			 <div class="dashbd-action"></div>
+			 <div class="dashbd-bd">
+				 <div class="dashbd-head">
+					<div class="dashbd-headl"><{$widget.title}></div>
+				</div>
+				<div class="dashbd-list">
+					<{$widget.html}>
+				</div>
+			 </div>
+		   </div> 
+		<{/foreach}>
+	</div>
+    <div id="l-1" class="wcol l-1 flt">
+		<{foreach from=$widgets_1 item=widget name="widget"}>
+		  <div class="item <{$widget.className}>" id="<{$widget.class_full_name}>">
+			 <div class="dashbd-action"></div>
+			 <div class="dashbd-bd">
+				 <div class="dashbd-head">
+					<div class="dashbd-headl"><{t}><{$widget.title}><{/t}></div>
+				</div>
+				<div class="dashbd-list">
+					<{$widget.html}>
+				</div>
+			 </div>
+		   </div> 
+		<{/foreach}>
+        <div id="bottomHelper" class="item bottomPos" style="height:50px;"></div>
+	</div>
+	<div id="l-2" class="wcol l-2 flt">
+		<{foreach from=$widgets_2 item=widget name="widget"}>
+		  <div class="item <{$widget.className}>" id="<{$widget.class_full_name}>">
+			 <div class="dashbd-action"></div>
+			 <div class="dashbd-bd">
+				 <div class="dashbd-head">
+					<div class="dashbd-headl"><{$widget.title}></div>
+				</div>
+				<div class="dashbd-list">
+					<{$widget.html}>
+				</div>
+			 </div>
+		   </div> 
+		<{/foreach}>
+        <div id="bottomHelper" class="item bottomPos" style="height:50px;"></div>
+	</div>
+    	<div id="b-1" class="wcol b-1 clearfix">
+		<{foreach from=$widgets_4 item=widget name="widget"}>
+		  <div class="item <{$widget.className}>" id="<{$widget.class_full_name}>">
+			 <div class="dashbd-action"></div>
+			 <div class="dashbd-bd">
+				 <div class="dashbd-head">
+					<div class="dashbd-headl"><{t}><{$widget.title}><{/t}></div>
+				</div>
+				<div class="dashbd-list">
+					<{$widget.html}>
+				</div>
+			 </div>
+		   </div> 
+		<{/foreach}>
+	</div>
+</div>
+
+<{area inject=".mainFoot"}>
+<div class="note clearfix" style="margin-bottom:0;height:20px">
+	 <div class="span-auto">
+		 <{t}> 当前版本：<{/t}><{$deploy.product_name}>  V<{$deploy.product_version}> 
+		 <a target="command::{title:'<{t}>检查更新<{/t}>'}" class="lnk" style="color:#3367ac" href="index.php?ctl=appmgr&act=fetchindex"><{t}>检查更新<{/t}></a>
+		 
+		 
+	  </div>     
+	<div class="user-tip frt">
+		<b><{t}>你知道么?<{/t}>&nbsp;&nbsp;&nbsp;&nbsp;</b><span id="dashboard-tip"><{$tip}></span>
+		 &nbsp;<span class="lnk" onclick="$('dashboard-tip').set('opacity',0);new Request.HTML({url:'index.php?app=desktop&ctl=dashboard&act=fetch_tip',onComplete:function(){$('dashboard-tip').set('opacity',1);},update:'dashboard-tip',evalScripts:false}).get()"><{t}>再一条<{/t}></span>
+	</div>
+   
+</div>
+
+<{/area}>  
+
+<input type="hidden" id="dashboard-side-r-trigger"/>
+<script>
+    //new Equalizer('.span-9').equalize();
+   $$('.widgets .valigntop').each(function(item){
+		item.injectTop(item.getParent());
+   });
+
+   new Side_R('index.php?app=desktop&ctl=dashboard&act=advertisement',{width:250,title:'<span class="font9px">advertisement</span>',trigger:$('dashboard-side-r-trigger'),
+		onShow:function(){this.container.setStyle('overflow-y','hidden');}
+   });
+
+     $$('.head-nav .wg').removeClass('current');
+    <{if $env.conf.desktop.sale_id != 'shopex.erp'}>
+    $('side-r').addClass('hide'); 
+    <{/if}>
+    function setTipsStatus(e){
+        if(e==true) {
+            Cookie.write('updateTips', 'hide');
+        }else{
+            Cookie.write('updateTips', 'show');
+        }
+    }
+    
+    //封装的nextSib方法出去空白节点
+    function nextSib(t){
+        var n=t.nextSibling;
+        if(t.nextSibling.nodeType!=1){
+            n=n.nextSibling;
+        }
+        return n;
+    }
+    
+    //封装的insertAfter
+    function insertAfter(newChild,target){
+        var oParent=target.parentNode;
+        if(oParent.lastChild==target){
+            oParent.appendChild(newChild);
+        }else{
+            oParent.insertBefore(newChild,nextSib(target));
+        }
+    }
+    
+    function addCheckbox(){
+        var iframes = document.getElementsByName('dialog-frame');
+        var obj = document.createElement('div');
+        obj.innerHTML = '<div style="padding:0 0 0 10px;"><input onclick="setTipsStatus(this.checked);" id="donot_show" type="checkbox" /> <label for="donot_show">下次不再显示此提示</label></div>';
+        insertAfter(obj,iframes[0]);
+    }
+
+    function setTipsStatus(e){
+        if(e==true) {
+            Cookie.write('updateTips', 'hide');
+        }else{
+            Cookie.write('updateTips', 'show');
+        }
+    }
+    
+    //封装的nextSib方法出去空白节点
+    function nextSib(t){
+        var n=t.nextSibling;
+        if(t.nextSibling.nodeType!=1){
+            n=n.nextSibling;
+        }
+        return n;
+    }
+    
+    //封装的insertAfter
+    function insertAfter(newChild,target){
+        var oParent=target.parentNode;
+        if(oParent.lastChild==target){
+            oParent.appendChild(newChild);
+        }else{
+            oParent.insertBefore(newChild,nextSib(target));
+        }
+    }
+    
+    function addCheckbox(){
+        var iframes = document.getElementsByName('dialog-frame');
+        var obj = document.createElement('div');
+        obj.innerHTML = '<div style="padding:0 0 0 10px;"><input onclick="setTipsStatus(this.checked);" id="donot_show" type="checkbox" /> <label for="donot_show">下次不再显示此提示</label></div>';
+        insertAfter(obj,iframes[0]);
+    }
+
+    /**
+    * 桌面拖拽
+    */
+    (function(){
+    
+        /* 屏蔽淘管升级提示 2012.3.31
+        if(Cookie.read('updateTips')!='hide') {
+            new Dialog('http://www.taoex.com/subject/update_taoguan0309/',{title:'新版升级提示',iframe:true,width:946,height:580,onLoad:function(){addCheckbox();}});
+        }*/
+        
+        /*紧急公告*/
+        /*
+        var str = "<h3>尊敬的ShopEx ERP 用户:</h3><div style='font-size:16px;'><div>为了您的业务开展更加顺利，ShopEx ERP将逐渐完善，将于<span style='color:red;'>2014年4月29日晚21：00</span>进行升级</div><div>升级内容如下（<a href='http://top.shopex.cn/ecos/tpl/20140429.zip' target='_blank'>详情见附件</a>）：</div><div style='font-size:14px;text-indent:20px;'><div>1.航天科技金穗发票对接（旗舰版、协同版）</div><div>2.淘宝订单全链路对接</div><div>3.开放接口新增及修改（旗舰版、协同版）</div><div>4.淘宝3C数码订单回传串号</div><div>5.其他小功能及BUG修复</div></div></div>";
+        new Dialog(new Element("div.tableform",{html:str}),{
+                 title:'通知',
+                 width:860,
+                 height:500}
+        );*/
+        
+        
+        var defaultItems = $$('.dashbd-headl');
+        var DragMod = {
+            init:function(){
+                $$('.dashbd-headl').setStyle('cursor','move');    
+                this.attachDrag();
+
+            },
+            attachDrag:function(){
+                defaultItems.each(function(el){
+                    el.addEvent('mousedown',function(e){
+                        e.stop();
+                        var item = el.getParent('.item');
+
+                        var clone = item.clone().set('id','cloneItem').setStyles(item.getCoordinates()).setStyle('opacity',0.7).removeClass('item').inject(document.body);
+                        var where = 'before',sortString = '';
+                        var drag = new Drag.Move(clone,{
+                            droppables:$$('.item'),
+                            onDrop:function(thisElement,overed,event){
+                                thisElement.destroy();
+                                item.setStyle('display','block').replaces($('DragDiv'));
+                                (function(){
+                                    $$('.l-1,.l-2,.t-1,.b-1').each(function(mod){
+                                        if(mod.getElements('.item').length === 0) return;
+                                        if(mod.getElements('.item').length === 1 && mod.getElements('.item')[0].get('id') === 'bottomHelper') return;
+                                        if(mod.getElements('.item').length) sortString += (' ' + mod.get('id') + ':');
+                                        mod.getElements('.item').each(function(item){
+                                            if(item.get('id') === 'bottomHelper'){
+                                                return;
+                                            }
+                                            sortString += (item.get('id') + ','); 
+                                        }) 
+                                        sortString = sortString.substring(0,sortString.length-1);
+                                    });
+                                    
+                                   new Request({
+                                        url:"<{$dashboard_sort_url}>",
+                                        data:"sort=" + sortString
+                                   }).send();
+                                    
+                                   sortString = '';
+                                })();
+                            },
+                            onEnter:function(thisElement,overed){
+                                e.stop();
+                                if(overed === $('DragDiv').getNext()){
+                                    where='after';
+                                    if(overed.get('id') === 'bottomHelper') return;
+                                }
+                                $('DragDiv').inject(overed,where);
+                                where = 'before';
+                            },
+                            onStart:function(thisElement,event){
+                                event.stop();
+                                var dd = new Element('div',{'id':'DragDiv'}).setStyles(item.getCoordinates()).setStyles({
+                                    'border':'2px dashed #ddd'
+                                }).inject(item,'before');
+                                item.setStyle('display','none');
+                            }
+                        });
+                        drag.start(e);
+                    });
+                });
+            }
+        };
+        DragMod.init(); 
+    })();
+</script>

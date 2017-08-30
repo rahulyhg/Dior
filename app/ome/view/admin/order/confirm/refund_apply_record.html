@@ -1,0 +1,61 @@
+<{if $reship_list}>
+<h3 style="border-bottom:none; padding-bottom:5px;">订单退换货清单&nbsp;&nbsp;<span style="color:red; font-size:12px;">客户申请的退款退货信息请仔细查看，再进行<{if $is_cancel}>余单撤消<{else}>发货<{/if}>操作。</span></h3>
+<div>
+    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <thead>
+			<tr>
+            	<th>退换货单号</th>
+                <th>货号</th>
+                <th>商品名称</th>
+                <th>规格</th>
+                <th>数量</th>
+                <th>当前状态</th>
+                <th>类型</th>
+            </tr>
+        </thead>
+        <tbody>
+            <{foreach from=$reship_list item=items}>
+            <tr>
+            	<td><b><{$items.reship_bn}></b></td>
+                <td><{$items.bn}></td>
+                <td><{$items.product_name}></td>
+                <td><{$items.addon}></td>
+                <td><{$items.num}></td>
+                <td><{$items.type_name}></td>
+                <td><b style="color:red;"><{$items.return_type_name}></b></td>
+            </tr>
+            <{/foreach}>
+        </tbody>
+    </table>
+</div>
+<{/if}>
+
+<{if $refund_apply}>
+<h3 style="border-bottom:none; padding-bottom:5px; padding-top:8px;">订单退款清单<{if empty($reship_list)}>&nbsp;&nbsp;<span style="color:red; font-size:12px;">客户申请的退款退货信息请仔细查看，再进行<{if $is_cancel}>余单撤消<{else}>发货<{/if}>操作。</span><{/if}></h3>
+<div>
+    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <thead>
+			<tr>
+            	<th>退款单号</th>
+                <th>申请退款金额</th>
+                <th>已退款金额</th>
+                <th>退款状态</th>
+                <th>申请日期</th>
+                <th>最后操作时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            <{foreach from=$refund_apply item=rap}>
+            <tr>
+                <td><b><{$rap.refund_apply_bn}></b></td>
+                <td><{$rap.money}></td>
+                <td><span style="color:red;"><{$rap.refunded}></span></td>
+                <td><b><{$rap.status_text}></b></td>
+                <td><{$rap.create_time|date:"Y-m-d H:i:s"}></td>
+                <td><{$rap.last_modified|date:"Y-m-d H:i:s"}></td>
+            </tr>
+            <{/foreach}>
+        </tbody>
+    </table>
+</div>
+<{/if}>

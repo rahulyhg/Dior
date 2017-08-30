@@ -1,0 +1,46 @@
+<div class="tableform">
+  <h3>新建盘点</h3>
+  <div class="division">
+    <h5>请选择盘点仓库</h5>
+    <form action="index.php?app=taoguaninventory&ctl=admin_inventorylist&act=add_inventory" method="POST">
+      <div class="gray_form">
+        <ul class="branch_list">
+        <{if (!$branch_list)}>
+            <li><label for="1">无仓库信息</label></li>
+        <{else}>
+        <{foreach from=$branch_list index=index item=item}>
+
+          <li><label for="branch_id_<{$item.branch_id}>"><input type="radio" name="branch_id" id="branch_id_<{$item.branch_id}>" value="<{$item.branch_id}>"> <{$item.name}></label></li>
+
+        <{/foreach}>
+        <{/if}>
+        </ul>
+        <!-- <div align="right"><a href="javascript:void(0);" id="btn_more">点击展开更多&gt;&gt;</a></div> -->
+      </div>
+      <div class="division" align="center"><{button type="submit" class="btn-primary" label="确 定"}></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function(){
+    function getList(k,v){
+      return '<label for="branch_id_'+k+'"><input type="radio" name="branch_id" id="branch_id_'+k+'" value="'+k+'"> '+v+'</label>';
+    }
+    /*$('btn_more').addEvent("click",function(){
+      new Request({url:'index.php?app=taoguaninventory&ctl=admin_inventory&act=branch_more',
+        onRequest:function(){
+          this.addClass('loading');
+        }.bind(this),
+        onSuccess:function(json){//[{id:1,name:"上海仓库"}]
+          this.getParent().destroy();
+          var fdoc=document.createDocumentFragment();
+          json.each(function(item,i){
+            fdoc.appendChild(new Element('li',getList(item.id,item.name)));
+          });
+          $E('.branch_list').appendChild(fdoc);
+        }.bind(this)
+      }).get();
+    });*/
+  })()
+</script>

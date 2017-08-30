@@ -1,0 +1,50 @@
+<table width='100%' cellspacing="0" cellpadding="0" class="gridlist delivery-cfg-table" id='area_rule_list'>
+            <thead>
+            <tr>
+            <th>区域</th>
+              <th>设置类型</th>
+              <th>规则描述</td>
+              </tr>
+            </thead>
+<tbody id="dataNode">
+          <tr>
+            <td colspan="3" style="padding:0;"><div class="note" style="margin:0;"> 暂无信息 </div></td>
+          </tr>
+        </tbody>
+
+</table>
+
+
+<script>
+
+var store=[],pag,rows;
+var tpl='<tr >'+
+        '  <td>{region_name_path}</td><td>{set_type_name}</td><td >{item_list}</td>'+
+       '</tr>';
+    new Request({url:'index.php?app=logistics&ctl=admin_area_rule&act=getAreaRuleDetail&p[0]=<{$rule_id}>',
+    onComplete:function(rs){
+
+        if(rs){
+            rs=JSON.decode(rs);
+            console.info(rs);
+            store.combine(rs);
+            createProduct(store);
+
+        }
+
+    }}).send();
+
+    function createProduct(data){
+        pag=new PageData(tpl,data,{'updateMain':$('dataNode'),'pageNum':10,'PRIMARY_ID':'log_id',
+        'onShow':function(){
+            var _this=this;
+            $$('#dataNodes tr').each(function(item,i){
+                
+             });
+
+        }
+            
+        });
+    }
+
+</script>

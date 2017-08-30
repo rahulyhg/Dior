@@ -1,0 +1,46 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+<h4 class="head-title">编辑管理员组</h4>
+<div class="tableform">
+           <div class="division">
+<form method="post" action="index.php?<{$env.server.QUERY_STRING}>">    
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+       <tr>
+       </tr>
+        <tr><th>名称：</th>
+          <td><input type="text" name="groups[name]" value="<{$Oper_detail.name}>"/></td>
+        </tr>
+		<tr><th>所属版块：</th>
+          <td >
+          <{foreach from=$group_type item=type key=k}>
+          <input name="groups[g_type]" type="radio" value="<{$k}>" <{if $Oper_detail.g_type==$k}>checked="checked"<{/if}>/><{$type}>
+          <{/foreach}>
+		  <td>
+        </tr>
+		<tr><th>选择管理员：</th>
+          <td>
+		  <{foreach from=$Operators item=Operators}>
+		  <input name="groups[op_id][]" type="checkbox" value="<{$Operators.user_id}>" <{$Operators.checked}>/><{$Operators.name}>
+		  <{/foreach}>
+		  <td>
+        </tr>
+        <tr><th>选择仓库：</th>
+        <td><{foreach from=$Branches item=branch}>
+          <input name="branches[branch_id][]" type="checkbox" value="<{$branch.branch_id}>" <{$branch.checked}>/><{$branch.name}>
+          <{/foreach}></td>
+        </tr>
+		<tr><th>说明：</th>
+          <td width="74%"><textarea name="groups[description]" ><{$Oper_detail.description}></textarea></td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="table-action"><{button label="提交" type="submit" value="提交"}></div>
+<{if $Oper_detail.group_id}>
+  <input type="hidden" name="groups[group_id]" value="<{$Oper_detail.group_id}>">
+<{/if}>	  
+	 
+</form>   
+  </div>
+    </div>

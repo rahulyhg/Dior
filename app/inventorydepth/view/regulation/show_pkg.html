@@ -1,0 +1,18 @@
+<div id='pkg-selected-body'>
+<{include file="finder/input-row.html" app="inventorydepth"}>
+</div>
+<{area inject=".mainFoot"}>
+<div class='table-action'>
+    <{button label='确定' id='primary-btn' onclick='change_pkg();'}>
+</div>
+<{/area}>
+<script>
+function change_pkg(){
+    var handle = $('hand-selected-pkg').getNext('div');
+    handle.setHTML($('pkg-selected-body').innerHTML);
+    var length = $('pkg-selected-body').getElements('.row').length;
+    var html = '已选择了'+length+'个捆绑商品,'+"<a href='javascript:void(0);' onclick='pkg_selected_show();'>查看选中捆绑商品.</a>";
+    $('hand-selected-pkg').setHTML(html);
+    $('primary-btn').getParent('.dialog').retrieve('instance').close();
+}
+</script>

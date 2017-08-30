@@ -1,0 +1,329 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+
+<style>
+    .finder-detail{
+        background:#eee;
+        padding:5px;
+        margin:5px 0;
+        border:1px solid #bbb;
+    }
+    .finder-detail td{
+        background:#fff;
+
+    }
+    .gridlist tr.waring, .gridlist td.waring {
+        background:none repeat scroll 0 0 #9999ff;
+        color:#333333;
+    }
+    .gridlist tr.masterorder, .gridlist tr.masterorder td, .gridlist td.masterorder {
+        color: #000000;
+        font-weight: 700;
+        font-size : 12px;
+        background:#f0f6fe
+    }
+    .gridlist tr.memberorder, .gridlist tr.memberorder td, .gridlist td.memberorder tr.addressorder, .gridlist tr.addressorder td, .gridlist td.addressorder {
+        background: none repeat scroll 0 0 #e2effe;
+        color: #000000;
+        font-weight: 400;
+        font-size : 12px;
+    }
+
+</style>
+<form class="tableform" style="background:#fff; border:0 none;" method="post" action="index.php?app=ome&ctl=admin_order&act=finish_combine" id="order_split">
+    <input type="hidden" name="order_id" id="order_id" value="<{$order_id}>"/>
+    <input type="hidden" name="do_action" id="do_action" value=""/>
+    <input type="text" style="display:none" />
+	<div id="nosplitarea">
+		<h3 style="border-bottom:none;">购物清单信息</h3>
+        <div class="finder-detail">
+            <div id="present">
+                <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+                  <thead>
+                    <tr>
+                      <th style="width:12%;">货号</th>
+                      <th>商品名称</th>
+                      <th style="width:6%;">规格</th>
+                      <th style="width:8%;">价格</th>
+                      <th style="width:6%;">购买数量</th>
+                      
+                      <th style="width:6%;">已发货数量</th>
+                      <th style="width:6%;">需发货数量</th>
+                      
+                      <{foreach from=$branch_list item=branch}>
+                      <th style="width:7%;"><a href="javascript:void(0);" style="text-decoration:none;cursor:default; font-weight:bold;"><{$branch.name}></a></th>
+                      <{/foreach}>
+                    </tr>
+                  </thead>
+                  <tbody id="dataNode">
+                  </tbody>
+                </table>
+            </div>
+        </div>
+	</div>
+</form>
+
+<script language="javascript">
+var gOrders = <{$jsOrders}>;
+var orderItems = new Array();
+var orderObjects = new Array();
+
+function reWriteProductNode () {
+	//计算所有产品信息
+	//var orders = getCombineOrders();
+	var html = '';
+	var orderIds = new Array();
+	var select_corp_id='';
+	if($('logi_id')){
+		select_corp_id = $('logi_id').value;
+	}
+
+	orderItems = new Array();
+
+	order_id		= '<{$order_id}>';
+	getProducts(order_id);
+	orderIds[0]		= order_id;
+	
+	//weight = reWriteProductWeight();
+	html = itemHtmlData();
+
+	$('dataNode').set('html', html);
+}
+
+function itemHtmlData(){
+	var html = '';
+	var orderCount = getCombineOrders().length;
+	
+	for (obj_bn in orderObjects) {
+		
+		if (orderObjects[obj_bn]['obj_type'] == 'pkg' || orderObjects[obj_bn]['obj_type'] == 'giftpackage')
+		{
+			if (orderObjects[obj_bn]['delete'] == 'false')
+			{
+				//ExBOY计算已分配购买数量
+				get_quantity		= parseInt(orderObjects[obj_bn]['quantity']);
+				get_left_nums		= parseInt(orderObjects[obj_bn]['left_nums']);
+				get_send_nums		= parseInt(get_quantity - get_left_nums);
+				
+				html += '<tr data-g_pid="" data-g_shop_pid=""  data-item_id="">';
+				html += '<td class="number">' + orderObjects[obj_bn]['bn'] +'</td>';
+				html += '<td class="goodsname">' + orderObjects[obj_bn]['name'] + '</td>';
+				html += '<td class="addon">捆绑商品</td>';
+				html += '<td class="price">' + orderObjects[obj_bn]['price'].toFixed(2) + '</td>';
+				html += '<td class="buycounts">' + orderObjects[obj_bn]['quantity'] + '</td>';
+				
+				html = html + '<td><b>' + get_send_nums + '</b></td>';
+				html = html + '<td><span style="color:#f00; font-weight:bold;">' + orderObjects[obj_bn]['left_nums'] + '</span></td>';
+				
+				<{foreach from=$branch_list item=branch}>
+					var branch_store = orderObjects[obj_bn]['branch_store'][<{$branch.branch_id}>]?orderObjects[obj_bn]['branch_store'][<{$branch.branch_id}>]:0;
+					html += '<td class="branch ColColorGreen"><b>' + branch_store + '</b></td>';
+				<{/foreach}>
+				
+				html += '</tr>';
+				
+				for (item_bn in orderObjects[obj_bn]['order_items'])
+				{
+					if(orderObjects[obj_bn]['order_items'][item_bn]['obj_id'] == orderObjects[obj_bn]['obj_id'])
+					{
+						html += '<tr>';
+						
+						html = html + '<td class="number" style="background: none repeat scroll 0 0 #eef4fb;">' + orderObjects[obj_bn]['order_items'][item_bn]['bn'] + '</td>';
+						html = html + '<td class="goodsname" style="background: none repeat scroll 0 0 #eef4fb;">' + orderObjects[obj_bn]['order_items'][item_bn]['name'] + '</td>';
+						html = html + '<td class="addon" style="background: none repeat scroll 0 0 #eef4fb;"> - </td>';
+						html = html + '<td class="price" style="background: none repeat scroll 0 0 #eef4fb;"> - </td>';
+						html = html + '<td class="buycounts" style="background: none repeat scroll 0 0 #eef4fb;"><span style="color:#999;">' + orderObjects[obj_bn]['order_items'][item_bn]['quantity'] + '</span></td>';
+						
+						html = html + '<td style="background: none repeat scroll 0 0 #eef4fb;">' + orderObjects[obj_bn]['order_items'][item_bn]['sendnum'] + '</td>';
+						html = html + '<td style="background: none repeat scroll 0 0 #eef4fb;"><span style="color:#f60;">' + orderObjects[obj_bn]['order_items'][item_bn]['left_nums'] + '</span></td>';
+						
+						<{foreach from=$branch_list item=branch}>
+							var branch_store = orderObjects[obj_bn]['order_items'][item_bn]['branch_store'][<{$branch.branch_id}>]?orderObjects[obj_bn]['order_items'][item_bn]['branch_store'][<{$branch.branch_id}>]:0;
+							html += '<td class="branch ColColorGreen" style="background: none repeat scroll 0 0 #eef4fb;">' + branch_store + '</td>';
+						<{/foreach}>
+						
+						html += '</tr>';
+						
+					}
+				}
+			}
+		}
+		else
+		{
+			for (item_bn in orderObjects[obj_bn]['order_items'])
+			{
+				 if (orderObjects[obj_bn]['order_items'][item_bn]['delete'] == 'false') 
+				 {
+					//ExBOY计算已分配购买数量
+					get_quantity		= parseInt(orderObjects[obj_bn]['order_items'][item_bn]['quantity']);
+					get_left_nums		= parseInt(orderObjects[obj_bn]['order_items'][item_bn]['left_nums']);
+					get_send_nums		= parseInt(get_quantity - get_left_nums);
+					
+					html = html + '<tr data-g_pid="'+orderObjects[obj_bn]['order_items'][item_bn]['product_id']+'" data-g_shop_pid="'+orderObjects[obj_bn]['order_items'][item_bn]['shop_product_id']+'"  data-item_id="'+orderObjects[obj_bn]['order_items'][item_bn]['item_id']+'">';
+					
+					html = html + '<td class="number">' + orderObjects[obj_bn]['order_items'][item_bn]['bn'] + '</td>';
+					html = html + '<td class="goodsname">' + orderObjects[obj_bn]['order_items'][item_bn]['name'] + '</td>';
+					html = html + '<td class="addon">' + orderObjects[obj_bn]['order_items'][item_bn]['addon'] + '</td>';
+					html = html + '<td class="price">' + orderObjects[obj_bn]['order_items'][item_bn]['price'].toFixed(2) + '</td>';
+					html = html + '<td class="buycounts">' + orderObjects[obj_bn]['order_items'][item_bn]['quantity'] + '</td>';
+					
+					html = html + '<td><b>' + get_send_nums + '</b></td>';
+					html = html + '<td><span style="color:#f00; font-weight:bold;">' + orderObjects[obj_bn]['order_items'][item_bn]['left_nums'] + '</span></td>';
+					
+					  <{foreach from=$branch_list item=branch}>
+					  	var branch_store = orderObjects[obj_bn]['order_items'][item_bn]['branch_store'][<{$branch.branch_id}>]?orderObjects[obj_bn]['order_items'][item_bn]['branch_store'][<{$branch.branch_id}>]:0;
+						html = html + '<td class="branch ColColorGreen"><b>' + branch_store + '</b></td>';
+					  <{/foreach}>
+					
+					html = html + '</tr>';
+				 }
+			}
+		}
+	}
+	
+	return html;
+}
+function createGoodsItemHtml(product,obj_bn) {
+	if (product['delete'] == 'false') {
+		if (!orderObjects[obj_bn]['order_items'][product['bn']]) {
+			orderObjects[obj_bn]['order_items'][product['bn']] = new Array();
+			orderObjects[obj_bn]['order_items'][product['bn']]['delete']          = 'false';
+			orderObjects[obj_bn]['order_items'][product['bn']]['bn']              = product['bn'];
+			orderObjects[obj_bn]['order_items'][product['bn']]['name']            = product['name'];
+			orderObjects[obj_bn]['order_items'][product['bn']]['addon']           = product['addon'];
+			orderObjects[obj_bn]['order_items'][product['bn']]['price']           = parseFloat(product['price']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['amount']          = parseFloat(product['amount']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['quantity']        = parseFloat(product['quantity']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['left_nums']       = parseFloat(product['left_nums']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['branch_store']    = product['branch_store'];
+			orderObjects[obj_bn]['order_items'][product['bn']]['sendnum']         = parseFloat(product['sendnum']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['product_id']      = parseFloat(product['product_id']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['weight']          = parseFloat(product['weight']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['item_id']         = product['item_id'];
+			orderObjects[obj_bn]['order_items'][product['bn']]['shop_product_id'] = product['shop_product_id'];
+			orderObjects[obj_bn]['order_items'][product['bn']]['item_type']       = product['item_type'];
+			
+			orderObjects[obj_bn]['order_items'][product['bn']]['obj_id']          = product['obj_id'];
+		} else {
+			orderObjects[obj_bn]['order_items'][product['bn']]['amount']    += parseFloat(product['amount']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['quantity']  += parseFloat(product['quantity']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['left_nums'] += parseFloat(product['left_nums']);
+			orderObjects[obj_bn]['order_items'][product['bn']]['sendnum']   += parseFloat(product['sendnum']);
+		}
+	}
+}
+function createGoodsHtml(goods, ptype) {
+	for (objId in goods) {
+		var _obj_bn = goods[objId]['bn'];
+		if (!orderObjects[_obj_bn]) {
+			orderObjects[_obj_bn] = new Array();
+		};
+		if (!orderObjects[_obj_bn]['order_items']) {
+			orderObjects[_obj_bn]['order_items'] = new Array();
+		};
+
+		for (itemId in goods[objId]['order_items']) {
+			createGoodsItemHtml(goods[objId]['order_items'][itemId],_obj_bn);
+		}
+
+		if (orderObjects[_obj_bn]['order_items']) {
+			if (!orderObjects[_obj_bn]['bn']) {
+				orderObjects[_obj_bn]['bn']           = _obj_bn;
+				orderObjects[_obj_bn]['name']         = goods[objId]['name'];
+				orderObjects[_obj_bn]['obj_type']     = goods[objId]['obj_type'];
+				orderObjects[_obj_bn]['quantity']     = parseFloat(goods[objId]['quantity']);
+				orderObjects[_obj_bn]['delete']       = 'false';
+				orderObjects[_obj_bn]['price']        = parseFloat(goods[objId]['price']);
+				orderObjects[_obj_bn]['sendnum']      = parseFloat(goods[objId]['sendnum']);
+				orderObjects[_obj_bn]['weight']       = parseFloat(goods[objId]['weight']);
+				orderObjects[_obj_bn]['left_nums']    = parseFloat(goods[objId]['left_nums']);
+				orderObjects[_obj_bn]['branch_store'] = goods[objId]['branch_store'];
+				
+				orderObjects[_obj_bn]['obj_id']       = goods[objId]['obj_id'];
+			} else {
+				orderObjects[_obj_bn]['quantity'] += parseFloat(goods[objId]['quantity']);
+				orderObjects[_obj_bn]['sendnum']  += parseFloat(goods[objId]['sendnum']);
+				orderObjects[_obj_bn]['weight']   += parseFloat(goods[objId]['weight']);
+				orderObjects[_obj_bn]['left_nums']+= parseFloat(goods[objId]['left_nums']);
+			}
+		};
+	}
+}
+
+function getProducts(orderId) {
+	for (id in gOrders) {
+		if (orderId == id) {
+			var products = gOrders[id]['items'];
+
+			for (ptype in products) {
+				createGoodsHtml(gOrders[id]['items'][ptype], ptype);
+				if (ptype == 'goods') {
+				} else if (ptype == 'gift') {
+				} else if (ptype == 'pkg') {
+				}
+			}
+		}
+	}
+}
+
+
+function getCombineOrders() {
+	var orderRow = $$('#orderNode input, #present_member input').filter( function(item, i) {
+		return item.checked;
+	});
+	return orderRow;
+}
+
+function doDetailAction(act, orderId) {
+	if (act==1 || act==3) {
+		if($('btn_delivery_submit')) {
+			return MessageBox.error('您的配送信息正处于编辑状态！');
+		}        
+
+		if ($('logi_id').value == '') {
+			return MessageBox.error('没有选择快递公司,如你还没有进行过快递公司的设置，请设置后再试！');    
+		}
+	}
+	//查看是否有可合并发货单
+	var combine_delivery='';
+	if (act == 1 || act == 2 || act == 3) {
+		if (!checkProcess()) {
+			return false;
+		}
+	   //检查是否有单据可以合并
+		new Request({
+		url:'index.php?app=ome&ctl=admin_order&act=fetchCombineDelivery',async:false,
+		method:'post',
+		data:{order_id:'<{$order_id}>'},
+		onComplete: function(json) {
+			if(json){
+				json=JSON.decode(json);
+				
+				for(var i=0;i<json.length;i++){
+					combine_delivery+=+json[i]+',';
+				}
+				
+			}
+		}
+	
+		}).send();
+	}
+
+	$('do_action').value = act;
+	$('order_id').value = orderId;
+	//
+	
+	if(combine_delivery.length>0){
+		var url = 'index.php?app=ome&ctl=admin_order&act=combineOrderNotify&order_id=<{$order_id}>';
+		new Dialog(url,{title:'确认',width:500,height:200});
+	}else{
+		$('order_split').fireEvent('submit', {
+			stop: function() {
+			}
+		});
+	}
+}
+
+reWriteProductNode();
+</script>

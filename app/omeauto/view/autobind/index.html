@@ -1,0 +1,124 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<h5 class="head-title">自动合并发货单添加/编辑规则</h5>
+<form action="index.php?app=omeauto&ctl=autobind&act=do_add" method="post">
+<input type="hidden" name="oid" value="<{$autobind.oid}>" />
+<div class="tableform">
+  <div class="division">
+    <table width="100%" cellspacing="0" cellpadding="0">
+      <tbody>
+        <tr>
+          <th width="10%"><label for="dom_el_bc">规则名称：</label></th>
+          <td colspan="3"><{input type="text&&required" name="name" value=$autobind.name}> <{help}><{t}>这里填写你需要添加的规则名称<{/t}><{/help}></td>
+        </tr>
+        <tr>
+          <th><label for="dom_el">规则描述：</label></th>
+          <td colspan="3"><textarea name="memo" cols="60" rows="4" class="x-input"><{$autobind.memo|escape}></textarea> <{help}><{t}>这里填写你需要添加的规则描述<{/t}><{/help}></td>
+        </tr>
+        <tr>
+          <th><label for="dom_el">基础规则说明：</label></th>
+          <td colspan="3"><{t}>可合并的条件为相同的会员、收货人地址、发货仓库、发货物流公司、来源店铺、收款方式(货到付款或者非货到付款)、是否保价才能被合并。如不选择下列条件，则代表使用该基础规则进行自动合并。<{/t}></td>
+        </tr>
+        <{if $conditions}>
+        <tr>
+          <th><label for="dom_el_bc79182">规则设置：</label></th>
+          <td colspan="3">
+              <p id="btn_add_condition">
+                <{foreach from=$conditions item=item}>
+                <{if $item.disabled}>
+                    <{button label=$item.name iname=$item.name id=$item.condition disabled='true'}>
+                <{else}>
+                    <{button label=$item.name iname=$item.name id=$item.condition}>
+                <{/if}>
+                <{/foreach}>
+              </p>
+              
+              <h5>已设置的自动合并规则</h5>
+              <div id="dataNode">
+                <{foreach from=$condition_detail item=item}>
+                <div class="added_item" key="<{$item.condition}>">
+                <div class="th"><{$item.title}>：</div>
+                <div class="td"><{$item.content}></div>
+                <div class="del"><a href="javascript:void(0)">删除</a></div>
+                </div>
+                <{/foreach}>
+              </div>
+          </td>
+        </tr>
+        <{/if}>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="table-action">
+  <{button class="btn-primary" label="保存" type="submit" id="saveCurrent"}>
+</div>
+</form>
+<script type="text/javascript">
+(function(){
+	
+    if($defined($('dataNode'))){
+        $('dataNode').getElements('.del').addEvent("click",function(){
+            if(confirm('确认删除此条件?')){
+                $(this.getParent().get('key')).disabled=false;
+                this.getParent().destroy();
+            }
+        });
+    }
+    $ES('#btn_add_condition button').each(function(item,i){
+        item.addEvent('click',function(e){
+            var id = item.get('id');
+            var name = item.getProperty('iname');
+
+            item.disabled=true;
+            var added_item=new Element('.added_item',{html:'<div class="th"></div><div class="td"></div><div class="del"><a href="javascript:void(0)">删除</a></div>'}).inject('dataNode');
+            new Request.HTML({
+                url : 'index.php?app=omeauto&ctl=autobind&act=show_condition_detail&p[0]='+id,
+                method : 'post',
+                evalScripts : true,
+                update : added_item.getElement('.td'),
+                onSuccess: function(){
+                    added_item.getElement('.th').setHTML(name+'：');
+                }
+            }).send();
+            added_item.getElement('.del').addEvent("click",function(){
+                if(confirm('确认删除此条件?')){
+                    item.disabled=false;
+                    this.getParent().destroy();
+                }
+            });
+
+        });
+    });
+
+    
+
+    var form = $('saveCurrent').getParents('form');
+    
+    form.store('target',{
+    	onRequest:function(e){
+	    	//提交按钮:disabled
+	    	$('saveCurrent').set('disabled', 'true');
+	    	$('saveCurrent').getElements('span')[1].set('text','正在保存');
+    	},
+    	onComplete:function(jsontext){
+	    	//jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+	    	var json = Json.evaluate(jsontext);
+	    	if (typeof(json.error) != 'undefined'){
+		    	//提交按钮:enabled
+		    	$('saveCurrent').set('disabled', '');
+		    	$('saveCurrent').getElements('span')[1].set('text','保存');
+	    	}else{
+		    	//提交按钮:disabled
+		    	opener.finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,opener.finderGroup["<{$env.get.finder_id}>"]);
+		    	if($defined(opener.document.getElementById('newautobind'))){
+		    	 opener.document.getElementById('newautobind').setStyle('display','none');
+		    	}
+		    	setTimeout("window.close()",500);
+	        }
+        }
+    }); 
+    
+})();
+</script>

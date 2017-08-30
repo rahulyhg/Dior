@@ -1,0 +1,26 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="delivery-info">
+  <tbody>
+    <tr>
+      <th>收货人：</th>
+      <td><span><{$order.consignee.name}></span>
+        <input type="hidden" name="consignee[name]" value="<{$order.consignee.name}>" /></td>
+      <th>配送地址：</th>
+      <td><span id='consignee[area]'><{$order.consignee.area|region}></span>
+        <input type="hidden" name="consignee[area]" value="<{$order.consignee.area}>" />
+        <span id='consignee[addr]'><{$order.consignee.addr}></span>
+        <input type='hidden' name='consignee[addr]' value="<{$order.consignee.addr}>"/></td>
+      <th>电话/手机：</th>
+      <td><span><{$order.consignee.telephone}><{if $order.consignee.telephone}>/<{/if}><{$order.consignee.mobile}></span>
+        <input type="hidden" name="consignee[telephone]" value="<{$order.consignee.telephone}>" />
+        <input type="hidden" name="consignee[mobile]" value="<{$order.consignee.mobile}>" /></td>
+      <th>送货时间：</th>
+      <td><span><{$order.consignee.r_time}></span>
+        <input type="hidden" name="consignee[r_time]" value="<{$order.consignee.r_time}>" /></td>
+      <th>邮政编码：</th>
+      <td><span><{$order.consignee.zip}></span>
+        <input type="hidden" name="consignee[zip]" value="<{$order.consignee.zip}>" />
+        <input type="hidden" name="consignee[email]" value="<{$order.consignee.email}>" /></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>

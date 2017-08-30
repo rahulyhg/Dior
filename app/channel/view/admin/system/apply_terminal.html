@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>申请绑定</title>
+  </head>
+  <body leftmargin="0" topmargin="0">
+    <{$license_iframe}>
+    <script>
+      var iframe = document.getElementById('iframe') || document.getElementsByTagName('iframe')[0];
+      iframe.onload = function() {
+        this.height = document.documentElement.clientHeight - 4;
+      }
+      window.onresize = function() {
+        iframe.style.height = document.documentElement.clientHeight - 4 + 'px';
+      }
+    </script>
+  </body>
+</html>

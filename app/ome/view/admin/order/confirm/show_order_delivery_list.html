@@ -1,0 +1,30 @@
+<h3 style="border-bottom:none; padding-bottom:5px; padding-top:5px;">发货单据列表<span style="color:red;">（温馨提示：已拆分的商品不能编辑价格与配送信息！编辑提交后，未发货的发货单将被自动打回！）</span></h3>
+<div>
+    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <thead>
+			<tr>
+            	<th>发货单号</th>
+                <th>物流单号</th>
+                <th>物流公司</th>
+                <th>发货仓库</th>
+                <th>发货状态</th>
+                <th>建立日期</th>
+            </tr>
+        </thead>
+        <tbody>
+            <{foreach from=$delivery_list item=dly_item}>
+            <tr>
+            	<td>
+                	<a href="index.php?app=ome&ctl=admin_receipts_print&act=show_delivery_items&id=<{$dly_item.delivery_id}>" target="_blank"><{$dly_item.delivery_bn}></a>
+                	<{if $dly_item.parent_id}><span style="color:red;">(合)</span><{/if}>
+                </td>
+                <td><{$dly_item.logi_no}></td>
+                <td><{$dly_item.logi_name}></td>
+                <td><{$dly_item.branch_name}></td>
+                <td><b><{$dly_item.status}></b></td>
+                <td><{$dly_item.create_time}></td>
+            </tr>
+            <{/foreach}>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,381 @@
+<form class="tableform" method="post" action="index.php?app=<{$env.get.app}>&ctl=admin_order_retrial&act=save_audit" name="order_frm" id="order_frm">
+<div id="nosplitarea">
+  <div class="finder-detail">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center"><span class="font_2">订单价格异常信息</span></td>
+    </tr>
+    <tr>
+		<td><span class="font_3">商品信息</span></td>
+    </tr>
+    <tr>
+      <td>
+      <div class="order_table_list table_ml">
+          <table width="100%" border="0" cellpadding="1" cellspacing="1" bgcolor="#BCBCBC">
+            <tr>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">货号</b></td>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">商品名称</b></td>
+              <td align="center" bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">规格</b></td>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">商品单价</b></td>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">优惠价格</b></td>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">销售价格</b></td>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">购买数量</b></td>
+              <td bgcolor="#DDE3ED" style="padding: 6px 5px;">&nbsp;<b style="color:#3D4043">监控价格范围</b></td>
+            </tr>
+            
+            <{foreach from=$order.item_list item=obj_item key=obj_type}>
+            	<{if $obj_type == 'pkg'}>
+                	<{foreach from=$obj_item item=items}>
+                        <tr <{if $items.delete == 'true'}>class="goods_pkg_delete"<{else}>class="goods_pkg_td"<{/if}> >
+                          <td align="center"><{$items.bn}></td>
+                          <td><div class="goods_title"><a title="<{$items.name}>"><{$items.name}></a></div></td>
+                          <td align="center">捆绑商品</td>
+                          <td class="font_money"><{$items.price|cur}></td>
+                          <td class="font_money"><{$items.pmt_price|cur}></td>
+                          <td class="<{if $items.sale_price < $items.product_cost}>font_change border_red<{else}>font_money<{/if}>" ><{$items.sale_price|cur}><input name="new_sale_price[]" type="hidden" value="<{$items.sale_price}>" /></td>
+                          <td>&nbsp;x<{$items.quantity}></td>
+                          <td class="font_3">&nbsp;
+                          <{if $items.product_cost <= 0}>
+                          	未设置
+                          <{else}>
+                          	<{$items.product_cost}>~<{if $items.product_price >= $items.product_cost}><{$items.product_price}><{else}>不限<{/if}>
+                          <{/if}>
+                          </td>
+                        </tr>
+                        
+                        <{foreach from=$items.order_items item=val}>
+                            <tr <{if $val.delete == 'true'}>class="goods_pkg_list_delete"<{else}>class="goods_pkg_list_td"<{/if}> >
+                              <td><{$val.bn}></td>
+                              <td><div class="goods_title"><a title="<{$val.name}>"><{$val.name}></a></div></td>
+                              <td align="center">-</td>
+                              <td class="font_money"><{$val.price|cur}></td>
+                              <td class="font_money"><{$val.pmt_price|cur}></td>
+                              <td class="font_money"><{$val.sale_price|cur}></td>
+                              <td>&nbsp;<{$val.nums}></td>
+                              <td class="font_3">&nbsp;&nbsp;&nbsp;-</td>
+                            </tr>
+                        <{/foreach}>
+                    <{/foreach}>
+                <{else}>
+                	<{foreach from=$obj_item item=items}>
+                        <{foreach from=$items.order_items item=val}>
+                            <tr <{if $val.delete == 'true'}>class="goods_delete"<{else}>class="goods_td"<{/if}> >
+                              <td><{$val.bn}></td>
+                              <td><div class="goods_title"><a title="<{$val.name}>"><{$val.name}></a></div></td>
+                              <td align="center">-</td>
+                              <td class="font_money"><{$val.price|cur}></td>
+                              <td class="font_money"><{$val.pmt_price|cur}></td>
+                              <td class="<{if $val.sale_price < $val.product_cost}>font_change border_red<{else}>font_money<{/if}>" ><{$val.sale_price|cur}><input name="new_sale_price[]" type="hidden" value="<{$val.sale_price}>" /></td>
+                              <td>&nbsp;x<{$val.nums}></td>
+                              <td class="font_3">&nbsp;
+                              <{if $val.product_cost <= 0}>
+                                未设置
+                              <{else}>
+                                <{$val.product_cost}>~<{if $val.product_price >= $val.product_cost}><{$val.product_price}><{else}>不限<{/if}>
+                              <{/if}>
+                              </td>
+                            </tr>
+                        <{/foreach}>
+                    <{/foreach}>
+                <{/if}>
+			<{/foreach}>
+            
+          </table>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="font_3">金额信息</span></td>
+    </tr>
+    <tr>
+      <td>
+      <div class="table_style table_mr color_edit">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td valign="top">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td width="125" align="right" class="border_l_1px color_487">商品总金额</td>
+                    <td class="color_5a5a"><{$order.cost_item|cur}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487">销售金额</td>
+                    <td class="color_5a5a"><span id="new_total_amount">&nbsp;</span></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487">让利或增加金额</td>
+                    <td class="color_5a5a"><{$order.discount|cur}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_b_1px border_l_1px color_487">快递费用</td>
+                    <td class="border_b_1px color_5a5a"><{$order.shipping.cost_shipping|cur}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487"><b>合计</b></td>
+                    <td class="color_5a5a"><b><{$order.total_amount|cur}></b></td>
+                  </tr>
+                </table>
+            </td>
+            <td valign="top">
+            <{if $setting_is_monitor=='true' && $monitor_flag.cost_multiple}>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td align="right" class="border_l_1px color_487">整单销售参考价上线</td>
+                    <td class="color_5a5a"><{if $monitor_flag.sales_multiple && $price_monitor.price>0}><{$price_monitor.price}><{else}>不限<{/if}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487">整单成本参考价下线</td>
+                    <td class="color_5a5a"><{$price_monitor.cost}></td>
+                  </tr>
+                  <tr>
+                    <td width="130" align="right" class="border_l_1px color_487">整单价格参考范围&nbsp;&nbsp;</td>
+                    <td class="color_5a5a"><{$price_monitor.cost}> - <{if $monitor_flag.sales_multiple && $price_monitor.price>0}><{$price_monitor.price}><{else}>不限<{/if}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_b_1px border_l_1px color_487">现整单金额&nbsp;&nbsp;</td>
+                    <td class="border_b_1px font_change"><{$order.total_amount}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487"><b>预计盈亏&nbsp;&nbsp;</b></td>
+                    <td class="font_change">
+                    <b><{$order_profit.value}></b>&nbsp;&nbsp;&nbsp;
+                    <{if $order_profit.value < 0}><{img app='ome' src='price_down.png' }><{else}><{img app='ome' src='price_up.png' }><{/if}>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<b class="color_333">系统建议：<{$order_profit.msg}></b>
+                    </td>
+                  </tr>
+                  <{if $price_monitor.bn}>
+                  <tr>
+                    <td align="right" class="border_l_1px color_4A9CEE">&nbsp;</td>
+                    <td bgcolor="#efefef">亲您已经开启了价格监控，但没有设置商品的成本价，具体货号为：<span class="font_change"><{$price_monitor.bn}></span></td>
+                  </tr>
+                  <{/if}>
+                </table>
+			<{/if}>
+            </td>
+          </tr>
+        </table>
+      </div>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="font_3">配送信息</span></td>
+    </tr>
+    <tr>
+      <td>
+      <div class="table_style table_ml">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td class="font_text"><b>收货人：</b><{$order.consignee.name}></td>
+                <td class="font_text"><b>手机/电话：</b><{$order.consignee.mobile}><{if $order.consignee.telephone}>/<{$order.consignee.telephone}><{/if}></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="font_text"><b>收货地区：</b><{$order.consignee.ship_area}></td>
+                </tr>
+              <tr>
+                <td colspan="2" class="font_text"><b>收货地址：</b><{$order.consignee.addr}></td>
+                </tr>
+            </table>
+            </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div class="table_style table_mr">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="65" nowrap="nowrap" class="font_text"><b>订单备注：</b></td>
+            <td class="font_text">
+                <{if $order.mark_text}>
+                    <{foreach from=$order.mark_text item=items}>
+                        <div id="memo_show">
+                        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                        </div>
+                    <{/foreach}>
+                <{/if}>
+            </td>
+          </tr>
+          <tr>
+            <td class="font_text"><b>会员备注：</b></td>
+            <td class="font_text">
+                <{if $order.custom_mark}>
+                    <{foreach from=$order.custom_mark item=items}>
+                        <div id="memo_show">
+                        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                        </div>
+                    <{/foreach}>
+                <{/if}>
+            </td>
+          </tr>
+        </table>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="font_3">订单异常备注</span></td>
+    </tr>
+    <tr>
+      <td valign="top" class="font_text">&nbsp;&nbsp;&nbsp;<span style="color:red;"><{$row.kefu_remarks}></span> by <{$row.dateline|date:"Y-m-d H:i:s"}> </td>
+    </tr>
+    <tr>
+      <td><span class="font_3">订单复审备注</span></td>
+    </tr>
+    <tr>
+      <td class="font_text"><textarea name="remarks" cols="60" rows="3" id="remarks" style="width:90%;"></textarea></td>
+    </tr>
+  </table>
+    
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td><input name="id" type="hidden" id="id" value="<{$row.id}>" /><input name="verify" type="hidden" id="verify" value="fail" /></td>
+        <td width="300" align="center">
+        <button class="btn btn-primary dialogBtn" onclick="setRetrial(1)" type="button" id="btn_submit" name="btn_submit"><span><span>审核通过</span></span></button>&nbsp;&nbsp;<button class="btn btn-secondary close" onclick="setRetrial(0)" type="button" id="btn_submit_no" name="btn_submit_no"><span><span>审核不通过</span></span></button>&nbsp;&nbsp;<button class="btn btn-secondary" onclick="if(confirm('确定退出?'))window.close()" type="button"><span><span>退出本次操作</span></span></button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+</form>
+<style type="text/css">
+.tableform th, .tableform td { padding:5px; }
+.dialog .dialog-content-body { background:#fff; }
+.table-action .btn, .btn-primary { height:24px; line-height:24px; }
+.order_table_list { height:auto; border:1px solid #dbdbdb; padding:5px; }
+.order_table_list table { border-spacing:1px; border-collapse:separate; }
+
+.font_1 { font-size:14px; font-weight:bold; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#666; }
+.font_2 { font-size:14px; font-weight:bold; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#00F; }
+.font_3 { font-size:13px; padding-left:5px; font-weight:bold; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#333; }
+.font_money { font-size:12px; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#333; }
+.font_text { color:#999; }
+.font_change { font-family:"微软雅黑 Bold", "微软雅黑", Arial, Helvetica, sans-serif; font-size:13px; color:#d51d28; }
+.color_333 { color:#333; }
+.color_00c { color:#0000CC; }
+.color_4A9CEE { color:#4A9CEE; }
+.color_487 { color:#487808; }
+.color_5a5a { font-family:"微软雅黑 Bold", "微软雅黑", Arial, Helvetica, sans-serif; font-size:13px; color:#5a5a5a; }
+
+.border_b1px { border-bottom:1px solid #000; }
+.border_l1px { border-right:1px solid #000; }
+.border_b_1px { border-bottom:1px solid #797979; }
+.border_l_1px { border-right:1px solid #797979; }
+.border_red { border:1px solid #f00; }
+
+.table_style { border:1px solid #dbdbdb; padding:5px; font-family:"微软雅黑 Bold", "微软雅黑", Arial, Helvetica, sans-serif; font-size:12px; }
+.table_ml { margin-left:5px; }
+.table_mr { margin-right:5px; }
+
+.goods_title { width:150px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+.goods_title a { color:#333; text-decoration:none; background:none; }
+.goods_title a:hover { color:#333; text-decoration:none; background:#efefef; }
+.goods_td td { background-color:#fff; }
+.goods_delete td { text-decoration:line-through; background-color:#ddd; }
+.goods_add td { background-color:#F2FFDD; }
+.goods_edit td { background-color:#FFFFD4; }
+
+.goods_pkg_td td { background-color:#f8f8f8; }
+.goods_pkg_delete td { text-decoration:line-through; background-color:#EEEEEE; }
+
+.goods_pkg_list_td td { background-color:#F0F6FE; }
+.goods_pkg_list_delete td { text-decoration:line-through; background-color:#D8E8FE; }
+.goods_pkg_add td { background-color:#F2FFDD; }
+.goods_pkg_edit td { background-color:#FFFFD4; }
+
+.color_block { display:block; margin-top:4px; width:10px; height:10px; border:1px solid #efefef; }
+.color_add { background-color:#F2FFDD; }
+.color_edit { background-color:#E7EFE2; }
+.color_delete { background-color:#ddd; text-decoration:line-through; }
+.color_normal { background-color:#fff; }
+.color_group { background-color:#D8E8FE; }
+</style>
+<script language="javascript" type="text/javascript">
+total_amount();
+function total_amount()
+{
+	var new_sale_price=0;
+	var new_totals = $$('input[name^=new_sale_price[]');
+
+	new_totals.each(function(e,i){
+		if(parseFloat(e.value) != 'NaN')
+		{
+			new_sale_price += parseFloat(e.value);
+		}
+	});
+	
+	$("new_total_amount").set('html', '￥'+new_sale_price.toFixed(2));
+}
+function setRetrial(act)
+{
+	var val		= 'fail';
+	if(act == '1')
+	{
+		val	= 'success';
+	}
+	document.getElementById("verify").value		= val;
+}
+function submit_frm()
+{
+	var remarks		= $('remarks').value;
+	if(remarks == "" || remarks.length < 5)
+	{
+		alert("至少输入5个字符以上的复审备注信息；");
+		document.getElementById("remarks").focus();
+		return false;
+	}
+	
+	var verify	= $('verify').value;
+	var msg		= '不通过';
+	if(verify == 'success')
+	{
+		msg		= '通过';
+	}
+	
+	if(confirm('您审核订单为 "'+msg+'" 状态，是否继续？'))
+	{
+		return true;
+	}
+	else
+	{
+		return false;	
+	}
+}
+(function(){
+	$('order_frm').store('target',{
+	    onRequest:function(){
+	       $('btn_submit').set('disabled', 'true');
+		   $('btn_submit_no').set('disabled', 'true');
+	    },
+	    onComplete:function(jsontext){
+	       var json = Json.evaluate(jsontext);
+	       if (typeof(json.error) != 'undefined'){
+	           $('btn_submit').set('disabled', '');
+			   $('btn_submit_no').set('disabled', '');
+	       }else{
+	           $('btn_submit').set('disabled', 'true');
+			   $('btn_submit_no').set('disabled', 'true');
+	           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+	           window.close();
+	       }
+	    }
+	});
+	$('btn_submit').addEvent('click',function()
+	{
+		//判断
+		var flag		= submit_frm();
+		if(!flag)
+		{
+			return false;
+		}
+		$('order_frm').fireEvent('submit',{stop:$empty});
+    });
+	$('btn_submit_no').addEvent('click',function()
+	{
+		//判断
+		var flag		= submit_frm();
+		if(!flag)
+		{
+			return false;
+		}
+		$('order_frm').fireEvent('submit',{stop:$empty});
+    });
+})();
+</script>

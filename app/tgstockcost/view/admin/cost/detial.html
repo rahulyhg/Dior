@@ -1,0 +1,31 @@
+<{if $setting_stockcost_cost == '4'}>
+<div class="tableform">
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+<thead>
+<tr>
+    <th>原始单据号</th>
+    <th>当前数量</th>
+    <th>单位成本</th>
+	<th>当前成本</th>
+</tr></thead>
+<tbody>
+<{foreach from=$fifo_data item=item}>
+<tr>
+    <td><{if $item.is_sart==1}>期初<{else}><{if $item.bill_bn}><{$item.bill_bn}><{else}>调账<{/if}><{/if}></td>
+    <td><{$item.current_num}></td>
+	<td><{$item.current_unit_cost|cur}></td>
+	<td><{$item.current_inventory_cost}></td>
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>
+</div>
+<{elseif $setting_stockcost_cost=="2" || $setting_stockcost_cost=="3"}>
+<{foreach from=$daily_data item=item}>
+<p><{$item.stock_date}> 单位平均成本:<{$item.unit_cost|cur}>
+<{/foreach}>
+<{else}>
+不计成本!,没有数据
+<{/if}>

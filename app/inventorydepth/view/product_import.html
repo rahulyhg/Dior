@@ -1,0 +1,88 @@
+<h3><{t}>分配导入<{/t}></h3>
+<div class="division">
+    <div class="span-9">
+	<div class="span-auto">
+		<i class="font-blue f-20">1 <i class="font-gray">&raquo;&raquo;</i></i>
+	</div>
+	<div class="span-auto">
+
+		<form id="export_form" target="uploadframe" method="post" action="index.php?app=inventorydepth&ctl=product&act=exportTemplate&_finder[finder_id]=e6e896&finder_id=e6e896" class="tableform"  enctype="multipart/form-data">
+		  <h4><{t}>店铺商品分配模板下载 (.CSV格式)<{/t}></h4><br />
+		  <input type='hidden' value='csv' name='_io_type'/>
+          <br />
+		  <div class="table-action">
+		  <{button class="btn-primary" label=$___idm="下载"|t:'idm' type="button" onclick="$('export_form').submit();"}>
+		  </div>
+		</form>
+    </div>
+	</div>
+     <div class="span-6">
+	<div class="span-auto">
+		<i class="font-blue f-20">2<i class="font-gray">&raquo;&raquo;</i></i>
+	</div>
+	<div class="span-auto">
+		<div class="tableform">
+		<h4><{t}>完成.csv的填写<{/t}></h4>
+
+	    </div>
+	</div>
+    </div>
+     <div class="span-9">
+	<div class="span-auto">
+		<i class="font-blue f-20">3<i class="font-gray">&raquo;&raquo;</i></i>
+	</div>
+    <div class="span-auto">
+		   <div class="tableform">
+		<h4><{t}>导入文件<{/t}></h4>
+            <div class="tableform"><br />
+	    	<form id='upload' action="index.php?app=omecsv&ctl=admin_to_import&act=treat&ctler=inventorydepth_mdl_viewProduct_noration&add=inventorydepth" method="post" enctype="multipart/form-data">
+            <input id='filetype' name='filetype' type='hidden' value='csv' />
+            
+            <input id='upload_file' name='import_file' type='file' value='' style='width:240px;'/><br /><br />
+            <div class="table-action"><{button class="btn-primary" type="submit" id="create_export_submit" label="导入"}></div>
+            <div style='margin-top:20px;text-align:center;color:#c00;display:none;'  id='create_export_submit_box'>正在上传文件,请不要关闭本窗口和页面.....</div>
+            
+            </form>
+            </div>
+	    </div>
+
+
+	</div>
+
+</div>
+
+<script>
+if($('ImportCSV'))
+$('ImportCSV').addEvent('change',function(e){
+		state=false;
+		$('ImportBtn').style.cursor='pointer';
+		var o=$('ImportCSV');
+		if(!/\.csv$/.test(o.get('value').toLowerCase())){
+			alert('只能上传.csv文件！');
+			o.set('value','');
+		}
+});
+
+$('upload').addEvent('submit', function(e) {
+    $('create_export_submit').set('disabled',true).getElement('span span').set('html','正在导入');
+    document.getElementById('create_export_submit_box').style.display = 'block';
+});
+
+$('upload').store('target', {
+        onComplete: function(jsontext) {
+            var result = eval("(" + jsontext + ")");
+            
+            if (result.status == 'fail'){
+                alert(result.msg);
+                $('create_export_submit').set('html','<span><span>导入</span></span>').set('disabled',false);
+                document.getElementById('create_export_submit_box').style.display = 'none';
+            }else if( result.status == 'success' ){
+                alert(result.msg);
+                $('create_export_submit').set('html','<span><span>导入</span></span>').set('disabled',false);
+                document.getElementById('create_export_submit_box').style.display = 'none';
+                $('upload').getParent('.dialog').retrieve('instance').close();
+            }
+            
+        }
+});
+</script>

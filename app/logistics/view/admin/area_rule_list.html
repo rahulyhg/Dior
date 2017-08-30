@@ -1,0 +1,134 @@
+
+<div class="tableform">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td nowrap="nowrap" style="width:auto;" colspan="2">
+   <div class="tabs-wrap select-tabs delivery-cfg-tab">
+   <ul style="margin-top:2px;padding:0;">
+    <li class="tab <{if $env.get.type=='default' || $env.get.type==''}>current<{/if}>" >
+     <span><a href="index.php?app=logistics&ctl=admin_area_rule&act=area_rule_list&type=default&rule_id=<{$rule_id}>&a=c"><{t}>默认规则<{/t}></a></span>
+    </li>
+ 
+<li class="tab <{if $env.get.type=='other'}>current<{/if}>" >
+<span><a href="index.php?app=logistics&ctl=admin_area_rule&act=area_rule_list&type=other&rule_id=<{$rule_id}>&a=c"><{t}>下属特殊地区规则<{/t}></a></span>
+    </li>
+    
+ 
+   </ul>
+   </div>
+  </td>
+ </tr>
+ <tr><td><input type="button" name="button" value="添加区域规则" id='add_area_rule'><input type="button" id='batch_del' name='batch_del' value='批量删除'>
+<input type="button" id='batch_edit' name='batch_edit' value='批量设置'></td><td align='right'><span class="span_x_ipt"  package="mainland"><input id="area" type="hidden" class="area" name="area"><select onchange="selectArea(this,this.value,2)">
+<option value="_NULL_">请选择---</option>';
+<{foreach from=$rule_list.class_city_list item=class_city_list}>
+<option value='<{$class_city_list.region_id}>'  has_c="true"><{$class_city_list.region_name}></option>
+ <{/foreach}>
+  </select></span>
+<input type="button" id='search_area_rule' value="搜索">
+
+</span></td></tr>
+ 
+ </table>
+ 
+
+
+          <div id='show_area_list' class="division">
+          
+          
+          </div> 
+        
+</div>
+
+<script>
+$('add_area_rule').addEvent('click',function(e){
+
+new Dialog('index.php?app=logistics&ctl=admin_area_rule&act=addArearule&rule_id=<{$rule_id}>&type=<{$type}>',{width:800,height:500,title:'添加下属地区规则'}); 
+
+});
+function deleteRule(obj_id){
+    if (!confirm('删除后无法恢复，确定要删除吗？')){
+        return;
+    }
+
+    new Request({url:'index.php?app=logistics&ctl=admin_area_rule&act=deleteAreaRule&type=obj&obj_id='+obj_id,
+        onComplete:function(rs){
+         rs=JSON.decode(rs);
+            show_area_list();
+        }}).send();
+
+}
+
+function show_area_list(page,area){
+var url="index.php?app=logistics&ctl=admin_area_rule&act=show_rule_list&rule_id=<{$rule_id}>";
+if (page) url += '&p[0]='+page;
+if(area)  url += '&area='+area;
+
+    new Request.HTML({
+            update:'show_area_list',
+            url:url,
+            onComplete:function(){
+	           $$('.pager a').addEvent('click',function(){
+	                var page = this.href.split('page=')[1];
+	                show_area_list(page,area);
+	                return false;
+	            });
+            }
+        }).send();
+}
+show_area_list();
+
+$('search_area_rule').addEvent('click',function(e){
+
+var area = $('area').value;
+if(area==''){
+alert('请选择区域');
+}else{
+    show_area_list('',area)
+}
+
+});
+function showAll(selllist){
+
+if(selllist.checked==true){
+    $$('.sel').each(function(i,index){
+    i.set('checked',true);
+    
+    
+    });
+}else{
+     $$('.sel').each(function(i,index){
+    i.set('checked',false);
+    
+    
+    });
+}
+}
+
+$('batch_del').addEvent('click',function(e){
+if($('area_rule_list').getElements('input[name^=obj_id]:checked').length<=0){
+    return MessageBox.error('<{t}>请选择需要删除的区域!<{/t}>');
+}
+if(!confirm('确定要删除这些区域的规则吗?')){
+return ;
+}
+var data = $('rule_form').toQueryString();
+
+new Request({url:'index.php?app=logistics&ctl=admin_area_rule&act=batch_del',
+        data:data,
+        onComplete:function(rs){
+         //rs=JSON.decode(rs);
+            show_area_list();
+        }}).send();
+
+});
+
+$('batch_edit').addEvent('click',function(e){
+if($('area_rule_list').getElements('input[name^=obj_id]:checked').length<=0){
+    return MessageBox.error('<{t}>请选择需要设置的区域!<{/t}>');
+}
+var data = $('rule_form').toQueryString();
+new Dialog('index.php?app=logistics&ctl=admin_area_rule&act=batchUpdateAreaRule&rule_id=<{$rule_id}>&'+data,{width:800,height:500,title:'批量设置规则'}); 
+
+});
+</script>

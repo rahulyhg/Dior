@@ -1,0 +1,227 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+<form method="post" id="iso_confirm" action="index.php?app=taoguaniostockorder&ctl=admin_iostockorder&act=save_iso_confirm">
+  <input type="hidden" name="io" value="<{$io}>" />
+  <div class="tableform">
+    <h3>出库单确认 - 传统方式</h3>
+    <div class="division">
+      按
+      <select id="iostock_type">
+        <option value="barcode">条码</option>
+        <option value="bn">货号</option>
+      </select>
+      <input type="text" id="iostock_search" />
+      <{button label="回车键确定" id="add_bn" app="desktop" icon="btn_add.gif"}>
+      <div class="ome-stock" style="clear:both">
+        <input type="hidden" name="iso_id" value="<{$iso_id}>">
+        <input type="hidden" name="branch_id" value="<{$branch_id}>">
+        <input type="hidden" name="type_id" value="<{$type_id}>">
+        <input type="hidden" name="original_id" value="<{$original_id}>">
+        <table class="gridlist">
+          <thead>
+            <tr>
+             <!-- <th style="width:4%">选择</th> -->
+              <th>商品名称</th>
+              <th style="width:4%">规格</th>
+              <th style="width:10%">货号</th>
+              <th style="width:10%">条码</th>
+              <th style="width:4%">单位</th>
+              <th style="width:5%" nowrap>出库数量</th>
+              <th style="width:4%">新品</th>
+              <!-- <th style="width:13%">商品备注</th> -->
+            </tr>
+          </thead>
+          <tbody id="ome-stock-data">
+            <{foreach from=$iso_items item=items}>
+            <tr class="row" bn="<{$items.bn}>" barcode="<{$items.barcode}>" key="<{$items.iso_items_id}>">
+             
+              <td><{if $items.entry_num!=0}>
+                <input name="ids[]" type="hidden" value="<{$items.iso_items_id}>" <{if $items.entry_num!=0}>checked="checked"<{/if}> />
+                <{/if}><{$items.product_name|visibility:$items.product_id}>
+                <input name="product_ids[<{$items.iso_items_id}>]" type="hidden" value="<{$items.product_id}>" />
+                </td>
+              <td><{$items.spec_info}></td>
+              <td><{$items.bn}></td>
+              <td><{$items.barcode}></td>
+              <td><{$items.unit}></td>
+              <td class="ome-input"><{if $items.entry_num!=0}>
+               <{$items.entry_num}> <input type="hidden" class="number_input" min="0" max="<{$items.entry_num}>" name="entry_num[<{$items.iso_items_id}>]" size="3" value="<{$items.entry_num}>" /><{/if}></td>
+              <td class="isNew"><{if $items.is_new=="true"}>是<{else}>否<{/if}></td>
+              <!-- <td class="ome-input">
+                <{if $items.entry_num!=0}>
+                <input type="text" name="item_memo[<{$items.iso_items_id}>]" value="<{$items.memo}>">
+                <{/if}>
+              </td> -->
+            </tr>
+            <input type="hidden" name="is_new[<{$items.iso_items_id}>]" value="<{$items.is_new}>">
+            <{/foreach}>
+          </tbody>
+        </table>
+        <div class="ome-stock-title ">共有<{$count}>件商品</div>
+      </div>
+      <div class="division">
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="5%">
+              经办人:
+            </td>
+            <td>
+              <input type="text" name="operator" vtype="required" value="<{$operator}>" size="8" />
+            </td>
+          </tr>
+         <!--  <tr>
+            <td>出库单备注: </td>
+            <td>
+              <textarea name="memo" rows="3" cols="60"></textarea>
+            </td>
+          </tr> -->
+        </table>
+      </div>
+
+    </div>
+  </div>
+</form>
+<{capture name='footbar'}>
+<div class="table-action">
+  <{button type="button" id="confirm_btn" label="确认出库" }>
+  <{button type="button" id="close_btn" label="关闭页面" }>
+</div>
+<{/capture}>
+<script>
+  (function(){
+    attachEsayCheck($('ome-stock-data'),'td:nth-child(first)');
+   
+    var dataNode = $('ome-stock-data');
+
+	dataNode.getElements('.isNew').each(function(item,i){
+		if(item.get('text').trim() == '是'){
+			item.setStyles({'background-color':'#ffc',color:'red'});
+			//item.getParent().getElement('input.ome-stock-store-input').value = '';
+		}
+	});
+    var entry = $$('#ome-stock-data input[name^=entry_num[]');
+    entry.addEvent('blur',function(){
+	  this.value = (this.value.toInt()).limit(this.get('min'),this.get('max'));
+      /*var num = this.getParent('tr').getElement('td:data-num').get('data-num');
+      var innum = this.getParent('tr').getElement('td:data-in_num').get('data-in_num');
+      if(this.value > num-innum) this.value = num-innum;
+      else if(this.value <0) this.value =0;*/
+    });
+
+    //关闭页面
+    $('close_btn').addEvent('click', function(){
+      window.close();
+    });
+
+    $('iostock_search').addEvent('keyup',function(e){
+      if(e.code!==13)return;
+      var type=$('iostock_type').value,value=this.value,el;
+      if (type=='barcode' && value==''){
+        alert('请输入需定位的条形码');
+        $('iostock_search').focus();
+        return;
+      }
+      if (type=='bn' && value==''){
+        alert('请输入需定位的货号');
+        $('iostock_search').focus();
+        return;
+      }
+      $$('#ome-stock-data tr').each(function(tr){
+        if(tr.get(type)==value){el=tr;}
+      });
+      if(!el)return MessageBox.error('没找到相应数据');
+      if(preel=this.retrieve('height_el'))preel.removeClass('select');
+      el.addClass('select').getElement('input[type^=text]').focus();
+      this.store('height_el',el);
+    });
+    $('add_bn').addEvent('click',function(){
+      var type=$('iostock_type').value,el;
+      var value=$('iostock_search').get('value');
+      if (type=='barcode' && value==''){
+        alert('请输入需定位的条形码');
+        $('iostock_search').focus();
+        return;
+      }
+      if (type=='bn' && value==''){
+        alert('请输入需定位的货号');
+        $('iostock_search').focus();
+        return;
+      }
+      $$('#ome-stock-data tr').each(function(tr){
+        if(tr.get(type)==value){el=tr;}
+      });
+      if(!el)return MessageBox.error('没找到相应数据');
+      if(preel=this.retrieve('height_el'))preel.removeClass('select');
+      el.addClass('select').getElement('input[type^=text]').focus();
+      this.store('height_el',el);
+    });
+    $('iostock_search').focus();
+
+
+    $$('#ome-stock-data input[type=text]').addEvent('keyup',function(e){
+      if(this.getNext('.error')) this.getNext('.error').destroy();
+      if(e.code!==13)return;
+      var next_td=$(e.target).getParent('td').getNext('.ome-input');
+      if(next_td&&next_td.getElement('input[type=text]')) return next_td.getElement('input[type=text]').focus();
+      $('iostock_search').focus();
+      if(preel=$('iostock_search').retrieve('height_el'))preel.removeClass('select');
+    });
+
+    $('iso_confirm').store('target',{
+      onRequest:function(){
+        $('confirm_btn').set('disabled', 'true');
+        $('confirm_btn').getElements('span')[1].set('text','正在出库');
+      },
+      onComplete:function(jsontext){
+        var json = JSON.decode(jsontext);
+        if (typeof(json.error) != 'undefined'){
+          dataNode.getElements('tr:key').removeClass('highlight');
+         
+          $('confirm_btn').set('disabled', false);
+          $('confirm_btn').getElements('span')[1].set('text','开始出库');
+        }else{
+          $('confirm_btn').set('disabled', true);
+          $('confirm_btn').getElements('span')[1].set('text','正在出库');
+          opener.finderGroup['<{$env.get.find_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.find_id}>']);
+          setTimeout('window.close()',200);
+        }
+
+      }
+    });
+    $('confirm_btn').addEvent('click',function(e){
+      
+       $('iso_confirm').fireEvent('submit',e);
+    });
+
+      $$('.ome-input input, .ome-stock-store-input').addEvent('keyup',function(e){
+        if(e.code==13) $('iostock_search').focus();
+      });
+
+    })();
+function visibility(e){
+	var visiTips = new Tips({
+			onShow:function(tip,el){
+				el.addClass('active');
+				tip.setStyle('display','block');
+			},
+			text: function(element){
+				if(element.get('visibility')=='false'){
+					return '隐藏商品';
+				}else{
+					return '';
+				}
+			}
+		});
+
+		var e  = new Event(e), el = e.target;
+		if (el.get('visibility')=='false')
+		{
+			visiTips.attach(el);
+			el.addEvent('mouseleave',function(){
+				el.removeClass('active');
+			});
+			el.fireEvent('mouseenter',e);
+		}
+}
+  </script>

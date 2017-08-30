@@ -1,0 +1,22 @@
+<div class="division">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+              <th>是否开启系统自动审核：</th>
+              <td><{input type='bool' name='set[ome.order.is_auto_combine]' value=$setData.ome_order_is_auto_combine|default:'false'}></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+       		  <td>
+              	<input type="radio" name="set[ome.order.is_merge_order]" value="1" readonly="readonly" checked>忽略可合并的订单
+              </td>
+            </tr>
+            <tr>
+              <th>&nbsp;</th>
+              <td>
+              	<p><span style="color:#ff0000;">注：暂时不支持订单自动合并生成发货单。</span></p>
+              </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

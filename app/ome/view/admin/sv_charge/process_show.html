@@ -1,0 +1,48 @@
+<{capture name="header"}>
+<link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css"> 
+  <link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+ 
+<{/capture}>
+
+
+<div class="spage-main-box">
+<div class="tableform"> 
+<div class="division">
+<table width="100%" border="0">
+  <tr style="display:none;">
+    <th>是否是质量问题：</th>
+    <td>
+	<{if $check.is_problem=='true'}>
+	是<{else}>否<{/if}>
+    </td>
+  </tr>
+ 
+ <tr >
+    <th>售后问题类型：</th>
+    <td>
+<{$check.problem_type}>
+	</td>
+  </tr > 
+  <tr id="belong" style="display:none;">
+    <th>问题归属：</th>
+    <td>
+	<{$check.problem_belong}>
+	</td>
+  </tr>
+ 
+  <tr>
+    <th>商品入库类型：</th>
+    <td>
+	<{$check.StoreType}>
+	</td>
+  </tr>
+
+</table>
+</div>
+
+
+
+
+
+</div>
+</div>

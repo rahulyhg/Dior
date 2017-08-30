@@ -1,0 +1,38 @@
+<div class='division info'>
+  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <col style='width:40px;'/>
+  <col />
+  <tbody>
+  <tr>
+    <th><{img src='loading_medium.gif' app='inventorydepth'}></th>
+    <td><{$request_words}></td>
+  </tr>
+  </tbody>
+  </table>
+</div>
+<{area inject='.mainFoot'}>
+<div class='table-action'>
+<{button label='确定' isCloseDialogBtn="true"}>
+</div>
+<{/area}>
+<form id='single-approve'>
+<input type='hidden' name='id' value='<{$id}>' />
+<input type='hidden' name='approve_status' value='<{$approve_status}>' />
+</form>
+<script type="text/javascript">
+  new Request.JSON({
+    url:'index.php?app=inventorydepth&ctl=shop_items&act=singleApprove',
+    method:'post',
+    data:$('single-approve'),
+    onComplete:function(resp){
+      var html = '';
+      if (resp.error) {
+        html = '<div style="color:red;font-size:30px;">'+resp.error+'</div>';
+        $E('.info').setHTML(html);
+        return ;
+      }
+      html = '<div style="color:green;font-size:30px;">'+resp.success+'</div>';
+      $E('.info').setHTML(html);
+    }
+  }).send();
+</script>

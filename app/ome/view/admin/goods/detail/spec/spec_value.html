@@ -1,0 +1,33 @@
+<tr pspecid='<{$specValue.private_spec_value_id}>'>
+    <td width="10%">
+        <input type='hidden' name='spec[<{$aSpec.spec_id}>][option][<{$specValue.private_spec_value_id}>][private_spec_value_id]' value='<{$specValue.private_spec_value_id}>'>
+       <{if $aSpec.spec_type == 'text'}>
+    <span class="goods-spec-span"><{$specValue.spec_value|htmlspecialchars}></span>
+      <{else}>
+      <{assign var='svid' value=$specValue.spec_value_id}>
+    <div class="goods-spec-box"><center><img src='<{if $aSpec.options[$svid].spec_image}><{$aSpec.options[$svid].spec_image|storager}><{elseif $aSpec.options[$svid].spec_image}><{$aSpec.options[$svid].spec_image|storager}><{else}><{$spec_default_pic|storager}><{/if}>' width=20 height=20 alt="<{$specValue.spec_value|htmlspecialchars}>"/></center></div>
+      <{/if}>
+    </td>
+
+    <td class='spec-value-input' specid='<{$aSpec.spec_id}>' specpvid='<{$specValue.private_spec_value_id}>'>
+      <input type="text" name="spec[<{$aSpec.spec_id}>][option][<{$specValue.private_spec_value_id}>][spec_value]" class='spec-value' style="width: 120px;" value="<{$specValue.spec_value|htmlspecialchars}>" oldvalue='<{$specValue.spec_value|htmlspecialchars}>'/>
+      <input type="hidden" name="spec[<{$aSpec.spec_id}>][option][<{$specValue.private_spec_value_id}>][spec_value_id]"  class='spec-value-id' value="<{$specValue.spec_value_id}>"/>
+      <input type="hidden" class="spec-image" name="spec[<{$aSpec.spec_id}>][option][<{$specValue.private_spec_value_id}>][spec_image]" value="<{$specValue.spec_image}>" oldvalue='<{$specValue.spec_image}>'/>
+    </td>
+
+       <{if $aSpec.spec_type == 'image'}>
+    <td>
+      <div class="goods-spec-box" style='float:left'>
+       <img src='<{if $specValue.spec_image}><{$specValue.spec_image|storager}><{elseif $aSpec.options[$specValue.spec_value_id].spec_image}><{$aSpec.options[$specValue.spec_value_id].spec_image|storager}><{else}><{$spec_default_pic|storager}><{/if}>' width=20 height=20 align='left' alt="<{$specValue.spec_value|htmlspecialchars}>">
+      </div>
+      <span class="sysiconBtn addorder sel_image"><{t}>上传<{/t}></span>
+    </td>
+      <{/if}>
+
+   
+    <td>
+    <{img class="operater"  alt="向上" src="icons/icon_asc.gif"}> &nbsp; &nbsp; 
+        <{img class="operater"  alt="向下" src="icons/icon_desc.gif"}> &nbsp; &nbsp; 
+        <{img class="operater"  alt="删除" src="icons/icon_delete.gif"}>
+    </td>
+    </tr>

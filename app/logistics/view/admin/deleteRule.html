@@ -1,0 +1,75 @@
+<form id='delete_rule_form' method="post" action='index.php?app=logistics&ctl=admin_rule&act=doDeleteRule'>
+<div class="division" id='support-shops'>
+    <div class="tableform">
+          <h4>是否需要系统记录特殊的下属地区规则？保留记录，<bt>下次新建该一级地区规则时，系统可自动带出</h4>
+        </div>
+     
+  
+   <div class="table-action">
+            <{button label="是" type="button" id='cancel-rule'}><{button label="否" type="button" id='copy-rule'}>
+        </div>
+
+ 
+</div>
+<input type="hidden" id='deleteareaflag' name="deleteareaflag" >
+<input type="hidden" name="rule_id" value="<{$data}>">
+</form>
+<script>
+$('cancel-rule').addEvent('click',function(e){
+
+    var _this=this;
+    $('deleteareaflag').set('value',0);
+ 
+    $('delete_rule_form').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+                        $('delete_rule_form').getParent('.dialog').retrieve('instance').close();
+                        opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                        
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        $('delete_rule_form').fireEvent('submit',e);
+
+
+
+});
+$('copy-rule').addEvent('click',function(e){
+
+    var _this=this;
+    $('deleteareaflag').set('value',1);
+
+    $('delete_rule_form').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+                        $('delete_rule_form').getParent('.dialog').retrieve('instance').close();
+                        opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                        
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        $('delete_rule_form').fireEvent('submit',e);
+
+
+
+});
+
+</script>

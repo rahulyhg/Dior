@@ -1,0 +1,11 @@
+<services>
+
+    <service id="openapi.wmsmgr">
+        <class>wmsmgr_channel</class>
+    </service>
+
+    <service id="desktop_finder.wmsmgr_mdl_wms">
+        <class>wmsmgr_finder_wms</class>
+    </service>
+
+</services>

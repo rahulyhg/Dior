@@ -1,0 +1,288 @@
+<script>
+//关闭POP
+$('close_state').addEvent('click', function(event){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+
+//表单项过滤
+function itemFilter(str,patrn)
+{
+    if (patrn.exec(str)) return true;
+    else return false;
+}
+
+//结算余额计算
+$('paid').addEvent('blur',function(event){
+    var payed = "<{$detail.paid}>";//获取已付款金额
+    if(!payed){
+        payed = 0;
+     }	
+    
+    var paid = $('paid').get('value');//结算金额
+    var pattrn = /^[0-9.]{1,12}$/;
+    //过滤表单项
+    if(itemFilter(paid,pattrn)==false && paid!='' || isNaN(paid)){
+        alert('结算金额只能输入数字，且最多为8位！');
+        $('paid').set('value','');
+        return false;
+    }
+    if (paid){
+        var payable = $('payable').get('value');//应付金额
+        //var deposit = $('deposit').get('value');//预付金额
+        var deposit = 0;
+        var balance = payable - deposit - paid -payed;
+        if(balance < 0){
+            alert('结算金额不能大于还需支付！');
+            $('balance').set('value',0);
+            $('balance_span').set('text',0);
+            $('paid').set('value',0);
+            return false;
+        }        
+        //计算结算余额
+        $('balance').set('value',balance);
+        $('balance_span').set('text',balance);
+    }else {
+        $('balance').set('value','');
+        $('balance_span').set('text','');
+    }
+});
+
+//结算成功处理
+function statementHand(){
+    alert('结算成功');
+    $('stateForm').getParent('.dialog').retrieve('instance').close();
+    
+}
+//结算确认
+function statementConfirm(){
+
+    if(confirm('确定要执行此次结算吗？')){
+        return true;
+    }else return false;
+}
+//提交表单
+function sendForm(event)
+{
+    var _form = $('stateForm');
+    _form.set('action',_formActionURL).fireEvent('submit',new Event(event));
+    statementHand();
+    
+    /*
+    //提交结算申请
+    _form.set('send', {
+          url: _formActionURL, 
+          method: 'post',
+          onComplete: function(){
+            statementHand();
+          },
+          onError: function(err){
+            alert('提交处理出错');
+          }
+    });
+    _form.send();//发送表单数据
+    */
+}
+//POP弹窗口
+function popup(html)
+{
+    html = encodeURI(encodeURI(html));
+    new Dialog('index.php?<{$env.server.QUERY_STRING|replace:"statement":"stateConfirm"}>&p[0]='+html,{
+          title:'结算确认',
+          width:300,
+          height:230,
+          modal:true,
+          resizeable:false
+    });
+}
+var _form = $('stateForm');
+var _formActionURL = _form.get('action');
+
+//结算判断
+$('statement').addEvent('click', function(event){
+  	var is_deposit = "<{$is_deposit}>";//预付款是否已经支付完成的判断
+  	if(!is_deposit){
+  		alert('请先到付款单完成预付款结算！');return;
+  	}
+    var payed = "<{$detail.paid}>";//获取已付款金额
+    if(!payed){
+        payed = 0;
+     }	
+
+    //获取初始值:结算金额、结算余额、付款方式
+    var paid = $('paid').get('value');//结算金额
+    var payable = $('payable').get('value');//应付金额
+    var balance = payable - paid - payed;//结算余额
+
+    //结算金额不能为0
+    if (paid<=0 || isNaN(paid)){
+        if (confirm('结算金额为0，确定要继续提交吗？') == false) {
+            $('paid').set('value',payable);
+            $('paid').focus();
+            return false;
+        }
+    }
+    
+    //根据付款方式选择处理代码段
+    if(paid){
+
+            //判断结算余额是否为0
+            var deposit_balance = $('deposit_balance').get('value');//预付款
+            //结算余额 = 应付金额 - 结算金额 -已付金额
+            var balance = payable - paid - payed;     
+                        
+            //----为0，执行结算操作
+            if(balance=='0')
+            {
+                //弹出POP窗口，让操作员选择继续还是取消结算
+                //如果预留款>0，则提示是否抵扣结算
+                if (deposit_balance>0){
+                    var html = '您的结算金额：<span class="red">' + paid + '</span><br/>此供应商有预留款：<span class="red">' + deposit_balance + '</span><br/>是否选择不抵扣结算？';
+                    html += '<br/><br/>请选择结算操作方式：';
+                    //如果预付款单没有结算完成，则不给于提醒
+                  if(is_deposit != '1'){
+                       popup(html);
+                       return;
+                    }
+                //如果预付款单已经结算完成,直接确认结算
+                var sTrue = statementConfirm();
+                  if(sTrue==true){
+                      sendForm(event);
+                  }
+                }
+                else
+                {
+                      //确认结算
+                      var sTrue = statementConfirm();
+                      if(sTrue==true){
+                          sendForm(event);
+                      }
+                }
+                
+            }
+            else//不为0，
+            {
+                //判断结算余额是否为负数
+                if($('balance').get('value')<"0"){
+                    alert('结算余额为负数，请检查输入的结算金额是否正确！')
+                    return false;
+                }else
+                {
+                    //弹出POP窗口，让操作员选择继续还是取消结算
+                    if (deposit_balance>0){
+                        var html = '您的结算金额：<span class="red">' + paid + '</span><br/>此供应商有预留款：<span class="red">' + deposit_balance + '</span><br/>是否选择不抵扣结算？';
+                        html += '<br/><br/>请选择结算操作方式：';
+                    }
+                    else
+                    {
+                        var html = '您的结算金额：<span class="red">' + paid + '</span><br/>当前结算余额：<span class="red">' + balance +'</span>';
+                        html += '<br/><br/>结算余额不为0，继续结算操作吗？<br/>';
+                    }
+                    //popup(html);
+                    //如果预付款单没有结算完成，则不给于提醒
+                  if(is_deposit != '1'){
+                         popup(html);
+                         return;
+                     }
+                    //如果预付款单已经结算完成,直接确认结算
+                  var sTrue = statementConfirm();
+                    if(sTrue==true){
+                        sendForm(event);
+                    }
+                }
+            }
+            
+    }
+    else
+    {
+        alert('请输入结算金额！');
+        $('paid').focus();
+    }
+    
+});
+
+</script>
+
+<form id="stateForm" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+<input type="hidden" name="cs_id" value="<{$detail.cs_id}>" />
+<input type="hidden" name="is_deduction" id="is_deduction" value="false" />
+<input type="hidden" name="is_deposit" id="is_deposit" value="<{$is_deposit}>" />
+<div class="tableform">
+    <div class="division">
+        <table width='100%' cellspacing="0" cellpadding="0">
+            <tr>
+                <th>入库编号：</th>
+                <td>
+                <{$eo_bn}>
+                </td>
+                <th>添加日期：</th>
+                <td>
+                <{$detail.add_time|date_format:"%Y-%m-%d"}>
+                </td>
+            </tr>
+            <tr>
+                <th>应付总额：</th>
+                <td>
+                <{input type="hidden" name="payable" id="payable" value="{$detail.payable}" }>
+                <!-- 预付款 -->
+                <input type="hidden" name="deposit_balance" id="deposit_balance" value="<{$deposit_balance}>" />
+                <{if $deposit_balance>'0'}>
+                <input type="hidden" name="credit" id="credit" value="true" />
+                <{/if}>
+                
+                <span class="amount"><{if $is_deposit}><{$detail.payable - $deposit_balance|cur}><{else}><{$detail.payable|cur}><{/if}></span>=商品总额(<span class="red"><{$detail.product_cost|cur}></span>)+物流费用(<span class="red"><{$detail.delivery_cost|cur}></span>)
+                <{if $is_deposit}>
+                    - 预付款(<span class="red"><{$deposit_balance|cur}></span>)
+                <{/if}>
+                </td>
+                <th>
+                供应商：
+                </th>
+                <td>
+                <{$supplier['name']}>
+                </td>
+            </tr>
+            <tr>
+                <th>已付金额：</th>
+                <td><{$detail.paid|cur}></td>
+                <th>还需支付：</th>
+                <td><span><{$detail.need|cur}></span></td>
+            </tr>
+            <tr>
+                <td colspan="4"><div style="height:25px; padding-left:13px; line-height:25px; font-weight:bold; margin-bottom:6px; border-bottom:1px solid #ccc">结算操作</div></td>
+            </tr>
+            
+            <tr>
+                <th>结算金额：</th>
+                <td>
+                <input type="text" size="12" name="paid" id="paid" value="<{$detail.need|replace:".000":""}>" vtype="required" /> <em class="red">*</span>
+                </td>
+                <th>结算余额：</th>
+                <td>
+                <{input type="hidden" name="balance" id="balance" value=""}>
+                <span id="balance_span">0</span>
+                </td>
+            </tr>
+            <tr>
+                <th>银行帐号：</th>
+                <td>
+                <{input type="text" name="bank_no"  value="" }>
+                </td>
+                <th>经办人：</th>
+                <td>
+                <{input type="text" name="operator" id="operator" value="{$operator}"}>
+                </td>
+            </tr>
+            
+            <tr>
+                <th>备注：</th>
+                <td colspan="3"><{input type="textarea" name="memo"  value="" row="8" col="80" }></td>
+            </tr>
+        </table>
+        <div class="table-action">
+         <{button class="btn-primary" type="button" id="statement" label="结算" }>
+                <{button class="btn-primary" type="button" id="close_state" label="取消" }>
+                <{input type="hidden" name="statementSubmit" value="do" }>
+        </div>
+   </div>
+   </div>
+</form>

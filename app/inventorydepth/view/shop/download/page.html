@@ -1,0 +1,77 @@
+<div class='division' id='shop-goods-download'>
+    <form action='index.php?app=inventorydepth&ctl=shop&act=doDownload&opener[finder_id]=<{$env.get.finder_id}>' method='post' id='download-form'>
+    <div class='tableform'>
+        <table border="0" cellspacing="0" cellpadding="0" >
+            <tr>
+                <th><{t}>选择店铺：<{/t}></th>
+                <td>
+                    <select name='shop_id'>    
+                        <{foreach from=$shops item=shop}>
+                        <option value=<{$shop.shop_id}>><{$shop.name}></option>
+                        <{/foreach}>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><{t}>商品状态：<{/t}></th>
+                <td>
+                    <select name='marketable'>
+                        <option value='' ><{t}>全部商品<{/t}></option>
+                        <option value='true'><{t}>在架商品<{/t}></option>
+                        <option value='false'><{t}>下架商品<{/t}></option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th><{t}>商品编号：<{/t}></th>
+                <td>
+                    <{input type='text' name='bn'}>
+                </td>
+            </tr>   
+            <tr>
+                <th><{t}>商品名称：<{/t}></th>
+                <td>
+                    <{input type='text' name='name'}>
+                </td>
+            </tr>   
+        </table>
+    </div>
+    <div class="table-action">
+      <{button type="button" id="downloadBtn" label="下载" }>
+      <{button type="button" id="closeBtn" label="取消" }>
+    </div> 
+    </form>
+</div>
+<script type="text/javascript">
+window.addEvent('domready',function(){
+    $E('#shop-goods-download #closeBtn').addEvent('click',function(){
+        this.getParent('.dialog').retrieve('instance').close();
+    });
+
+    $E('#shop-goods-download #downloadBtn').addEvent('click',function(){
+        var form = this.getParent('form');
+        var action = form.get('action');
+
+		action += '&'+form.toQueryString(function(el){
+			if(!el.get('value')) return false;
+
+			return true;
+		});
+        url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent(action);
+        new finderDialog(url,{width:1000,height:660,
+            onCallback:function(rs){
+                if(!rs)return;
+                rs=JSON.decode(rs);
+            }
+        });
+    /*
+      Ex_Loader('modedialog',function(){
+        new ModeDialog(action,{
+              width:700,height:660,params:{}
+        });
+      });
+*/
+    });
+
+});
+</script>

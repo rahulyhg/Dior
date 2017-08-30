@@ -1,0 +1,96 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+
+<div class="tableform">
+    <h3>单个调账(只能对普通商品进行调账)</h3>
+    <{if !$pickList}>
+      <div class="division">
+          <div class="gridlist" style="padding:10px;">
+              <form method='post' id ='serachForm' action="index.php?app=console&ctl=admin_adjustNumber&act=adjust">
+                请选择查询类型:<{input type="select" id='searchtype' name='searchtype' rows=$searchtype valueColumn="type_value" labelColumn="type_name"}>&nbsp;&nbsp;&nbsp;
+               <span id='showblock'>
+                <t id="showType"></t>
+                <t id="showbranch">仓库名称<{input type="select" id='branch' name='branch' rows=$branch valueColumn="branch_id" labelColumn="name"}></t>
+                <{button label="搜索" type='submit' id='search_btn'}> &nbsp;&nbsp;&nbsp;</span>
+               </form>
+          </div>
+      </div>
+    <{/if}>
+    <div class="division">
+    <{if $products.bn && $pickList}>
+        <form method="post" id="fm1" action="index.php?app=console&ctl=admin_adjustNumber&act=do_adjust">
+              <table class="gridlist" id="purchase_table"  style="margin:4px 0; width:780px;">
+                <thead>
+                  <tr>
+                    <th>选择</th>
+                    <th>货号</th>
+                    <th>货品名称</th>
+                    <th>仓库名称</th>
+                    <th>实际库存</th>
+                    <th>可用库存</th>
+                    <th>调整到的数量</th>
+                  </tr>
+                </thead>
+                <tbody id="dNode">
+                 <{foreach from=$pickList item=item key=key}>
+                  <tr>
+                    <td><input type="radio" name="select"  value="<{$key}>" <{if $key==0}> checked='checked'<{/if}>></td>
+                    <td><{$item.product_bn}><input type="hidden" name="product_id[<{$key}>]" value="<{$item.product_id}>"></td>
+                    <td><{$item.product_name}></td>
+                    <td><{$item.branch_name}><input type="hidden" name="branch_id[<{$key}>]" value="<{$item.branch_id}>"></td>
+                    <td><{$item.store}></td>
+                    <td><{math equation="x - y" x=$item.store y=$item.store_freeze}></td>
+                    <td><input name="to_nums[<{$key}>]" size='5' type="text" value='' vtype='digits' caution='请输入不小于零的整数'></td>
+                  </tr>
+                 <{/foreach}>
+                </tbody>
+              </table>
+              <div>备注：<textarea name="memo" cols="60" rows="3"></textarea></div>
+            <div class="table-action"> <{button class="btn-primary" type="submit" id="saveCurrent" label="确认修改"}> <{button class="btn-primary" type="button" onclick="javascript:history.go(-1);" label="取消"}> </div>
+        </form>
+    <{elseif($products.bn && !$pickList)}>
+        货号：<{$products.bn}> 货品名称：<{$products.name}> 
+        <br/><span style="color:red;">不是普通商品，无法调账</span>
+    <{/if}>
+    </div>
+</div>
+<div class="tableform">
+<h3>批量导入调账</h3>
+<div class="division">
+  <h5>第一步，下载调账CSV模板文件</h5>
+  <form method="post" action="index.php?app=console&ctl=admin_adjustNumber&act=exportTemplate" class="tableform" target='download' enctype="multipart/form-data">
+    <{button class="btn-primary" label="下载" type="submit"}>
+  </form>
+  <h5>第二步，填写CSV文件</h5>
+  <div class="tableform">打开CSV文件,在里面对应写入调账商品的信息。</div>
+  <h5>第三步，上传填写好的CSV文件</h5>
+
+</div>
+<{include file="admin/stock/import.html"}>
+<script>
+(function(){
+    <{if !$searchData}>
+       $('showblock').setStyle('display',"none");
+       $('searchtype').addEvent('change',function(e){
+            showType(this.value);
+           //$('showblock').setStyle('display',"");
+       });
+     function showType(type){
+          if(type == 'bn'){
+             var text = '货号<{input name="product_bn" id="product_bn" value="" type="text"}> &nbsp;&nbsp;&nbsp;';
+          }else if(type == 'name'){
+             var text = '货品名称 <{input type="text" value=""  id="product_name"  name="product_name"}>&nbsp;&nbsp;&nbsp;';
+          }else{
+             var text = '';
+          }
+          $('showType').set('html',text);
+          if($chk(text)){
+             $('showblock').setStyle('display',"");
+          }else{
+             $('showblock').setStyle('display',"none");
+          }
+      }
+    <{/if}>
+})();
+</script>

@@ -1,0 +1,82 @@
+<div class="division">
+  <h4>下列订单发生过退款，是否继续发货?</h4>
+  <div class="gridlist" >
+    <table class="nosplit" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+        <th>订单号</th>
+        <th>物流单号</th>
+        </tr>
+     </thead>
+     <tbody id="itemlist">
+     </tbody>
+    </table>
+  </div>
+  <div class="table-action">
+<{button label="确认" class="btn-primary" id="ome_batch_delivery_confirm" }>
+<{button label="取消" class="btn-primary" id="ome_batch_delivery_cancel" }>
+  </div>
+</div>
+
+<script>
+(function(){
+
+    //数据显示
+    var list = JSON.decode($('order_exists_refund').value),itemlist='';
+    list.each(function(item){
+        if (item.order_bn != 'undefined'){
+	    	itemlist += '<tr>';
+	        itemlist += '<td>'+item.order_bn+'</td>';
+	        itemlist += '<td>'+item.logi_no+'</td>';
+	        itemlist += '</tr>';
+        }
+    });
+    $('itemlist').set('html', itemlist);
+	
+	//确认发货
+    $('ome_batch_delivery_confirm').addEvent('click', function(e){
+        <{if $delivery_type == 'batch'}>
+	    	$('btn_submit').set('disabled','');
+	        $('dataNode').set('html','');
+	        $('processSendForm').fireEvent('submit',e);
+        <{else}>
+	        $('ome_single_delivery').fireEvent('submit',e);
+        <{/if}>
+    });
+    <{if $delivery_type == 'batch'}>
+       var this_forms = $('processSendForm');
+    <{else}>
+       var this_forms = $('ome_single_delivery');
+    <{/if}>
+    this_forms.store('target',{
+	    onRequest:function(){
+    	   <{if $delivery_type == 'batch'}>
+		       $('btn_submit').set('disabled', 'true');
+	       <{/if}>
+    	   $('ome_batch_delivery_confirm').set('disabled', 'true');
+           $('ome_batch_delivery_confirm').getElements('span')[1].set('text','正在发货');
+	    },
+	    onComplete:function(jsontext){
+	       var json = Json.evaluate(jsontext);
+	       if (typeof(json.error) != 'undefined'){
+	    	   <{if $delivery_type == 'batch'}>
+		    	   $('btn_submit').set('disabled', '');
+	           <{/if}>
+        	   $('ome_batch_delivery_confirm').set('disabled', '');
+               $('ome_batch_delivery_confirm').getElements('span')[1].set('text','确认');
+	       }else{
+	    	   <{if $delivery_type == 'batch'}>
+		    	   $('btn_submit').set('disabled', 'true');
+	           <{/if}>
+        	   $('ome_batch_delivery_confirm').set('disabled', 'true');
+               $('ome_batch_delivery_confirm').getElements('span')[1].set('text','正在发货');
+	           $('ome_batch_delivery_confirm').getParent('.dialog').retrieve('instance').close();
+	       }
+	    }
+    });
+    //取消发货
+    $('ome_batch_delivery_cancel').addEvent('click', function(){
+        this.getParent('.dialog').retrieve('instance').close();
+    });
+})();
+</script>

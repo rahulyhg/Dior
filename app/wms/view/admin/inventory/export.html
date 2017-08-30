@@ -1,0 +1,304 @@
+<form  enctype="multipart/form-data" id="Searchform" action="index.php?app=wms&ctl=admin_inventory&act=index&action=to_export&flt=<{$env.get.flt}>" method="post">
+<input type="hidden" name="_io_type" value="csv">
+<input type="hidden" name="app" value="taoguaninventory" />
+<input type="hidden" name="model" value="inventory" />
+
+<div class="tableform">
+  <h3>商品货位信息导出</h3>
+  <div class="division">
+  
+    <div class="gray_form">　　
+     <table width='100%' cellspacing="0" cellpadding="0" >
+  <tr>
+      <td width="56%">仓库&nbsp;&nbsp;:
+                
+                <{if !$branch_list}>
+                    <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+                    <script>
+                       $$("input","button","select").set('disabled','disabled');
+                    </script>
+                <{else}>
+                    <{if count($branch_list)==1}>
+                        <{$branch_list.0.name}>
+                        <input type="hidden" name="branch_id" value="<{$branch_list.0.branch_id}>" />
+                    <{elseif count($branch_list)>5}>
+                        <{input type="select" name="branch_id" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                    <{else}>
+                        <{foreach from=$branch_list item=items key=keys}>
+                        <input type="radio" name="branch_id" <{if $keys==0}>checked="checked"<{/if}> vtype="requiredradio" value="<{$items.branch_id}>" />
+                        <{$items.name}>
+                        <{/foreach}> <span style="color:red">*</span>
+                    <{/if}>
+                <{/if}>
+         </td>
+      <td width="44%">类型:
+      <select name="type_id">
+      <option value=''> 全部</option>
+      <{foreach from=$gtype item=gtype}>
+      <option value='<{$gtype.type_id}>'><{$gtype.name}></option>
+      <{/foreach}>
+      </select></td>
+  </tr>
+  <tr><td>名称:<input type="text" name="inventory_name" value="<{$inventory_name}>" size="35" /></td><td>品牌:<select name="brand_id">
+			 <option value=''>选择</option>
+			 <{foreach from=$brand_list item=brand}>
+			 <option value="<{$brand.brand_id}>"><{$brand.brand_name}></option>
+			 <{/foreach}>
+			 </select> </td></tr>
+  <tr><td>类型&nbsp;&nbsp;:</b>
+	<input name="export_type" type="radio" value="1" checked="checked" id="export_bn_type"/>
+	按货品信息<input name="export_type" type="radio" value="0" id="export_pos_type" />按货位</td><td>操作人: <input type="text" name="inventory_checker" value="<{$op_name}>" size="8" /></td></tr>
+<tr><td>是否显示账面数量:</b>
+	<input id="store_show1" name="store_show" type="radio" value="1" checked="checked" />是<input id="store_show2" name="store_show" type="radio" value="0"  />否</td><td>隐藏商品是否显示:<input id="product_visibility" name="product_visibility" type="radio" value="1"  />是<input id="product_visibility" name="product_visibility" type="radio" value="0" checked="checked" />否</td></tr>
+  <tr><td></td></tr>  
+  </table>
+      　　
+    </div>
+ 		<br>
+	
+ <b>  &nbsp;&nbsp; &nbsp;&nbsp;导出类别:</b>
+    <input name="inventory_type" type="radio" id="everyone_radio" value="2" checked="checked" />
+    <label for="">全部商品</label><{help}>全仓盘点，未盘点货品库存信息确认后被清零。<{/help}>
+
+    <input type="radio" name="inventory_type" value="3" id="custom_condition_radio" />
+    <label for="custom_condition">部分商品</label><{help}>盘点表确认后，仅更新盘点货品的库存信息。<{/help}>
+    <input type="radio" name="inventory_type" value="4">期初
+    <div id="custom_search" style="display:none;">
+      <div class="division">
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr>
+              <td><select name="proj" id="sltProj">
+                  <option value="0">选择项目</option>
+                  <option value="product_bn[]">货号</option>
+                  <option value="product_name[]">货品名称</option>
+                  <option value="branch_store[]">库存数量</option>
+                </select>
+                <select name="operator" id="sltCondition">
+                  <option value="0">搜索条件</option>
+                </select>
+                <input type="text" value="搜索内容" onfocus="this.value=''" size="40" id="condition_input" />
+                &nbsp;<{button label="添加查询条件" id="loadCurrent"}> </td>
+              <td><div id="select_condition" style="display:none;">
+                  <select name="">
+                    <option value="">选择搜索条件</option>
+                  </select>
+                  <{button label="加载搜索" type="submit" id=""}></div></td>
+            </tr>
+			
+          </thead>
+        </table>
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist" id="save_condition_table">
+          <caption>
+          搜索条件记录：
+          </caption>
+          <thead>
+            
+            <tr style="display:none;">
+              <td width="14%" align="right">货号：</td>
+              <td>&nbsp;</td>
+            </tr>
+            <tr style="display:none;">
+              <td width="14%" align="right">货品名称：</td>
+              <td>&nbsp;</td>
+              <br />
+            </tr>
+            <tr style="display:none;">
+              <td width="14%" align="right">库存数量：</td>
+              <td>&nbsp;</td>
+            </tr>
+          </thead>
+          <tfoot>
+            <tr>
+              <td width="14%"></td>
+              <td><span id="save_condition_span" style="display:none;">
+                <input type="text" name="" value="为搜索条件命名" id="save_condition_ipt" onfocus="this.value=''" />
+                <{button label="存储" id="save_condition_name_btn"}> <{button label="保存搜索条件" id="save_condition_btn"}>　</span><{button label="预览结果" id="view_result_btn"}>　<{button label="重置查询条件" id="reload_condition"}></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    
+      <div class="division" id="inventory_items">
+      
+      </div>
+      
+      <div class="division" id="accordion" style="display:none;">
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+          <thead>
+            <tr>
+                <th>货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+                <th>帐面数量</th>
+                <th>实际数量</th>
+                <th>单价</th>
+                <th>品质情况</th>
+            </tr>
+          </thead>
+          <tbody id="dataNode">
+            <tr>
+              <td colspan="9" style="padding:0;"><div class="note" style="margin:0;"> 没有查询到相关的货品信息 </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="division">
+      <table border="0">
+        <tr>
+        <td>&nbsp;</td>
+          <td >复核人：
+            <input type="text" name="second_checker" value="<{$op_name}>" size="10" />
+          </td>
+          <td>
+            财务负责人：
+            <input type="text" name="finance_dept" value="<{$op_name}>" size="10" />
+            </td>
+            <td>
+            仓库负责人：
+            <input type="text" name="warehousing_dept" value="<{$op_name}>" size="10" /></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+ <div id="cc" class="noprint table-action">
+    <table width="100%" border="0">
+      <tr>
+        <td style="text-align:left">
+            <b>分页导出：</b>
+            起始页码：<input type="text" class='x-input' name='start_page' size=4 />
+            结束页码：<input type="text" class='x-input' name='end_page' size=4 />
+            <input type="hidden" name='page_size' value="12" />
+            <{button label="导出" type="submit"}><{help}><{t}>根据导出盘点表-补充实际库存-导入盘点表<{/t}><{/help}></td>
+      </tr>
+    </table>
+  </div>
+</div>
+</form>
+<script type="text/javascript">
+(function(){
+	$('export_pos_type').addEvent('click',function(){
+	//alert('a');
+		$('store_show1').set('disabled',true);
+		$('store_show2').set('disabled',true);
+	});
+	$('export_bn_type').addEvent('click',function(){
+		$('store_show1').set('disabled',false);
+		$('store_show2').set('disabled',false);
+	});
+	$('everyone_radio').addEvent('click',function(){
+		$("custom_search").setStyle('display',"none");  
+	});
+	$('custom_condition_radio').addEvent('click',function(){
+		$("custom_search").setStyle('display',"");
+	});
+	$('save_condition_btn').addEvent('click',function(){
+		$('save_condition_span').setStyle('display',"");
+		this.setStyle('display',"none");
+	});
+	$('save_condition_name_btn').addEvent('click',function(){
+		if($('save_condition_ipt').get('value').trim().length===0){
+			MessageBox.error('请先填写存储的条件名称！');
+			return false;
+		}
+		MessageBox.success("条件保存成功！");
+		$('save_condition_span').setStyle('display',"none");
+		$('save_condition_btn').setStyle('display',"");
+		$('select_condition').setStyle('display',"");
+	});
+	
+	var search_condition=[['内包含'],['内包含'],['>=','<=']];
+	$('sltProj').addEvent('change',function(){
+		var sltCondition=$('sltCondition');
+		sltCondition.empty();
+		//for(i=sltCondition.length-1;i>0;i--) sltCondition.remove(i);
+		var projCondition = search_condition[this.selectedIndex - 1];
+		if(this.value!=0){
+			for(var i=0;i<projCondition.length;i++){
+				sltCondition[i]=new Option(projCondition[i],projCondition[i]);
+			}
+		}else sltCondition[0]=new Option("搜索条件","0");
+		sltCondition[0].selected=true;
+	});
+	$('loadCurrent').addEvent('click',function(){
+		if($('sltProj').value==0||$('condition_input').value.trim().length===0||$('condition_input').value=='搜索内容'){
+			MessageBox.error('请先选择项目或填写搜索内容！');
+			return;
+		}
+		var value=$('condition_input').value.replace(/[,']+/g,'');
+		var conditions=$$('input[name="'+$('sltProj').value+'"]');
+		if($('sltProj').value=='branch_store[]'){
+			if(!/^\d+$/.test(value)){
+				MessageBox.error('库存数量请填写数字！');
+				return;
+			}
+		}else{
+			for(var i=0;i<conditions.length;i++){
+				if(value==conditions[i].value){
+					MessageBox.error('条件重复，请重新填写！');
+					return;
+				}
+			}
+		}
+		value='<input type="text" name="'+$('sltProj').value+'" value="'+value+'" size="10" />';
+		value=$('sltProj').value=='branch_store[]'?$('sltCondition').value+'<input type="hidden" name="store_operator[]" value="'+$('sltCondition').value+'" />'+value:value;
+		value+='<button class="delete" title="删除此条件" type="button"></button>';
+		var row=$ES('thead tr','save_condition_table')[$('sltProj').selectedIndex -1];
+		var col=row.getElements('td')[1];
+		if(row.getStyle('display')=='none'){
+			row.setStyle('display','');
+			col.innerHTML='<span>'+value+'</span>';
+		}else{
+			if($('sltProj').value=='branch_store[]'){
+				//MessageBox.error('库存数量不允许多条件查询！');
+				//return;
+                col.innerHTML+="<span> 且 "+value+'</span>';
+			}else{
+                col.innerHTML+="<span> 或 "+value+'</span>';
+            }
+		}
+		$$('.delete').addEvent('click',function(){
+			if(this.getParent('span')) this.getParent('span').destroy();
+			if(col.innerHTML=='') row.setStyle('display','none');
+		});
+	});
+	$('reload_condition').addEvent('click',function(){
+		var thead=$E('thead','save_condition_table');
+		thead.getElements('tr').setStyle('display','none');
+		thead.getElements('tr span').destroy();
+	});
+	
+	$('view_result_btn').addEvent('click',function(){
+		var rowsipt=$ES('thead input[type]','save_condition_table');
+		if(!rowsipt.length){
+			MessageBox.error('请先添加查询条件！');
+			return;
+		}
+		for(var i=0;i<rowsipt.length;i++){
+			if(rowsipt[i].value.trim()==""){
+				MessageBox.error('不允许条件为空！');
+				return;
+			}
+		}
+		viewProduct();
+	});
+	
+    function viewProduct(page){
+		var url="index.php?app=wms&ctl=admin_inventory&act=inventoryPreview";
+		if (page) url += '&p[0]='+page;
+        new Request.HTML({
+            update:'inventory_items',
+            url:url,
+            onComplete:function(){
+	        	$$('.pager a').addEvent('click',function(){
+	                var page = this.href.split('page=')[1];
+	                viewProduct(page);
+	                return false;
+	            });
+            }
+        }).post($('Searchform'));
+    }
+})();
+</script>

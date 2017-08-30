@@ -1,0 +1,46 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<form name="form1" method="POST" action="index.php?app=ome&ctl=admin_receipts_print&act=doDetail">
+<div class="tableform">
+<h4>采购退货单明细</h4>
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<col style="width:10%;"></col>
+<thead>
+<tr>
+	<th style='text-align:left;padding-left:5px;'>货号</th>
+    <th style='text-align:left;padding-left:5px;'>货品名称</th>
+    <th style='text-align:left;padding-left:5px;'>规格</th>
+	<th style='text-align:left;padding-left:5px;'>条码</th>
+ <th style='text-align:left;padding-left:5px;'>价格</th>
+	<th style='text-align:left;padding-left:5px;'>退货数量</th>
+ <th style='text-align:left;padding-left:5px;'>出库数量</th>
+ 
+    
+</tr>
+</thead>
+<{foreach from=$po_items item=item}>
+<tbody>
+<tr>
+    <td style='text-align:left;padding-left:5px;'><{$item.bn}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.name}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.spec_info}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.barcode}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.price|cur}></td>
+   <td style='text-align:left;padding-left:5px;'><{$item.num}></td>
+ <td style='text-align:left;padding-left:5px;'><{$item.out_num}></td>
+ 
+    
+</tr>
+</tbody>
+<{/foreach}>
+</table>
+</div>
+</div>
+</form>

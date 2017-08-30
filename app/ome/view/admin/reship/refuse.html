@@ -1,0 +1,117 @@
+
+<div class="tableform">
+<h4>拒收退货单详情</h4>
+<div class="division">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th><{t}>退货单号:<{/t}></th>
+    <td><{$detail.reship_bn}></td>
+    <th><{t}>订单号:<{/t}></th>
+    <td><{$detail.order_bn}></td>
+    <th><{t}>配送方式:<{/t}></th>
+    <td><{$detail.delivery|default:'-'}></td>
+    <th><{t}>操作员:<{/t}></th>
+    <td><{$detail.op_name}></td>
+  </tr>
+  
+  <tr>
+    <th><{t}>物流费用:<{/t}></th>
+    <td><{$detail.money}></td>
+    <th><{t}>是否保价:<{/t}></th>
+    <td><{if $detail.is_protect}>是<{else}>否<{/if}></td>
+    <th><{t}>物流公司:<{/t}></th>
+    <td><{$detail.logi_name}></td>
+    <th><{t}>物流单号:<{/t}></th>
+    <td><{$detail.logi_no}></td>
+  </tr>
+  
+    <tr>
+    <th><{t}>收货人:<{/t}></th>
+    <td><{$detail.ship_name}></td>
+    <th><{t}>收货地区:<{/t}></th>
+    <td><{$detail.ship_area}></td>
+    <th><{t}>收货地址:<{/t}></th>
+    <td><{$detail.ship_addr}></td>
+    <th><{t}>收货邮编:<{/t}></th>
+    <td><{$detail.ship_zip}></td>
+  </tr>
+  
+  <tr>
+    <th><{t}>电话:<{/t}></th>
+    <td><{$detail.ship_tel}></td>
+    <th><{t}>手机:<{/t}></th>
+    <td><{$detail.ship_mobile}></td>
+    <th><{t}>收货人Email:<{/t}></th>
+    <td><{$detail.ship_email}></td>
+    <th><{t}>生成时间:<{/t}></th>
+    <td><{$detail.t_begin|cdate:SDATE_FTIME}></td>
+  </tr>
+
+  <tr>
+    <th><{t}>审核状态:<{/t}></th>
+    <td><{$detail.is_check}></td>
+    <th><{t}>退回物流单号:<{/t}></th>
+    <td><{$detail.return_logi_no}></td>
+    <th><{t}>退回物流公司名称:<{/t}></th>
+    <td>
+    <{$detail.return_logi_name}>
+    </td>
+    <th><{t}>退换货状态:<{/t}></th>
+    <td><{if $detail.return_type == 'refuse'}><{t}>拒收退货<{/t}><{else}>-<{/if}></td>
+  </tr>
+
+</table>
+
+
+ <!--  <div class="span-5"><label><{t}>收货时间:<{/t}></label><{$detail.t_end|cdate:SDATE_STIME}></div>-->
+
+</div>
+
+<div class="division">
+<table cellspacing="0" cellpadding="0" border="0" >
+  <tr>
+    <td><strong><{t}>退货备注：<{/t}></strong><{$detail.memo}></td>
+  </tr>
+</table>
+</div>
+
+ 
+<{if count($items) > 0}>
+
+  <div class="division">
+
+      <h4><{t}>退货明细:<{/t}></h4>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+        <thead>
+        <tr>
+          <th><{t}>物品货号<{/t}></th>
+          <th><{t}>物品类型<{/t}></th>
+          <th><{t}>物品名称<{/t}></th>
+          <th><{t}>退货量<{/t}></th>
+          <th><{t}>良品<{/t}></th>
+          <th><{t}>不良品<{/t}></th>
+          <th><{t}>相关货位<{/t}></th>
+        </tr>
+        </thead>
+  <{foreach from=$items.return item=aProduct}>
+    <tbody>
+        <tr>
+         <td><{$aProduct.bn}></td>
+        <td><{if $aProduct.item_type == 'gift'}><{t}>礼品<{/t}><{else}><{t}>商品<{/t}><{/if}></td>
+
+        <td><{$aProduct.product_name}></td>
+        <td><{$aProduct.num}></td>
+        <td><{$aProduct.normal_num}></td>
+        <td><{$aProduct.defective_num}></td>
+        <td><{if $aProduct.store_position}><{$aProduct.store_position}><{else}>-<{/if}></td>
+        </tr>
+    </tbody>
+  <{/foreach}>
+      </table></div>
+
+<{/if}>
+
+
+ </div>
+ 

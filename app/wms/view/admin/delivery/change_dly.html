@@ -1,0 +1,68 @@
+<{if !$_is_singlepage}>
+<style>
+    .delivery-tab{margin:0;padding:0;overflow:hidden;}
+    .delivery-tab li{float:left; width:200px;height:24px;line-height:24px;margin-right:5px;font-size: 12px;overflow:hidden;}
+    .delivery-tab .hover{background-position:0 0;font-weight:bold;}
+</style>
+<form method="POST" action="index.php?app=wms&ctl=admin_receipts_print&act=doChangeDly" class="tableform" id="form_change_dly">
+<div class="tableform">
+    <div class="note">
+        本次操作您共选择了 <font color='red'><span id='orderCount'><{$orderCnt}></span></font> 个发货单。
+    </div>
+    <{foreach from=$branchDatas item=branchData}>
+    <div><b>请为“<{$branchData.branch.name}>”仓的<font color='red'><{$branchData.count}></font>个发货单，</b>
+    <input type="hidden" id="branchData[<{$branchData.branch.branch_id}>][branch]" name="branchData[<{$branchData.branch.branch_id}>][branch]" value="<{$branchData.branch.branch_id}>" />
+    <{foreach from=$branchData.delivery key=key item=delivery}>
+        <!--<{$delivery}>，-->
+        <input type="hidden" id="branchData[<{$branchData.branch.branch_id}>][delivery][]" name="branchData[<{$branchData.branch.branch_id}>][delivery][]" value="<{$key}>" />
+    <{/foreach}>
+    <b>选择你要更换的新物流：</b></div>
+    <ul class="delivery-tab">
+        <{foreach from=$branchData.corp item=corp}>
+        <li>
+            <label><input type="radio" name="branchData[<{$branchData.branch.branch_id}>][newCorp]" value="<{$corp.corp_id}>"/>&nbsp;&nbsp;<{$corp.name}><{if $corp.tmpl_type=='electron'}> <span style="color:red;">电子面单</span><{/if}></label>
+        </li>
+        <{/foreach}>
+    </ul><br /><br />
+    <{/foreach}>
+</div>
+</form>
+<{area inject='.mainFoot'}>
+<div class="table-action">
+	<{button type="button" label="更换物流" id="btn-run"}>
+</div>
+<{/area}>
+
+<script>
+(function(){
+	var _form = $('form_change_dly');
+	var btn =$('btn-run');
+	var finder = finderGroup['<{$env.get._finder.finder_id}>'];
+	
+	_form.store('target',{
+		onSuccess:function(response){
+			var hash_res_obj = JSON.decode(response);
+		
+			if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+				try{
+					var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+				}catch(e){}
+				
+				if(_dialogIns){	
+					_dialogIns.close();
+					window.finderGroup['<{$env.get._finder.finder_id}>'].refresh();
+				}
+			}
+			
+		}
+	});
+
+    btn.addEvent('click',function(){
+        _form.fireEvent('submit',{stop:$empty});
+    });
+	
+})();
+</script>
+
+<{/if}>
+ 

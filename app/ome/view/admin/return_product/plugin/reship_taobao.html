@@ -1,0 +1,19 @@
+<h4>备注凭证</h4>
+<div class="division">
+<{foreach from=$returninfo.online_memo item=memo}>
+
+<{if $memo.voucher_urls}>
+<img src='<{$memo.voucher_urls}>' height='50' onclick="showimage('<{$memo.voucher_urls}>')" alt='点击查看大图' style="cursor:pointer;">
+<{/if}><br>
+<{foreachelse}>
+暂无
+<{/foreach}>
+</div>
+<script>
+function showimage(imgpath){
+    var url = 'index.php?app=ome&ctl=admin_return&act=showImage&p[0]='+imgpath;
+    new Dialog(url,{title:'查看凭证大图',width:500,height:300});
+}
+</script>
+
+  

@@ -1,0 +1,134 @@
+<div class="tableform">
+  <form action="index.php?app=ome&ctl=admin_member&act=doAddMember" method="post" id="newMemForm">
+    <table border="0">
+      <tbody>
+        <tr>
+          <th>用户名：</th>
+          <td>
+          	<input id="_uname" name="account[uname]" type="text" vtype="required" size="12" value='' /> <em class="red">*</em>
+          </td>
+          <th>姓名：</th>
+          <td>
+            <input id="_name" name="contact[name]" type="text" vtype="required" size="15" value='' /> <em class="red">*</em>
+          </td>
+        </tr>
+        <tr>
+          <th>性别：</th>
+          <td><input type="radio" value="male" name="profile[gender]" vtype="requiredradio">男
+          <input type="radio" name="profile[gender]" value="female" vtype="requiredradio">女
+           <em class="red">*</em>
+          </td>
+          <th>固定电话：</th>
+          <td><input id="_telephone" name="contact[phone][telephone]" type="text" /></td>
+        </tr>
+        <tr>
+          <th>邮编：</th>
+          <td>
+            <input id="_zip" name="contact[zipcode]" type="text" size="6" />
+          </td>
+          <th>手机：</th>
+          <td><input id="_mobile" name="contact[phone][mobile]" type="text" value='' /></td>
+        </tr>
+        <tr>
+          <th>Email：</th>
+          <td colspan="3"><input id="_email" name="contact[email]" type="text" vtype="email" size="40" /></td>
+        </tr>
+        <tr>
+          <th>地区：</th>
+          <td colspan="3"><{input type='region' app='eccommon' name="contact[area]" vtype="area" value="" id="_region" }></td>
+        </tr>
+        <tr>
+          <th>备注：</th>
+          <td colspan="3">
+            <textarea id="memo" name="remark" rows="5" cols="70"></textarea></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" type="button" id="btnMemSubmit"}> &nbsp; &nbsp;
+      <{button label="取消" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+  </form>
+</div>
+<script>
+  (function(){
+
+   function is_phone(str){
+
+	    var partten = /^[\d-]+$/;
+	    if(partten.test(str)){
+	        return true;
+	    }else{
+	        return false;
+	    }
+	}
+
+	function is_mobile(str){
+
+	    var partten = /^\d{8,15}$/;
+	    if(partten.test(str)){
+	        return true;
+	    }else{
+	        return false;
+	    }
+	}
+	  
+    $('btnMemSubmit').addEvent('click',function(){
+      var form = this.getParent('form');
+      if(! validate(form)) return;
+
+	   //固定电话与手机必填一项
+	   var gd_tel,mobile;
+	   gd_tel = $('_telephone').value.replace(" ","");
+	   mobile = $('_mobile').value.replace(' ','');
+	   if (!gd_tel && !mobile){
+          alert('固定电话与手机号码必需填写一项');
+          $('_telephone').focus();
+          return false;
+	   }
+	   if (gd_tel){
+           if (is_phone(gd_tel) === false){
+               alert('请填写正确的固定电话');
+               $('_telephone').focus();
+               return false;
+           }
+	   }
+	   if (mobile){
+          if ( is_mobile(mobile) === false){
+               alert('请输入正确的手机号码');
+               $('_mobile').focus();
+               return false;
+          }
+          if (mobile[0] == '0'){
+               alert('手机号码前请不要加0');
+               $('_mobile').focus();
+               return false;
+          }
+       }
+      
+      //this.getParent('form').fireEvent('sumit',{stop:$empty});
+      new Request({url:form.action,method:'post',data:form.toQueryString(),
+        onRequest:function(){
+          MessageBox.show('正在提交表单');
+        },
+        onComplete:function(json){
+          if(json == 'false') {
+            MessageBox.error('添加会员失败，可能用户名重复');
+            return;
+          }
+          json = JSON.decode(json);
+          json = json[0];
+          var getMemTemp = '<tr><td><input type="radio" name="id" value="'+json.member_id+'" vtype="requiredradio" /></td><td>'+json.uname+'</td><td>'+json.sex+'</td><td>'+json.mobile+'</td><td>'+json.area.split(":")[1]+'</td><td>'+json.email+'</td></tr>';
+          $('memNode').setHTML(getMemTemp);
+          $('memNode').getElement('input[name=id]').addEvent('click',function(){
+            $$('*[disabled]').addClass('nodisabled').set('disabled',false);
+          });
+          $$('.nodisabled').removeClass('nodisabled').set('disabled',true);
+          MessageBox.success('保存成功');
+
+          $('newMemForm').getParent('.dialog').retrieve('instance').close();
+        }
+      }).send();
+    });
+  })()
+</script>

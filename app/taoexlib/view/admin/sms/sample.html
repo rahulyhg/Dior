@@ -1,0 +1,181 @@
+<{if $nosample=='true'}>
+    <div class="notice">
+        缺少模板信息,不能编辑！请先选择规则的模板，在进行编辑！
+    </div>
+<{else}>
+<div class="tableform">
+    <h3>短信模板设置</h3>
+    <div class="division">
+        <form method="post" action="index.php?app=taoexlib&ctl=admin_sms_sample&act=save_sample" id="form-sample">
+            <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                <tbody>
+                    <tr>
+                        <th><em class="c-red">*</em> 发送节点：</th>
+                        <td colspan="3">
+                            <input type='hidden' name='id' value="<{$info.id}>">
+                           <{input type='select' name='send_type' value=$type_list
+                            vtype='required'  caution='请选择发送节点' required='required'
+                            rows=$type_list valueColumn="type" labelColumn="name"
+                            '}>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th><em class="c-red">*</em> 模板标题：</th>
+                        <td colspan="3">
+                            <input type="text" name="title" caution='请填写模板标题' value="<{$info.title|default:'发货提醒'}>" size="20" vtype="required"/>
+                            <{help}><{t}>设置一个短信模板标题<{/t}><{/help}>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><em class="c-red">*</em> 模板编号：</th>
+                        <td colspan="3">
+                            <input type="text" name="sample_no" caution='请填写模板编号' value="<{$info.sample_no|default:''}>" size="20" vtype="required"/>
+                            <{help}><{t}>设置一个短信模板标题<{/t}><{/help}>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><em class="c-red">*</em> 审核成功即开启：</th>
+                        <td colspan="3">
+                            <{input type='bool' name='isapproved' value=$info.isapproved|default:'false' vtype='requiredradio'}>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><em class="c-red">*</em> 开启状态：</th>
+                        <td colspan="3">
+                            <{input type='bool' name='status' value=$info.status|default:'1' vtype='requiredradio'}>
+                        </td>
+                    </tr>
+                   
+                    <tr>
+                        <th width="10%">
+                            <em class="c-red">*</em>
+                            发送内容：
+                        </th>
+                        <td width="20%">
+                            <{input type="textarea" name="content" id="content" rows="15" cols="25" 
+                            value=$info.content vtype='required' caution='请填写短信内容'}>
+                            <{help}><{t}>发送的短信内容<{/t}><{/help}>
+                        </td>
+                        <th width="10%" style="line-height:26px;">
+                            <em class="c-red">
+                                <{t}>内容参数：<{/t}>
+                            </em>
+                        </th>
+                        <td width="60%" align="left" style="line-height:25px;">
+
+                            <{foreach from=$sample_code item=item key=key}>
+                            <button style="margin:0" class="btn" p="<{$item.id}>" type="button">
+                                <span><span><i class="btn-icon">
+                                    <img src="<{if $item.img}><{$item.img}><{else}><{$add_img}><{/if}>"></i>
+                                    <{$item.name}>
+                                </span></span>
+                            </button> <{$item.br}>
+                            <{/foreach}>
+                            <{foreach from=$sample_code item=item key=key}>
+                                <div id="<{$item.id}>" style="width:50%;display:none;" class='print-params'>
+                                    <span>
+                                        <{$item.value}>
+                                    </span>
+                                </div>
+                            <{/foreach}>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </form>
+            <div class="table-action">
+                <{button label="保存" name="submit" id="btn-branch"}>
+                &nbsp;&nbsp;
+                <{button label="预览" id="btn_preview" }>
+            </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+window.addEvents({
+    'domready':function(){
+        textareaEditor ={
+            element:$E('#form-sample #content'),
+            initRange:function(){
+                this.element.focus();
+                if(!!document.selection) {
+                    var range=this.element.createTextRange();
+                    range.moveStart('character',this.element.value.length);
+                    range.collapse(true);
+                    range.select();
+                }
+            },
+            replaceSelection:function (text) {
+                var scrollTop=this.element.scrollTop;
+                if(!!document.selection) {
+                    this.element.focus();
+                    var range=this.range||document.selection.createRange();
+                    range.text=text;
+                }else if(!!this.element.setSelectionRange) {
+                    var selection_start=this.element.selectionStart;
+                    this.element.value=this.element.value.substring(0,selection_start)+text+this.element.value.substring(this.element.selectionEnd);
+                    this.element.setSelectionRange(selection_start+text.length,selection_start+text.length);
+                }
+                this.element.focus();
+                this.element.scrollTop=scrollTop;
+            }
+        };
+         //获取表单事件
+        $ES("#form-sample .btn").addEvent('click',function(event){
+            event.stop();
+            var id = this.get('p');
+            var html = $(id).getText().trim();
+            if(id!='recovery'){
+                textareaEditor.replaceSelection(html);
+            }else{
+                $E("#form-sample textarea[name='content']").set('value',html);
+            }
+        });
+        $ES('#btn_preview').addEvent('click',function(event){
+            var cont = {};
+            cont['content'] = $('content').value;
+            cont['id'] = '<{$info.id}>';
+            new Dialog('index.php?app=taoexlib&ctl=admin_setting&act=preview',{
+                    width:450,
+                    title:'短信预览',
+                    height:400,
+                    ajaxoptions:{data:cont,method:'post'},
+                    modal:true,
+                    }
+                );
+        
+        });
+    }
+});
+(function(){
+        var _form = $('form-sample');
+        var btn   = $('btn-branch');
+        var finder = finderGroup['<{$env.get.finder_id}>'];
+        _form.store('target',{
+            onComplete:function(){},
+            onSuccess:function(response){
+                var hash_res_obj = JSON.decode(response);
+                if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+                    try{
+                        var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+                    }catch(e){
+                    }
+
+                    if(_dialogIns){
+                        finder.refresh.delay(400,finder);
+                        _dialogIns.close();
+
+                    }
+                }
+            }
+        });
+
+        btn.addEvent('click',function(){
+            _form.fireEvent('submit',{stop:$empty});
+        });
+    })();
+</script>
+<{/if}>

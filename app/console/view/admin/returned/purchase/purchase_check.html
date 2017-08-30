@@ -1,0 +1,111 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<form method="post" id="fm1" action="index.php?app=console&ctl=admin_returned_purchase&act=do_check">
+  <div class="tableform">
+    <h3>采购退货订单审核</h3>
+    <div class="division">
+      <h5>基本信息</h5>
+      <table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+      <thead>
+        <tr>
+          <td width="10%" align="right" nowrap="nowrap">采购退货单名称:</td>
+          <td colspan="3"><{$detail.name}><span id="exigence" style="color:red; display:none">！</span>
+            </td>
+        </tr>
+        <tr>
+          <td align="right">供应商:</td>
+          <td width="40%">
+            <{$detail.supplier_name}>
+           </td>
+          <td align="right" nowrap="nowrap" title="一次性物流费用">物流费用(垫付):</td>
+          <td><{$detail.d_cost|default:0:cur}>
+            元</td>
+        </tr>
+        <tr>
+          <td width="10%" align="right">退货仓库:</td>
+          <td>
+            <{$detail.branch_name}>
+            </td>
+          <td align="right" nowrap="nowrap" title="物流单号">物流单号:</td>
+          <td><{$detail.logi_no|default:'-'}>
+          </td>
+        </tr>
+        </thead>
+      </table>
+      <h5 style="margin-top:10px;">采购退货货品</h5>
+     
+
+     
+      <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th style="width:240px;">货品名称</th>
+            <th>货品规格</th>
+            <th>条形码</th>
+           
+            <th>数量</th>
+            <th>单价</th>
+         
+         
+          </tr>
+        </thead>
+        <tbody id="dataNode">
+          
+
+<{foreach from=$detail.returned_purchase_items item=item}>
+<tr>
+    <td ><{$item.bn}></td>
+    <td ><{$item.name}></td>
+    <td ><{$item.spec_info}></td>
+    <td ><{$item.barcode}></td>
+    <td ><{$item.num}></td>
+    <td ><{$item.price|cur}></td>
+</tr>
+<{/foreach}>
+
+
+        </tbody>
+      </table>
+      <div align="right">
+        退款总金额: <{$detail.amount}> &nbsp; </div> </div>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+      <tr>
+        <td width="10%" align="right">退货单备注:</td>
+        <td align="left"><{foreach from=$detail.memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}></td>
+      </tr>
+      <tr>
+        <td align="right">经办人:</td>
+        <td align="left"><{$detail.operator}></td>
+      </tr>
+    </table>
+    <div id="cc" class="noprint table-action"><{button type="submit" class="btn-secondary" id="check-btn" label="审核" }> <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+  </div>
+  <input type="hidden" name="branch_id" value='<{$detail.branch_id}>'>
+  <input type="hidden" name="rp_id" value='<{$detail.rp_id}>'>
+</form>
+<script>
+$('fm1').store('target',{
+    onRequest:function(){
+       $('check-btn').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('check-btn').set('disabled', '');
+       }else{
+           $('check-btn').set('disabled', 'true');
+           if(opener.finderGroup['<{$env.get.finder_id}>']) opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+           setTimeout('window.close()',200);
+       }
+    }
+});
+</script>

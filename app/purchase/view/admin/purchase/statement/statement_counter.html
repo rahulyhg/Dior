@@ -1,0 +1,52 @@
+<div class="tableform"> 
+<h4>供应商往来帐</h4>
+<div id="division">
+        <table class="gridlist" cellspacing="0" cellpadding="0">
+            <thead>
+                <tr>
+                    <th>期初应付</th>
+                    <th>期初应收</th>
+                    <th>本期增加应付</th>
+                    <th>本期增加应收</th>
+                    <th>本期已付</th>
+                    <th>本期已收</th>
+                    <th>期末应付</th>
+                    <th>期末应收</th>
+                    <th>差额</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="toggler atStart" >
+                    <td><{$results.initial_pay|cur}></td>
+                    <td><{$results.initial_receive|cur}></td>
+                    <td><{$results.pay_add|cur}></td>
+                    <td><{$results.receive_add|cur}></td>
+                    <td><{$results.paid|cur}></td>
+                    <td><{$results.received|cur}></td>
+                    <td><{$results.final_pay|cur}></td>
+                    <td><{$results.final_receive|cur}></td>
+                    <td><{$results.difference|cur}></td>
+                </tr>
+            </tbody>
+        </table>
+   </div>
+   
+<div class="table-action">
+    <{button type="button" class="btn-primary" id="prints" label="打印" }>
+    <{button type="button" class="btn-primary" id="details" label="结算单明细" }>
+</div>
+ 
+</div>
+
+<script>
+//明细
+$('details').addEvent('click', function(){
+    //this.getParent('.dialog').retrieve('instance').close();
+    W.page('index.php?app=purchase&ctl=admin_statement&act=index&p[0]=<{$results.supplier_id}>');
+    //window.location.reload();
+});
+//打印
+$('prints').addEvent('click', function(){
+    window.open('index.php?app=purchase&ctl=admin_statement&act=statement_print&statement_id=<{$results.supplier_id}>');
+});
+</script>

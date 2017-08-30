@@ -1,0 +1,232 @@
+<{capture name="header"}>
+<{css src="style.css" app="ome"}>
+<{/capture}>
+<form action="index.php?<{$env.server.QUERY_STRING}>" method="post" id="modifyForm">
+<input type="hidden" name="supplier_id" value=<{$detail.supplier_id}> />
+<div class="tableform">
+	<div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0">
+			<tr>
+                <td colspan="4"><h3>基本信息</h3></td>
+            </tr>
+			<tr>
+				<th>供应商编码:</th>
+				<td>
+                <input type="hidden" name="ini_bn" value="<{$detail.bn}>" />
+				<input type="text" name="bn" value="<{$detail.bn}>" vtype="required" /> <em class="c-red">*</em>
+				</td>
+				<th>供应商名称:</th>
+				<td>
+				<input type="hidden" value="<{$detail.name}>" name="ini_name" />
+				<input type="text" value="<{$detail.name}>" name="name" vtype="required" /> <em class="c-red">*</em></td>
+			</tr>
+			<tr>
+                <th>供应商快速索引:</th>
+                <td>
+                <{input type="text" name="brief" id="brief" value="{$detail.brief}"  size='12' maxlength='20' }>
+                </td>
+                 <th>公司名称:</th>
+                <td>
+                <{input type="text" name="company" id="company" value="{$detail.company}" maxlength='20' size='20' }>
+                </td>
+
+            </tr>
+            <tr>
+                <th>所在地区:</th>
+                <td>
+                <{if $detail.area_defined and $detail.area<>'' }>
+	                <{input id="area_defined" type="text" name="area" value="{$detail.area}" size="28" }>
+	                <span id="area" style="display:none;">
+	                <{input type='region' app='eccommon' name="area" value=""}>
+	                </span>
+	                <{button name="modify" id="modify" label="修改" }>
+	                <{button name="cancel_modify" style="display:none" id="cancel_modify" label="取消" }>
+
+                <{else}>
+                    <{input type='region' app='eccommon' name="area" value="{$detail.area}" }>
+                <{/if}>
+                </td>
+                <th>街道地址:</th>
+                <td>
+                <{input type="text" name="addr" value="{$detail.addr}"  size="30"  }>
+                </td>
+
+            </tr>
+
+            <tr>
+                <th>邮编:</th>
+                <td><{input type="text" value="{$detail.zip}" name="zip"  size="6"  }></td>
+                <th>电话/手机:</th>
+                <td><{input type="text" value="{$detail.telphone}" name="telphone" size="12" }></td>
+            </tr>
+
+			<tr>
+			    <th>信用等级:</th>
+                <td>
+                <select name="credit_lv">
+                    <option value="">请选择</option>
+                    <{foreach from=$credit_lev item=value key=keys }>
+                      <option value="<{$keys}>" <{if $detail.credit_lv==$keys}> selected <{/if}> ><{$value}></option>
+                    <{/foreach}>
+                </select>
+                </td>
+				<th>传真:</th>
+				<td><{input type="text" name="fax"  value="{$detail.fax}" size="12" }></td>
+			</tr>
+			<tr>
+                <th>到货天数：</th>
+                <td>
+                <{input type="number" name="arrive_days"  value="{$detail.arrive_days}"  size='3' }> <span class="notice-inline">天</span>
+                </td>
+                <th>采购员:</th>
+                <td>
+                <{input type="text" name="operator" value="{$detail.operator}" size="8" }>
+                </td>
+            </tr>
+            <tr>
+                <th>供应品牌:</th>
+                <td colspan="3">
+                  <span id="brand_span">
+                  <{$brand_checkbox}>
+                  </span>
+                  <input type="hidden" name="choice_flag" id="choice_flag" value="1" />
+                  <{button type="button" id="choice_brand" label="选择"}>
+                </td>
+            </tr>
+
+            <tr>
+                <th>备注:</th>
+                <td colspan="3"><{input type="textarea" name="memo"  value="{$detail.memo}" rows="5" style="width:90%" }></td>
+            </tr>
+
+
+            <tr>
+                <td colspan="4"><h3>联系人信息</h3></td>
+            </tr>
+            <tr>
+                <td colspan="4">
+
+                <table class="gridlist" cellpadding="0" cellspacing="0" style="width:100%">
+                  <caption>
+                    <{button label="添加联系人" id="add_lianximan" }>
+                  </caption>
+                  <thead>
+                    <th style="width:20%">联系人</th>
+                    <th style="width:20%">电话</th>
+                    <th style="width:25%">E-mail</th>
+                    <th style="width:20%">qq/旺旺</th>
+                    <th style="width:5%">操作</th>
+                  </thead>
+                  <tbody id="lianximan">
+                    <{foreach from=$detail.contacter item=items}>
+                    <tr>
+                      <td><input type="text" size="15" name="lianxi_name[]" value="<{$items.name}>"></td>
+                      <td><input type="text" size="15" name="lianxi_telphone[]" value="<{$items.telphone}>"></td>
+                      <td><input type="text" size="15" name="lianxi_email[]" value="<{$items.email}>"></td>
+                      <td><input type="text" size="15" name="lianxi_qqwangwang[]" value="<{$items.qqwangwang}>"></td>
+                      <td><{img src="bundle/delecate.gif" app="desktop" class="pointer del"}></div>
+                    </tr>
+                    <{/foreach}>
+                  </tbody>
+                </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="4"><h3>财务信息</h3></td>
+            </tr>
+			<tr>
+				<th>开户行:</th>
+                <td><{input type="text" name="bank"  value="{$detail.bank}" size="32" }></td>
+                <th>银行帐号:</th>
+                <td>
+                <{input type="text" name="account" value="{$detail.account}" size="32" }>
+                </td>
+			</tr>
+
+		</table>
+	</div>
+   </div>
+   <div class="table-action">
+       <{input type="hidden" name="editSubmit" value="do" }>
+       <{button class="btn-primary" type="submit" id="modify" label="保存"}>
+	   <{button class="btn-secondary" type="button" id="closeBut" label="取消"}>
+   </div>
+</form>
+<script>
+(function(){
+    $('lianximan').getElements('.del').addEvent('click',function(){
+        del(this,1);
+    });
+//刷新并关闭窗口
+$('modifyForm').store('target',{
+    onRequest:function(){
+       $('modify').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('modify').set('disabled', '');
+       }else{
+           $('modify').set('disabled', 'true');
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           setTimeout('window.close()',400);
+       }
+    }
+});
+//关闭POP
+$('closeBut').addEvent('click', function(event){
+    window.close();
+});
+//选择品牌
+$('choice_brand').addEvent('click',function(){
+    var url = 'index.php?<{$env.server.QUERY_STRING|replace:"editsupplier":"choice_brand"}>&p[0]=';
+	new Dialog(url,{
+	    title:'品牌选择',
+	    width:550,
+	    height:300,
+	    modal:true,
+	    resizeable:false
+	});
+});
+//删除联系人
+function del(obj,type){
+    if (type==0) var parent = obj.getParent();
+    else  var parent = obj.getParent("tr");
+    if (confirm('真的要删除吗?')){
+        parent.destroy();
+        return true;
+    }else return false;
+}
+
+$('add_lianximan').addEvent('click', function(){
+     var html = '<td><input type="text" name="lianxi_name[]" size="15" /></td>';
+        html += '<td><input type="text" name="lianxi_telphone[]" size="15" /></td>';
+        html += '<td><input type="text" name="lianxi_email[]" size="15" /></td>';
+        html += '<td><input type="text" name="lianxi_qqwangwang[]" size="15" /></td>';
+        html += '<td><{img src="bundle/delecate.gif" app="desktop" class="pointer del"}></td>';
+
+    new Element('tr',{html:html}).inject('lianximan').getElement('.del').addEvent('click',function(){
+        del(this,1);
+    });
+});
+
+<{if $detail.area_defined}>
+//修改
+$("modify").addEvent('click',function(){
+	$("area").setStyle('display', '');
+	$("area_defined").setStyle('display','none');
+	this.setStyle('display', 'none');
+	$("cancel_modify").setStyle('display','');
+});
+//取消修改
+$("cancel_modify").addEvent('click',function(){
+    $("area").setStyle('display', 'none');
+    $("area_defined").setStyle('display','');
+    $("cancel_modify").setStyle('display','none');
+    $("modify").setStyle('display', '');
+});
+<{/if}>
+
+})();
+</script>

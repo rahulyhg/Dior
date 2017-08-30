@@ -1,0 +1,29 @@
+<p></p>
+<div id="div_one" >
+    <form action="index.php?app=iostock&ctl=admin_iostocksearch&act=stock" method="post" id="search_one">
+    <h4>
+        请输入要查询的货品编码：<input type="text" name="bn"  required='true' value="<{$data.bn}>"/>
+      仓库:<select name="branch_id">
+      <{foreach from=$branchList item=branch}>
+
+      <option value="<{$branch.branch_id}>" <{if $branch.branch_id==$data.branch_id}>selected<{/if}>><{$branch.name}></option>
+      <{/foreach}>
+      </select>
+        <{button label="查询" class="btn-primary" id="searchone" type="submit"}>
+        </h5>
+        </form>
+</div>
+<{if $stock}>
+<div class="gray_form" style="margin-top:24px;">
+<h2>货号:<{$data.bn}>当前库存概况</h2>
+<table class="gridlist" style="*width:60%;">
+<thead>
+<tr><th>入库总和</th><th>出库总和</th><th>出入库差</th><th>仓库冻结</th></tr>
+</thead>
+<tbody>
+<tr><td><{$stock.in_stock_count}></td><td><{$stock.out_stock_count}></td><td><{$stock.sub_stock}></td><td><{$stock.store_freeze_count}></td></tr>
+</tbody>
+</table>
+</div>
+<{/if}>
+

@@ -1,0 +1,274 @@
+<{capture name="sidebar"}>
+<div class="side-bx" id="template_form" style="border:none;">
+    <input type="hidden" name="template_id" id="template_id" value="<{$tmpl.template_id}>"/>
+    <input type="hidden" name="file_id" id="bg_file_id" value="<{$tmpl.file_id}>"/>
+    <input type="hidden" name="template_type" value="<{$tmpl.template_type}>"/>
+
+    <div class="side-bx-title">
+        <h3><{t}>备货单名称<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <input style="width:100px" id="template_name" name="template_name" size="15" maxlength="30" value="<{$tmpl.template_name}>" />
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>是否启用？<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select name="status" type="select" >
+            <option value="true" <{if $tmpl.status eq 'true'}>selected="selected"<{/if}>><{t}>是<{/t}></option>
+            <option value="false" <{if $tmpl.status eq 'false'}>selected="selected"<{/if}>><{t}>否<{/t}></option>
+        </select>
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>是否默认？<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select name="is_default" type="select" >
+            <option value="false" <{if $tmpl.is_default eq 'false'}>selected="selected"<{/if}>><{t}>否<{/t}></option>
+            <option value="true" <{if $tmpl.is_default eq 'true'}>selected="selected"<{/if}>><{t}>是<{/t}></option>
+        </select>
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>纸张尺寸<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <{t}>宽<{/t}>
+        <input id="template_width" name="template_width" size="2" maxlength="4" value="<{$tmpl.template_width}>" style="width:24px">
+        mm <{t}>高<{/t}>
+        <input id="template_height" name="template_height" size="2" maxlength="4" value="<{$tmpl.template_height}>" style="width:24px">
+        mm
+    </div>
+      <div class="side-bx-bd">
+        <select name="page_type">
+        <option value='1' <{if $tmpl.page_type=='1'}>selected<{/if}>>标准</option>
+        <option value='2' <{if $tmpl.page_type=='2'}>selected<{/if}>>卷筒</option>
+        <option value='3' <{if $tmpl.page_type=='3'}>selected<{/if}>>卷筒自适应</option>
+        </select>
+    </div>
+    <div class="side-bx-title">
+        <h3><{t}>单据背景图<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <{button app="desktop" label="添加" class="btn-upload" id="btn-upload" icon="image_new.gif"}>
+        <{button app="desktop" label="清除" id="btn-bgclear"}>
+    </div>
+
+    <div class="side-bx-title">
+        <h3><{t}>单据打印项<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select id="addelement_select" style="width:100px;">
+            <option value="-EMPTY-"><{t}>+添加打印项<{/t}></option>
+            
+            <{foreach from=$elements key=key item=item}>
+                <option value="<{$key}>"><{$item}></span>
+            <{/foreach}>
+        </select>
+    </div>
+
+    <{button app="desktop" label="线条" id="embed_line"}>
+    <{button app="desktop" label="标签" id="embed_label"}><br />
+    <{button app="desktop" label="矩形" id="embed_box"}>
+    <{button app="desktop" label="图片" id="embed_picture"}>
+
+    <br /><br />
+
+<textarea id="template_data" name="template_data" style="display:none">
+
+<{if $tmpl.template_data}>
+<{$tmpl.template_data}>
+<{else}>
+paper:<{$tmpl.template_width}>,<{$tmpl.template_height}>,NONE;
+<{/if}>
+</textarea>
+</div>
+<{/capture}>
+
+
+<{capture name="footbar"}>
+<div class="table-action">
+    <{button type="button" class="btn btn-primary" label="保存" id="btn-save"}>
+</div>
+<{/capture}>
+
+<div id="print_editor">
+    <{if $userAgent.type == 2}>
+        <embed id="embed1<{$uniqid}>" type="application/ShopexReport-plugin" style="border:3px #ccc solid;<{if $tmpl.template_width && $tmpl.template_height}>width:<{$tmpl.template_width*96/25.4+30}>px;height:<{$tmpl.template_height*96/25.4+30}>px;<{else}>width:910px;height:510px;<{/if}>">
+    <{else}>
+        <OBJECT id="embed1<{$uniqid}>" CLASSID="CLSID:54B240AC-6979-42BE-8D80-8672CFDC0E8A" style="border:3px #ccc solid;<{if $tmpl.template_width && $tmpl.template_height}>width:<{$tmpl.template_width*96/25.4+30}>px;height:<{$tmpl.template_height*96/25.4+30}>px;<{else}>width:910px;height:510px;<{/if}>"></OBJECT>
+    <{/if}>
+</div>
+
+<script>
+var embedId = 'embed1<{$uniqid}>';
+var embed1 = $(embedId);
+
+/* 添加单据打印项 */
+$('addelement_select').addEvent('change',function(){
+    var selected = this.getSelected()[0];
+    if(selected.value!='-EMPTY-'){
+        /* 增加'/0'字符主要是为了chrome兼容 */
+        embed1.fields(selected.value,selected.text);
+        this.selectedIndex = 0;
+    }
+});
+
+/* 上传单据背景图 */
+$('btn-upload').addEvent('click',function(){
+    var url = 'index.php?app=logisticsmanager&ctl=admin_express_template&act=uploadBg';
+    var tid = $('template_id').value;
+    if(tid){
+        url+='&p[0]='+tid;
+    }
+    new Dialog(url,{model:true,title:'<{t}>上传物流单据（发货单）扫描图<{/t}>',height:.7,width:.5});
+});
+
+/* 清除单据背景图 */
+$('btn-bgclear').addEvent('click',function(){
+    embed1.setbackground('NONE');
+    var file_id = $("bg_file_id").value;
+    if(file_id>0) {
+        $("bg_file_id").value = "0";
+        new Request ({
+            url:'index.php?app=logisticsmanager&ctl=admin_express_template&act=deleteBg&p[0]='+file_id,
+            method:'post',
+            data:'_f_type=public',
+        }).send();
+    }
+});
+
+$('embed_line').addEvent('click',function(){
+    embed1.line();
+});
+
+$('embed_label').addEvent('click',function(){
+    embed1.label();
+});
+
+/* 加载打印控件编辑器 */
+function loadReport() {
+    var s = document.getElementById("template_data").value;
+
+    var browerType = parseInt("<{$userAgent.type}>");
+    try {
+        /* 0 = 面单, 1 = 发货单*/
+        if (browerType == 2) {
+            var vAbout = embed1.LoadReport(s,'',2);
+        }
+        else {
+            setTimeout(function(){var vAbout = embed1.LoadReport(s,'',2);}, 20);
+        }
+    } catch(e) {
+        alert(e.number);
+    }
+    return false;
+}
+
+loadReport();
+
+/* 设置打印控件编辑器尺寸 */
+function setsize(){
+    var width = $('template_width').value.toInt();
+    var height = $('template_height').value.toInt();
+    if(width && height){
+        var widthPx = (width*96/25.4).toInt();
+        var heightPx = (height*96/25.4).toInt();
+
+        embed1.setStyles({
+            width: widthPx+30,
+            height: heightPx+30,
+        });
+        setTimeout(function(){embed1.setsize(width,height);},20);
+        /* embed1.setsize(width,height); */
+    }
+}
+
+$('template_width').addEvent('change',function(){
+    setsize();
+});
+
+$('template_height').addEvent('change',function(){
+    setsize();
+});
+
+/* 获得 模板数据字段  */
+function getTemplateFileds(type) {
+    var templateType = '';
+    switch(type) {
+       case 2:
+           templateType = 'stock';
+       break;
+       default :
+           templateType = 'stock';
+       break;
+    }
+    var _data = 'type=' + templateType;
+    var jsonString = '';
+    new Request ({
+        url : 'index.php?app=logisticsmanager&ctl=admin_express_template&act=getTemplateFields',
+        method : 'post',
+        data : _data,
+        async : false,
+        onRequest:function(e){},
+        onComplete:function(result){
+            //推送到控件
+            jsonString = result;
+            //embed1.gridmode(type ,result);
+        }
+    }).send();
+    return jsonString;
+}
+
+/* 矩形button*/
+$('embed_box').addEvent('click',function(){
+    embed1.box();
+});
+
+/* 图片button*/
+$('embed_picture').addEvent('click',function(){
+    embed1.picture();
+});
+
+/* 表单提交 */
+$('btn-save').addEvent('click', function(){
+    $('template_name').value = $('template_name').value.trim();
+    if(!$('template_name').value) {
+        alert('请填写单据名称');
+        return '';
+    }
+    var textval = embed1.savereport();
+
+    $("template_data").set('html',textval);
+    var _data =$('template_form').toQueryString()+'&finder_id=<{$env.get.finder_id}>';
+    new Request ({
+        url : 'index.php?app=logisticsmanager&ctl=admin_express_template&act=saveTmpl',
+        method : 'post',
+        data : _data,
+        onRequest:function(e) {
+            $('btn-save').set('disabled', 'true');
+            $('btn-save').getElements('span')[1].set('text','正在保存');
+        },
+        onComplete:function(result) {
+            if (result != 'SUCC') {
+                MessageBox.error(result);
+                //提交按钮:enabled
+                $('btn-save').set('disabled', '');
+                $('btn-save').getElements('span')[1].set('text','保存');
+            } else {
+                MessageBox.success("保存成功");
+                //提交按钮:enabled
+                $('btn-save').set('disabled', '');
+                $('btn-save').getElements('span')[1].set('text','保存');
+                var findId = "<{$env.get.finder_id}>";
+                if (findId != '') {
+                    opener.finderGroup[findId].refresh.delay(400,opener.finderGroup[findId]);
+                }
+                window.close();
+            }
+        }
+    }).send();
+});
+</script>

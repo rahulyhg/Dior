@@ -1,0 +1,42 @@
+<div class="tableform">
+    <h3>仓库理货</h3>
+    <div class="division">
+        <h5>请选择理货仓库</h5>
+        <form action="index.php?app=purchase&ctl=admin_stock&act=transferTidy" method="post">
+            <div class="gray_form">
+                <ul class="branch_list">
+                    <{foreach from=$branchs item=branch}>
+                    <li><label for="branch_id_<{$branch.branch_id}>">
+                        <input type="radio" name="branch_id" id="branch_id_<{$branch.branch_id}>" value="<{$branch.branch_id}>"><{$branch.name}>
+                    </label></li>
+                    <{/foreach}>
+                </ul>
+                <div align="right"><a href="javascript:void(0);" id="btn_more">点击展开更多&gt;&gt;</a></div>
+            </div>
+            <div class="division" align="center"><{button type="submit" class="btn-primary" label="确 定"}></div>
+        </form>
+    </div>
+</div>
+
+<script>
+  (function(){
+    function getList(k,v){
+      return '<label for="branch_id_'+k+'"><input type="radio" name="branch_id" id="branch_id_'+k+'" value="'+k+'"> '+v+'</label>';
+    }
+    $('btn_more').addEvent("click",function(){
+      new Request({url:'index.php?app=purchase&ctl=admin_inventory&act=branch_more',method:'get',
+        onRequest:function(){
+          this.addClass('loading');
+        }.bind(this),
+        onSuccess:function(json){//[{id:1,name:"上海仓库"}]
+          this.getParent().destroy();
+          var fdoc=document.createDocumentFragment();
+          json.each(function(item,i){
+            fdoc.appendChild(new Element('li',{html:getList(item.id,item.name))});
+          });
+          $E('.branch_list').appendChild(fdoc);
+        }.bind(this)
+      }).send();
+    });
+  })()
+</script>

@@ -1,0 +1,173 @@
+
+<div class="tableform">
+<h4>售后单详情</h4>
+<div class="division">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th><{t}>店铺名:<{/t}></th>
+    <td><{$aftersales.shop_id}></td>
+    <th><{t}>订单号:<{/t}></th>
+    <td><{$aftersales.order_id|default:'-'}></td>
+    <th><{t}>售后申请单号:<{/t}></th>
+    <td><{$aftersales.return_id|default:'-'}></td>
+    <th><{t}>退换货单号:<{/t}></th>
+    <td><{$aftersales.reship_id|default:'-'}></td>
+    <th><{t}>退款申请单号:<{/t}></th>
+    <td><{$aftersales.return_apply_id|default:'-'}></td>    
+  </tr>
+  <tr>
+    <th><{t}>补差订单号:<{/t}></th>
+    <td><{$aftersales.diff_order_bn|default:'-'}></td>   
+    <th><{t}>换货订单号:<{/t}></th>
+    <td><{$aftersales.change_order_bn|default:'-'}></td>
+    <th><{t}>售后类型:<{/t}></th>
+    <td><{$aftersales.return_type}></td>
+    <th><{t}>退款金额:<{/t}></th>
+    <td><{$aftersales.refundmoney|cur}></td>
+    <th><{t}>用户名:<{/t}></th>
+    <td><{$aftersales.member_id|default:'-'}></td>       
+  </tr>
+  <tr>
+    <th><{t}>手机号:<{/t}></th>
+    <td><{$aftersales.ship_mobile|default:'-'}></td>
+    <th><{t}>售后申请时间:<{/t}></th>
+    <td><{if $aftersales.add_time}><{$aftersales.add_time|cdate:SDATE_STIME}><{else}>-<{/if}></td>
+    <th><{t}>审核时间:<{/t}></th>
+    <td><{if $aftersales.check_time}><{$aftersales.check_time|cdate:SDATE_STIME}><{else}>-<{/if}></td>
+    <th><{t}>质检时间:<{/t}></th>
+    <td><{if $aftersales.acttime}><{$aftersales.acttime|cdate:SDATE_STIME}><{else}>-<{/if}></td>
+    <th><{t}>退款时间:<{/t}></th>
+    <td><{if $aftersales.refundtime}><{$aftersales.refundtime|cdate:SDATE_STIME}><{else}>-<{/if}></td>    
+  </tr>
+  
+    <tr>
+    <th><{t}>售后单据创建时间:<{/t}></th>
+    <td><{if $aftersales.aftersale_time}><{$aftersales.aftersale_time|cdate:SDATE_STIME}><{else}>-<{/if}></td>
+    <th><{t}>审核人:<{/t}></th>
+    <td><{$aftersales.check_op_id|default:'-'}></td>
+    <th><{t}>质检人:<{/t}></th>
+    <td><{$aftersales.op_id|default:'-'}></td>
+    <th><{t}>退款人:<{/t}></th>
+    <td><{$aftersales.refund_op_id|default:'-'}></td>
+  </tr>
+ 
+  <tr>
+    <td>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+ 
+<{if count($items) > 0}>
+  <{if count($items.return)>0}>
+  <div class="division">
+
+      <h4><{t}>退货明细:<{/t}></h4>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+        <thead>
+        <tr>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+          <th><{t}>退入商品单价<{/t}></th>
+          <th><{t}>退入数量<{/t}></th>
+          <th><{t}>申请退款金额<{/t}></th>
+          <th><{t}>已退款金额<{/t}></th>
+          <th><{t}>销售金额<{/t}></th>
+          <th><{t}>仓库<{/t}></th>
+        </tr>
+        </thead>
+  <{foreach from=$items.return item=aProduct}>
+    <tbody>
+        <tr>
+         <{assign var="total_price" value=$aProduct.price*$aProduct.num}>
+         <td><{$aProduct.bn}></td>
+         <td><{$aProduct.product_name}></td>
+         <td><{$aProduct.price}></td>
+         <td><{$aProduct.num}></td>
+         <td><{$aProduct.money|default:$total_price}></td>
+         <td><{$aProduct.refunded|default:$total_price}></td>
+         <td><{$aProduct.saleprice|default:'0'}></td>
+         <td><{$aProduct.branch_id}></td>
+        </tr>
+    </tbody>
+  <{/foreach}>
+      </table>
+  </div>
+  <{/if}>
+
+  <{if count($items.change)>0}>
+  <div class="division">
+
+      <h4><{t}>换货明细:<{/t}></h4>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+        <thead>
+        <tr>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+          <th><{t}>换出商品单价<{/t}></th>          
+          <th><{t}>换出数量<{/t}></th>
+          <th><{t}>换出总金额<{/t}></th>
+          <th><{t}>仓库<{/t}></th>
+        </tr>
+        </thead>
+  <{foreach from=$items.change item=aProduct}>
+    <tbody>
+        <tr>
+         <{assign var="total_price" value=$aProduct.price*$aProduct.num}>
+         <td><{$aProduct.bn}></td>
+         <td><{$aProduct.product_name}></td>
+         <td><{$aProduct.price}></td>
+         <td><{$aProduct.num}></td>
+         <td><{$aProduct.saleprice|default:$total_price}></td>
+         <td><{$aProduct.branch_id}></td>
+        </tr>
+    </tbody>
+  <{/foreach}>
+      </table>
+  </div>
+  <{/if}>
+ <{if count($items.refuse)>0}>
+  <div class="division">
+
+      <h4><{t}>退货明细:<{/t}></h4>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+        <thead>
+        <tr>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+          <th><{t}>退入商品单价<{/t}></th>
+          <th><{t}>退入数量<{/t}></th>
+          <th><{t}>申请退款金额<{/t}></th>
+          <th><{t}>已退款金额<{/t}></th>
+          <th><{t}>销售金额<{/t}></th>
+          <th><{t}>仓库<{/t}></th>
+        </tr>
+        </thead>
+  <{foreach from=$items.refuse item=aProduct}>
+    <tbody>
+        <tr>
+         <{assign var="total_price" value=$aProduct.price*$aProduct.num}>
+         <td><{$aProduct.bn}></td>
+         <td><{$aProduct.product_name}></td>
+         <td><{$aProduct.price}></td>
+         <td><{$aProduct.num}></td>
+         <td><{$aProduct.money|default:$total_price}></td>
+         <td><{$aProduct.refunded|default:$total_price}></td>
+         <td><{$aProduct.saleprice|default:'0'}></td>
+         <td><{$aProduct.branch_id}></td>
+        </tr>
+    </tbody>
+  <{/foreach}>
+      </table>
+  </div>
+  <{/if}>
+<{/if}>
+
+
+ </div>
+ 

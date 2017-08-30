@@ -1,0 +1,46 @@
+
+h3 .num{font-size:12px; color:#999; font-weight:400;}
+h3 .num strong{color:#666;}
+h3 .num .count{padding:0 4px; color:#c00; font-weight:700;}
+.txt-noborder{border:0 none;background:transparent;}
+
+.finder-detail .tableform table td{vertical-align:middle;}
+.btn-list-area .act{font-weight:bold;}
+.mr15{margin-right:15px;}
+#formula_new,
+.formula-new{padding-top:8px;}
+.filters{padding:5px 0;}
+.filters button{padding:0 5px;}
+.filters .fl{margin-right:5px;}
+#formula_new textarea,
+.formula-new textarea{margin-top:8px;width:100%;min-width:300px;}
+.formula-list{background:#fff;border:1px solid #ccc;}
+.formula-list td{padding:2px 1px;border:1px solid #ccc;}
+.cal-btn{border:1px solid #ccc; background:#fff;padding:4px 8px;line-height:16px;}
+.action-group{position:relative;margin:0 5px 0 0;}
+.action-group ul{position:absolute;z-index:2;top:19px;left:0;display:none;background:#fff;border:1px solid #ddd;}
+.action-group li{float:left;width:20px;height:20px;padding:0;line-height:20px;cursor:pointer;border:1px solid #ccc; background:#eee; text-align:center;margin:2px;}
+.action-group .var li{float:none;width:68px;height:24px;line-height:24px;border-width:0 0 1px 0;margin:0;background:#fff;}
+.action-group .oper{width:52px;}
+.action-group .pare{width:52px;}
+.action-group .num{width:78px;}
+.action-group .zero{width:46px;}
+.action-group .disabled{color:#ccc;cursor:default;}
+.division .division p{margin:1em 0 0 0;}
+.layout-list td{padding:5px;}
+.show{display:block;}
+
+.save-formula {_width:240px;position: absolute;z-index:65536;top:-84px;}
+.save-formula .content{ padding:18px 18px 5px 8px; border:1px solid #999; background: #FFF;}
+.save-formula .content button{margin-top:6px;}
+.save-formula .arr,
+.save-formula .arr2 { position:absolute; height: 12px; width: 12px; font-family: Simsun; font-size: 12px; line-height: 12px; overflow:hidden;}
+.save-formula .arr { bottom:-11px; left:9px; color:#999;}
+.save-formula .arr2 { bottom:-9px; left:9px; color:#fff;}
+.save-formula .close{width:12px;height:12px;position:absolute;float:right;right:4px;top:2px;font:14px simsun;cursor:pointer;}
+
+.console_handle { text-align:right; padding:20px 4px 4px 0;height:18px;}
+.loadpart{width:98%;border:1px solid #BECAE6;height:17px; background:url(loadpart.gif) repeat-x left center; position:relative;margin:20px 0 20px 10px; padding:0 1px 0 1px;}
+.loader{height:100%; float:left; width:0px; text-align:center; background:url(loader.gif) repeat-x left center;}
+.btnbox{height:24px;line-height:24px; padding:0 0 60px 0;}
+.appNum{color:#669900;line-height:28px; font-size:28px; position:absolute; left:50%; top:-50px; font-family:Georgia, "Times New Roman", Times, serif; font-weight:normal;}

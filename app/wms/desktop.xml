@@ -1,0 +1,133 @@
+<desktop>
+    <permissions>
+        <permission id="wms_process_receipts_print" show='ome_roles:show_branch' save='ome_roles:save_role'>单据打印</permission>
+        <permission id="wms_process_receipts_print_export">自有仓发货单导出</permission>
+        <permission id="wms_reback_delivery">撤销发货单</permission>
+        <!-- <permission id="wms_setting_dly_print">快递单模板管理</permission> -->
+        <permission id="wms_setting_print_termini">大头笔设置</permission>
+        <permission id="wms_process_product_check" show='ome_roles:show_branch' save='ome_roles:save_role'>逐个校验</permission>
+        <permission id="wms_process_product_batch_check" show='ome_roles:show_branch' save='ome_roles:save_role'>整单校验</permission>
+        <permission id="wms_process_product_group_check" show='ome_roles:show_branch' save='ome_roles:save_role'>分组校验</permission>
+        <permission id="wms_process_product_fast_check" show='ome_roles:show_branch' save='ome_roles:save_role'>批量校验</permission>
+        
+        <permission id="wms_process_consign" show='ome_roles:show_branch' save='ome_roles:save_role'>逐单发货</permission>
+        <permission id="wms_process_batch_consign" show='ome_roles:show_branch' save='ome_roles:save_role'>批量发货</permission>
+        <permission id="wms_process_group_consign" show='ome_roles:show_branch' save='ome_roles:save_role'>分组发货</permission>
+		<permission id="wms_process_fast_consign" show='ome_roles:show_branch' save='ome_roles:save_role'>状态回写</permission>
+        <permission id="wms_process_fill_delivery" show='ome_roles:show_branch' save='ome_roles:save_role'>补打物流单</permission>
+
+        <permission id="wms_process_product_refunded" show='ome_roles:show_branch' save='ome_roles:save_role'>原样寄回</permission>
+        
+        <permission id="wms_setting_print">发货配置</permission>
+        
+        <permission id="wms_purchase_purchase_io">采购入库</permission>
+		<permission id="wms_purchase_returned_io">采购退货</permission>
+		<permission id="wms_iostockorder_allocate_instock">调拨入库</permission>
+		<permission id="wms_iostockorder_allocate_outstock">调拨出库</permission>
+		<permission id="wms_iostockorder_other_instock">其他入库</permission>
+		<permission id="wms_iostockorder_other_outstock">其他出库</permission>
+        <permission id="wms_storage_inventory_list" show='ome_roles:show_branch' save='ome_roles:save_role'>盘点</permission>
+        <permission id="wms_storage_inventory_confirm" show='ome_roles:show_branch' save='ome_roles:save_role'>盘点表确认</permission>
+        <permission id="wms_storage_inventory_queue" >导入中盘点</permission>
+        <permission id="wms_codestate" >编码状态信息</permission>
+		<permission id="wms_wms_index">第三方仓储管理</permission>
+       <permission id="wms_storage_stock">库存总览</permission>
+       <permission id="wms_branch_storage_stock">库存表</permission>
+	 <permission id="wms_iostockorder_search_outstockorder">出库单查询</permission>
+	 <permission id="wms_iostockorder_search_instockorder">入库单查询</permission>
+		<permission id="wms_storage_stock_search" show='ome_roles:show_branch' save='ome_roles:save_role'>库存查询</permission>
+		<permission id="wms_setting_branch_pos">货位管理</permission>
+		<permission id="wms_storage_branch_product_pos" show='ome_roles:show_branch' save='ome_roles:save_role'>货位资源查看</permission>
+		<permission id="wms_branch_pos_added">货品上架</permission>
+		<permission id="wms_aftersale_rchange_process_list">售后收货列表</permission>
+        <permission id="wms_delivery_refuse_process">发货拒收</permission>
+        <permission id="wms_delivery_refuse_list">发货拒收退货单列表</permission> 
+    </permissions>
+    <workground name="发货" id="wms_delivery"  order="200">
+        <menugroup name="单据打印">
+            <menu controller='admin_receipts_print' action='notice' permission='wms_process_receipts_print' display='true'>默认</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:0|sku:' permission='wms_process_receipts_print' display='true' order='1000100'>待打印</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:0|sku:single' permission='wms_process_receipts_print' display='true' order='1000140'>单品打印</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:0|sku:multi' permission='wms_process_receipts_print' display='true' order='1000150'>多品打印</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:1' permission='wms_process_receipts_print' display='true' order='1000200'>已打印</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:2' permission='wms_process_receipts_print' display='true' order='1000300'>未录入物流单号</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:3' permission='wms_process_receipts_print' display='true' order='1000400'>已校验</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:4' permission='wms_process_receipts_print' display='true' order='1000500'>未发货</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:5' permission='wms_process_receipts_print' display='true' order='1000600'>已发货</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:6' permission='wms_process_receipts_print' display='true' order='1000700'>暂停列表</menu>
+            <menu controller='admin_receipts_outer' action='index' permission='wms_process_receipts_print' display='true' order='1000750'>第三方发货</menu>
+            <menu controller='admin_receipts_print' action='index' params='status:' permission='wms_process_receipts_print' display='true' order='1000800'>全部</menu>
+            <menu controller='admin_receipts_print' action='export' permission='wms_process_receipts_print_export' display='false' order='5000300'>发货单导出</menu>
+        </menugroup>
+        <menugroup name="撤销发货单">
+            <menu controller='admin_delivery' action='reback' params='status:1' permission='wms_reback_delivery' display='true' order='4000100'>撤销发货单</menu>
+        </menugroup>
+        <menugroup name="校验">
+            <menu controller='admin_check' action='index' params='type:barcode' permission='wms_process_product_check' display='true' order='2000100'>逐个校验</menu>
+            <menu controller='admin_check' action='index' params='type:all' permission='wms_process_product_batch_check' display='true' order='2000200'>整单校验</menu>
+            <menu controller='admin_check' action='group_check' permission='wms_process_product_group_check' display='true' order='2000300'>分组校验</menu>
+            <menu controller='admin_check' action='batchIndex' permission='wms_process_product_fast_check' display='true' order='2000400'>批量校验</menu>
+        </menugroup>
+        <menugroup name="发货">
+            <menu controller='admin_consign' action='index' permission='wms_process_consign' display='true' order='3000100'>逐单发货</menu>
+            <menu controller='admin_consign' action='batch' permission='wms_process_batch_consign' display='true' order='3000200'>批量发货</menu>
+            <menu controller='admin_consign' action='group_consign' permission='wms_process_group_consign' display='true' order='3000300'>分组发货</menu>
+            <menu controller='admin_consign' action='fast_consign' permission='wms_process_fast_consign' display='true' order='3000400'>状态回写</menu>
+            <menu controller='admin_consign' action='fill_delivery' permission='wms_process_fill_delivery' display='true' order='3000500'>补打物流单</menu>
+        </menugroup>
+        <menugroup name="原样寄回">
+            <menu controller='admin_refunded' action='index' params='status:1' permission='wms_process_product_refunded' display='true' order='5000100'>未发货</menu>
+            <menu controller='admin_refunded' action='index' params='status:2' permission='wms_process_product_refunded' display='true' order='5000200'>已发货</menu>
+        </menugroup>
+    </workground>
+    
+    <workground name="售后" id="aftersale_center"  order="300">
+    <menugroup name="退换货服务">    
+            <menu controller='admin_return_rchange' action='index' params='flt:process_list' permission='wms_aftersale_rchange_process_list' display='true' order='4000100'>质检单据</menu>
+        </menugroup>
+    </workground>
+    <workground name="自建仓储" id="wms_center"  order="700">
+        <menugroup name="入库管理">
+            <menu controller='admin_purchase' action='eoList' params='p[0]:i' permission='wms_purchase_purchase_io' display='true'>采购入库</menu>
+			<menu controller='admin_iostockorder' action='allocate_iostock' params='io:1' permission='wms_iostockorder_allocate_instock' display='true' order="6000200">调拨入库</menu>
+			<menu controller='admin_iostockorder' action='other_iostock' params='io:1' permission='wms_iostockorder_other_instock' display='true' order="6000300">其他入库</menu>
+			<menu controller='admin_iostockorder' action='search_iostockorder' params='io:1' permission='wms_iostockorder_search_instockorder' display='true' order="6000400">入库单查询</menu>
+        </menugroup>
+		<menugroup name="出库管理">
+            <menu controller='admin_returned_purchase' action='oList' permission='wms_purchase_returned_io' display='true' order="7000100">采购退货</menu>
+			<menu controller='admin_iostockorder' action='allocate_iostock' params='io:0' permission='wms_iostockorder_allocate_outstock' display='true' order="7000200">调拨出库</menu>
+			<menu controller='admin_iostockorder' action='other_iostock' params='io:0' permission='wms_iostockorder_other_outstock' display='true' order="7000300">其他出库</menu>
+			<menu controller='admin_iostockorder' action='search_iostockorder' params='io:0' permission='wms_iostockorder_search_outstockorder' display='true' order="7000400">出库单查询</menu>
+        </menugroup>
+        <menugroup name="盘点管理">
+            <menu controller='admin_inventory' action="add_invertory"  permission='wms_storage_inventory_list' display='false' order='9000100'>新建</menu>
+            <menu controller='admin_inventory' action="index"  params='flt:list' permission='wms_storage_inventory_list' display='true' order='9000200'>盘点</menu>
+            <menu controller='admin_inventory' action="index"  params='flt:confirm' permission='wms_storage_inventory_confirm' display='true' order='9000300'>盘点表确认</menu>
+            <menu controller='admin_queue' action="index"  display='true' permission='wms_storage_inventory_queue' order='9000400'>导入中盘点</menu>
+        </menugroup>
+		<menugroup name="库存管理">
+          <menu controller='admin_stock' action='index' permission='wms_storage_stock' display='true' order='8000100'>库存总览</menu>
+          <menu controller='admin_branch_product' action='index' permission='wms_branch_storage_stock' display='true' order='8000200'>库存表</menu>
+		  <menu controller='admin_stock' action='search' permission='wms_storage_stock_search' display='true' order='8000300'>库存查询</menu>
+		</menugroup>
+		<menugroup name="日常管理">
+            <menu controller='admin_branch' action='addPos' permission='wms_branch_pos_added' display='true' order="10000100">货品上架</menu>
+			<menu controller='admin_branchpos' action='index' permission='wms_setting_branch_pos' display='true' order='10000200'>货位管理</menu>
+            <menu controller='admin_branchproductpos' action='index' permission='wms_storage_branch_product_pos' display='true' order="10000300">货位整理</menu>
+        </menugroup>
+        <menugroup name="拒收服务">
+            <menu controller='admin_delivery_refuse' action='check' permission='wms_delivery_refuse_process' display='true' order="10000400">发货拒收</menu>
+            <menu controller='admin_delivery_refuse' action='index' permission='wms_delivery_refuse_list' display='true' order='10000500'>拒收单</menu>
+        </menugroup>
+    </workground>
+    <workground name="系统" id="setting_tools"  order="800">
+        <menugroup name="物流管理">
+            <!-- <menu controller='admin_delivery_print' action='index' permission='wms_setting_dly_print' display='true' order='3000400'>快递单模板管理</menu> -->
+            <menu controller='admin_print_termini' action='index' permission='wms_setting_print_termini' display='true' order='3000300'>大头笔设置</menu>
+        </menugroup>
+        <menugroup name="基本设置">
+            <menu controller='admin_delivery_cfg' action='index' permission='wms_setting_print' display='true' order='1000101'>发货配置</menu>
+        </menugroup>
+    </workground>
+
+</desktop>

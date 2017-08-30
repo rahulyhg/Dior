@@ -1,0 +1,25 @@
+<{if $shop}>
+<style>
+    #type_shop_list li {font-size: 14px; margin-top: 10px; position: relative; width: 120px; overflow: hidden;height: 18px; float: left;}
+    .current-set {color: red; font-weight: 700;}
+</style>
+<ul id="type_shop_list">
+<{foreach from=$shop item=item key=key}>
+<li><label for="shop_type_item_<{$key}>"><input id="shop_type_item_<{$key}>" type="checkbox" name="shop[]" value="<{$item.shop_id}>" <{if $item.shop_id|in_array:$init.content.shop}>checked<{/if}> />  <{$item.shop_name}></label></li>
+<{/foreach}>
+</ul>
+<{else}>
+<div style="margin-top: 20px; font-size: 14px; color: red; font-weight: 700;">在当前本台下你没有任何店铺，请选择其它平台再试！</div>
+<{/if}>
+
+<script>
+    $$('#type_shop_list input[type=checkbox]').addEvent('click',function(e){
+        this.blur();
+        this.getParent()[this.checked?'addClass':'removeClass']('current-set');
+    });
+    
+    $$('#type_shop_list input[type=checkbox]').each(function(item){  
+        item.blur();
+        item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+    });
+</script>

@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title><{t}>打印页面<{/t}></title>
+</head>
+
+<style type="text/css" media="print">
+.noprint{ display : none }
+</style>
+
+<!--<style type="text/css" media="screen,print">
+.x-barcode{padding:0;margin:0}
+body { margin:0; font-family:Arial, Helvetica, sans-serif; font-size:12px;}
+.td_frame { padding:5px 0 5px 0; border-bottom:2px solid #000000; }
+img { padding:2px; border:0;}
+p { margin:8px 0 8px 0;}
+h1 { font-size:16px; font-weight:bold; margin:0;}
+h2 { font-size:14px; font-weight:bold; margin:0;}
+.table_data_title { font-size:14px; font-weight:bold; height:25px; }
+.table_data_content { height:20px; line-height:20px;}
+#print_confirm { width:100%;  height:30px;  border-top:1px solid #999999; padding-top:4px;   background-color:#5473ae; position:absolute; }
+#btn_print { width:71px; height:24px; background-image:url(images/btn_print.gif); cursor:pointer; margin-left:auto; margin-right:auto;}
+#barcode { width:150px; height:50px; background:url(images/bar_code.gif) no-repeat;}
+</style>
+-->
+<style>
+*{ font-size:12px;}
+.float_left{ float:left; text-align:center; width:80%; font-weight:bold;}
+.float_right{ float:right; text-align:center; width:20%;}
+.d_th{ background:#ededed; color:#4e5318;  }
+.d_td{ font-weight:bold; width:120px;}
+.d_table{ margin:20px 10px; color:#4e5318;}
+.d_table table{ border-collapse:collapse;}
+.d_table td{ border:1px solid #ccc; border-collapse:collapse; height:26px; line-height:26px; text-align:center;}
+.d_table th{ border:1px solid #ccc; border-collapse:collapse; height:26px; line-height:26px; text-align:center; color:#4e5318; }
+#print_confirm { width:100%;  height:30px;  border-top:1px solid #999999; padding-top:4px;   background-color:#5473ae; position:absolute; }
+#btn_print { width:71px; height:24px; background-image:url(images/btn_print.gif); cursor:pointer; margin-left:auto; margin-right:auto;}
+#barcode { width:150px; height:50px; background:url(images/bar_code.gif) no-repeat;}
+
+</style>
+<script type="text/javascript">
+
+<!--
+/*
+Element.implement({
+ zoomImg:function(maxwidth,maxheight,v){
+       if(this.getTag()!='img')return;
+       var thisSize={'width':this.width,'height':this.height};
+           if (thisSize.width>maxwidth){
+              var overSize=thisSize.width-maxwidth;
+              var zoomSizeW=thisSize.width-overSize;
+              var zommC=(zoomSizeW/thisSize.width).toFloat();
+              var zoomSizeH=(thisSize.height*zommC).toInt();
+              $extend(thisSize,{'width':zoomSizeW,'height':zoomSizeH});
+           }
+           if (thisSize.height>maxheight){
+              var overSize=thisSize.height-maxheight;
+              var zoomSizeH=thisSize.height-overSize;
+              var zommC=(zoomSizeH/thisSize.height).toFloat();
+              var zoomSizeW=(thisSize.width*zommC).toInt();
+              $extend(thisSize,{'width':zoomSizeW,'height':zoomSizeH});
+           }
+       if(!v)return this.set(thisSize);
+       return thisSize;
+     }
+  });*/
+
+window.addEvents({
+    "domready":function() {
+        $("print_confirm").setStyle("top",window.getHeight() - 35);
+        $("btn_print").addEvent("click",function()
+        {  window.print();
+        }
+        );
+    },
+	"scroll":function() {
+		$("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);},
+	"resize":function() {
+		$("print_confirm").setStyle("top",window.getSize().y+window.getScrollTop() - 35);
+	}
+});
+window.addEvent('load',function(){
+     $$("img.product").each(function(img){
+         var _imgsrc=img.src;
+         new Asset.image(_imgsrc,{
+          onload:function(){
+                img.set(this.zoomImg(60,60,1)).set('align','absmiddle');
+         }});
+     });
+});
+
+
+--></script>
+<body>
+<div id="print1">
+</div>
+<div id="print_confirm" class="noprint">
+<div id="btn_print"><input type="button" id="b1" value="打 印" />
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tbody>
+    <tr>
+      <td >
+        <div class="tableform">
+          <table cellspacing="0" cellpadding="0" border="0" class="orderdetails_basic">
+            <tbody>
+              <tr>
+                <td valign="top" >
+                  <div class="division">
+                    <table cellspacing="0" cellpadding="0"  border="0">
+                      <tbody>
+                        <tr>
+                          <th >企业代码：</th>
+                          <td><span class="red"><{$item.company_code}></span></td>
+                        </tr>
+                        <tr>
+                          <th >企业名称：</th>
+                          <td><{$item.company_name}></td>
+                        </tr>
+                        <tr>
+                          <th >业务类型：</th>
+                          <td><b><{$item.custom_type}></b></td>
+                        </tr>
+                        <tr>
+                          <th >添加日期：</th>
+                          <td><{$item.dateline|cdate}></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                  </td>
+                <td valign="top" >
+                  <div class="division">
+                    <table cellspacing="0" cellpadding="0"  border="0">
+                      <tbody>
+                        <tr>
+                          <th width="80" nowrap="nowrap" >账　号：</th>
+                          <td><span class="red"><{$item.username}></span></td>
+                        </tr>
+                        <tr>
+                          <th >绑定状态：</th>
+                          <td><{if $item.bind_status}><b>已绑定</b><{else}><span class="red">未绑定</span><{/if}></td>
+                        </tr>
+                        <tr>
+                          <th >最后更新：</th>
+                          <td><{$item.lastdate|cdate}></td>
+                        </tr>
+                        <tr>
+                          <th >&nbsp;</th>
+                          <td>&nbsp;</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+                </td>      
+          </tr>
+      </tbody></table>
+      </div>
+</td>
+</tr>
+</tbody>
+</table>
+<style type="text/css">
+.finder-detail .tableform table td { vertical-align:top; }
+.finder-detail .tableform th { width:70px; }
+</style>

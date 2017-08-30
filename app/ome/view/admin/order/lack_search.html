@@ -1,0 +1,63 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+<div class="tableform newOrder"  style="margin-top:24px;">
+<form id='lacksearch' method="post" action="index.php?app=ome&ctl=admin_order_lack&act=index">
+<h3>缺货商品统计</h3>
+<div class="division gray_form">
+    
+    <table border="0" style="width:auto;">
+      <tr>
+        <td align="right" style="width:100px;"> 店铺:</td>
+        <td>
+        <select name="shop_id">
+        <option value=''>全部</option>
+        <{foreach from=$shop_list item=shop}>
+        <option value="<{$shop.shop_id}>"><{$shop.name}></option>
+        <{/foreach}>
+        </select>
+        </td>
+      </tr>
+      <tr>
+        <td align="right" style="width:100px;"> 仓库:</td>
+        <td>
+        <select name="branch_id">
+        <option value=''>全部</option>
+        <{foreach from=$branch_list item=branch}>
+        <option value="<{$branch.branch_id}>"><{$branch.name}></option>
+        <{/foreach}>
+        </select>
+       </td>
+      </tr> 
+      <tr>
+        <td align="right" style="width:105px;">是否统计未支付订单:</td>
+        <td><input type="radio" name="ifpay" value="1" >是 <input type="radio" name="ifpay" value="" checked="checked">否</td>
+      </tr>
+        <tr>
+        <td align="right" style="width:150px;">是否统计失败订单:</td>
+        <td><input type="radio" name="failorder" value="1" >是<input type="radio" name="failorder" value="" checked="checked">否</td>
+      </tr>
+       <tr>
+        <td align="right" style="width:150px;">是否统计异常订单:</td>
+        <td><input type="radio" name="abnormalorder" value="1" >是 <input type="radio" name="abnormalorder" value="" checked="checked">否</td>
+      </tr>
+
+    </table>
+</div>
+<div class="notice"><p style="font-size:15px;"><span style="font-weight:bold;">说明</span><br>由于缺货商品涉及到很多单据的处理与计算，统计结果的展示可能会稍慢，请耐心等待</span></div>
+<div class="table-action">
+    <{button type="submit" label="立即统计" id='btn-primary' class="btn-primary"}>
+  
+    </div>
+</form>
+</div>
+<script>
+$('lacksearch').store('target',{
+        onRequest:function(e){
+            //提交按钮:disabled
+            $('btn-primary').set('disabled', 'true');
+	        $('btn-primary').getElements('span')[1].set('text','正在努力搜索中');
+        },
+        });
+</script>
+

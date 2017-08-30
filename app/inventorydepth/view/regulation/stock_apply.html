@@ -1,0 +1,182 @@
+<div class='division'>
+<h3><{$title}></h3>
+<form method='post' action='index.php?app=inventorydepth&ctl=regulation_apply&act=save' id='regulation-apply-form'>
+    <input type='hidden' name='init_bn' value="<{$data.bn|default:$init_bn}>">
+    <input type='hidden' name='id' value="<{$data.id|default:''}>">
+    <div class='tableform'>
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr>
+                    <th><span class="red">*</span> 应用编号:</th>
+                    <td><input type='text' name='bn' value="<{$data.bn|default:''}>" vtype='required' class='x-input' <{if $data.bn}>readonly='readonly'<{/if}> ></td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 应用名称:</th>
+                    <td><{input type='text' name='heading' value=$data.heading vtype='required'}></td>
+                </tr>
+                <tr id='condition-tr'>
+                    <th><span class="red">*</span> 规则类型:</th>
+                    <td>
+                        更新销售库存
+                        <input type='hidden' name='condition' value="<{$data.condition}>">
+                    </td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 触发类型:</th>
+                    <td><{input type="select" required=true name="style" options=$options.style value=$data.style}></td>
+                </tr>
+                <tr id='apply-range'>
+                    <th><span class="red">*</span> 应用范围:</th>
+                    <td>
+                    <input type='checkbox' name='shop_id[]' value='_ALL_' <{if $data.shop_id.0 == '_ALL_'}>checked<{/if}> onclick='allShop(this);'>所有店铺
+
+                    <ul id='shops' <{if $data.shop_id.0 == '_ALL_'}>style="display:none;"<{/if}>>
+                        <{foreach from=$data.shops item=shop}>
+                            <li class='span-auto' style='min-width: 118px;margin-bottom:5px;'><input type='checkbox' name='shop_id[]' value='<{$shop.shop_id}>' <{if in_array($shop.shop_id,$data.shop_id)}>checked<{/if}> onchange="javascript:if(this.checked){this.getNext('span').setStyle('color','red');}else{this.getNext('span').setStyle('color','');}"><span <{if in_array($shop.shop_id,$data.shop_id)}>style='font-size:14px;font-weight:bold;color:red;' <{else}>style='font-size:14px;font-weight:bold;'  <{/if}> ><{$shop.name}></span></li>
+                        <{/foreach}>
+                    </ul>
+                    <{*
+                    <{input type='object' object='shop@ome' multiple=true breakpoint='0'  name='shop_id' value=$data.shop_id}>
+                    *}>
+                    </td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 应用对象:</th>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tbody>
+                                <tr class='choose' id='choose_stock' >
+                                    <td>
+                                        <div style='margin-bottom:5px;'><input type='checkbox' name='apply-goods-all' value='true' onclick="isAll(this);" <{if $data.apply_goods == '_ALL_'}>checked<{/if}> >全部货品</div>
+                                        <div <{if $data.apply_goods == '_ALL_' }>style="visibility:hidden;"<{/if}>>
+                                        <{input type='inventorydepth_object' object='products@ome' multiple=true breakpoint='0'  name='product_id' textcol='name' value=$data.pgid callback='product_object_callback' replacehtml=$replacehtml emptytext='从商品库里选商品' style='float:left;width:200px;' filter='product_group=true' findercount='countAnother' findergetlist='getListAnother'}>
+                                        <{input type='inventorydepth_object' object='pkg_goods@omepkg' multiple=true breakpoint='0'  name='pkg_id' textcol='name' value=$data.pkg_id callback='pkg_object_callback' replacehtml=$replacehtml_pkg emptytext='添加捆绑商品' }>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 应用规则:</th>
+                    <td><{input type='object' object='regulation' multiple=false breakpoint='0' name='regulation_id' value=$data.regulation_id filter="type=2&using=true&condition={$data.condition}" }></td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 开始时间:</th>
+                    <td><{input type='time' name='start_time' value=$data.start_time vtype='required'}></td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 结束时间:</th>
+                    <td><{input type='time' name='end_time' value=$data.end_time vtype='required'}></td>
+                </tr>
+                <tr>
+                    <th>规则应用等级</th>
+                    <td><{input type='text' vtype='unsignedint' name='priority' value=$data.priority|default:99 size=8}>
+                        <{help}>数值越大越先执行<{/help}>
+                    </td>
+                </tr>
+                <tr>
+                    <th><span class="red">*</span> 应用启用状态 :</th>
+                    <td><{if $data.using=='true'}>启用<{else}>停用<{/if}></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</form>
+</div>
+
+<{capture name='footbar'}>
+    <div class='table-action'>
+        <{button type='button' label='确认' id='regulation-apply-submit'}>
+        <{button type='button' label='取消' onclick='javascript:window.close();'}>
+    </div>
+<{/capture}>
+<script>
+function product_object_callback(rs,handle){
+    var length = handle.getElements('.row').length;
+    var html = '已选择了'+length+'个货品,'+"<a href='javascript:void(0);' onclick='product_selected_show();'>查看选中货品.</a>";
+    if ($defined($('hand-selected-product')))
+    {
+        $('hand-selected-product').setHTML(html);
+    } else {
+        var div = new Element('div',{'html':html,'id':'hand-selected-product'});
+        div.injectBefore(handle); 
+    }
+}
+
+function product_selected_show(){
+    new Dialog('index.php?app=inventorydepth&ctl=regulation_apply&act=showProducts',{
+        ajaxoptions:{data:$('hand-selected-product').getNext('div'),method:'post'}
+    });
+}
+
+function pkg_object_callback(rs,handle){
+    var length = handle.getElements('.row').length;
+    var html = '已选择了'+length+'个捆绑商品,'+"<a href='javascript:void(0);' onclick='pkg_selected_show();'>查看选中捆绑商品.</a>";
+    if ($defined($('hand-selected-pkg')))
+    {
+        $('hand-selected-pkg').setHTML(html);
+    } else {
+        var div = new Element('div',{'html':html,'id':'hand-selected-pkg'});
+        div.injectBefore(handle); 
+    }
+}
+
+function pkg_selected_show(){
+    new Dialog('index.php?app=inventorydepth&ctl=regulation_apply&act=showPkg',{
+        ajaxoptions:{data:$('hand-selected-pkg').getNext('div'),method:'post'}
+    });
+}
+
+function allShop(el){
+    if (el.checked)
+    {
+        $('shops').hide();
+        $('shops').getElements('input').set('disabled',true);
+    }else{
+        $('shops').show();
+        $('shops').getElements('input').set('disabled',false);
+    }
+}
+
+function isAll(el){
+    if (el.checked) {
+        el.getParent('div').getNext('div').setStyle('visibility','hidden');
+    }else{
+        el.getParent('div').getNext('div').setStyle('visibility','visible');
+    }
+}
+void function(){
+
+    $('regulation-apply-submit').addEvent('click',function(){
+        var form = $('regulation-apply-form');
+
+        W.page(form.action,{
+            data:form,
+            onComplete:function(resp){
+                resp = JSON.decode(resp);
+                if (resp.error)
+                {
+                    MessageBox.error(resp.error);
+                    return ;
+                }
+
+                opener.finderGroup["<{$env.get._finder.finder_id}>"].refresh.delay(400,opener.finderGroup["<{$env.get._finder.finder_id}>"]);
+                setTimeout("window.close()",200);
+            }
+        });
+    });
+
+    $ES('#regulation-apply-form #apply-range input[name="rangetype"]').addEvent('click',function(){
+            if (this.value=='all')
+            {
+                $E('#regulation-apply-form #apply-range #shops').hide();
+            }else{
+                $E('#regulation-apply-form #apply-range #shops').show();
+            }
+    });
+    
+}();
+</script>

@@ -1,0 +1,127 @@
+<{capture name="header"}>
+
+<style media="print">
+div{font-size:14pt; }
+</style>
+<style media="screen">
+div{font-size:12px ;}
+</style>
+<style>
+.order-box{ height:auto; padding:10px 10px 0 10px; margin:5px 20px 0 20px;  }
+.order-box li{ padding:3px 0}
+.order-tr{ font-weight:bold;}
+.table-border{ margin:10px 0; border-top:2px solid #333;border-bottom:2px solid #333}
+.order-box td{ padding:3px 5px}
+.order-font{  font-weight:bold; padding:0 5px; clear:both; height:25px; line-height:25px; margin:5px 0 25px 0}
+.order-boder1{ border-bottom:1px solid #666}
+</style>
+<{/capture}>
+
+<{ if $errIds }>
+<div class="errormsg notice" id="errormsg">
+    <div id="msg" class="msg">注意：本次打印数据中的一些单据有问题，这些数据将被忽略(详细内容见下面列表)！！！</div>
+    <br>
+    <{ foreach from=$errIds item=id }>
+    <{$errBns[$id]}>：<{$errInfo[$id]}><br>
+    <{ /foreach }>
+</div>
+<{ /if }>
+
+<{if $err=='false'}>
+<div class="order-box">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #666">
+  <tr ><td colspan="12"  class="order-boder1"><div class="order-tr" style="padding:0 1px; float:left; font-weight:bold">备货单明细</div><div style="padding:0 5px; float:right; ">打印日期： <{$time}></div></td></tr>
+    <tr>
+    <td width="13%" style="font-weight:bold;">货号：</td>
+    <td width="13%" style="font-weight:bold;">货位：</td>
+    <td width="20%" style="font-weight:bold;">商品名称：</td>
+    <td width="10%" style="font-weight:bold;">商品规格：</td>
+    <td width="13%" style="font-weight:bold;">商品数量：</td>
+    <td width="8%" style="font-weight:bold;">合计金额：</td>
+    <td width="8%" style="font-weight:bold;">盒子号：</td>
+    <td width="15%" style="font-weight:bold;">订单附言：</td>
+    </tr>
+<{foreach from=$rows item=item name=ff}>
+  <tr>
+    <td ><{$item.bn}></td>
+    <td ><{$item.store_position}></td>
+    <td><{$item.name}></td>
+    <td><{$item.spec_info|default:'--'}></td>
+    <td ><{$item.num}></td>
+    <td><{$item.box_price}></td>
+    <td><{$item.box}></td>
+    <{if $smarty.foreach.ff.first}><td style="font-weight:bold;" rowspan="<{$smarty.foreach.ff.total}>">
+    	<{foreach from=$memo item=items}>
+        <div id="memo_show">
+	    <{$items.op_content|escape:"HTML"}><br/>
+	    </div>
+	    <{/foreach}>
+    <{/if}></td>
+  </tr>
+  <{/foreach}>
+</table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #666">
+  <tr><td align="right">备货单数量总计：<{$delivery_total_nums}> 出库金额总计：<{$delivery_total_price}>(备货单中如有捆绑商品，所有的金额统计不计算捆绑商品的金额。)</td></tr>
+  <tr><td align="right">备货单金额总计：<{$picking_list_price}> 优惠金额总计：<{$delivery_discount_price}></td></tr>
+</table>
+
+<table  width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td  align="left" class="order-font">批次号：<{$ident}></td>
+            <td  style="text-align:right; font-weight:bold" class="order-tr">Powered by ShopEx.cn</td>
+        </tr>
+</table>
+
+</div>
+<{/if}>
+<script>
+var err = <{$err}>;
+if (err==true){
+	new Dialog(new Element("div.tableform",{html:'<div class="division">部分发货单已被合并或者拆分</div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'}),{
+        title:'提示',
+        width:230,
+        height:130,
+        modal:true,
+        resizeable:false});
+}
+
+function re_finder(){
+	opener.finderGroup['<{$env.get.finder_id}>'].unselectAll();
+    opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+    window.close();
+}
+
+function changePrint()
+{
+    new Dialog(new Element("div.tableform",{html:'<div id="pause" class="division">正在提交数据<{img app="desktop" src="loading.gif"}></div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'}),{
+        title:'提示',
+        width:230,
+        height:130,
+        modal:true,
+        resizeable:false}
+    );
+    var printname= $('printname').value;
+    new Request({url:'index.php?app=wms&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=stock&str='+printname+'&current_otmpl_name=<{$current_otmpl_name}>&sku=<{$sku}>',
+        onSuccess:function(json){
+          if (json == 'true'){
+              $('pause').getParent('.dialog').retrieve('instance').close();
+              window.print();
+          }else {
+              $('pause').set('text',json);
+          }
+        }
+    }).send();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+</script>

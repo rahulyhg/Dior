@@ -1,0 +1,102 @@
+<form action="index.php?app=ome&ctl=admin_return_fail&act=dosave" method="post" id="orderItemForm">
+<input type="hidden" name="return_id" value="<{$returninfo.return_id}>" />
+
+
+
+<{foreach from=$item_list item=objs key=obj_type}>
+<div class="division">
+    <h4></h4>
+    <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+            <tr>
+                <th><{t}>货号<{/t}></th>
+                <th><{t}>商品名称<{/t}></th>
+                <th><{t}>申请数量<{/t}></th>
+                <th><{t}>调整货号<{/t}></th>
+            </tr>
+        </thead>
+        
+        
+        <{foreach from=$item_list item=item}>
+            
+            <tr>
+                <td ><{$item.bn}>
+                    <{if $item.status <= 0}>
+                        <input type="hidden" name="oldPbn[<{$item.item_id}>]" value="<{$item.bn}>" /><{/if}></td>
+                <td><{$item.name}></td>
+                <td><{$item.num}></td>
+                <td>
+                    
+                    <input type="hidden" size="10" name="pbn[<{$item.item_id}>]" value="<{$item.bn}>" />
+                    <{$item.bn}><{if $item.status == 0}>货品不存在,请维护
+                   
+                    <input type="text" size="10" name="pbn[<{$item.item_id}>]" value="" />
+                   
+                    <{else}>已修正<{/if}></td>
+            </tr>
+           
+        <{/foreach}>
+        </tbody>
+    
+    </table>
+</div>
+<{/foreach}>
+
+
+<div class="table-action">
+
+    <{button type="button" id="editsubmit" label="修改提交"}>
+  
+  
+
+</div>
+
+</form>
+<script>
+(function(){
+function valid(){
+var pbns = $$('[name^=pbn[]');
+    for(var i=0,l=pbns.length; i<l; i++){
+        for (var j=i+1,k=pbns.length; j<k; j++){
+            if( pbns[j].value==pbns[i].value ){
+                if(confirm('订单存在相同的商品，是否继续？')) return true;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+var itemForm = $('orderItemForm');
+$('editsubmit').addEvent('click',function(){
+    //if(!valid()) return;
+    itemForm.action = 'index.php?app=ome&ctl=admin_return_fail&act=dosave';
+    itemForm.fireEvent('submit',{stop:function(){}});
+});
+
+
+
+})();
+
+$('orderItemForm').store('target',{
+    onRequest:function(e){
+        $('editsubmit').set('disabled', 'true');
+       
+        $('editsubmit').getElements('span')[1].set('text','正在处理');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) == 'undefined'){
+           $('editsubmit').set('disabled', 'true');
+          
+           $('editsubmit').getElements('span')[1].set('text','正在处理');
+       }else{
+           $('editsubmit').set('disabled', '');
+     
+           $('editsubmit').getElements('span')[1].set('text','修改提交');
+       }
+    }
+});
+
+</script>

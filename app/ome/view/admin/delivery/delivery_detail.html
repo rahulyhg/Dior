@@ -1,0 +1,184 @@
+<{capture name="header"}>
+  <link href="../app/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<{if $write != '1' || $write_memo!='1'}><form name="form1" method="POST" action="index.php?app=ome&ctl=admin_receipts_print&act=doDetail"><{/if}>
+<div class="tableform">
+<style>
+.logi-no-input{width:150px;height:20px;}
+</style>
+<h4>发货单信息:</h4>
+<input type="hidden" name="status" value="<{$status}>" />
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0">
+    <tr>
+        <th>发货单号：</th>
+        <td ><{$dly.delivery_bn}></td>
+        <th>订单号：</th>
+        <td ><{foreach from=$order_bn item=item}><{$item}><br><{/foreach}></td>
+        <th >配送方式：</th>
+        <td ><{$dly.delivery}></td>
+        <th >会员：</th>
+        <td ><{help}><{t}><{$dly.members}><{/t}><{/help}><{$dly.member_name}></td>
+    </tr>
+    <tr>
+        <th >收货人：</th>
+        <td ><{$dly.consignee.name}></td>
+        <th >电话：</th>
+        <td ><{$dly.consignee.telephone}></td>
+        <th >手机：</th>
+        <td ><{$dly.consignee.mobile}></td>
+        <th>Email：</th>
+        <td><{$dly.consignee.email}></td>
+    </tr>
+    <tr>
+        <th >邮编：</th>
+        <td ><{$dly.consignee.zip}></td>
+        <th >物流公司：</th>
+        <td ><{if $write != '1'}><{input type="select" name="dly[logi_id]" rows=$dly_corp valueColumn="corp_id" labelColumn="name" value=$dly.logi_id}><{else}><input type="hidden" name="dly[logi_id]" value="<{$dly.logi_id}>"><{$dly.logi_name}><{/if}></td>
+        <th >物流费用：</th>
+        <td ><{$dly.delivery_cost_actual|cur}></td>
+        <th >预计物流费用：</th>
+        <td ><{$dly.delivery_cost_expect|cur}></td>
+    </tr>
+    <tr>
+        <th >重量：</th>
+        <td >
+
+            <{if $dly.status=='succ'}>
+            <{input type="text" name="weight" value=$dly.weight vtype="number"}><{else}>
+            <{$dly.weight}>
+            <{/if}>
+        </td>
+        <th >商品重量:</th>
+        <td ><{$dly.net_weight}></td>
+        <th >生成时间：</th>
+        <td ><{$dly.create_time}></td>
+        <th >物流运单号：</th>
+        <td ><{if $write != '1'}><input type="text" name="dly[logi_no]" size="10"  value="<{$dly.logi_no}>" class="logi-no-input" /><{else}><{$dly.logi_no}><{/if}></td>
+        
+    </tr>
+    <tr>
+        <th >订单支付方式：</th>
+        <td ><b><font color="orange"><{if $dly.is_cod=='true'}>货到付款<{else}>款到发货<{/if}></font></b></td>
+        <th >发货区域：</th>
+        <td ><{$dly.consignee.area|region}></td>
+        <th >配送地址：&nbsp;</th>
+        <td ><{$dly.consignee.addr}>&nbsp;</td>
+        <th >&nbsp;</th>
+        <td >&nbsp;</td>
+    </tr>
+    <tr>
+        <th>发票抬头：</th>
+        <td ><{$tax_titles}></td>
+        <th>订单附言：</th>
+        <th colspan="5">
+         <{$dly.memo}>
+        </th>
+    </tr>
+</table>
+</div>
+
+
+<div class="tableform">
+	<table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+		<tbody>
+		    <tr><th><strong>会员备注：</strong></th>
+			     
+				     <{if $custom_mark}>
+				     	 <{foreach from=$custom_mark key=key item=v}>
+				     	 <td>
+					       <{foreach from=$v item=items}>
+						       <div id="memo_show">
+						         	<b><{$items.op_content|escape:"HTML"}></b> <{$key}>&nbsp;<{$items.op_time}> by <{$items.op_name}>
+						       </div>
+					      <{/foreach}>
+					      </td>
+					      <{/foreach}>
+				     <{/if}>
+			    
+		   </tr>
+		   
+		   <tr>
+				<th><strong>订单备注：</strong></th>
+				   
+				      <{if $mark_text}>
+				      
+				       <{foreach from=$mark_text key=key item=val}>
+				       <td>
+					       <{foreach from=$val item=items}>
+						       <div id="memo_show">
+						        	<b><{$items.op_content|escape:"HTML"}></b> <{$key}> &nbsp;<{$items.op_time}> by <{$items.op_name}>
+						      </div>
+					      <{/foreach}>
+					      </td>
+					       <{/foreach}>
+				     <{/if}>
+				 
+		  </tr>
+		</tbody>
+	</table>
+</div>
+
+<h4>操作日志:</h4>
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+    <thead>
+    <tr>
+        <th >操作时间</th>
+        <th >操作员</th>
+        <th >操作类型</th>
+        <th >操作内容</th>
+    </tr>
+    </thead>
+    <tbody>
+    <{foreach from=$log item=item}>
+    <tr>
+        <td ><{$item.operate_time}></td>
+        <td ><{$item.op_name}></td>
+        <td ><{$item.operation}></td>
+        <td ><{$item.memo}></td>
+        </tr>
+    <{/foreach}>
+    </tbody>
+</table>
+</div>
+
+<{foreach from=$orderLogs item=item key=key}>
+<h4>订单 <span class="red"><{$key}></span> 操作记录</h4>
+<div class="division">
+    <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+        <thead>
+        <tr>
+            <th>操作时间</th>
+            <th>操作人</th>
+            <th>行为</th>
+            <th>操作内容</th>
+        </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$item item=log}>
+        <tr>
+            <td><{$log.operate_time}></td>
+            <td><{$log.op_name}></td>
+            <td><{$log.operation}></td>
+            <td><{$log.memo}></td>
+        </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>
+<{/foreach}>
+
+<br /><{if $write_memo != '1'}>
+<h4>备注:</h4>
+<div class="division">
+    <textarea name="dly[memo]" rows="6" cols="60"><{$dly.memo}></textarea>
+    <input type="hidden" name="dly[delivery_id]" value="<{$dly.delivery_id}>" />
+    <input type="hidden" name="ctl" value="<{$url}>" />
+    <input type="hidden" name="dly_count" value="<{$dly_count}>" />
+</div>
+
+</div>
+<div style="text-align:center;"><{button type="submit" label="提交" }><{/if}></div>
+<{if $write != '1' || $write_memo!='1'}></form><{/if}>

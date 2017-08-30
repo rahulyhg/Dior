@@ -1,0 +1,140 @@
+<{capture name="header"}>
+<style>
+    .order-box{ height:auto; padding:10px; margin:5px 20px; border:1px solid #ddd}
+    .order-box li{ padding:3px 0}
+    .sorder-box{ height:auto; padding:3px; border:1px solid #ddd;margin-bottom: 20px;}
+    .sorder-box li{ padding:3px 3px; font-size: 13px;}
+    .order-tr{  font-size:14px; font-weight:bold; border-bottom:1px solid #ddd}
+    .table-border{ margin:10px 0; border-top:2px solid #333;border-bottom:2px solid #333}
+    .order-box td{ padding:3px 5px}
+    .order-font{ font-size:14px; font-weight:bold; padding:0 5px; clear:both}
+
+    #express_tools{z-index:65535; position:absolute;right:0 ;margin-right:5px; background:#FFFFFF;border:#CCCCCC 1px solid; }
+    #express_tools_hidden{padding:10px; width:10px; }
+    #express_tools_main{
+        padding:10px; 
+        width:350px; 
+        z-index:65535; 
+        position:absolute;
+        right:0 ;
+        margin-right:29px; 
+        background:#FFFFFF;
+        border:#CCCCCC 1px solid; 
+    }
+    .express_tools_main_head{ 
+        cursor: move;
+        font-size: 14px;
+        font-weight: bold;
+        height: 27px;
+        line-height: 27px;
+        overflow: hidden;
+        padding: 0 8px;
+    }
+</style>
+<{/capture}>
+
+
+<script type="text/javascript">
+    var err = <{$err}>;
+    if (err==true){
+        new Dialog(new Element("div.tableform",'<div class="division">部分备货单已被合并或者拆分</div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'),{
+            title:'提示',
+            width:230,
+            height:130,
+            modal:true,
+            resizeable:false});
+    }
+
+    function re_finder(){
+        opener.finderGroup['<{$env.get.finder_id}>'].unselectAll();
+        opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+        window.close();
+    }
+
+    var count = <{$count}>;
+    var ExpressCheck = {
+        hasOnePrint: '<{$hasOnePrint}>',
+
+        alertMsg: function() {
+            if(this.hasOnePrint=='true') {
+                if(confirm('您的选择含有已打备货货单，你确定要重复打印吗？')==false) {
+                    window.close();
+                }
+            }
+        },
+
+        checkConfirm: function() {
+            if(this.hasOnePrint=='true') {
+                return confirm('您的选择含有已打印备货单，请核对快递面单上的单号和收货人姓名是否对应正确！');
+            }
+            
+            return true;
+        }
+    }
+
+    ExpressCheck.alertMsg();
+</script>
+
+<{ if $err=='false' }>
+<div class="">
+    <div id='information' class="error" style="display:none; font-weight:700;"></div>
+    <div id='content' class="order-box" style="display:none"></div>
+    <div id="formContent" class="order-box">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td>
+                    <h2><font color="red"><{$logi_name}></font>打印备货单</h2>
+
+                    <{if $extend_message}>
+                        <h2 class="notice" style="font-size: 20px;"><{$extend_message}></h2>
+                    <{/if}>
+
+                    <div id ="printPreview" class="note">
+                        <div style="padding:5px;margin-bottom: 8px;" id="printPreview_1">
+                            <{ if $delibery_bill_flag }>
+                                <{button label="打印备货单" id="onlyprint_btn" type="button" class="btn btn-primary"}>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <{ else }>
+                                <{button label="打印备货单" id="doprint_btn" class="btn-primary" }>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <{ /if }>
+                            <span id="printerSpan"></span>
+                            <{button label="属性" id="printerSetting" type="button"}>
+                            <span>热敏：<input type="checkbox" value="1" id="thermal" name="thermal" /></span>
+                        </div>
+                        <span id="printPreview_2">
+                        <span>纵向偏移：<input type="input" value="" name="offsetx" id="offsetx" style="width:50px;"></span>mm,
+                        <span>横向偏移：<input type="input" value="" name="offsety" id="offsety" style="width:50px;"></span>mm
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span><{include app=wms file='/admin/delivery/controllertmpl/stock_tmplbtn.html'}></span>
+                        </span>
+                        <span id="printPreview_3" style="display:none;font-size:14px;font-weight:bold;">您的系统尚未安装打印机，安装完打印机后，请重新打印。
+                        <{button label="关闭页面" id="printPreview_close" class="btn-primary" }>
+                        </span>
+                    </div>
+
+                    <div id="dly_printer_box" style="overflow: auto; position: relative;">
+                        <div id="dly_printer">
+                            <{if $userAgent.type == 2}>
+                                <embed id="embed1<{$uniqid}>" type="application/ShopexReport-plugin" style="<{if $printTmpl.template_width && $printTmpl.template_height}>width:<{$printTmpl.template_width*96/25.4+30}>px;height:<{$printTmpl.template_height*96/25.4+30}>px;<{else}>width:910px;height:510px;<{/if}>">
+                            <{else}>
+                                <OBJECT id="embed1<{$uniqid}>" CLASSID="CLSID:54B240AC-6979-42BE-8D80-8672CFDC0E8A" style="<{if $printTmpl.template_width && $printTmpl.template_height}>width:<{$printTmpl.template_width*96/25.4+30}>px;height:<{$printTmpl.template_height*96/25.4+30}>px;<{else}>width:910px;height:510px;<{/if}>"></OBJECT>
+                            <{/if}>
+                        </div>
+                    </div>
+
+                    <div id="disp_stock_page">
+                        <span id="total_page">共：<span id="total_putpage"></span> 页</span>
+                        <{button label="上一页" id="uppage" class="btn-primary" }>
+                        <{button label="下一页" id="nextpage" class="btn-primary" }>
+                        <!--<span id="uppage" style="cursor:pointer;">上一条</span>
+                        <span id="nextpage" style="cursor:pointer;">下一条</span>-->
+                         跳转到第
+                        <input id="jumpinput" type="text" value="" style="width:20px; padding:0;border:1px #ccc solid;margin:0;font-size:12px;">
+                        页　当前第：<span id="current_page"><font color="red">1</font></span> 页
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<{ /if }>
+
+<{include file="admin/delivery/controllertmpl/stock_template.html"}>

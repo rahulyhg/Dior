@@ -1,0 +1,181 @@
+<style>
+.f18{
+width:150px;
+text-align:right;
+float:right;
+}
+.f12{
+font-weight:bold;
+font-size:14px;
+text-align:left;
+}
+.accounted_tab  td{
+border:1px solid #cccccc;
+
+
+}
+.accounted_tab .money{
+text-align:right;
+padding:3px;
+font-size:12px;
+
+}
+.accounted_tab .thead{
+text-align:center;
+font-weight:bold;
+font-size:12px;
+}
+.accounted_tab td{
+width:120px;
+}
+</style>
+<div class="large" style="width:98%;">
+<div style="background: #FBF7EE">
+<table class="accounted_tab" cellspacing=1 cellpadding=1>
+<tr><td style="width:100"></td><td class="thead">包裹数量
+
+</div>
+
+</td><td class="thead">账单金额</td><td class="thead">预估费用</td>
+<td class="thead">
+记账金额</td>
+<td class="thead">
+
+差额</td></tr>
+
+<tr><td style="width:100" class="thead">全部</td><td class="money">
+<{if $env.get.status=='2'}>
+<{$actual_status.lesspayment.count}>
+<{else}>
+<{$actual_status.overpayment.count}>
+<{/if}>
+
+
+
+</div>
+
+</td><td class="money"><{if $env.get.status=='3'}>
+<{$actual_status.overpayment.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment.total_delivery_cost_actual|default:0|cur}>
+<{/if}></td><td  class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment.total_delivery_cost_expect|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment.total_delivery_cost_expect|default:0|cur}>
+<{/if}>
+</td>
+<td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment.total_actual_amount|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment.total_actual_amount|default:0|cur}>
+<{/if}></td>
+<td class="money">
+￥<{if $env.get.status=='3'}>
+<{math equation='x-y-z' x=$actual_status.overpayment.total_delivery_cost_actual y=$actual_status.overpayment_unaccounted.total_delivery_cost_expect z=$actual_status.overpayment_accounted.total_actual_amount format="%.2f"}>
+<{else}>
+<{math equation='x-y-z' x=$actual_status.lesspayment.total_delivery_cost_actual y=$actual_status.lesspayment_unaccounted.total_delivery_cost_expect z=$actual_status.lesspayment_accounted.total_actual_amount format="%.2f"}>
+<{/if}>
+</td></tr>
+<tr><td class="thead">未记账
+</td><td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_unaccounted.count|default:0}>
+<{else}>
+<{$actual_status.lesspayment_unaccounted.count|default:0}>
+<{/if}>
+
+</td><td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_unaccounted.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_unaccounted.total_delivery_cost_actual|default:0|cur}>
+<{/if}>
+</td><td  class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_unaccounted.total_delivery_cost_expect|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_unaccounted.total_delivery_cost_expect|default:0|cur}>
+<{/if}>
+</td>
+<td class="money">￥0.00</td>
+<td class="money">
+￥<{if $env.get.status=='3'}>
+<{math equation='x-y' x=$actual_status.overpayment_unaccounted.total_delivery_cost_actual y=$actual_status.overpayment_unaccounted.total_delivery_cost_expect format="%.2f"}>
+<{else}>
+<{math equation='x-y' x=$actual_status.lesspayment_unaccounted.total_delivery_cost_actual y=$actual_status.lesspayment_unaccounted.total_delivery_cost_expect format="%.2f"}>
+<{/if}>
+
+</td></tr>
+<tr><td class="thead">已记账</td><td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_accounted.count|default:0}>
+<{else}>
+<{$actual_status.lesspayment_accounted.count|default:0}>
+<{/if}>
+
+</td><td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_accounted.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_accounted.total_delivery_cost_actual|default:0|cur}>
+<{/if}>
+
+</td>
+
+<td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_accounted.total_delivery_cost_expect|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_accounted.total_delivery_cost_expect|default:0|cur}>
+<{/if}>
+</td><td class="money">
+<{if $env.get.status=='3'}>
+<{$actual_status.overpayment_accounted.total_actual_amount|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_accounted.total_actual_amount|default:0|cur}>
+<{/if}>
+</td>
+<td class="money">
+￥<{if $env.get.status=='3'}>
+<{math equation='x-y' x=$actual_status.overpayment_accounted.total_delivery_cost_actual y=$actual_status.overpayment_accounted.total_actual_amount format="%.2f"}>
+<{else}>
+<{math equation='x-y' x=$actual_status.lesspayment_accounted.total_delivery_cost_actual y=$actual_status.lesspayment_accounted.total_actual_amount format="%.2f"}>
+<{/if}>
+</td>
+</tr>
+<tr><td colspan="6" style="padding:20px;"><br>
+<b>说明:</b>全部【差额】=全部【账单金额】-未记账【预估费用】-已记账【记账金额】，
+未记账【差额】=未记账【账单金额】-未记账【预估费用】，
+已记账【差额】=已记账【账单金额】-已记账【记账金额】
+
+</td></tr>
+</table>
+
+</div>
+  <table width="100%" cellpadding="4" cellspacing="0" border="0">
+ <tr>
+  <td nowrap="nowrap" style="width:auto;">
+   <div class="tabs-wrap select-tabs delivery-cfg-tab">
+   <ul style="margin-top:2px;padding:0;">
+    <li class="tab <{if $env.get.confirm==''}>current<{/if}>" >
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_item&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=<{$env.get.status}>"><{t}>全部<{/t}></a></span>
+    </li>
+  
+<li class="tab <{if $env.get.confirm=='0'}>current<{/if}>" >
+<span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_item&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=<{$env.get.status}>&confirm=0"><{t}>未记账<{/t}></a></span>
+    </li>
+    <li class="tab <{if $env.get.confirm=='1'}>current<{/if}>">
+     <span><a href="index.php?app=logisticsaccounts&ctl=admin_actual&act=detail_actual_item&flt=<{$env.get.flt}>&task_id=<{$env.get.task_id}>&status=<{$env.get.status}>&confirm=1"><{t}>已记账<{/t}></a></span>
+    </li>
+    
+   </ul>
+   </div>
+  </td>
+ </tr>
+ </table>
+
+</div>
+
+

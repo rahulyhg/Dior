@@ -1,0 +1,96 @@
+<div class="tableform" >
+    <h3>自动确认规则设定</h3>
+    <div class="division">
+        <form method="post" action="index.php?app=omeauto&ctl=autoconfirm&act=index" id="form-setting" >
+            <div style="padding-top: 5px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">订单缓冲时间：</span> <span style="color:red;font-size: 12px;">(注：用户下单后需等待一定的时间后才进入处理流程，能有效解决多个订单合并的问题)</span>
+                <br/><br/>
+                订单建立
+                <select name="bufferTime" >
+                    <option value="10" <{if $cnf.bufferTime == '10'}>selected<{/if}>>10分钟</option>
+                    <option value="30" <{if $cnf.bufferTime == '30'}>selected<{/if}>>30分钟</option>
+                    <option value="60" <{if $cnf.bufferTime == '60'}>selected<{/if}>>1小时</option>
+                    <option value="120" <{if $cnf.bufferTime == '120'}>selected<{/if}>>2小时</option>
+                    <option value="180" <{if $cnf.bufferTime == '180'}>selected<{/if}>>3小时</option>
+                    <option value="240" <{if $cnf.bufferTime == '240'}>selected<{/if}>>4小时</option>
+                </select>
+                后进入处理流程
+            </div>
+             <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">库存检查处理模式</span> <span style="color:red;font-size: 12px;">(注：如打开，则同一用户有多个订单时间，该用户的所有订单多需手工确认)</span>
+                <br/><br/>
+                <input type="radio" name="combineMember" value="Y" <{if $cnf.combineMember == 'Y'}>checked<{/if}>>只要该商品的总库存
+                &nbsp;&nbsp;
+                <input type="radio" name="combineMember" value="N" <{if $cnf.combineMember <> 'Y'}>checked<{/if}>>不需要，谢谢
+            </div>
+            <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">是否需对同一用户的订单进行合并提示</span> <span style="color:red;font-size: 12px;">(注：如打开，则同一用户有多个订单时间，该用户的所有订单多需手工确认)</span>
+                <br/><br/>
+                <input type="radio" name="combineMember" value="Y" <{if $cnf.combineMember == 'Y'}>checked<{/if}>>我要对同一用户订单进行合并检查
+                &nbsp;&nbsp;
+                <input type="radio" name="combineMember" value="N" <{if $cnf.combineMember <> 'Y'}>checked<{/if}>>不需要，谢谢
+            </div>
+            <!--
+            <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">未支付订单设置:</span> <span style="color:red;font-size: 12px;">(注：各种交易类型中对未支付订单的处理)</span>
+                <br/><br/>
+                <select name="autoCod"><option value="Y" <{if $cnf.autoCod == 'Y'}>selected<{/if}>>自动</option>
+                    <option value="N" <{if $cnf.autoCod == 'N'}>selected<{/if}>>手工</option></select>确认货到付款的订单
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                合并款到发货订单时<select name="chkNoPayOrder"><option value="Y" <{if $cnf.chkNoPayOrder == 'Y'}>selected<{/if}>>检查</option>
+                    <option value="N" <{if $cnf.chkNoPayOrder == 'N'}>selected<{/if}>>不考虑</option></select>未支付订单
+            </div>
+            -->
+            <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">留言和备注:</span> <span style="color:red;font-size: 12px;">(注：当勾选的内容项不为空时，该订单需手工确认。如不选择，则忽略)</span>
+                <br/><br/>
+                <input type="checkbox" name="chkMemo" value="Y" <{if $cnf.chkMemo == 'Y'}>checked<{/if}>>客户留言
+                &nbsp;&nbsp;
+                <input type="checkbox" name="chkCustom" value="Y" <{if $cnf.chkCustom == 'Y'}>checked<{/if}>>客服备注
+            </div>
+            <!--
+            <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">物流审核关键词</span> <span style="color:red;font-size: 12px;">(注：在勾选该选项后，系统会把在地址中具有设定关键字的订单留下，要求手工匹配物流)</span>
+                <br/><br/>
+                <input type="radio" name="chkShipAddress" value="Y" <{if $cnf.chkShipAddress == 'Y'}>checked<{/if}>>开启物流审核关键词
+                &nbsp;&nbsp;
+                <input type="radio" name="chkShipAddress" value="N" <{if $cnf.chkShipAddress <> 'Y'}>checked<{/if}> >谢谢，我不需要
+                &nbsp;&nbsp;
+                <a href="index.php?app=omestart&ctl=admin_keyword&act=index" target='_blank' style="font-weight: 700">设定物流关键字</a>
+                <!--<{button label="设定物流关键字" type="button" name="btn_edit_keyword" id="btn_edit_keyword"}>-->
+            <!--</div>-->
+            <!--
+             <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">商品对应关系检查</span> <span style="color:red;font-size: 12px;">(注：该选项只对未使用商家编码的用户有效，系统将对产品的对应关系进行检查，提出那些不能自动匹配商品的订单)</span>
+                <br/><br/>
+                <input type="radio" name="chkProduct" value="Y" <{if $cnf.chkProduct == 'Y'}>checked<{/if}>>检查商品对应关系
+                &nbsp;&nbsp;
+                <input type="radio" name="chkProduct" value="N" <{if $cnf.chkProduct <> 'Y'}>checked<{/if}>>忽略商品关系检查
+            </div>
+            -->
+            <div style="padding-top: 15px;padding-bottom: 18px;border-top:#eeeeee 1px solid;">
+                <span id="" style="font-size: 13px;">自动生成发货单</span> <span style="color:red;font-size: 12px;">(注：如不勾选，则所有订单多需要手工确认)</span>
+                <br/><br/>
+                <input type="radio" name="autoDelivery" value="Y" <{if $cnf.autoDelivery == 'Y'}>checked<{/if}>>自动生成发货单，无问题订单将会自动生成发货单
+                &nbsp;&nbsp;
+                <input type="radio" name="autoDelivery" value="N" <{if $cnf.autoDelivery <> 'Y'}>checked<{/if}>>所有订单多要手工确认，系统不会自动 生成发货单
+            </div>
+            <div class="table-action">
+                <{button label="提交" type="submit" name="submit" id="btn-setting"}>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="/app/desktop/statics/js/coms/modedialog.js" type="text/javascript"></script>
+<script>
+    $('btn_edit_keyword')&& $('btn_edit_keyword').addEvent('click',function(e){
+      var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=omestart&ctl=admin_keyword&act=index");
+      new finderDialog(url,{params:{url:callurl||'',name:'product_id[]'},width:500,height:450,
+        onCallback:function(rs){
+          //if(!rs)return;
+          //rs=JSON.decode(rs);
+          //init(rs);
+        }
+      });
+    });
+</script>

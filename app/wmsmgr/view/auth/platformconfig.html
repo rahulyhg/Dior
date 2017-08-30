@@ -1,0 +1,42 @@
+<table width="100%" cellspacing="0" cellpadding="0" border="0" >
+  <tbody>
+    <{if $platform}>
+    <tr>
+      <th ><em class="c-red">*</em>私钥：</th>
+      <td>
+        <{input name="config[private_key]" vtype="required" value=$config[private_key] size="32"}>
+        &nbsp;&nbsp;<a id="private_key"><{img src="bundle/refresh.gif" app="desktop" }></a>
+      </td>
+    </tr>
+    <tr>
+      <th ><em class="c-red">*</em>api地址：</th>
+      <td>
+        <{input name="config[api_url]" vtype="required" value=$config[api_url] size="32"}>
+      </td>
+    </tr>
+    <{/if}>
+    <{foreach from=$platform_params item=item key=key}>
+    <tr>
+      <th ><em class="c-red">*</em><{$item}>：</th>
+      <td>
+        <{input name="config[{$key}]" vtype="required" value=$config[$key] size="32"}>
+        <{if $key=="private_key" }>&nbsp;&nbsp;<a id="private_key"><{img src="bundle/refresh.gif" app="desktop" }></a><{/if}>
+      </td>
+    </tr>
+    <{/foreach}>
+  </tbody>
+</table>
+<script type="text/javascript">
+(function(){
+  if ($defined($('private_key'))) {
+    $('private_key').addEvent('click',function(){
+        var _this = this;
+        new Request({url:'index.php?app=wmsmgr&ctl=admin_wms&act=gen_private_key',
+        onComplete:function(rs){
+            _this.getPrevious('input').set('value',rs);
+        }}).send();
+    });
+  };
+})();
+
+</script>

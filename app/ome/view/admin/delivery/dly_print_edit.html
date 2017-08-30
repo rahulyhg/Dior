@@ -1,0 +1,319 @@
+<{capture name="sidebar"}> 
+<div class="side-bx" id="dly_printer_form" style="border:none;"> 
+    <{if $image_id}><input type="hidden" name="tmp_bg" value="<{$image_id}>"/><{/if}>
+    <input type="hidden" name="prt_tmpl_id" value="<{$tmpl.prt_tmpl_id}>"/>
+    <input type="hidden" name="tmp_bg" value="<{$tmpl.file_id}>"/>
+
+    <div class="side-bx-title">
+        <h3><{t}>快递单名称<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <input style="width:100px" id="prt_tmpl_title" name="prt_tmpl_title" size="15" maxlength="30" value="<{$tmpl.prt_tmpl_title}>" />   
+    </div>
+    <div class="side-bx-title">
+        <h3><{t}>是否启用？<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select name="shortcut" type="select" ><option value="true" <{if $tmpl.shortcut eq 'true'}>selected="selected"<{/if}>><{t}>是<{/t}></option><option value="false" <{if $tmpl.shortcut eq 'false'}>selected="selected"<{/if}>><{t}>否<{/t}></option></select>  
+    </div> 
+    <div class="side-bx-title">
+        <h3><{t}>纸张尺寸<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <{t}>宽<{/t}>
+        <input id="ipt_prt_tmpl_width" name="prt_tmpl_width" size="2" maxlength="4" onchange="printer_editor.resize()" value="<{$tmpl.prt_tmpl_width}>" style="width:24px">
+        mm <{t}>长<{/t}>
+        <input id="ipt_prt_tmpl_height" name="prt_tmpl_height" size="2" maxlength="4" onchange="printer_editor.resize()" value="<{$tmpl.prt_tmpl_height}>" style="width:24px">
+        mm 
+    </div> 
+
+    <div class="side-bx-title">
+        <h3><{t}>单据背景图<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">                            
+
+        <{button app="desktop" onclick="printer_editor.uploadBg({$tmpl.prt_tmpl_id})" class="btn-upload" label=$___b2c="添加"|t:'b2c' icon="image_new.gif"}>  
+        <{button app="desktop" onclick="printer_editor.delBg({$tmpl.prt_tmpl_id})" label=$___b2c="清除"|t:'b2c'}>
+
+
+
+    </div> 
+
+
+    <div class="side-bx-title">
+        <h3><{t}>打印偏移<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+
+        <{t}>纵向<{/t}>
+        <input name="prt_tmpl_offsety" id="offsety" vtype="required&&number" value="<{$tmpl.prt_tmpl_offsety}>" style="width:24px"/>
+        mm  <br /><{t}>横向<{/t}>
+        <input name="prt_tmpl_offsetx" id="offsetx" vtype="required&&number" value="<{$tmpl.prt_tmpl_offsetx}>" style="width:24px"/>
+        mm 
+
+    </div> 
+
+    <div class="side-bx-title">
+        <h3><{t}>单据打印项<{/t}></h3>
+    </div>
+    <div class="side-bx-bd">
+        <select id="p_editor_addelement_select" style="width:100px;">
+            <option value="-EMPTY-"><{t}>+添加打印项<{/t}></option>
+
+            <{foreach from=$elements key=key item=item}> 
+            <option value="<{$key}>"><{$item}></span>
+                <{/foreach}>
+        </select>
+        <script> 
+				
+            $('p_editor_addelement_select').addEvent('change',function(){
+                var selected = this.getSelected()[0];
+                if(selected.value!='-EMPTY-'){
+                    printer_editor.addElement(selected.value,selected.text); 
+                    this.selectedIndex = 0;
+                }
+            });
+        </script>  
+        <div id="printer_editor_select_group">
+            <select name="font" id="jianju2" style="width:60px;" onChange="if(this.value!='--')printer_editor.setFontSize(this.value);">
+                <option value="--"><{t}>大小<{/t}></option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="24">24</option>
+                <option value="27">27</option>
+                <option value="30">30</option>
+                <option value="36">36</option>
+                <option value="48">48</option>
+                <option value="72">72</option>
+            </select>
+            <select onChange="if(this.value!='--')printer_editor.setFont(this.value);" style="width:60px">
+                <option value="--"><{t}>字体<{/t}></option>
+                <option value="宋体"><{t}>宋体<{/t}></option>
+                <option value="黑体"><{t}>黑体<{/t}></option>
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Serif">Serif</option>
+                <option value="Cursive">Cursive</option>
+                <option value="Fantasy">Fantasy</option>
+                <option value="Sans-Serif">Sans-Serif</option>
+                <{foreach from=$font key=key item=item}>
+                <option value="<{$item}>"><{$item}></option>
+                <{/foreach}>
+
+            </select>
+
+            <select name="jianju" id="jianju" style="height:20px;" onChange="if(this.value!='--')printer_editor.setFontSpace(this.value);">
+                <option value="--" selected="selected"><{t}>间距<{/t}></option>
+                <option value="-4">-4</option>
+                <option value="-2">-2</option>
+                <option value="0">0</option>
+                <option value="2">2</option>
+                <option value="4">4</option>
+                <option value="6">6</option>
+                <option value="8">8</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="22">22</option>
+                <option value="24">24</option>
+                <option value="26">26</option>
+                <option value="28">28</option>
+                <option value="30">30</option>
+            </select>
+
+        </div>
+        <script>
+            $$('#printer_editor_select_group select').addEvent('change',function(){
+                this.selectedIndex = 0; 
+            });
+        </script>     
+        <div style="padding:5px 0 0 5px"> 
+            <div class="clearfix">
+                <div class="span-auto">
+                    <span class="lnk" onclick="printer_editor.setBorder(1)"><b>加粗</b></span>
+                </div>
+                <div class="span-auto">
+                    <span class="lnk" onclick="printer_editor.setItalic(1)"><i>倾斜</i></span>
+                </div>
+
+                <div class="span-auto clear">
+                    <span class="lnk" onclick="printer_editor.setAlign('left')">左对齐</span>
+                </div>
+                <div class="span-auto">
+                    <span class="lnk" onclick="printer_editor.setAlign('center')">剧中对齐</span>
+                </div>
+                <div class="span-auto">
+                    <span class="lnk" onclick="printer_editor.setAlign('right')">右对齐</span>
+                </div>
+
+            </div>
+
+            <{button app="desktop" onclick="printer_editor.delItem()" label=$___b2c="移除打印项"|t:'b2c'}>
+            <{if $tmpl.prt_tmpl_id}>
+            	<{button app="desktop" onclick="selfTmpl()" label=$___b2c="商品信息打印项"|t:'b2c'}>
+            <{/if}>
+            
+        </div>
+    </div>
+</div>  
+<{/capture}>
+<{capture name="footbar"}> 
+<div class="table-action">
+    <{button   type="button" class="btn btn-primary" label="保存" onclick="printer_editor.save()"}>
+
+
+    <{button   type="button" class="btn btn-primary" label="打印测试" onclick="printer_editor.test()" id="printTestBtn"}>
+</div>
+<{/capture}>
+
+<div id="dly_printer_editor" style="height:<{$tmpl.prt_tmpl_height*$dpi/25.4}>px;width:<{$tmpl.prt_tmpl_width*$dpi/25.4}>px;border-right:1px #ccc solid;border-bottom:1px #ccc solid;"></div>
+<input type="hidden">
+<script>
+
+    printer_editor = {
+        screenDPI:96,
+        init:function(options,xmldata,bgimg){
+            this.screenDPI = options.dpi;
+            $('main').setStyle('overflow-x','auto');
+            this.swf = new Swiff('<{$base_dir}>/app/ome/upload/images/printer.swf?<{$smarty.now}>', {
+                width:  '100%',
+                height: '100%',
+                id:'dly_printer_editor_flash',
+                container: $('dly_printer_editor'),
+                params:{
+                    wMode:'opaque'
+                },
+                vars:{data:xmldata,bg:bgimg,copyright:'shopex'}
+            });
+       
+       
+       
+        },
+        setBorder:function(){
+            $('dly_printer_editor_flash').setBorder();
+        },
+        setLocation:function() {
+            printer_editor.resizeWidth($("ipt_prt_tmpl_width").value);
+            printer_editor.resizeHeight($("ipt_prt_tmpl_height").value);
+            $('dly_printer_editor_flash').setLocation(arguments[0]);
+        },
+        setItalic:function(){
+            $('dly_printer_editor_flash').setItalic();
+        },
+        setFontSize:function(){
+            $('dly_printer_editor_flash').setFontSize(arguments[0]);
+        },
+        setAlign:function(){
+            $('dly_printer_editor_flash').setAlign(arguments[0]);
+        },
+        setFontSpace:function(){
+            $('dly_printer_editor_flash').setFontSpace(arguments[0]);
+        },
+        setLineHeight:function(){
+
+            $('dly_printer_editor_flash').setLineHeight(arguments[0]);
+        },
+
+        resizeWidth:function() {
+
+            $('dly_printer_editor_flash').resizeWidth(arguments[0]*this.screenDPI/25.4);
+
+        },
+
+        resizeHeight:function() {
+            $('dly_printer_editor_flash').resizeHeight(arguments[0]*this.screenDPI/25.4);
+
+        },
+
+        setOffestX:function(){
+
+            $('dly_printer_editor_flash').setOffestX(arguments[0]*this.screenDPI/25.4);
+
+        },
+
+        setOffestY:function(){
+            $('dly_printer_editor_flash').setOffestY(arguments[0]*this.screenDPI/25.4);
+        },
+        delItem:function(){
+            $('dly_printer_editor_flash').delItem();
+        },
+        setPicture:function(url){
+            $('dly_printer_editor_flash').setBg(url);
+        },
+        resize:function(){
+            var size = {width:$('ipt_prt_tmpl_width').value.toInt()*printer_editor.screenDPI/25.4,height:$('ipt_prt_tmpl_height').value.toInt()*printer_editor.screenDPI/25.4};
+            $('dly_printer_editor').setStyles(size);
+        },
+        addElement:function(){
+            $('dly_printer_editor_flash').addElement(arguments[0],arguments[1]);
+        },
+        save:function(){
+            $('prt_tmpl_title').value = $('prt_tmpl_title').value.trim();
+            if(!$('prt_tmpl_title').value){
+                alert('<{t}>请填写单据名称<{/t}>');
+                return;
+            }
+            if(!$('offsety').value || isNaN($('offsety').value)){
+                alert('<{t}>请填写正确的纵向<{/t}>');
+                return;
+            }
+            if(!$('offsetx').value || isNaN($('offsetx').value)){
+                alert('<{t}>请填写正确的横向<{/t}>');
+                return;
+            }
+            var _data = encodeURIComponent($('dly_printer_editor_flash').getData());
+            _data =$('dly_printer_form').toQueryString()+'&prt_tmpl_data='+_data+'&finder_id=<{$env.get.finder_id}>';
+            W.page('index.php?app=ome&ctl=admin_delivery_print&act=saveTmpl',{method:'post',data:_data});
+        },
+        test:function(){
+    
+     
+            $('prt_tmpl_title').value = $('prt_tmpl_title').value.trim();
+            var _data = encodeURIComponent($('dly_printer_editor_flash').getData());
+            _data =$('dly_printer_form').toQueryString()+'&prt_tmpl_data='+_data;
+                      
+            this.testPrintDialog = new Dialog('index.php?app=ome&ctl=admin_delivery_print&act=printTest',{ajaxoptions:{method:'post',data:_data},'title':'打印测试页',height:.9,width:.9});
+
+        },
+        setFont:function(){
+            $('dly_printer_editor_flash').setFont(arguments[0]);
+        },
+        lockbg:function(t){
+            $('dly_printer_editor_flash').lockBg();
+        },
+        delBg:function(){
+            if($('dly_printer_bg')){
+                $('dly_printer_bg').value='__none__';
+            }else{
+                new Element("input",{id:"dly_pirnter_bg",type:"hidden",name:"tmp_bg",value:"__none__"}).inject("dly_printer_form");
+            }
+            $('dly_printer_editor_flash').delBg();
+        },
+        uploadBg:function(t){
+            var url = 'index.php?app=ome&ctl=admin_delivery_print&act=uploadBg';
+            if(t){
+                url+='&p[0]='+t;
+            }
+            printer_editor.dlg = new Dialog(url,{model:true,title:'<{t}>上传物流单据（快递单）扫描图<{/t}>',height:.7,width:.5});
+
+        }
+    };
+
+
+
+
+    printer_editor.init({dpi:'<{$dpi}>'},'<{$tmpl.prt_tmpl_data}>'<{if $tmpl_bg}>,'<{$tmpl_bg}>'<{/if}>);
+    //自定义打印项
+    function selfTmpl(){
+    	var prt_tmpl_id = "<{$tmpl.prt_tmpl_id}>";
+    	var url = 'index.php?app=ome&ctl=admin_delivery_print&act=selfTmpl&prt_tmpl_id='+prt_tmpl_id;
+    	printer_editor.elments = new Dialog(url,{model:true,title:'<{t}>自定义打印<{/t}>',height:.7,width:.5});
+    }
+</script>

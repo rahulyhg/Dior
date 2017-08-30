@@ -1,0 +1,178 @@
+<style>
+    .delivery-tab{margin:0;padding:0;overflow:hidden;}
+    .delivery-tab li{float:left; height:24px;line-height:24px;margin-right:5px;font-size: 12px;overflow:hidden;}
+    .delivery-tab .hover{background-position:0 0;font-weight:bold;}
+</style>
+
+<div class="tableform">
+    <div class="note">
+        本次操作您共选择了 <font color='red'><span id='orderCount'><{$orderNum}></span></font> 个订单。<br>
+       请选择快递公司！
+    </div>
+    <div id="proc_info" name="proc_info" class="note" style="display:none;"></div>
+    
+    <div id="select_cmp" name="select_cmp">
+    <ul class="delivery-tab">    
+        <li><h4>不指定物流，使用系统物流设置规则自动选择物流公司：</h4></li>
+        <li><input type="checkbox" style="margin-top:10px;margin-left:0px;" name="systemSetDly" id="systemSetDly" value="system"/></li>
+    </ul>
+    <h4>请选择物流公司：</h4>
+    <ul class="delivery-tab">
+        <{foreach from=$dlyCorp item=corp}>
+        <li style="width:200px;">
+            <label><input type="radio" name="newDly" value="<{$corp.corp_id}>"/>&nbsp;&nbsp;<{$corp.name}></label>
+        </li>
+        <{/foreach}>
+    </ul>
+    </div>
+    
+    <div id="corder_com" name="corder_com" style="margin:0;padding:0;display:none;">
+        <span align="left"><h4>可合并订单列表(需手动审核):</h4></span>
+        <div id="corder_list" name="corder_list" style="overflow:auto;background-color:#EFEFEF; width:100%; height:180px; border: 1px solid #E0E0E0;">
+		</div>
+    </div>
+    
+    <div class="table-action">
+        <{button label="确认并生成发货单" type="botton" name="btn-run" id="btn-run"}>
+        <{button label="关闭" type="botton" name="btn-close" id="btn-close" style="display:none;"}>
+    </div>
+</div>
+
+<script>
+	var OrderGroups = <{$orderGroup}>;
+	var doFail = 0;
+	var doSucc = 0;
+	var newDlyId = 0;
+	var combineNum = 0;
+	var successNum = 0;
+	var newDlyName = '';
+	var OrderQueue = new Array();
+	
+	function initOptQueue() {
+
+        var OrderHash = '';
+        var OrderKey = '';
+
+        if (OrderGroups == '') {
+
+            return;
+        }
+
+        for ( OrderKey in OrderGroups) {
+            if (OrderHash == '') {
+                OrderHash = OrderKey + '||' + OrderGroups[OrderKey]['orders'];
+            } else {
+                OrderHash = OrderHash + ';' + OrderKey + '||' + OrderGroups[OrderKey]['orders'];
+            }
+    
+            OrderQueue.push(OrderHash);
+            OrderNum =0;
+            OrderHash = '';
+        }
+    }
+	initOptQueue();
+	
+	var ids = new Array();
+	$$('input[name=items[]]').each(function(item){
+		if(item.checked == true)
+		{
+			ids.push(item.value);
+		}
+	});
+	
+	$$('input[name=newDly]').each(function(item){
+		item.addEvent('change', function(){
+			$('systemSetDly').checked = false;
+		});
+	});
+
+	$('systemSetDly').addEvent('click', function(){
+		var olist = $$('.delivery-tab input[type=radio]');
+		
+		if(this.checked == true)
+		{
+			for (var i=0; i<olist.length; i++) {
+	            olist[i].checked = false;
+	        }
+			
+			newDlyId = this.value;
+			newDlyName = '系统默认的物流公司';
+		}
+		else
+		{
+			newDlyId = 0;
+			newDlyName = '';
+		}
+		
+	});
+	
+	$('btn-close').addEvent('click', function(){
+		$('btn-run').getParent('.dialog').retrieve('instance').close();
+	});
+	
+    $('btn-run').addEvent('click', function(){
+        
+        var olist = $$('.delivery-tab input[type=radio]');
+        for (var i=0; i<olist.length; i++) {
+            
+            if (olist[i].checked) {
+                newDlyId = olist[i].value;
+                newDlyName = olist[i].getParent().get('text').trim();
+                
+                break;
+            }
+        }
+        
+        if (newDlyId == 0) {
+            alert('请先选择物流公司后再试');
+            
+            return;
+        } else {
+            if (confirm('你确定要把所有选择的订单使用 “' + newDlyName + "” 来发货吗？\n\n注意：该操作不可逆，请谨慎使用！！！")) {
+                
+            	$('btn-run').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+                $('btn-run').disabled = true;
+                var ql = OrderQueue.length;
+                for (var j=1; j<=ql; j++) {
+                	
+	                new Request({url:'index.php?app=ome&ctl=admin_order&act=batchExamineSingle',method:'post',data:'ajaxParams='+ OrderQueue[j-1] + '&dlyType=' + newDlyId + '&ids=' + ids,async:false,
+	                    onComplete:function(json){
+		                    json = JSON.decode(json);
+		                    
+	                        if(json.flag == false) {
+	                        	if(json.order!=undefined && json.order!='') {
+	                        		$('corder_com').show();
+	                        		$('corder_list').setHTML(getCombineElement(json.order));
+	                        		
+	                        		if(combineNum == 0) {
+		                        		$('btn-run').getParent('.dialog').retrieve('instance').dialog_body.style.height = '380px';
+	                        		}
+	                        		
+	                        		combineNum++;
+	                        	}
+	                        } else {
+		                        successNum++;
+	                        }
+	                    }
+	                }).send();
+                };
+                
+                if(combineNum > 0) {
+            		$('btn-run').hide();
+            		$('select_cmp').hide();
+                	$('btn-close').show();
+                	$('proc_info').show();
+                	
+                	$('proc_info').set('html', '成功审核：<font color="red">'+ successNum + '</font> 个订单， 需要手工审核：<font color="red">'+ combineNum + '</font> 个订单');
+            	} else {
+            		$('btn-run').getParent('.dialog').retrieve('instance').close();
+            	}
+            }
+        }
+    });
+    
+    function getCombineElement(order) {
+    	return $('corder_list').getHTML() + '<div><table style="width:100%;"><tr><td width="45%;">订单号：'+ order.order_bn +'</td> <td><a target="_blank" href="index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]='+ order.order_id +'">手动审核</a></td></tr></table></div>';
+    }
+    
+</script>

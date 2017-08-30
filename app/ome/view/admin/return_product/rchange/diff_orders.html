@@ -1,0 +1,44 @@
+<div class='division' id='diff-order-container'>
+    <{include file='admin/return_product/rchange/diff_orders_container.html'}>
+</div>
+<script>
+function gotopage(page){
+
+    new Request.HTML({
+        url:'index.php?app=ome&ctl=admin_return_rchange&act=selectDiffOrder&p[0]='+<{$order_id}>+'&p[1]='+page,
+        update:$('diff-order-container')
+    }).send();    
+}
+
+function nextstep(){
+    var orderel = $E('#select-diff-order-form input[name="order_id"]:checked');
+    if ( !orderel )
+    {
+        MessageBox.error('请先选择订单!');return;
+    }
+
+    new Request.HTML({
+        url:'index.php?app=ome&ctl=admin_return_rchange&act=diffOrderSelected',
+        data:$('select-diff-order-form'),
+        update:$('diff-order-container')
+    }).send();
+}
+
+function cancel(el){
+    el.getParent('.dialog').retrieve('instance').close();
+}
+
+function showGoods(e){
+    var e  = new Event(e), el = e.target;
+    var tips = new Tips({
+            onShow:function(tip,el){
+                el.addClass('active');
+                tip.setStyle('display','block');
+            },
+            text: function(element){
+                return element.get('rel');
+            }
+    });
+    tips.attach(el);
+}
+</script>

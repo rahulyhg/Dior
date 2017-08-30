@@ -1,0 +1,211 @@
+<script>
+$('stateForm').store('target',{
+    onRequest:function(){
+       $('statement').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('statement').set('disabled', '');
+       }else{
+           $('statement').set('disabled', 'true');
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           window.close();
+       }
+    }
+});
+
+//关闭POP
+$('close_state').addEvent('click', function(event){
+	this.getParent('.dialog').retrieve('instance').close();
+});
+
+//结算成功处理
+function statementHand(){
+	alert('批量结算成功');
+	$('stateForm').getParent('.dialog').retrieve('instance').close();
+	
+}
+//结算确认
+function statementConfirm(){
+    // 检测0金额订单
+    var zero_receipts = document.getElementsByName('zero_receipts');
+    var zero_receipt = false;
+    for(var i=0;i<zero_receipts.length;i++) {
+        if (zero_receipts[i].checked) {
+            zero_receipt = zero_receipts[i].value;
+        }
+    }
+    if (zero_receipt == false) {
+        alert('请选择是否处理零金额赊账单！');
+        document.getElementById('zero_receipts_tr').style.backgroundColor = '#F90';
+        return false;
+    }
+    
+    if(zero_receipt == 'N') {
+        //忽略零金额订单
+        var cs_ids = document.getElementsByName('cs_id[]');
+        for(var i=0;i<cs_ids.length;i++) {
+            if (document.getElementById('cs_payable'+i).value==0) {
+                cs_ids[i].value = 0;
+            }
+        }
+    }
+
+	if(confirm('选中的赊购单将被批量执行结算，确定吗？')){
+		return true;
+	}else{
+        return false;
+    }
+}
+//提交表单
+function sendForm(event){
+	var _form = $('stateForm');
+    _form.set('action',_formActionURL).fireEvent('submit',new Event(event));
+    statementHand();	
+}
+
+function autoFill(){
+	//var autofill = $('autoFill').get('checked');
+	var autofill = true;
+	var bank_no_ini = $('bank_no_first').get('value');
+	var operator_ini = $('operator_first').get('value');
+	var memo_ini = $('memo_first').get('value');
+	//自动填充银行帐号
+	var bank_no = $('stateForm').getElements('input[label=bank_no]');
+	bank_no.each(function(item){
+		if (autofill==true){
+          item.set('value',bank_no_ini);
+		}else{
+			item.set('value','');
+		}
+    });
+	//自动填充经办人
+    var operator = $('stateForm').getElements('input[label=operator]');
+    operator.each(function(item){
+        if (autofill==true){
+          item.set('value',operator_ini);
+        }else{
+            item.set('value','');
+        }
+    });
+    //自动填充备注
+    var memo = $('stateForm').getElements('textarea[label=memo]');
+    memo.each(function(item){
+        if (autofill==true){
+          item.set('value',memo_ini);
+        }else{
+            item.set('value','');
+        }
+    });
+}
+
+
+var _form = $('stateForm');
+var _formActionURL = _form.get('action');
+
+//结算判断
+$('statement').addEvent('click', function(event){
+    autoFill();
+    //确认结算
+    var sTrue = statementConfirm();
+    if(sTrue==true){
+      sendForm(event);
+    }
+                
+});
+
+</script>
+
+<form id="stateForm" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+
+    <div class="tableform">
+        <{foreach from=$detail item=item key=key name=credit }>
+        <input type="hidden" name="cs_id[]" value="<{$item.cs_id}>" />
+        <input type="hidden" id="cs_payable<{$key}>" value="<{$item.payable}>" />
+        <div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0" class="girdlist"> 
+			<tr>
+				<th>入库编号：</th>
+				<td><{$item.eo_bn}></td>
+				<th>添加日期：</th>
+				<td><{$item.add_time|date_format:"%Y-%m-%d"}></td>
+				<th></th>
+                <td>
+                </td>
+			</tr>
+			<tr>
+                <th>应付金额：</th>
+                <td colspan="3">
+                <span class="amount"><{$item.payable|cur}></span>=商品总额(<span class="red"><{$item.product_cost|cur}></span>)+物流费用(<span class="red"><{$item.delivery_cost|cur}></span>)
+                </td>
+            </tr>
+			<tr>
+				<th>结算金额：</th>
+				<td>
+				<{$item.payable|cur}>
+				</td>
+				<th>结算余额：</th>
+				<td >
+				0
+				</td>
+			</tr>
+            <tr><th>供应商：</th>
+                <td><{$item.supplier_name}></td></tr>
+
+            <{if $env.foreach.credit.first eq 1}>
+            <tr bgcolor="#EEE" id="zero_receipts_tr">
+			    <th>零金额赊账单：</th>
+                <td colspan="5">
+                    <input type="radio" value="N" name="zero_receipts" id="zero_receipts0" /> 
+                    <label for="zero_receipts0"> 不处理</label> 　　
+                    <input type="radio" value="Y" name="zero_receipts" id="zero_receipts1" /> 
+                    <label for="zero_receipts1"> 处理</label>
+                </td>
+			</tr>
+            <{/if}>
+            <tr style="display:<{if $env.foreach.credit.first ne 1}>none<{/if}>;" >
+			    <th>银行帐号：</th>
+                <td>
+                <{if $key==0}>
+                <{input type="text" name="bank_no_first" id="bank_no_first"  value="" }>
+                <{input type="hidden" label='bank_no' name="bank_no[{$item.cs_id}]" value="" }>
+                <{else}>
+                <{input type="text" label='bank_no' name="bank_no[{$item.cs_id}]" value="" }>
+                <{/if}>
+                </td>
+                <th>经办人：</th>
+                <td colspan="2">
+                <{if $key==0}>
+                <{input type="text" name="operator_first" id="operator_first"  value="{$operator}" }>
+                <{input type="hidden" label='operator' name="operator[{$item.cs_id}]" value="{$operator}" }>
+                <{else}>
+                <{input type="text" label='operator' name="operator[{$item.cs_id}]" value="{$operator}" }>
+                <{/if}>
+                </td>
+			</tr>
+			<tr style="display:<{if $env.foreach.credit.first ne 1}>none<{/if}>;">
+                <th>备注：</th>
+                <td colspan="2">
+                <{if $key==0}>
+                <{input type="textarea" class="x-input" name="memo_first" id="memo_first" value="" row="8" col="80" }>
+                <{input type="hidden" label='memo' name="memo[{$item.cs_id}]"  value="" row="8" col="80" }>
+               
+                <{else}>
+                <{input type="textarea" class="x-input" label='memo' name="memo[{$item.cs_id}]"  value="" row="8" col="80" }>
+                <{/if}>
+                </td>
+            </tr>
+		</table>
+		</div>
+		<{/foreach}>
+		
+		<div class="table-action">
+	
+		           <{button class="btn-primary" type="button" id="statement" label="结算" }>
+		           <{button class="btn-secondary" type="button" id="close_state" label="取消" }>
+		           <{input type="hidden" name="statementSubmit" value="do" }>
+
+       </div>
+       </div>
+</form>

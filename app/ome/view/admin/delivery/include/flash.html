@@ -1,0 +1,109 @@
+<script>
+	function onlyPrint(){
+		$('dly_printer_flash').doPrint();
+	}
+    function doPrint(){
+        new Dialog(new Element("div.tableform",{html:'<div id="pause" class="division">正在提交...<{img app="desktop" src="loading.gif"}></div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'}),{
+            title:'提示',
+            width:230,
+            height:130,
+            modal:true,
+            resizeable:false}
+        );
+        var printname= $('printname').value;
+        new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=express&str='+printname,
+            onSuccess:function(json){
+                if (json == 'true'){
+                    $('pause').getParent('.dialog').retrieve('instance').close();
+                    $('dly_printer_flash').doPrint();
+                    
+                }else {
+                    $('pause').set('text',json);
+                }
+            }
+        }).send();
+    }
+    var swf = new Swiff('<{$base_dir}>/app/ome/upload/images/printermode.swf?<{$smarty.now}>', {
+        width:  '100%',
+        height: '100%',
+        params:{wMode:false},
+        id:'dly_printer_flash',
+        container: $('dly_printer'),
+        vars:{
+            xml:'<{$prt_tmpl.prt_tmpl_data}>',
+            data:$("print_data").value <{if $tmpl_bg}>,
+            bg:'<{$tmpl_bg}>'<{/if}>,
+            order_number:'<{$order_number}>',
+            offset_y:'<{$prt_tmpl.prt_tmpl_offsety|default:0}>',
+            offset_x:'<{$prt_tmpl.prt_tmpl_offsetx|default:0}>',
+            page_w:'<{$prt_tmpl.prt_tmpl_width}>',
+            page_h:'<{$prt_tmpl.prt_tmpl_height}>',
+            copyright:'shopex'} 
+    });
+
+    /*flash call*/
+
+    var printermode_complete_callback = function(){
+        //$('dly_printer').empty().set('html',"<div class='success'>任务已成功发送至打印机!</div>");
+        //$('doprint_btn').dispose();
+        //showBindLogi();
+        var set_time_func_status = "<{$set_time_func_status}>";
+        if (set_time_func_status == 'true') {
+            setTimeout('showBindLogi()', 1000);
+        }
+        else {
+            showBindLogi();
+        }
+        
+    }
+
+    var printermode_ready_callback = function(){
+    }
+
+    function changePrintMode(mode) {
+	
+        if (mode==1) {
+            mode = 'flash';
+        } else {
+            mode = 'activex';
+        }	
+	
+        new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=setPrintMode',method:'post',data:'mode='+mode,
+            onSuccess:function(json){
+                if (json == 'true'){
+                    window.location.reload();
+                }else {
+                    alert(json);
+                }
+            }
+        }).send();
+    }
+    
+    function downloadActivex() {
+        window.open("http://www.fh.taoex.com/files/TaoExPrint_Setup.exe");
+    }
+
+    /*if (window.ActiveXObject) {
+        $('content').style.display='';
+        $('content').innerHTML = '<table width="100%" border="0" cellspacing="0" cellpadding="0">' +
+            '<tr><td><div class="note"><h5>建议使用  ACTIVE 控件打印：</h5>' +
+            '为了取的更好的打印效果，我们建议您使用 ACTIVEX打印模式来进行打印。<br\>' + 
+            '如是第一次使用ACTIVEX打印，请先&nbsp;<a href="javascript:void();" onclick="downloadActivex();" style="color:blue;font-weight:700;text-decoration: underline;">下载ACTIVEX控件</a>&nbsp;并进行安装！<br><br><{button label="切换至 ACTIVEX 打印模式" onclick="changePrintMode(0)" id="doChangPrintMode_btn"}>'+
+            '</td></tr></table> ';
+    }*/
+    <{ if $errIds }>
+        var alertMsg = '';
+        <{ foreach from=$errIds item=cid }>
+        alertMsg = alertMsg + "<{$errBns[$cid]}>：" + "<{$errInfo[$cid]}> <br/>" ;
+        alertMsg = alertMsg + '';
+        <{/foreach}>
+        
+        alertMsg = alertMsg + '<br/>以上发货单在本次打印列表中已被剔除，请在处理后重新打印。';
+
+        $('information').style.display='';
+    if ($('information').innerHTML != '')
+        $('information').innerHTML = $('information').innerHTML + alertMsg;
+    else
+        $('information').innerHTML = alertMsg;
+        <{ /if }>
+</script>

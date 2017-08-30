@@ -1,0 +1,297 @@
+<textarea id="template_data" name="template_data" style="display:none">
+<{if $printTmpl.template_data}>
+    <{$printTmpl.template_data}>
+<{else}>
+paper:<{$printTmpl.template_width}>,<{$printTmpl.template_height}>,NONE;
+<{/if}>
+</textarea>
+<textarea id="jsondata_newdata" style="display:none">
+<{$jsondata}>
+</textarea>
+<script>
+/** 控件加载调用，返回总页数 **/
+function putpagecount(pagecount) {
+    var putpagcecount_title = pagecount;
+    if (pagecount <= 1) {
+        $('disp_stock_page').setStyle('display', 'none');
+    }
+    $('total_putpage').set('html', putpagcecount_title);
+    totalPage = pagecount;
+}
+
+(function() {
+    var embedId = 'embed1<{$uniqid}>';
+    var embed1 = $(embedId);
+    var browerType = parseInt("<{$userAgent.type}>");
+    //var jsondata = '<{$jsondata}>';
+    //var jsondata = Json.toString(<{$jsondata}>);
+    var totalPage = '<{$totalPage}>';
+    var curPage = 0;
+
+    //控件没有安装, IE, Chrome没有安装控件为object，Firfox没有安装控件为function
+    if ( ("object" == typeof(embed1) || "function" == typeof(embed1)) && ('adjustpos' in embed1 == false)) {
+        $(embedId).setStyle('display', 'none');
+        $("formContent").setStyle('display', 'none');
+        downloadprintsite();
+    }
+
+    window.addEvent('domready', function() {
+        var printerlist = embed1.loadprinterlist();
+        var result = JSON.decode(printerlist);
+
+        if(result.printerlist){
+            var defaultIndex = expressIndex = -1;
+            //组织打印机选择列表
+            var temp = '<select id="printerlist" name="printerlist" class="x-input-select inputstyle" style="width:130px;">';
+            Object.each(result.printerlist,function(i,index){
+                temp+='<option value="'+i.printername+'">'+i.printername+'</option>';
+                //记录默认打印机的键值
+                if(result.default == i.printername) {
+                    defaultIndex = index;
+                }
+
+                //记录上次选择的打印机键值
+                if(result.lastSelected.express == i.printername && result.lastSelected.express !='') {
+                    expressIndex = index;
+                }
+            });
+            temp+='</select>';
+            $('printerSpan').set('html', temp);
+
+            //设置本次应该选择的打印机
+            var printerIndex = 0;
+            if(expressIndex>=0) {
+                printerIndex = expressIndex;
+            } else if(defaultIndex>=0) {
+                printerIndex = defaultIndex;
+            }
+            $('printerlist').options[printerIndex].selected = true;
+
+            //设置本次选择打印机的属性
+            var selectPrinter = result.printerlist[printerIndex];
+            if(selectPrinter) {
+                //设置偏移量
+                $('offsetx').set('value', selectPrinter.x);
+                $('offsety').set('value', selectPrinter.y);
+                //设置热敏
+                if (selectPrinter.isThermal) {
+                    $('thermal').set('checked', true);
+                } else {
+                    $('thermal').set('checked', false);
+                }
+            }
+
+            //增加打印机变更事件
+            $('printerlist').addEvent('change',function(){
+                var printer = $("printerlist").value;
+                Object.each(result.printerlist,function(i,index){
+                    if(printer == i.printername) {
+                        //设置偏移量
+                        $('offsetx').set('value', i.x);
+                        $('offsety').set('value', i.y);
+                        //设置热敏
+                        if (i.isThermal) {
+                            $('thermal').set('checked', true);
+                        } else {
+                            $('thermal').set('checked', false);
+                        }
+                    }
+                });
+            });
+        }
+        else {
+            $('printPreview_1').setStyle('display', 'none');
+            $('printPreview_2').setStyle('display', 'none');
+            $('printPreview_3').setStyle('display', '');
+        }
+    });
+
+    $('printPreview_close').addEvent('click', function(){
+        window.close();
+    });
+
+    $('printerSetting').addEvent('click', function(){
+        var printer = $('printerlist').value;
+        var thermal = ($('thermal').checked==true) ? 1 : 0;
+        embed1.printreport(printer,'express',1,thermal);
+    });
+
+    if($('onlyprint_btn')) {
+        $('onlyprint_btn').addEvent('click', function(){
+            var printer = $('printerlist').value;
+            var thermal = ($('thermal').checked==true) ? 1 : 0;
+            var offsetx = $('offsetx').value;
+            var offsety = $('offsety').value;
+            offsetx = offsetx.toInt();
+            offsety = offsety.toInt();
+
+            /* 设置偏移量 */
+            if(offsetx>0 || offsety>0) {
+                embed1.adjustpos(offsetx,offsety,printer);
+            }
+            /* 执行打印 */
+            embed1.printreport(printer,'express',0,thermal);
+        });
+    }
+
+    if($('doprint_btn')) {
+        $('doprint_btn').addEvent('click', function(){
+            new Dialog(new Element("div.tableform",{html:'<div id="pause" class="division">正在提交...<{img app="desktop" src="loading.gif"}></div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'}),{
+                title:'提示',
+                width:230,
+                height:130,
+                modal:true,
+                resizeable:false}
+            );
+            if ($('printname')) {
+                var printname= $('printname').value;
+            } else {
+                var printname= '';
+                <{if $vid}>
+                printname= '<{$vid}>';
+                <{/if}>
+            }
+            new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=stock&str='+printname,
+                onSuccess:function(json){
+                    if (json == 'true'){
+                        $('pause').getParent('.dialog').retrieve('instance').close();
+                        var printer = $('printerlist').value;
+                        var thermal = ($('thermal').checked==true) ? 1 : 0;
+                        var offsetx = $('offsetx').value;
+                        var offsety = $('offsety').value;
+                        offsetx = offsetx.toInt();
+                        offsety = offsety.toInt();
+
+                        /* 设置偏移量 */
+                        if(offsetx>0 || offsety>0) {
+                            embed1.adjustpos(10,20,printer);
+                        }
+                        /* 执行打印 */
+                        embed1.printreport(printer,'express',0,thermal);
+                    }else {
+                        $('pause').set('text',json);
+                    }
+                }
+            }).send();
+        });
+    }
+    /* 加载打印控件编辑器 */
+    function loadReport() {
+        var s = $("template_data").value;
+        try {
+            //var vAbout = embed1.LoadReport(s,jsondata);
+            da = $('jsondata_newdata').value
+            if (browerType == 2) {
+                var vAbout = embed1.LoadReport(s,da,2);
+            }
+            else {
+                setTimeout(function(){var vAbout = embed1.LoadReport(s,da,2);}, 20);
+            }
+        } catch(e) {
+            alert(e.number);
+        }
+        return false;
+    }
+    loadReport();
+    function getTotalPage(record) {
+        if (record == '') {
+            total = embed1.getTotalPage();
+        }
+        else {
+            total = embed1.getTotalPage(record);
+        }
+        return total;
+    }
+    <{if $totalPage>=1}>
+    /* 跳转到某条 */
+    var jump=$('jumpinput');
+    var keyCodeFix=[13,48,49,50,51,52,53,54,55,56,57,96,97,98,99,100,101,102,103,104,105,8,9,46,37,39];
+
+    jump.addEvent('keydown',function(e){
+        totalPage = getTotalPage('');
+        if(!keyCodeFix.contains(e.code)){e.stop();}
+        if (e.key=="enter") {
+            var page = jump.value.toInt()-1;
+            if (page>=0 && page<totalPage) {
+                curPage = page;
+                embed1.moveto(page);
+                $('current_page').set('html', "<font color=\"red\">" + (curPage + 1) + "</font>");
+            }
+        }
+    });
+
+    /* 上一条 */
+    $('uppage').addEvent('click', function(){
+        var page = curPage - 1;
+        totalPage = getTotalPage('');
+        if (page>0 && page<totalPage) {
+            curPage = page;
+            embed1.moveto(page);
+        }
+        else {
+            curPage = 0;
+            embed1.moveto(0);
+        }
+        $('current_page').set('html', "<font color=\"red\">" + (curPage + 1) + "</font>");
+    });
+
+    /* 下一条 */
+    $('nextpage').addEvent('click', function(){
+        var page = curPage+1;
+        totalPage = getTotalPage('');
+        if (page<totalPage && page>0) {
+            curPage = page;
+            embed1.moveto(page);
+        }
+        else if (page >= totalPage) {
+            curPage = totalPage - 1;
+        }
+        else {
+            curPage = totalPage;
+            embed1.moveto(totalPage);
+        }
+        $('current_page').set('html', "<font color=\"red\">" + (curPage + 1) + "</font>");
+    });
+    <{/if}>
+
+    <{ if $errIds }>
+    var alertMsg = '';
+    <{ foreach from=$errIds item=cid }>
+    alertMsg = alertMsg + "<{$errBns[$cid]}>：" + "<{$errInfo[$cid]}> <br/>" ;
+    alertMsg = alertMsg + '';
+    <{/foreach}>
+
+    alertMsg = alertMsg + '<br/>以上备货单在本次打印列表中已被剔除，请在处理后重新打印。';
+
+    $('information').style.display='';
+    if ($('information').innerHTML != '') {
+        $('information').innerHTML = $('information').innerHTML + alertMsg;
+    } else {
+        $('information').innerHTML = alertMsg;
+    }
+    <{ /if }>
+})();
+
+function downloadprintsite() {
+    setTimeout('diagLoadPrintSite()',1000);
+}
+
+function diagLoadPrintSite() {
+    new Dialog('index.php?app=ome&ctl=admin_order&act=diagLoadPrintSite',{width:500,height:220,title:'ShopEx Print Controller',
+        onClose:function(){
+            self.close();
+        }
+    });
+}
+function errorreportprintsite(errmsg) {
+    var data={'errmsg':errmsg};
+    new Request({
+        url : 'index.php?app=ome&ctl=admin_order&act=errorReportPrintSite',
+        method : 'post',
+        data:data,
+        onSuccess:function(responseText){
+            ;
+        }
+    }).send();
+}
+</script>

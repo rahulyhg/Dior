@@ -1,0 +1,37 @@
+<div class="tableform"> 
+<h4>采购结算统计</h4>
+
+<div class="division" >
+统计日期范围：<{$clearingtable.begin_date}>至<{$clearingtable.end_date}>，本公司与<{if $clearingtable.supplier_name}><b><{$clearingtable.supplier_name}></b><{else}>所有供应商<{/if}>的往来帐统计如下：
+</div>
+
+<div class="division" id="accordion">
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+            <tr align="left">
+                <th>期初应付</th>
+                <th>期初应收</th>
+                <th>本期增加应付</th>
+                <th>本期增加应收</th>
+                <th>本期已付</th>
+                <th>本期已收</th>
+                <th>期末应付</th>
+                <th>期末应收</th>
+                <th>差额</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="toggler atStart" >
+                <td><{$clearingtable.initial_pay|cur}></td>
+                <td><{$clearingtable.initial_receive|cur}></td>
+                <td><{$clearingtable.pay_add|cur}></td>
+                <td><{$clearingtable.receive_add|cur}></td>
+                <td><{$clearingtable.paid|cur}></td>
+                <td><{$clearingtable.received|cur}></td>
+                <td><{$clearingtable.final_pay|cur}></td>
+                <td><{$clearingtable.final_receive|cur}></td>
+                <td><{$clearingtable.difference|cur}></td>
+            </tr>
+            </tbody>
+        </table>
+   </div>

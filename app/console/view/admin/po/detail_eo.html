@@ -1,0 +1,81 @@
+<div class="tableform">
+<h4>入库单记录</h4>
+<div class="division">
+
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<{if !$detail}>
+<tr><td colspan="7">暂无记录</td></tr>
+<{else}>
+<thead>
+      <tr>
+        <th>入库单编号</th>
+        <th>运费</th>
+        <th>入库日期</th>
+        <th>供应商</th>
+        <th>入库员</th>
+        <th>仓库</th>
+        <th>明细</th>
+        </tr>
+       </thead>
+      <{foreach from=$detail item=items}>
+      <tbody>
+      <tr>
+        <td><{$items.original_bn}></td>
+        <td><{$items.iso_price|cur}></td>
+        <td><{$items.create_time|date_format:"%Y-%m-%d"}></td>
+        <td><{$items.supplier_name}></td>
+        <td><{$items.operator}></td>
+        <td><{$items.branch_name}></td>
+        <td><input type="button" class="btn" onclick="new Dialog('index.php?app=purchase&amp;ctl=admin_eo&act=eo_items&p[0]=<{$items.iso_id}>',{width:600,title:'入库单明细（编号：<{$items.original_bn}>）'});" value="查看" ></td>
+        </tr>
+        </tbody>
+      <{/foreach}>
+<{/if}>
+    </table>
+</div>
+
+
+<{if $cancel_detail}>
+<h4>入库取消记录</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<{if !$cancel_detail}>
+<tr><td colspan="7">暂无记录</td></tr>
+<{else}>
+<thead>
+      <tr>
+        <th>退货单编号</th>
+        <th>退货金额</th>
+        <th>退货日期</th>
+        <th>供应商</th>
+        <th>经办人</th>
+        <th>仓库</th>
+        <th>采购方式</th>
+        <th>采购日期</th>
+        <th>退货方式</th>
+        <th>明细</th>
+        </tr>
+        </thead>
+      <{foreach from=$cancel_detail item=items}>
+      <tbody>
+      <tr>
+        <td><{$items.rp_bn}></td>
+        <td><{$items.amount|cur}></td>
+        <td><{$items.returned_time|date_format:"%Y-%m-%d"}></td>
+        <td><{$items.supplier_name}></td>
+        <td><{$items.operator}></td>
+        <td><{$items.branch_name}></td>
+        <td><{$items.po_type}></td>
+        <td><{$items.purchase_time|date_format:"%Y-%m-%d"}></td>
+        <td><{$items.rp_type}></td>
+        <td><input type="button" class="btn" onclick="new Dialog('index.php?app=purchase&amp;ctl=admin_returned_purchase&act=rp_items&p[0]=<{$items.rp_id}>&p[1]=po',{width:600,title:'明细（退货单编号：<{$items.rp_bn}>）'});" value="查看" ></td>
+        </tr>
+        </tbody>
+      <{/foreach}>
+<{/if}>
+    </table>
+</div>
+<{/if}>
+
+</div>

@@ -1,0 +1,111 @@
+<link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css"> 
+<div class="tableform"> 
+<h4>买家说：<{$pro_detail.title}></h4>
+平台订单号<{$pro_detail.order_id}>:订单状态<{$pro_detail.status}>：提出申请的时间：<{$pro_detail.add_time|cdate:FDATE_STIME}>
+
+<table width="100%" border="0" class="finderInform">
+  <tr>
+    <th colspan="5">申请售后服务的商品</th>
+  </tr>
+  <tr>
+    <th>货号</th>
+    <th>商品名称</th>
+    <th>数量</th>
+    <th>是否校验</th>
+    <th>所属仓库</th>
+  </tr>
+ <{foreach from=$pro_detail.items item=items}>    
+  <tr>
+    <td><{if $items.is_check=='是'}><a href="index.php?app=ome&ctl=admin_sv_process&item_id=<{$items.item_id}>"><{$items.bn}></a><{else}><{$items.bn}><{/if}></td>
+    <td><{$items.name}></td>
+    <td><{$items.num}></td>
+    <td><{$items.is_check}></td>
+    <td><{$items.branch_name}></td>
+  </tr>
+ <{/foreach}>   
+</table>
+</div>
+<{if $pro_detail.image_file}>
+<div class="edivision"> 
+<table width="100%" border="0" class="finderInform">
+  <tr>
+    <th>附件下载</th>
+  </tr>
+  <tr>
+    <td> <a class="margin10" href="javascript:file_download()"><{t}>请点击下载该附件<{/t}></a></td>
+  </tr>
+</table>
+</div>
+<{/if}>
+<div class="edivision"> 
+<table width="100%" border="0">
+  <tr>
+    <th>详细说明</th>
+  </tr>
+  <tr>
+    <td> <{$pro_detail.content|escape:"html"}></td>
+  </tr>
+</table>
+</div>
+
+<h4>仓库收货信息</h4>
+<div class="division"> 
+<table width="100%" class="gridlist" border="0" >
+<thead>
+  <tr>
+    <th>仓库</th>
+    <th>快递公司</th>
+    <th>快递单号</th>
+    <th>快递费用</th>
+    <th>是否到付</th>
+  </tr>
+</thead>
+<tbody>
+
+  <tr>
+    <td><{$pro_detail.process_data.branch_name}></td>
+    <td><{$pro_detail.process_data.shipcompany}></td>
+    <td><{$pro_detail.process_data.shiplogino}></td>
+    <td><{$pro_detail.process_data.shipmoney}></td>
+    <td>
+    <{if $pro_detail.process_data.shipdaofu<>'2'}>
+    <{if $pro_detail.process_data.shipdaofu=='0'}>
+       否<{else}>是<{/if}>
+   <{else}>
+   -
+   <{/if}></td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+<h4>操作日志</h4>
+<div class="division">
+<table width="100%" border="0" class="gridlist" cellspacing="0" cellpadding="0" >
+<thead>
+  <tr>
+    <th>操作时间</th>
+    <th>操作员</th>
+    <th>操作内容</th>
+    
+  </tr>
+  </thead>
+  <tbody>
+ <{foreach from=$pro_detail.log item=log}>
+  <tr>
+    <td><{$log.operate_time|cdate:FDATE_STIME}></td>
+    <td><{$log.op_name}></td>
+    <td><{$log.memo}></td>
+  </tr>
+ <{/foreach}>
+ </tbody>
+</table>
+</div>
+</div>
+<script>
+
+function file_download(){
+    var ifm=new IFrame({src:'index.php?app=ome&ctl=admin_return&act=file_download2&p[0]=<{$pro_detail.return_id}>'});
+    ifm.injectAfter(document.body);
+}
+</script>

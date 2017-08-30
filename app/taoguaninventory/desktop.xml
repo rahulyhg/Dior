@@ -1,0 +1,18 @@
+<desktop>	
+	<!--<workground name="仓储" id="storage_center" order="700">
+		<menugroup name="盘点管理">
+			<menu controller='admin_inventorylist' action="add_invertory"  permission='storage_inventory_list' display='false' order='6000400'>新建</menu>
+			<menu controller='admin_inventorylist' action="index"  params='flt:list' permission='storage_inventory_list' display='true' order='6000300'>盘点</menu>
+			<menu controller='admin_inventorylist' action="index"  params='flt:confirm' permission='storage_inventory_confirm' display='true' order='6000600'>盘点表确认</menu>
+			<menu controller='admin_queue' action="index"  display='true' permission='storage_inventory_queue' order='6000700'>导入中盘点</menu>
+        </menugroup>
+	</workground>
+
+	<permissions>
+		<permission id="storage_inventory_list" show='ome_roles:show_branch' save='ome_roles:save_role'>盘点</permission>
+		<permission id="storage_inventory_confirm" show='ome_roles:show_branch' save='ome_roles:save_role'>盘点表确认</permission>
+		<permission id="storage_inventory_queue" >导入中盘点</permission>
+		<permission id="codestate" >编码状态信息</permission>
+	</permissions>
+-->
+</desktop>

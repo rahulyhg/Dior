@@ -1,0 +1,90 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="order_process" method="post">
+ <input type="hidden" name="order_action" id="order_action" value="" />
+<div class="tableform">
+<{foreach from=$item_list item=objs key=obj_type}>
+    <{if empty($configlist.$obj_type) }>
+        <{include app="ome" file="admin/order/products/goods_view.html"}>
+    <{else}>
+        <{include app="{$configlist.$obj_type.app}" file="{$configlist.$obj_type.html}"}>
+    <{/if}>
+<{/foreach}>
+<div class="division">
+    <h4>本单操作记录</h4>
+    <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+        <thead>
+        <tr>
+            <th>操作时间</th>
+            <th>操作人</th>
+            <th>行为</th>
+            <th>操作内容</th>
+        </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$history item=his}>
+        <tr>
+            <td><{$his.operate_time}></td>
+            <td><{$his.op_name}></td>
+            <td><{$his.operation}></td>
+            <{if $his.operation == '订单编辑'}>
+                <td><{$his.memo}> <a target='_blank' href='index.php?app=ome&ctl=admin_order&act=show_operation&order_id=<{$order_id}>&log_id=<{$his.log_id}>'>查看快照</a></td>
+            <{else}>
+                <td><{$his.memo}></td>
+            <{/if}>
+        </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>
+
+  <input type="hidden" name='order[order_id]' value="<{$order.order_id}>">
+  <h4>买家留言</h4>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+   <{if $order.custom_mark}>
+   <tr>
+      <th><{t}>买家留言：<{/t}></th>
+      <td>
+        <{foreach from=$order.custom_mark item=items}>
+        <div id="memo_show">
+	    <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+	    </div>
+	    <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+    <tr>
+      <th><{t}>追加留言：<{/t}></th>
+      <td><textarea name="order[custom_mark]" id="memo" rows="6" style="width:80%"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <th>&nbsp;</th>
+      <td><{button label="追加留言" id="pause" onclick="order_custom_mark()"}></td>
+    </tr>
+    </table>  
+</div>
+</form>
+
+<script>
+ 
+  function order_pause(){
+    $('order_action').value = "order_pause";
+    $('order_process').fireEvent('submit',{stop:$empty});
+  }
+
+  function order_renew(){
+    $('order_action').value = "order_renew";
+    $('order_process').fireEvent('submit',{stop:$empty});
+  }
+  function order_custom_mark(){
+	
+    $('order_action').value = "order_custom_mark";
+	if($('memo').value==''){
+		alert('备注不可为空');
+	}else{
+		$('order_process').fireEvent('submit',{stop:$empty});
+	}
+  }
+</script>

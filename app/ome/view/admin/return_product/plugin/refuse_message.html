@@ -1,0 +1,56 @@
+<div class='division'>
+<form id='refuse' method='post' action='index.php?app=ome&ctl=admin_return&act=refuse_message' <{if $shop_type == 'taobao' || $shop_type == 'tmall'}> enctype="multipart/form-data" target="upload" isCloseDialog<{/if}>>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <{if $shop_type == 'taobao' || $shop_type == 'tmall'}>
+        <tr>
+            <th><t>上传凭证</t></th>
+            <td>
+                <{input type="sfile" name="refuse_proof" f_type="public" }>
+            </td>
+        </tr>
+
+        <{/if}>
+        <tr>
+            <th><t>备注</t></th>
+            <td><textarea name='refuse_message' vtype="required"></textarea></td>
+        </tr>
+    </table>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" type='submit'}> 
+    </div>
+    <input type="hidden" name='return_id' value='<{$return_id}>'>
+    <input type="hidden" name='shop_type' value='<{$shop_type}>'>
+    <input type="hidden" id='finder_id' name='finder_id' value='<{$finder_id}>'>
+</form>
+</div>
+<script>
+var finder_id = $('finder_id').value;
+$('refuse').store('target',{
+    onComplete:function(resp){
+    rs = JSON.decode(resp);
+    if (rs.error){
+        if (confirm("线上拒绝失败,是否本地拒绝？! "))
+        {
+            new Request({
+                url:'index.php?app=ome&ctl=admin_return&act=do_updateReturn&p[0]=<{$return_id}>&p[1]=5',
+                method:'post',
+                onSuccess:function(response){
+                    alert('操作成功');
+                    
+                }
+              }).send();
+
+             
+        }
+         $('refuse').getParent('.dialog').retrieve('instance').close();
+         finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+    }else{
+        
+        $('refuse').getParent('.dialog').retrieve('instance').close();
+        finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+    }
+    
+    }
+});
+</script>
+

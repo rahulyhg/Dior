@@ -1,0 +1,120 @@
+<div class="tableform">
+<h4>快递单打印测试(<{$env.post.prt_tmpl_title}>)</h4>
+<div class="note">通过打印测试，你可以微调打印偏移.达到完美的打印效果.</div>
+</div>
+
+<div id="dly_test_printer" style="height:<{$env.post.prt_tmpl_height*$dpi/25.4}>px;width:<{$env.post.prt_tmpl_width*$dpi/25.4}>px;margin:0 auto;">
+</div>
+<{*
+<pre>
+<{dump var=$env.post}>
+</pre>
+*}>
+
+<textarea id="print_test_data" style="display:none">
+   <data>
+    <item>
+        <shop_name><![CDATA[YOUR COMPANY NAME]]></shop_name>
+        <tick><![CDATA[√]]></tick>
+        <ship_name><![CDATA[收货人姓名]]></ship_name>
+        <ship_addr><![CDATA[上海市徐汇区虹桥路333号]]></ship_addr>
+        <ship_tel><![CDATA[021-51086858]]></ship_tel>
+        <ship_mobile>13966668888</ship_mobile>
+        <ship_zip>200021</ship_zip>
+        <ship_area_0><![CDATA[上海]]></ship_area_0>
+        <ship_area_1><![CDATA[上海市]]></ship_area_1>
+        <ship_area_2><![CDATA[徐汇区]]></ship_area_2>
+        <ship_addr><![CDATA[虹桥路333号406室]]></ship_addr>
+        <order_bn>201012151310009095</order_bn>
+        <order_count>7</order_count>
+        <order_memo><![CDATA[订单备注内容!]]></order_memo>
+        <delivery_bn>1000000000001</delivery_bn>
+        <date_y>2010</date_y>
+        <date_m>10</date_m>
+        <date_d>10</date_d>
+        <dly_name><![CDATA[发货人]]></dly_name>
+        <dly_area_0><![CDATA[上海]]></dly_area_0>
+        <dly_area_1><![CDATA[上海市]]></dly_area_1>
+        <dly_area_2><![CDATA[徐汇区]]></dly_area_2>
+        <dly_address><![CDATA[虹桥路333号405室]]></dly_address>
+        <dly_tel><![CDATA[021-51086858]]></dly_tel>
+        <dly_mobile>13988888888</dly_mobile>
+        <dly_zip>200021</dly_zip>
+        <text><![CDATA[自定义的内容]]></text>
+        <print_no>20110101</print_no>
+        <is_protect><![CDATA[√]]></is_protect>
+        <print_no><![CDATA[声明价值]]></print_no>
+        <cost_protect>250.00</cost_protect>
+        <member_uname>demo</member_uname>
+        <bn_amount><![CDATA[pbn1 2]]></bn_amount>
+        <name_amount><![CDATA[测试商品1 2]]></name_amount>
+        <bn_name_amount><![CDATA[pbn1 测试商品1 2]]></bn_name_amount>
+    </item>
+  </data>
+</textarea>
+
+<textarea id="print_test_xml" style="display:none">
+   <{$env.post.prt_tmpl_data}>
+</textarea>
+
+<{area inject=".mainFoot"}>
+    <div class="table-action">
+            <{button label="打印测试" id="print_test_btn" onclick="MessageBox.success('正在加载...');"}>
+    </div>
+<{/area}>
+
+<script>
+
+/*flash call*/
+var printermode_ready_callback =  function(){
+
+    $('print_test_btn').onclick = $empty;
+    
+    $('print_test_btn').addEvent('click',function(){
+        
+        $('dly_printer_test_flash').doPrint();
+            
+    
+    });
+}
+
+
+var printermode_complete_callback = function(){
+        
+        printer_editor.testPrintDialog.close();
+
+}
+
+
+new Swiff('<{$base_dir}>/app/ome/upload/images/printermode.swf?<{$smarty.now}>', {
+        width:  '100%',
+        height: '100%',
+        params:{wMode:false},
+        id:'dly_printer_test_flash',
+        container:'dly_test_printer',
+        vars:{
+        
+        xml:$('print_test_xml').value,
+        
+        
+        data:$("print_test_data").value <{if $bg_id}>,
+        
+        bg:'index.php?app=wms&ctl=admin_delivery_print&act=showPicture&p[0]=<{$bg_id}>'<{/if}>,
+        
+        order_number:1,
+        
+        print_test:'true',
+        
+        offset_y:'<{$env.post.prt_tmpl_offsety|default:0}>',
+        
+        offset_x:'<{$env.post.prt_tmpl_offsetx|default:0}>',
+        
+        page_w:'<{$env.post.prt_tmpl_width}>',
+        
+        page_h:'<{$env.post.prt_tmpl_height}>',
+        
+        copyright:'shopex'
+        
+        }
+});
+</script>

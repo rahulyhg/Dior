@@ -1,0 +1,138 @@
+<style>
+.f18{
+width:150px;
+text-align:right;
+float:right;
+}
+.f12{
+font-weight:bold;
+font-size:14px;
+text-align:left;
+}
+.accounted_tab tr td{
+border:1px solid #cccccc;
+
+
+}
+.accounted_tab .money{
+text-align:right;
+padding:3px;
+font-size:12px;
+
+}
+.accounted_tab .thead{
+text-align:center;
+padding:3px;
+font-weight:bold;
+font-size:12px;
+}
+.accounted_tab td{
+width:120px;
+}
+</style>
+<div class="large" style="width:98%;">
+<div style="background: #FBF7EE">
+<table class="accounted_tab" width="800" cellspacing=1 cellpadding=1>
+<tr><td></td><td class="thead">包裹总数
+
+
+</td><td class="thead">账单金额</td><td class="thead">预估费用</td><td class="thead">记账金额</td></tr>
+
+<tr><td class="thead">全部</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment.count}>
+<{else}>
+<{$actual_status.lesspayment.count}>
+<{/if}>
+</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment.total_delivery_cost_actual|default:0|cur}>
+<{/if}></td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment.total_delivery_cost_expect|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment.total_delivery_cost_expect|default:0|cur}>
+<{/if}>
+</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment.total_actual_amount|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment.total_actual_amount|default:0|cur}>
+<{/if}>
+</td></tr>
+<tr><td class="thead">已审核</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment_confirm.count}>
+<{else}>
+<{$actual_status.lesspayment_confirm.count}>
+<{/if}>
+</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment_confirm.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_confirm.total_delivery_cost_actual|default:0|cur}>
+<{/if}>
+</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment_confirm.total_delivery_cost_expect|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_confirm.total_delivery_cost_expect|default:0|cur}>
+<{/if}>
+</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{$actual_status.overpayment_confirm.total_actual_amount|default:0|cur}>
+<{else}>
+<{$actual_status.lesspayment_confirm.total_actual_amount|default:0|cur}>
+<{/if}>
+</td></tr>
+<tr><td class="thead">
+未审核
+</td><td class="money">
+<{if $env.get.status=='2'}>
+
+<{math equation=x-y x=$actual_status.overpayment.count y=$actual_status.overpayment_confirm.count}>
+<{else}>
+<{math equation=x-y x=$actual_status.lesspayment.count y=$actual_status.lesspayment_confirm.count}>
+<{/if}>
+
+</td><td class="money">
+￥<{if $env.get.status=='2'}>
+
+<{math equation=x-y x=$actual_status.overpayment.total_delivery_cost_actual y=$actual_status.overpayment_confirm.total_delivery_cost_actual format="%.2f"}>
+<{else}>
+<{math equation=x-y x=$actual_status.lesspayment.total_delivery_cost_actual y=$actual_status.lesspayment_confirm.total_delivery_cost_actual format="%.2f"}>
+<{/if}>
+</td><td class="money">
+￥<{if $env.get.status=='2'}>
+
+<{math equation=x-y x=$actual_status.overpayment.total_delivery_cost_expect y=$actual_status.overpayment_confirm.total_delivery_cost_expect format="%.2f"}>
+<{else}>
+<{math equation=x-y x=$actual_status.lesspayment.total_delivery_cost_expect y=$actual_status.lesspayment_confirm.total_delivery_cost_expect format="%.2f"}>
+<{/if}>
+</td><td class="money">
+￥<{if $env.get.status=='2'}>
+
+<{math equation=x-y x=$actual_status.overpayment.total_actual_amount y=$actual_status.overpayment_confirm.total_actual_amount format="%.2f"}>
+<{else}>
+<{math equation=x-y x=$actual_status.lesspayment.total_actual_amount y=$actual_status.lesspayment_confirm.total_actual_amount format="%.2f"}>
+<{/if}>
+</td></tr>
+
+</table>
+
+</div>
+ 
+
+</div>
+
+

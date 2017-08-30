@@ -1,0 +1,61 @@
+<div class='division'>
+    <h4>
+    退货信息<font color='red'>(退货信息将作为退货申请接受时回传至一号店)</font>
+    </h4>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr>
+            <th><t>是否退运费:</t></th>
+            <td>
+            <input type="radio" name='isdeliveryfee' value='1' <{if $return_product_yihaodian.isdeliveryfee=='1'}>checked<{/if}>> 是<input type="radio" name='isdeliveryfee' value='0' <{if $return_product_yihaodian.isdeliveryfee=='0' || $return_product_yihaodian.isdeliveryfee==''}>checked<{/if}>> 否
+            </td>
+        </tr>
+        <tr>
+            <th><t>是否寄回:</t></th>
+            <td><input type="radio" name='sendbacktype' value='1' <{if $return_product_yihaodian.sendbacktype=='1' || $return_product_yihaodian.sendbacktype==''}>checked<{/if}>>是<input type="radio" name='sendbacktype' value='0' <{if $return_product_yihaodian.sendbacktype=='0' }>checked<{/if}>>否<font color='red'>(回写时,如果不寄回，则直接退款)</font></td>
+        </tr>
+        <tr>
+            <th><t>是否使用默认联系人:</t></th>
+            <td>
+            <input type="radio" class='isdefaultcontactname' name='isdefaultcontactname' value='1' <{if $return_product_yihaodian.isdefaultcontactname=='1'}>checked<{/if}>>是<input type="radio" name='isdefaultcontactname' class='isdefaultcontactname' value='0' <{if $return_product_yihaodian.isdefaultcontactname=='0' || $return_product_yihaodian.isdefaultcontactname==''}>checked<{/if}>>否<font color='red'>(使用默认联系人时，下面的参数联系方式等参数可以不填。否则，必填。)</font>
+            </td>
+        </tr>
+        <tr class='contactinfo'>
+            <th><t>联系人名称:</t></th>
+            <td>
+            <input type="text" name='contactname' value='<{$return_product_yihaodian.contactname}>' vtype="required">
+            </td>
+        </tr>
+        <tr class='contactinfo'>
+            <th><t>联系人电话:</t></th>
+            <td><input type="text" name='contactphone' value='<{$return_product_yihaodian.contactphone}>' vtype="required">
+            </td>
+        </tr>
+        <tr class='contactinfo'>
+            <th><t>联系人地址:</t></th>
+        <td>
+            <input type="text" name='sendbackaddress' value='<{$return_product_yihaodian.sendbackaddress}>' vtype="required">
+        </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+isdefaultcontactname = '<{$return_product_yihaodian.isdefaultcontactname|default:'0'}>';
+if(isdefaultcontactname == '1'){
+    $$('.contactinfo').setStyle('display','none');
+
+}else{
+    $$('.contactinfo').setStyle('display','');
+}
+$$('.isdefaultcontactname').addEvent('click',function(e){
+
+var value = this.value;
+if (value == '1')
+{
+    $$('.contactinfo').setStyle('display','none');
+}else{
+    $$('.contactinfo').setStyle('display','');
+}
+
+});
+</script>

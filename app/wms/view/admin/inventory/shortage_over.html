@@ -1,0 +1,65 @@
+<div class="tableform"> 
+
+<form enctype="multipart/form-data" id="Searchform" action="index.php?app=wms&ctl=admin_inventory&act=export_inventory" method="post">
+<div class="division" >
+<input type="hidden" name="inventory_id" value="<{$inventory_id}>">
+<h3>差异查看明细</h3>
+<table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+            <tr>
+                <th>货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+               <th>货位</th> 
+                <th>帐面数量</th>
+                <th>实际数量</th>
+                <th>盈(+)亏(-)记录</th>
+                <th style='display:none'>单价</th>
+                <th>品质情况</th>
+                <th>错误日志</th>
+            </tr>
+            </thead>
+            <{foreach from=$inventory_item item=items key=keys}>
+            <tbody>
+            <tr class="toggler" <{if $items.shortage_over<0}>id="toggler"<{/if}> <{if $items.is_auto==1}>bgcolor='#cccccc'<{/if}>>
+                <td><{$items.name}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><{$items.pos_name}></td>                <td><{$items.accounts_num}></td>
+                <td><a href="index.php?app=wms&ctl=admin_inventory&act=detail_inventory_object&item_id=<{$items.item_id}>&product_id=<{$items.product_id}>" target="dialog::{width:400,height:200,title:'盘点明细'}"><{$items.actual_num}></a></td>
+                <td><{$items.shortage_over}></td>
+                <td style='display:none'><{$items.price|cur}></td>
+                <td><{$items.memo}></td>
+                <td><{$items.error_log|default:'-'}></td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+            <tbody >
+           <tr>
+               <td><b>合计：</b></td>
+               <td>-</td>
+               <td>-</td>
+               <td>-</td> <td></td>
+              <td><span id="sub_accounts_num"></span><{$total.accounts_num|default:0}></td> 
+              <td><span id="sub_actual_num"></span><{$total.actual_num|default:0}></td>
+               <td><span id="sub_shortage_over"></span><{$total.shortage_over|default:0}></td>
+              
+              </tr>
+            </tbody>
+          
+        </table>
+</div>
+<div class="table-action">
+  <{button type="submit"  class="btn btn-primary" label="导出" }>
+ 
+</div>
+</form>
+<div class="gridlist-footer">
+<{$pager}>&nbsp;&nbsp;共<{$count}>条，每页显示<{$pagelimit}>条 
+</div>
+
+</div>
+
+ 

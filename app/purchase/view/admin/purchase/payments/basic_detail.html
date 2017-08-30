@@ -1,0 +1,79 @@
+   <div class="tableform">
+   <table class="orderdetails_basic" cellpadding="0" cellspacing="0">
+   <tbody>
+   <tr>
+   <td>
+   <div class="division">
+   <table cellpadding="0" cellspacing="0" border="0">
+   <tbody>
+  <tr><th>付款单编号：</th><td><{$detail.payment_bn}></td></tr> 
+   <tr><th>应付金额：</th><td> <span class="amount" <{if $detail.po_type=='cash'}>title="商品总额(<span class='red'><{$detail.product_cost|cur}></span>)+物流费用(<span class='red'><{$detail.delivery_cost|cur}></span>)"<{/if}>><{$detail.payable|cur}></span>
+                </td></tr> 
+   </tbody>
+   </table>
+   </div>
+   </td>
+   <td>
+      <div class="division">
+   <table cellpadding="0" cellspacing="0" border="0">
+   <tbody>
+  <tr><th>采购单编号：</th><td><{$detail.po_bn}></td></tr> 
+   <tr><th>生成日期：</th><td> <{$detail.add_time|date_format:"%Y-%m-%d"}></td></tr> 
+   </tbody>
+   </table>
+   </div>
+   </td>
+   <td>
+    <div class="division">
+   <table cellpadding="0" cellspacing="0" border="0">
+   <tbody>
+  <tr><th>供应商名称：</th><td> <{$detail.supplier_name}></td></tr> 
+   <tr><th>采购类型：</th><td> <{ if $detail.po_type=='cash' }>现款<{else}>预付款<{/if}></td></tr> 
+   </tbody>
+   </table>
+   </div>
+   </td>
+   </tr>
+   </tbody>
+   </table>
+ </div>
+ 
+<script type="text/javascript">
+function showTips(els){
+	if(!$('bubbleTips')) new Element('div',{
+		'class':'bubble',
+		'id':'bubbleTips',
+		'style':{'opacity':0},
+		'html':'<span id="bubbleFont"></span>'
+	}).inject($$('body')[0]);
+	var tips=$('bubbleTips');
+	
+	$$(els).addEvents({
+		'mouseenter':function(event){
+			if(!this.retrieve('tips')){
+				this.store('tips',this.get('title'));
+				this.set('title','');
+			}
+			$('bubbleFont').set('html',this.retrieve('tips'));
+			show(event);
+			tips.fade('in');
+		},
+		'mousemove':function(event){
+			show(event);
+		},
+		'mouseleave':function(){
+			tips.fade('out');
+		}
+	});
+	function show(event){
+		//获取浏览器坐标
+		var mx=event.page.x+10;
+		var my=event.page.y+10;
+		tips.setStyles({
+			'left':mx,
+			'top':my
+		});
+	}
+}
+showTips('.amount');
+</script>

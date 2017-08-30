@@ -1,0 +1,5 @@
+<services>
+    <service id="desktop_finder.ome_mdl_delivery">
+        <class>omedlyexport_finder_delivery</class>
+    </service>
+</services>

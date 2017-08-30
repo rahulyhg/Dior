@@ -1,0 +1,85 @@
+<form action="index.php?app=ome&ctl=admin_return_batch&act=set&finder_id=<{$finder_id}>" method="post" id="form1" enctype="multipart/form-data" target="upload">
+<div class="tableform">
+    <div class="division">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr>
+          <th><{t}>选择店铺:<{/t}></th>
+          <td >
+          <{foreach from=$shop item=shop}>
+            <input type='radio' name='shop_id' value='<{$shop.shop_id}>' <{if $return_batch.shop_id == $shop.shop_id}>checked<{/if}>><{$shop.name}>
+            <{/foreach}>
+            <em class="c-red">*</em>
+          </td>
+        </tr>
+        <tr>
+          <th><{t}>类型:<{/t}></th>
+          <td >
+           <select name='batch_type' vtype="required">
+           <{foreach from=$batch_type item=batch_type key=key}>
+           <option value='<{$key}>'><{$batch_type}></option>
+           <{/foreach}>
+           </select>
+            <em class="c-red">*</em>
+          </td>
+        </tr>
+        <tr>
+          <th><{t}>说明:<{/t}></th>
+          <td >
+            <textarea name='memo' vtype="required"><{$return_batch.memo}></textarea>
+            <em class="c-red">*</em>
+          </td>
+        </tr>
+        <tr>
+          <th><{t}>图片:<{/t}></th>
+          <td >
+            <{input type="sfile" name="picurl" f_type="public" vtype="required"}>
+            <em class="c-red">*</em>
+          </td>
+        </tr>
+        <{if $return_batch.picurl}>
+        <tr>
+          <th><{t}>已上传图片:<{/t}></th>
+          <td >
+            <img src='<{$return_batch.picurl}>' width=50 height=50>
+          </td>
+        </tr>
+        <{/if}>
+        <tr>
+          <th><{t}>是否默认:<{/t}></th>
+          <td >
+            <input type='radio' name='is_default' value='true' <{if $return_batch.is_default=='true'}>checked<{/if}>>是
+            <input type='radio' name='is_default' value='false' <{if $return_batch.is_default=='false'}>checked<{/if}>>否
+            <em class="c-red">*</em>
+          </td>
+        </tr>
+        </table>
+    </div>
+    </div>
+
+
+
+<div class="table-action">
+      <{button label="确定" class="btn-primary" type='submit'}> &nbsp; &nbsp;
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+<input type='hidden' id='finder_id' name='finder_id' value='<{$finder_id}>'>
+<input type='hidden' name='batch_id' value='<{$return_batch.batch_id}>'>
+</form>
+<script>
+$('form1').store('target',{
+
+    onComplete:function(rsp){
+        
+        rsp = JSON.decode(rsp);
+        var finder_id = $('finder_id').value;
+        if (rsp.error)
+        {
+            return false;
+        }
+        if($('form1').getParent('.dialog')){
+            $('form1').getParent('.dialog').retrieve('instance').close();
+            window.finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+        }
+        }
+        });
+</script>

@@ -1,0 +1,1141 @@
+<{capture name="header"}>
+<style>
+    .order-box{ height:auto; padding:10px; margin:5px 20px; border:1px solid #ddd}
+    .order-box li{ padding:3px 0}
+    .sorder-box{ height:auto; padding:3px; border:1px solid #ddd;margin-bottom: 20px;}
+    .sorder-box li{ padding:3px 3px; font-size: 13px;}
+    .order-tr{  font-size:14px; font-weight:bold; border-bottom:1px solid #ddd}
+    .table-border{ margin:10px 0; border-top:2px solid #333;border-bottom:2px solid #333}
+    .order-box td{ padding:3px 5px}
+    .order-font{ font-size:14px; font-weight:bold; padding:0 5px; clear:both}
+
+    #express_tools{z-index:65535; position:absolute;right:0 ;margin-right:5px; background:#FFFFFF;border:#CCCCCC 1px solid; }
+    #express_tools_hidden{padding:10px; width:10px; }
+    #express_tools_main{
+		padding:10px; 
+		width:350px; 
+		z-index:65535; 
+		position:absolute;
+		right:0 ;
+		margin-right:29px; 
+		background:#FFFFFF;
+		border:#CCCCCC 1px solid; 
+	}
+    .express_tools_main_head{ 
+        cursor: move;
+        font-size: 14px;
+        font-weight: bold;
+        height: 27px;
+        line-height: 27px;
+        overflow: hidden;
+        padding: 0 8px;
+    }
+</style>
+<{/capture}>
+
+<{include file="admin/delivery/include/bn.html"}>
+
+<script type="text/javascript">
+    var err = <{$err}>;
+    if (err==true){
+        new Dialog(new Element("div.tableform",'<div class="division">部分发货单已被合并或者拆分</div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'),{
+            title:'提示',
+            width:230,
+            height:130,
+            modal:true,
+            resizeable:false});
+    }
+
+    function re_finder(){
+        opener.finderGroup['<{$env.get.finder_id}>'].unselectAll();
+        opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+        window.close();
+    }
+
+    var count = <{$count}>;
+    
+    var ExpressCheck = {
+    	hasOnePrint: '<{$hasOnePrint}>',
+    	hasPrintStr: '<{$hasPrintStr}>',
+    	
+    	alertMsg: function() {
+	    	if(this.hasOnePrint>0) {
+		    	if(confirm('您选择的单据含有'+this.hasOnePrint+'条已打印快递单，你确定要重复打印吗？已打印发货单号为：\n'+this.hasPrintStr)==false) {
+		    		window.close();
+		    	}
+	    	}
+    	},
+    	
+    	checkConfirm: function() {
+    		if(this.hasOnePrint>0) {
+		    	return confirm('您的选择含有已打印快递单，请核对快递面单上的单号和收货人姓名是否对应正确！');
+	    	}
+    		
+    		return true;
+    	}
+    }
+    
+    ExpressCheck.alertMsg();
+    
+    var lc = new LogisticsCompany('<{$express_company_no}>');
+
+    //--------------------------------快递单号关联
+    //上下关联
+    function updown_express(btn){
+        next_express(btn);
+        prev_express(btn);
+    }
+    //向下关联
+    function next_express(btn){
+        var value = btn;
+        if ($("txt"+value).value == ''){
+            alert("请扫描快递单号");
+            return;
+        }
+        var str = $("txt"+value).value;
+        var express_company_no = '<{$express_company_no}>';
+        //获取当前版本
+        var logi_version = 0;
+        if($$('.logi_version')){
+            logi_version = $$('input[name=logi_version]:checked').get('value');
+        }
+        if (express_company_no){
+            switch(express_company_no){
+                case 'POSTB':
+                    if (logi_version==0) {
+                        enterNextNo(btn,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'E邮宝':
+                case 'EMS'://EMS
+                    if (isEMSNo(str)){
+                        enterNextNo(btn,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'SF'://顺丰
+                    if (isSFNo(str)){
+                        enterNextNo(btn,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'ZJS'://宅急送
+                    if (isZJSNo(str)){
+                        enterNextNo(btn,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'EYB'://经济速递
+               
+                    if (isEYBNo(str)){
+                        
+                        enterNextNo(value,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+            }
+        }
+        var end = str.substr(str.length-1, 1);
+        if(!is_num(end)){
+            alert('请输入正确的快递单号!');
+            return ;
+        }
+        num = str.match(/[1-9]\d*\b/g);
+        len = str.lastIndexOf(num);
+        start = str.substring(0,len);
+        n = new Number(num)+1;
+        
+        noHasError = true;
+        
+        setErrorTip($("txt"+value));
+        
+        var ctxt;
+        while (true){
+            var aa = value+1;
+            ctxt = $("txt"+aa);
+           
+            if (ctxt){
+                ctxt.value = start+n;
+                
+                if(setErrorTip(ctxt)==false){
+                	if(noHasError) {
+                		noHasError = false;
+                	}
+                }
+                n++;
+                value++;
+            }else {
+                break;
+            }
+        }
+        
+        setTopErrorTip();
+        
+        return;
+    }
+    
+    //向上关联
+    function prev_express(value){
+        if ($("txt"+value).value == ''){
+            alert("请扫描快递单号");
+            return;
+        }
+        var str = $("txt"+value).value;
+
+        var express_company_no = '<{$express_company_no}>';
+        //获取当前版本
+        var logi_version = 0;
+        if($$('.logi_version')){
+            logi_version = $$('input[name=logi_version]:checked').get('value');
+        }
+        if (express_company_no){
+            switch(express_company_no){
+                case 'POSTB':
+                    if (logi_version==0) {
+                        enterPrevNo(value,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'E邮宝':
+                case 'EMS'://EMS
+                    if (isEMSNo(str)){
+                        enterPrevNo(value,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'SF'://顺丰
+                    if (isSFNo(str)){
+                        enterPrevNo(value,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'ZJS'://宅急送
+                    if (isZJSNo(str)){
+                        enterPrevNo(value,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+                case 'EYB'://经济速递
+                    
+                    if (isEYBNo(str)){
+                        enterPrevNo(value,express_company_no,logi_version);
+                        return ;
+                    }
+                    break;
+            }
+        }
+
+        var end = str.substr(str.length-1, 1);
+        if(!is_num(end)){
+            alert('请输入正确的快递单号!');
+            return ;
+        }
+
+        num = str.match(/[1-9]\d*\b/g);
+        len = str.lastIndexOf(num);
+        start = str.substring(0,len);
+        n = new Number(num)-1;
+        
+        noHasError = true;
+        
+        setErrorTip($("txt"+value));
+        
+        var ctxt;
+        while (true){
+            var bb = value-1;
+            ctxt = $("txt"+bb);
+            
+            if (ctxt){
+                if(n>=0){
+                    ctxt.value = start+n;
+                }else{
+                    ctxt.value = '';
+                }
+                
+                if(setErrorTip(ctxt)==false){
+                	if(noHasError) {
+                		noHasError = false;
+                	}
+                }
+                
+                n--;
+                value--;
+            }else {
+                break;
+            }
+        }
+        
+        setTopErrorTip();
+        
+        return;
+    }
+
+    //向下关联单号填充
+    function enterNextNo(btn,company_no){
+    	noHasError = true;
+    	//获取当前版本
+    var logi_version = 0;
+    if($$('.logi_version')){
+        logi_version = $$('input[name=logi_version]:checked').get('value');
+    }
+        var value = btn;
+        while (true){
+            var aa = value+1;
+            if ($("txt"+aa)){
+                switch(company_no){
+                    case 'POSTB':
+                    case 'E邮宝':
+                        $("txt"+aa).value = getEMSNext($('txt'+value).value);
+                        break;
+                    case 'EMS':
+                        if (logi_version=='1')
+                        {
+                            $("txt"+aa).value = getEYBNext($('txt'+value).value);
+                        } else {
+                            $("txt"+aa).value = getEMSNext($('txt'+value).value);
+                        }
+                        break;
+                    case 'SF':
+                        $("txt"+aa).value = getSFNext($('txt'+value).value);
+                        break;
+                    case 'ZJS':
+                        if (logi_version=='1') {
+                            $("txt"+aa).value = parseInt($('txt'+value).value) + 1;
+                        } else {
+                            $("txt"+aa).value = getZJSNext($('txt'+value).value);
+                        }
+                        break;
+                    case 'EYB':
+                        
+                        $("txt"+aa).value = getEYBNext($('txt'+value).value);
+                        break;
+                }
+                value++;
+                
+                if(setErrorTip($("txt"+aa))==false){
+                	if(noHasError) {
+                		noHasError = false;
+                	}
+                }
+            }else {
+                break;
+            }
+        }
+        
+        setTopErrorTip();
+        
+        return ;
+    }
+    //向上关联单号填充
+    function enterPrevNo(btn,company_no){
+        value = btn;
+        noHasError = true;
+        	//获取当前版本
+        var logi_version = 0;
+        if($$('.logi_version')){
+            logi_version = $$('input[name=logi_version]:checked').get('value');
+        }
+        while (true){
+            var aa = value-1;
+            if ($("txt"+aa)){
+                switch(company_no){
+                    case 'POSTB':
+                    case 'E邮宝':
+                        $("txt"+aa).value = getEMSPrev($('txt'+value).value);
+                    break;
+                    case 'EMS':
+                        if (logi_version=='1'){
+                            $("txt"+aa).value = getEYBPrev($('txt'+value).value);
+                        } else {
+                            $("txt"+aa).value = getEMSPrev($('txt'+value).value);
+                        }
+                        break;
+                    case 'SF':
+                        alert('不支持向上关联');
+                        return;
+                        //$("txt"+aa).value = getSFPrev($('txt'+value).value);
+                        break;
+                    case 'ZJS':
+                        if (logi_version=='1') {
+                            $("txt"+aa).value = parseInt($('txt'+value).value) - 1;
+                        } else {
+                            $("txt"+aa).value = getZJSPrev($('txt'+value).value);
+                        }
+                        break;
+                    case 'EYB':
+                    
+                        $("txt"+aa).value = getEYBPrev($('txt'+value).value);
+                        break;
+                }
+                if(setErrorTip($("txt"+aa))==false){
+                	if(noHasError) {
+                		noHasError = false;
+                	}
+                
+                }
+                
+                value--;
+            }else {
+                break;
+            }
+        }
+        
+        setTopErrorTip();
+        return ;
+    }
+
+
+
+
+
+    //-------------------------------EMS快递单号关联
+    function isEMSNo(no){
+        if (no.length != 13){
+            return false;
+        }
+   
+        if (getEMSLastNum(no) == no.substr(10,1))
+            return true;
+        else
+            return false;
+    }
+    function getEMSLastNum(no){
+        var v = new Number(no.substr(2,1)) * 8;
+        v += new Number(no.substr(3,1)) * 6;
+        v += new Number(no.substr(4,1)) * 4;
+        v += new Number(no.substr(5,1)) * 2;
+        v += new Number(no.substr(6,1)) * 3;
+        v += new Number(no.substr(7,1)) * 5;
+        v += new Number(no.substr(8,1)) * 9;
+        v += new Number(no.substr(9,1)) * 7;
+        v = 11 - v % 11;
+        if (v == 10)
+            v = 0;
+        else if (v == 11)
+            v = 5;
+        return v.toString();
+    } 
+    //上一个快递单号
+    function getEMSPrev(no){
+
+        var serialNo = no.substr(2,8); 
+        if (serialNo > 0)
+            serialNo--;
+        strSerialNo = pad(serialNo, 8);
+        temp = no.substr(0,2) + strSerialNo + no.substr(10,1);
+        temp = no.substr(0,2) + strSerialNo + getEMSLastNum(temp) + no.substr(11,2);
+        return temp;
+    }
+    //下一个快递单号
+    function getEMSNext(no){
+
+        var serialNo = no.substr(2,8);
+        if (serialNo < 99999999)
+            serialNo++;
+        strSerialNo = pad(serialNo, 8);
+        temp = no.substr(0,2) + strSerialNo + no.substr(10,1);
+        temp = no.substr(0,2) + strSerialNo + getEMSLastNum(temp) + no.substr(11,2);
+        return temp;
+    }
+
+
+    //-----------------------------顺丰快递单号
+    //验证是否顺丰快递单号
+    function isSFNo(no){
+
+        if (!is_num(no)){
+            return false;
+        } else {
+            return true;
+        }
+    }
+    //上一个快递单号
+    function getSFPrev(no){
+        return false;
+    }
+    //下一个快递单号
+    function getSFNext(ShunFengNo){
+        var fri,Nfri,Yuandanhao;
+        var res;
+        var num1,num2,num3,num4,num5,num6,num7,num8,num9,num10,num11,num12;
+        var Nnum1,Nnum2,Nnum3,Nnum4,Nnum5,Nnum6,Nnum7,Nnum8,Nnum9,Nnum10,Nnum11,Nnum12;
+        var mid,I,ShunFengres;
+
+        ShunFengres = '';
+        fri = ShunFengNo.substr(0,11);
+        Yuandanhao = ShunFengNo;
+        //先将前11位加1，存储为新前11位
+        Nfri = String(Math.abs(fri)+1);
+        var Nfri_length = Nfri.length;
+        var padstr='';
+        if(Nfri_length<11){
+            padstr = pad(0,(11-Math.abs(Nfri_length)));
+        }
+        Nfri = padstr+Nfri;//当第一位是0时，由于进行加法运算会丢失，补齐
+        
+        //获取原始前11位
+        num1 = Math.abs(Yuandanhao.substr(0,1));
+        num2 = Math.abs(Yuandanhao.substr(1,1));
+        num3 = Math.abs(Yuandanhao.substr(2,1));
+        num4 = Math.abs(Yuandanhao.substr(3,1));
+        num5 = Math.abs(Yuandanhao.substr(4,1));
+        num6 = Math.abs(Yuandanhao.substr(5,1));
+        num7 = Math.abs(Yuandanhao.substr(6,1));
+        num8 = Math.abs(Yuandanhao.substr(7,1));
+        num9 = Math.abs(Yuandanhao.substr(8,1));
+        num10 = Math.abs(Yuandanhao.substr(9,1));
+        num11 = Math.abs(Yuandanhao.substr(10,1));
+        num12 = Math.abs(Yuandanhao.substr(11,1));
+        //获取新前11位
+        Nnum1 = Math.abs(Nfri.substr(0,1));
+        Nnum2 = Math.abs(Nfri.substr(1,1));
+        Nnum3 = Math.abs(Nfri.substr(2,1));
+        Nnum4 = Math.abs(Nfri.substr(3,1));
+        Nnum5 = Math.abs(Nfri.substr(4,1));
+        Nnum6 = Math.abs(Nfri.substr(5,1));
+        Nnum7 = Math.abs(Nfri.substr(6,1));
+        Nnum8 = Math.abs(Nfri.substr(7,1));
+        Nnum9 = Math.abs(Nfri.substr(8,1));
+        Nnum10 = Math.abs(Nfri.substr(9,1));
+        Nnum11 = Math.abs(Nfri.substr(10,1));
+        if ( Nnum9-num9==1 && (num9)%(2)==1 ){
+            if (num12-8 >= 0)
+                Nnum12 = num12-8             // -8
+            else
+                Nnum12 = num12-8 +10
+        }else if( Nnum9-num9==1 && (num9)%(2)==0 ){
+            if (num12-7 >=0)
+                Nnum12 = num12-7             // -7
+            else
+                Nnum12 = num12-7 +10
+        }else{
+            if( ((num10==3) || (num10==6))&& (num11==9) ){
+                if (num12-5 >=0)
+                    Nnum12 = num12-5             // -5
+                else
+                    Nnum12 = num12-5 +10
+            }else if (num11==9){
+                if (num12-4 >=0)
+                    Nnum12 = num12-4             // -4
+                else
+                    Nnum12 = num12-4 +10
+            }else{
+                if (num12-1 >=0)
+                    Nnum12 = num12-1            // -1
+                else
+                    Nnum12 = num12-1 +10
+            }
+        }
+        ShunFengres = Nfri+String(Nnum12);
+        return ShunFengres;
+    }
+
+    //-----------------------------宅急送递单号
+    function isZJSNo(no){
+        if (!is_num(no)){
+            return false;
+        }else{
+            return true;
+        }
+    }
+    function getZJSPrev(no){
+        var retNo = Math.abs(no);
+        if (retNo % 10 == 0)
+            retNo -= 4;
+        else
+            retNo -= 11;
+        return pad(retNo, no.length);
+    }
+    
+    function getZJSNext(no){
+        var retNo = no;
+        retNo = Math.abs(retNo) + 11;
+        if (retNo % 10 > 6){
+            retNo -= 7;
+        }
+        return pad(retNo, no.length);
+    }
+    function getEYBNext (no) {
+        var headNo = no.substr(0,2);
+        var endNo = no.substr(11,2);
+        var EYBres = '';
+        var topNo = no.substr(2,1);
+        var midNo = String(Math.abs(no.substr(2,8))+1);
+        var padstr = '';
+        if(midNo.length<8){
+            padstr = pad(0,(8-Math.abs(midNo.length)));
+        }
+        midNo = padstr+midNo;
+        var num1 = Math.abs(midNo.substr(0,1));
+        var num2 = Math.abs(midNo.substr(1,1));
+        var num3= Math.abs(midNo.substr(2,1));
+        var num4 = Math.abs(midNo.substr(3,1));
+        var num5 = Math.abs(midNo.substr(4,1));
+        var num6 = Math.abs(midNo.substr(5,1));
+        var num7 = Math.abs(midNo.substr(6,1));
+        var num8 = Math.abs(midNo.substr(7,1));
+        
+        midTotal =8*num1+6*num2+4*num3+2*num4+3*num5+5*num6+9*num7+7*num8;
+ 
+        midMod = midTotal%11;
+    
+        if(midMod==0){
+            res = 5;
+        }else if(midMod==1){
+            res = 0;
+        }else{
+            res = 11-midMod;
+        }
+
+        EYBres = headNo+num1+num2+num3+num4+num5+num6+num7+num8+res+endNo;
+        
+        return EYBres;
+    }
+    function getEYBPrev(no){
+        var headNo = no.substr(0,2);
+        var endNo = no.substr(11,2);
+        var EYBres = '';
+        var topNo = Math.abs(no.substr(2,1));
+        var midNo = String(Math.abs(no.substr(2,8))-1);
+        var padstr = '';
+        if(midNo.length<8){
+             padstr = pad(0,(8-Math.abs(midNo.length)));
+        }
+        midNo = padstr+midNo;
+        var num1 = Math.abs(midNo.substr(0,1));
+        var num2 = Math.abs(midNo.substr(1,1));
+        var num3= Math.abs(midNo.substr(2,1));
+        var num4 = Math.abs(midNo.substr(3,1));
+        var num5 = Math.abs(midNo.substr(4,1));
+        var num6 = Math.abs(midNo.substr(5,1));
+        var num7 = Math.abs(midNo.substr(6,1));
+        var num8 = Math.abs(midNo.substr(7,1));
+        
+        midTotal =8*num1+6*num2+4*num3+2*num4+3*num5+5*num6+9*num7+7*num8;
+ 
+        midMod = midTotal%11;
+    
+        if(midMod==0){
+            res = 5;
+        }else if(midMod==1){
+            res = 0;
+        }else{
+            res = 11-midMod;
+        }
+
+        EYBres = headNo+num1+num2+num3+num4+num5+num6+num7+num8+res+endNo;
+        
+        return EYBres;
+
+    }
+    function pad(num, n) {
+        return Array(Math.abs((''+num).length-(n+1))).join(0)+num;
+    }
+    function is_num(str){
+        var pattrn = /^[0-9]+$/;
+        if (pattrn.test(str)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+//----------------------------是否经济快递判断
+    function isEYBNo(str){
+        var pattrn = /^(50|51)[0-9]{11}$/;
+        if (str.length != 13){
+            return false;
+        }
+        
+        if (pattrn.test(str))
+            return true;
+        else
+            return false;
+    }
+
+
+    //倒序关联单号
+    //var value = <{$reversev_json}>;
+    function reversevNo(){
+        //var value = btn;
+  
+        var _value = new Array();
+  
+        for(var i = value.length; i > 0;i--){
+            _value.push(value[i-1]);
+        }
+  
+        for(var i = 0; i < _value.length;i++){
+            var aa = i+1;
+            if ($("txt"+aa)){
+                $("txt"+aa).value = _value[i];
+            }
+        }
+        return ;
+    }
+
+    function chageAutoMode() {
+	
+        if ($('cc').checked){
+            $ES("img[id^=bbaa]").set('styles',{'display':''});
+            $('sp_1').set('text','开启上下关联');
+        } else {
+            $ES("img[id^=bbaa]").set('styles',{'display':'none'});
+            $('sp_1').set('text','关闭上下关联');
+        }
+    }
+
+    $("cc").addEvent('change',function(e){
+        chageAutoMode();    
+    });
+    $("cc").checked = true; 
+    chageAutoMode();
+ 
+    $ES("input[id^=txt]").each(function(el,i){
+        el.addEvent('keydown',function(e){
+            if(e.code==13){
+                var a = i+1;
+                if ($ES("input[id^=txt]").length != a){
+                    $ES("input[id^=txt]")[a].focus();
+                }else if($ES("input[id^=txt]").length == a){
+                    check();
+                }
+                return false;
+            }
+        });
+        
+        el.addEvent('blur', function(){
+        	noHasError = setErrorTip(el);
+        	
+        	setTopErrorTip();
+        });
+    });
+    
+	var noHasError = true;
+	function setTopErrorTip() {
+		if(noHasError) {
+			$('errorBnTip').setStyle('display', 'none');
+		} else {
+			$('errorBnTip').setStyle('display', '');
+		}
+	}
+	
+    function setErrorTip(bnText) {
+    	var i = bnText.id.substr(3);
+    	
+		if(bnText.value!='' && lc.check(bnText.value)==false) {
+			var pt = bnText.getParent();
+			
+			bnText.setStyle('border', '2px solid red');
+			
+			return false;
+		}
+		
+		bnText.setStyle('border', '');
+			
+		return true;
+    }
+
+    $('bind-btn').addEvent('click',function(e){
+        
+        var value = 1;
+        var ctxt;
+        var flag = true;
+        
+        noHasError = true;
+        
+        for (i=1;i<=count;i++){
+        	ctxt = $("txt"+i);
+        	
+            if (ctxt.value == ''){
+            	
+                alert("请填写完所有发货单对应的快递单号");
+                return false;
+            }
+            
+            if(setErrorTip(ctxt)==false) {
+            	flag = false;
+            	
+            	if(noHasError == true) {
+            		noHasError = false;
+            	}
+            }
+        }
+        
+        setTopErrorTip();
+        
+		if(flag == false) {
+			if(confirm("您本次要求绑定的快递单号可能存在问题，请与打印面单仔细核对！确定要提交绑定吗？\n\n注意：如果物流单号错误，则可能导致回写淘宝发货状态失败或与物流相关的不可预知错误！") == false) {
+				return;
+			}
+		}
+        
+        //开始发送
+        new Request({url:$('form1').action,data:$('form1'),method:'POST',
+            onRequest: function(){
+                
+                $('bind-btn').set('disabled', 'true');
+            },
+            onComplete: function(json){
+                
+                if (json=='SUCC'){
+                    $('bind-btn').set('disabled', '');
+                    if (confirm("物流单号已经成功绑定！\n\n你要退出本窗口继续其它操作吗？")) {
+                        window.close();
+                    }
+                }else{
+                    $('bind-btn').set('disabled', '');
+                    alert(json);
+                    //opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                    //window.close();
+                }
+            }
+        }).send();
+    });
+</script>
+
+<{ if $err=='false' }>
+<div class="">
+    <div  id= 'information' class="error" style="display:none; font-weight: 700;"></div>
+    <div  id='content' class="order-box" style="display:none"></div>
+    <div  id="formContent" class="order-box">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td>
+                    <div id="printFinish" class="note" style="font-size:16px;font-weight:700;color:#000;display:none;">请在<font color="red">打印完成</font>后，再进行快递单号的关联！&nbsp;&nbsp;
+                    <span style="font-weight:100;">批量关联快递单号时请认真核对第一张和最后一张的快递面单上的单号和收货人信息和电脑上的是否一致！</span>
+                    <span style="float:right;font-size: 13px;text-decoration: underline;font-weight: 500; color:blue;cursor: pointer" onclick="showPrintUI();">重新打印快递单，请点这里！</span></div>
+					  <h2><font color="red"><{$logi_name}></font> 打印 <font color="red"><{$count}></font> 份快递单</h2>
+
+                    <{if $extend_message}>
+                        <h2 class="notice" style="font-size: 20px;"><{$extend_message}></h2>
+                    <{/if}>
+
+                    <div id ="printPreview" class="note">
+                        <div style="padding:5px;margin-bottom: 8px;">
+                            <{ if $mode=='activex' }>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <{ else }>
+							<{ if $delibery_bill_flag }>
+							<{button label="打印快递单" onclick="onlyPrint()" id="doprint_btn" class="btn-primary" }>&nbsp;&nbsp;&nbsp;&nbsp;
+							<{ else }>
+                            <{button label="打印快递单" onclick="doPrint()" id="doprint_btn" class="btn-primary" }>&nbsp;&nbsp;&nbsp;&nbsp;  
+							<{ /if }>  
+                            <{ /if }>
+                            <span style="float:right;font-size: 13px; color: blue; cursor: pointer; text-decoration: underline;" onclick="showBindLogi();">只关联快递单号，请点击这里！</span>
+                        </div>
+                        <span style="font-weight:700;margin-left: 12px;margin-top: 8px;">快递单打印预览：</span> 
+				                        上偏移:<{$prt_tmpl.prt_tmpl_offsety|default:0}>mm,
+				                        左偏移:<{$prt_tmpl.prt_tmpl_offsetx|default:0}>mm,
+				                        纸张宽:<{$prt_tmpl.prt_tmpl_width}>mm,
+				                        纸张高:<{$prt_tmpl.prt_tmpl_height}>mm,
+                    </div>   
+
+                    <{ if $mode=='activex' }>
+                    <div id="dly_printer_box">
+                        <OBJECT id='printActivex' name='printActivex' classid="clsid:AB9C4340-5E66-4848-B6CC-7FB1F288C935"  width='100%' height='550' align='center' hspace='0' vspace='0'></OBJECT>
+                    </div>
+                    <textarea id="printSetup" style="display:none"><{$printSetup}></textarea>
+                    <textarea id="printField" style="display:none"><{$printField}></textarea>
+                    <textarea id="printShipData" style="display:none"><{$data}></textarea>
+                    <{ else }>
+                    <div id="dly_printer_box" style="height:550px; width:100%; overflow: auto; position: relative;">
+                        <div id="dly_printer" style="height:<{$prt_tmpl.prt_tmpl_height*$dpi/25.4*$order_number}>px;width:<{$prt_tmpl.prt_tmpl_width*$dpi/25.4}>px;"></div>
+                    </div>
+                    <{ /if }> 
+                </td>
+            </tr>
+        </table> 
+        <textarea id="print_data" style="display:none"><{$data}></textarea>
+        <{include file="admin/delivery/include/bandLogi.html"}>
+    </div>
+</div>
+
+<div id="express_tools">
+    <div id="express_tools_hidden" style="font-weight:700; cursor: pointer;">定位快递单位置</div>
+    <div id="express_tools_main">
+        <div class="express_tools_main_head clearfix">
+            <div id="titleCaption" class="dialog-title flt">定位快递单位置</div>
+            <a href="javascript:void(0)" class="btn-close frt">✖</a>
+        </div>
+        <div id='guideContent' class="sorder-box" style="display:none; ">
+            <ul>
+                <li id="s_one">
+                    第一步：使用下面的<b>"搜索"</b>帮助系统定位到打印成功的<b>最后一单</b>
+                </li>
+                <li id="s_two">
+                    第二步：系统进行定位,然后高亮度显示所有打印成功的单据
+                    <br/>
+                    <span style=" margin-left: 25px;"><b>注：</b>定位不准确请回到第一步,重新搜索</span>
+                </li>
+                <li id="s_three">
+                    第三步：请你点击<b>"重新打印未完成单据"</b>按钮 &nbsp;&nbsp;<span style="color:red">(注意：该操作会对标识成功的单据关联物流单号并重新打印其它单据)</span>
+                </li>
+                <li>
+                    第四步：系统将刷新当前界面,过滤出未打印的快递单
+                </li>
+                <li>
+                    第五步：请你点刷新后界面中的<b>"打印快递单"</b>
+                </li>
+            </ul>
+
+            <!--
+            <ul>
+                <li id="s_one">
+                    第一步： 请在下按查找条件找到最后一张成功打印的单据
+                </li>
+                <li id="s_two">
+                    第二步： 检查左边的单据信息，深色背景已被正常打印
+                </li>
+                <li id="s_three">
+                    最后点击下面 <span style="color:blue;font-weight: 700;">重新打印未完成单据</span> 按钮
+                </li>
+            </ul>
+            -->
+        </div>
+        <div>
+	    根据：<select id="search_option">
+                <option value="consignee_name">收货人</option>
+                <option value="ident">批次号</option>
+                <option value="logi_no">快递单号</option>
+            </select>
+            <input type="text" name="keywords" id="keywords" />&nbsp;&nbsp;<{button label="搜索" class="btn-primary" type="button" onClick="search_logi_no()" }> 
+        </div>
+        <div id="sReplaceBtnDiv" style="display:none;">
+            <{button label="重新打印未完成单据" class="btn-primary" type="button" onClick="rePrintLogiNo();" }>
+        </div>
+    </div>
+    <div id="gotoTopBottom" class="dialog-title flt">
+        	<img title="回到顶部" onclick="goTop();" src="<{$base_dir}>/app/desktop/statics/bundle/icon_asc.gif" style="cursor:pointer;"><a onclick="goTop();" style="cursor:pointer;margin-left:3px;">顶部</a><BR/>
+            <img title="回到底部" onclick="goBottom();" src="<{$base_dir}>/app/desktop/statics/bundle/icon_desc.gif" style="cursor:pointer;"><a onclick="goBottom();" style="cursor:pointer;margin-left:3px;">底部</a>
+		</div>
+</div>
+
+<{ /if }>
+
+<{ if $mode=='activex' }>
+<{include file="admin/delivery/include/activex.html"}>
+<{ else }>
+<{include file="admin/delivery/include/flash.html"}>
+<{ /if }>
+<script>
+    
+    function showBindLogi() {
+        
+        $('printPreview').hide();
+        $('form1').setStyle('display', '');
+        $('dly_printer_box').hide();
+        $('printFinish').show();
+        $('express_tools_hidden').show();
+    }
+    
+    function showPrintUI() {
+        
+        $('printPreview').show();
+        $('form1').setStyle('display', 'none');
+        $('dly_printer_box').show();
+        $('printFinish').hide();
+        $('express_tools_main').hide();
+        $('express_tools_hidden').hide();
+        $('express_tools_main').setStyle('width', 350);
+        $('guideContent').setStyle('display', 'none');
+        $('sReplaceBtnDiv').setStyle('display', 'none'); 
+    }
+    
+    function rePrintStatus(succData, succIds, rePrintData) {
+        
+        new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=insertExpress&finder_id=<{$env.get.finder_id}>',method:'post',data:succData,
+            onSuccess:function(json){
+                if (json != 'SUCC'){
+                    var alertInfo = json ? json : '保存快递单号时发生错误';
+                    alert(alertInfo);
+                }else{
+                    new Request({url:'index.php?app=ome&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=express&str='+succIds+'&sku=<{$sku}>',
+                        onSuccess:function(json){
+                            if (json == 'true'){
+                                window.location = '/index.php?app=ome&ctl=admin_receipts_print&act=toPrintShip&finder_id=<{$env.get.finder_id}>' + rePrintData;
+                            }else {
+                                alert('设置打印状态时发生错误！');
+                            }
+                        }
+                    }).send();
+                }
+            }  
+        }).send();
+    }
+    
+    function rePrintLogiNo() {
+        var succData = '', rePrintData = '', succIds='';
+        var hasError = false;
+        $ES('.logi_no_input',$('form1')).each(function(el,index){
+            
+            if (el.getParent().getParent().get('bgcolor') != '#ffffff') {
+                
+                if (el.value == '') {
+                    el.getParent().getParent().set('bgcolor', '#fa93c2');
+                    hasError = true;
+                } else {
+                    succData = succData + '&' + el.name + '=' +el.value;
+                    succIds = succIds + ',' + el.name.replace(/^id\[|\]$/g,'');
+                }
+            } else {
+                succData = succData + '&' + el.name + '=';
+                rePrintData = rePrintData + '&delivery_id[]=' + el.name.replace(/^id\[|\]$/g,'');
+            }
+        });
+        if (hasError) {
+            alert('请为背景色为红的单据输入快递单号，然后再执行此命令！');
+        } else {
+            rePrintStatus(succData, succIds, rePrintData);
+        }
+    }
+    
+    function setReplaceStep(fix) {
+        
+        var ids = ['s_one', 's_two', 's_three'];
+        for (var i=0; i<ids.length; i++) {
+            if (ids[i] == fix) {
+                $(ids[i]).setStyle('color', 'red');
+                $(ids[i]).setStyle('font-weight', '400');
+                $(ids[i]).setStyle('font-size', '13px');
+            } else {
+                $(ids[i]).setStyle('color', '#000');
+                $(ids[i]).setStyle('font-weight', '500');
+                $(ids[i]).setStyle('font-size', '13px');
+            }
+        }
+        
+        if (fix == 's_two') {
+            $('sReplaceBtnDiv').setStyle('display', '');
+        } else {
+            $('sReplaceBtnDiv').setStyle('display', 'none'); 
+        }
+    }
+    
+    function gotoRePrint() {
+        
+        $('express_tools_main').setStyle('width', 400);
+        $('guideContent').setStyle('display', '');
+        $('bind-btn').setStyle('display', 'none');
+        $('express_tools_main').show();
+        $('express_tools_hidden').hide();
+        $('titleCaption').set('html', '<span style="color:#FF0000; font-size:16px;"><b>警告！</b></span>请仔细看完解决“卡纸、跳纸”的教程');
+        setReplaceStep('s_one');
+    }
+    
+    window.addEvent('domready', function() {            
+    
+        siderExpressToolsSetGoTop();  
+        $('express_tools_main').hide();
+        $('express_tools_hidden').addEvent('click',function(){
+            $('express_tools_main').show();
+            $('express_tools_hidden').hide();
+        });
+        $E('.btn-close',$('express_tools_main')).addEvent('click',function(){
+            $('express_tools_main').hide();
+            $('express_tools_hidden').show();
+            $('express_tools_main').setStyle('width', 350);
+            $('guideContent').setStyle('display', 'none');
+            $('sReplaceBtnDiv').setStyle('display', 'none'); 
+            $('bind-btn').setStyle('display', '');
+            $('titleCaption').set('html','定位快递单位置');
+        });
+        $('keywords').addEvent('enter',function(e){
+            search_logi_no();
+        });
+    });
+
+    $('main').addEvent('scroll',function(){  
+        siderExpressToolsSetGoTop();
+    });
+
+    function siderExpressToolsSetGoTop(){
+        $('express_tools').tween('top',$('main').getScroll().y+50)
+    }
+    
+    function goTop() {
+    	$('main').scrollTop = 0;
+    }
+    
+    function goBottom() {
+    	$('main').scrollTop = $('main').scrollHeight;
+    }
+    
+    var last_search_res = {};
+    function search_logi_no(){
+        var keywords = $('keywords').value.trim();
+        if( keywords == ''){
+            MessageBox.error('请填写关键字!');
+            return false;
+        }
+    
+        var search_res = [];
+        var check_index = -1;
+        $ES('.logi_no_input',$('form1')).each(function(el,index){
+        	opName = $('search_option').value;
+        	if(opName == 'logi_no') {
+        		cpValue = el.value;
+        	} else {
+	        	cpValue = el.get(opName);
+        	}
+            if(keywords == cpValue){
+                search_res.push(index);
+                if(check_index == -1){
+                    check_index = index;
+                }
+            }
+        });
+    
+        if(search_res.length > 2 && last_search_res.check_index != -1){
+            if(search_res[search_res.length-1] == last_search_res.check_index){
+                check_index = search_res[0];
+            }else{
+                for(var i=0;i<search_res.length;i++){
+                    if(search_res[i] > last_search_res.check_index){
+                        check_index = search_res[i];
+                        break;
+                    }
+                }
+            }
+        }
+    
+        if(check_index != -1){
+            
+            var sReplace = ($('guideContent').style.display != 'none') ? true : false;
+            
+            $ES('.logi_no_input',$('form1')).each(function(el,index){
+                if(check_index == index){
+                    el.getParent().getParent().set('bgcolor','#dcf359');
+                    check_index_y = el.getPosition().y-80;
+                }else{
+                    if (sReplace && index <= check_index) {
+                        el.getParent().getParent().set('bgcolor','#dcf359');
+                    } else {
+                        el.getParent().getParent().set('bgcolor','#ffffff');
+                    }
+                }
+            });
+            if (sReplace) {
+                setReplaceStep('s_two');
+            }
+            $('main').scrollTo(0,check_index_y);
+        }else{
+            $ES('.logi_no_input',$('form1')).each(function(el,index){
+                el.getParent().getParent().set('bgcolor','#ffffff');
+            });
+            if (sReplace) {
+                
+                setReplaceStep('s_one');
+            }
+            MessageBox.error('没有根据条件找到要定位的单据!');
+        }
+        
+        last_search_res = {'keywords':keywords,'check_index':check_index};
+    }
+    
+        <{ if !$isBindLogi }>
+        showPrintUI();
+        <{ else }>
+        showBindLogi();
+        <{ /if }>
+</script>

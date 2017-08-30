@@ -1,0 +1,73 @@
+array (
+  '' => 
+  array (
+    'branch_id' => NULL,
+    'original_bn' => NULL,
+    'original_id' => NULL,
+    'original_item_id' => NULL,
+    'supplier_id' => NULL,
+    'supplier_name' => NULL,
+    'bn' => 'test001',
+    'iostock_price' => '0.000',
+    'nums' => '3',
+    'cost_tax' => NULL,
+    'oper' => NULL,
+    'create_time' => NULL,
+    'operator' => 'admin',
+    'memo' => NULL,
+  ),
+)array (
+  '' => 
+  array (
+    'branch_id' => NULL,
+    'original_bn' => NULL,
+    'original_id' => NULL,
+    'original_item_id' => NULL,
+    'supplier_id' => NULL,
+    'supplier_name' => NULL,
+    'bn' => 'test001',
+    'iostock_price' => '0.000',
+    'nums' => '3',
+    'cost_tax' => NULL,
+    'oper' => NULL,
+    'create_time' => NULL,
+    'operator' => 'admin',
+    'memo' => NULL,
+  ),
+)array (
+  '' => 
+  array (
+    'branch_id' => NULL,
+    'original_bn' => NULL,
+    'original_id' => NULL,
+    'original_item_id' => NULL,
+    'supplier_id' => NULL,
+    'supplier_name' => NULL,
+    'bn' => 'test001',
+    'iostock_price' => '0.000',
+    'nums' => '3',
+    'cost_tax' => NULL,
+    'oper' => NULL,
+    'create_time' => NULL,
+    'operator' => 'admin',
+    'memo' => NULL,
+  ),
+)array (
+  '' => 
+  array (
+    'branch_id' => '1',
+    'original_bn' => 'T20130521000011',
+    'original_id' => '184',
+    'original_item_id' => NULL,
+    'supplier_id' => '0',
+    'supplier_name' => NULL,
+    'bn' => 'test001',
+    'iostock_price' => '0.000',
+    'nums' => '3',
+    'cost_tax' => '0.000',
+    'oper' => 'admin',
+    'create_time' => '1369124123',
+    'operator' => 'admin',
+    'memo' => NULL,
+  ),
+)

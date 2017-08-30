@@ -1,0 +1,333 @@
+<{if $order.process_status neq 'is_retrial'}>
+    <{if $operate && (($order.ship_status neq '1' && $order.ship_status neq '3' && $order.ship_status neq '4'&& $order.shipping.is_cod eq 'false') || ($order.pay_status neq '1' && $order.ship_status neq '3' && $order.ship_status neq '4'&& $order.shipping.is_cod eq 'true') || ($order.process_status eq 'splitting' && $order.ship_status eq '3'))}>
+    <{include file="admin/order/order_button.html"}>
+    <{/if}>
+<{/if}>
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tbody>
+    <tr>
+      <td >
+        <div class="tableform">
+          <table cellspacing="0" cellpadding="0" border="0" class="orderdetails_basic">
+            <tbody>
+              <tr>
+                <td >
+                  <h4>商品价格</h4>
+                  <div class="division">
+                    <table cellspacing="0" cellpadding="0"  border="0">
+                      <tbody>
+                        <tr>
+                          <th >商品总额：</th>
+                          <td><{$order.cost_item|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >配送费用：</th>
+                          <td><{$order.shipping.cost_shipping|cur}></td>
+                        </tr>
+                        <{if $order.shipping.cost_protect}>
+                        <tr>
+                          <th >保价费用：</th>
+                          <td><{$order.shipping.cost_protect|cur}></td>
+                        </tr>
+                        <{/if}>
+                        <tr>
+                          <th >税金：</th>
+                          <td><{$order.cost_tax|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >折扣：</th>
+                          <td><{$order.discount|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >商品促销优惠：</th>
+                          <td><{$order.pmt_goods|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >订单促销优惠：</th>
+                          <td><{$order.pmt_order|cur}></td>
+                        </tr>
+                        <tr>
+                          <th >订单总额：</th>
+                          <td><span class="amount"><{$order.total_amount|cur}></span></td>
+                        </tr>
+                        <{if $order.shipping.is_cod eq 'true'}>
+                        <tr>
+                          <th >应收金额：</th>
+                          <td><span class="amount"><{$order.receivable|cur}></span></td>
+                        </tr>
+                        <{/if}>
+                        <tr>
+                          <th >已支付金额：</th>
+                          <td><{$order.payed|cur}></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                  </td>
+                  <td >
+                    <h4>订单其他信息</h4>
+                    <div class="division">
+                     <form method='post' action='index.php?<{$env.server.QUERY_STRING}>'>
+                       <input type="hidden" value="<{$order.order_id}>" name="order_id"/>
+                       <input type="hidden" name="is_flag" value="1">
+                       <table cellspacing="0" cellpadding="0" border="0">
+
+                         <tbody><tr>
+                           <th >配送方式：</th>
+                           <td><{$order.shipping.shipping_name}></td>
+                         </tr>
+                         <tr>
+                           <th >配送保价：</th>
+                           <td><{if $order.shipping.is_protect=='true'}>是 <{else}>否<{/if}>
+
+                           </td>
+                         </tr>
+                         <tr>
+                           <th >商品重量：</th>
+                           <td><{$order.weight}> g</td>
+                         </tr>
+                         <tr>
+                           <th >支付方式：</th>
+                           <td><{$order.payinfo.pay_name}></td>
+                         </tr>
+                         <tr>
+                           <th >支付费用：</th>
+                           <td><{$order.payinfo.cost_payment|cur}></td>
+                         </tr>
+                         <tr>
+                           <th >是否开票：</th>
+                           <td>
+                            <input type="radio" name="is_tax" value='true' <{if $order.is_tax == 'true'}>checked<{/if}>><{t}>是<{/t}>
+                            <input type="radio" name="is_tax" value='false' <{if $order.is_tax == 'false'}>checked<{/if}>><{t}>否
+                            <{/t}>
+
+                          </td>
+                        </tr>
+                        <tr>
+                         <th>订单发票号：</th>
+                         <td><{if ($env.get.flt eq 'myown') || ($env.get.act eq 'index') || ($env.get.act eq 'active')||($env.get.act eq 'confirm' && $env.get.flt eq 'unmyown')}><input type='text' value="<{$order.tax_no}>" name="tax_no"><{else}><{$order.tax_no}><{/if}></td>
+                       </tr>
+                       <tr>
+                         <th >发票抬头：</th>
+                         <td><input type="text" name="tax_title" value="<{$order.tax_title}>"> </td>
+                       </tr>
+                       <tr>
+                         <th >可得积分：</th>
+                         <td><{$order.score_g}></td>
+                       </tr>
+                     </tbody></table>
+                     <{if $env.get.flt eq 'myown' || ($env.get.act eq 'index') || ($env.get.act eq 'active')||($env.get.act eq 'confirm' && $env.get.flt eq 'unmyown')}><div class="table-action"><{button label="提交" type="submit"}></div><{/if}>
+                   </form>
+
+                 </div>
+               </td>
+               <td >
+                <h4>购买人信息</h4>
+                <div class="division">
+                  <table cellspacing="0" cellpadding="0" border="0">
+
+                    <tbody><tr>
+                      <th >用户名：</th>
+                      <td>
+                        <span onclick="" class="lnk"><{$member.account.uname}>
+                        </span></td>
+                      </tr>
+                      <tr>
+                        <th >姓名：</th>
+                        <td><{$member.contact.name}></td>
+                      </tr>
+                      <tr>
+                        <th >电话：</th>
+                        <td><{$member.contact.phone.telephone}></td>
+                      </tr>
+                      <tr>
+                        <th >手机：</th>
+                        <td><{$member.contact.phone.mobile}></td>
+                      </tr>
+                      <tr>
+                        <th >地区：</th>
+                        <td><{$member.contact.area|region}></td>
+                      </tr>
+                      <!--<tr>
+                              <td>Email：</td><td>meimei5201010@126.com
+                            </td></tr>
+                            <tr>
+                              <td>省份：</td><td>
+                            </td></tr>
+                            <tr>
+                              <td>邮编：</td><td>
+                            </td></tr> -->
+                      <!--<tr>
+                        <th style="width:80px;" >地址：</th>
+                        <td></td>
+                      </tr>-->
+                        <tr>
+                          <th >Email：</th>
+                          <td><a href="mailto:<{$member.contact.email}>" target="_self"><{$member.contact.email}></a></td>
+                        </tr>
+                  </tbody>
+              </table>
+            </div>
+          </td>
+          <td >
+            <h4>
+              <span><{t}>收货人信息<{/t}></span>
+              <span style="position:relative;" id="order_receiver_copy_span"><button class="btn" id="order_receiver_copy" stu="Y" info="<{$order.consignee.area|region}>,<{$order.consignee.addr|escape:'html'}>,<{$order.consignee.name}><{if $order.consignee.telephone}>,<{$order.consignee.telephone|escape:'html'}><{/if}><{if $order.consignee.mobile}>,<{$order.consignee.mobile|escape:'html'}><{/if}>,<{$order.consignee.zip|escape:'html'}>"><span><span><{t}>复制收货人信息<{/t}></span></span></button></span>
+              <!-- <span style="font-size:12px;" class="sysiconBtnNoIcon" style="cursor:pointer" id="order_receiver_copy" status="Y" info="<{$order.consignee.area|escape:'html'}>,<{$order.consignee.addr|escape:'html'}>,<{$order.name}><{if $order.consignee.telephone}>,<{$order.consignee.telephone|escape:'html'}><{/if}><{if $order.consignee.mobile}>,<{$order.consignee.mobile|escape:'html'}><{/if}>,<{$order.consignee.zip|escape:'html'}>"><{t}>复制收货人信息<{/t}></span> -->
+              &nbsp; <{help}><{t}>此功能按照将收货人信息整合后复制到剪贴板，方便店主粘贴至目标位置，如：给顾客确认地址的邮件<{/t}><br /><br /><{t}>复制格式：<{/t}><br /><{t}>地区,地址,姓名,电话,手机,邮编<{/t}><{/help}></h4>
+              <div class="division">
+                <table cellspacing="0" cellpadding="0" border="0">
+
+                  <tbody><tr>
+                    <th >要求到货时间：</th>
+                    <td><{$order.consignee.r_time}></td>
+                  </tr>
+                  <tr>
+                    <th >姓名：</th>
+                    <td><{$order.consignee.name}></td>
+                  </tr>
+                  <tr>
+                    <th >电话：</th>
+                    <td><{$order.consignee.telephone}></td>
+                  </tr>
+                  <tr>
+                    <th >手机：</th>
+                    <td><{$order.consignee.mobile}></td>
+                  </tr>
+                  <tr>
+                    <th >地区：</th>
+                    <td><{$order.consignee.area|region}></td>
+                  </tr>
+                  <tr>
+                    <th >地址：</th>
+                    <td style="white-space: normal; line-height: 18px;"><{$order.consignee.addr|escape:'html'}></td>
+                  </tr>
+                  <tr>
+                    <th >邮编：</th>
+                    <td><{$order.consignee.zip|escape:'html'}></td>
+                  </tr>
+                </tbody></table>
+              </div>
+            </td>
+          </tr>
+        </tbody></table></div></td>
+      </tr>
+      <tr><td>
+
+        <{if $order.consigner.name || $order.consigner.mobile || $order.consigner.tel}>
+        <!--<div class="tableform">
+          <h4>发货人信息：</h4>
+         <table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+           <tbody>
+            <tr>
+             <td>联系人：<{$order.consigner.name}></td>
+             <td>手机号码：<{$order.consigner.mobile}></td>
+             <td>固定电话：<{$order.consigner.tel}></td>
+             <td>邮编：<{$order.consigner.zip}></td>
+             <td>E-mail：<{$order.consigner.email}></td>
+             <td>发货人地址：<{$order.consigner.area|region}> <{$order.consigner.addr}></td>
+           </tr>
+         </tbody>
+       </table>
+     </div>-->
+     <{/if}>
+
+     <{if $sellagent}>
+     <div class="tableform">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+        <tbody>
+         <tr>
+          <td colspan="5"><strong>代销人信息：</strong></td>
+        </tr>
+        <tr>
+          <td>用户名：<{$sellagent.member_info.uname}></td>
+          <td>姓名：<{$sellagent.member_info.name}></td>
+          <td>性别：<{if $sellagent.member_info.sex == 'male'}>男<{else}>女<{/if}></td>
+          <td>出生日期：<{$sellagent.member_info.birthday}></td>
+          <td>E-mail：<{$sellagent.member_info.email}>  QQ:<{$sellagent.member_info.qq}></td>
+        </tr>
+        <tr>
+          <td>地区：<{$sellagent.member_info.area|region}></td>
+          <td>详情地址：<{$sellagent.member_info.addr}></td>
+          <td>邮编：<{$sellagent.member_info.zip}></td>
+          <td>手机：<{$sellagent.member_info.mobile}></td>
+          <td>固定电话：<{$sellagent.member_info.tel}></td>
+        </tr>
+        <tr>
+          <td>网站名称：<{$sellagent.website.name}></td>
+          <td>网站域名：<{$sellagent.website.domain}></td>
+          <td colspan="3">网站LOGO：<{if $sellagent.website.logo}><a href="<{$sellagent.website.logo}>" target="_blank">查看</a><{/if}></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <{/if}>
+
+  <div class="tableform">
+
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" class="finderInform">
+
+      <tbody>
+       <tr><th><strong>会员备注：</strong></th><td>
+         <{foreach from=$order.custom_mark item=items}>
+         <div id="memo_show">
+          <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+      </td></tr>
+      <tr><th><strong>订单备注：</strong></th><td>
+        <{if $order.mark_text}>
+        <{foreach from=$order.mark_text item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+      </div>
+      <{/foreach}>
+      <{/if}>
+    </td></tr>
+  </tbody>
+</table>
+
+</div>
+</td></tr>
+</tbody>
+</table>
+<script>
+(function(){
+    new Asset.javascript('<{$url}>/statics/js/zeroclipboard.js', {
+      onLoad: function(){
+        var clip = null;
+        function initClip(el, txt){
+          ZeroClipboard.setMoviePath( '<{$url}>/statics/js/zeroclipboard10.swf' );
+          clip = new ZeroClipboard.Client();
+          clip.setText( '' );
+          clip.setHandCursor( true );
+          clip.setCSSEffects( true );
+          clip.addEventListener( 'mouseDown', function(client) {
+            if($('order_receiver_copy').get('stu') == "Y"){
+              clip.setText( txt );
+              $('order_receiver_copy').set('stu','N');
+            }
+          });
+          clip.addEventListener( 'complete', function(){
+			  clip.reposition();
+              (function(){
+                if(!$('order_receiver_copy'))return;
+                $('order_receiver_copy').getElements('span')[1].setText('复制收货人信息');
+                $('order_receiver_copy').set('stu','Y');
+              }).delay(2000);
+
+              return MessageBox.show('信息已经复制到剪切板');
+          });
+          clip.glue(el);
+        }
+        initClip('order_receiver_copy', $('order_receiver_copy').get('info'));
+        window.addEvent('resize', function(){
+            clip.reposition();
+        });
+
+      }
+    });
+
+  })();
+</script>

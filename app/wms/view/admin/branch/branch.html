@@ -1,0 +1,18 @@
+<div class="tableform">
+    <h3>货品上架</h3>
+    <div class="division">
+        <h5>请选择上架仓库</h5>
+        <form action="index.php?app=wms&ctl=admin_branch&act=addPos" method="post">
+            <div class="gray_form">
+                <ul class="branch_list">
+                    <{foreach from=$branchs item=branch}>
+                    <li><label for="branch_id_<{$branch.branch_id}>">
+                        <input type="radio" name="branch_id" id="branch_id_<{$branch.branch_id}>" value="<{$branch.branch_id}>"><{$branch.name}>
+                    </label></li>
+                    <{/foreach}>
+                </ul>
+            </div>
+            <div class="division" align="center"><{button type="submit" class="btn-primary" label="确 定"}></div>
+        </form>
+    </div>
+</div>

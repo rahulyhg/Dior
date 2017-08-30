@@ -1,0 +1,60 @@
+<form action="index.php?app=ome&ctl=admin_shop&act=request_order" method="post" class="tableform">
+ <input type="hidden" name="shop_id" value="<{$shop_id}>" />
+  <div class="division">
+    从<{input type="date" name="start_time" value="" readonly="readonly"}>
+    到<{input type="date" name="end_time" value="" readonly="readonly"}>&nbsp;
+    <{button type="button" label="手工下载订单" class="btn-secondery" id="btn_manual"}> <span id="timer">注：点击后需等待<{$sync_interval}>分钟可再次使用</span>
+  </div>
+</form>
+
+<script>
+    var maxtime = <{$sync_interval}>*60-1;
+    if(Cookie.read('_OperateTime_') && Cookie.read('_OperateTimer_')){
+      $('btn_manual').disabled = true;
+      maxtime -= $timeDiff(new Date(), Cookie.read('_OperateTime_'));
+    }
+    Cookie.write("_OperateTimer_",setInterval("CountDown()",1000),{duration: 0.1});
+    $('btn_manual').addEvent('click',function(){
+      var start = $E('input[name=start_time]'),end = $E('input[name=end_time]'),now=new Date();
+      if(start.value==='' || end.value === '') return MessageBox.error('开始或结束日期不能为空！');
+      if($timeDiff(start.value,now,'d')>0 || $timeDiff(end.value, now,'d')>0) return MessageBox.error('开始或结束日期不得大于当前日期');
+      var timeDiff = $timeDiff(end.value,start.value,'d');
+      if(timeDiff<0) return MessageBox.error('结束日期不能小于开始日期');
+      if(timeDiff>7) return MessageBox.error('只能下载7天之内的订单');
+      Cookie.write('_OperateTime_', new Date(), {duration: 0.1});
+      Cookie.write("_OperateTimer_",setInterval("CountDown()",1000),{duration: 0.1});
+      this.disabled = true;
+      this.getParent('form').store('target',{
+        onComplete:function(){
+          //location.reload();
+          try{finderGroup['<{$env.get.finder_id}>'].refresh();}catch(e){}
+        }
+      }).fireEvent('submit',{stop:function(){}});
+    });
+
+  function CountDown(){
+    if(Cookie.read('_OperateTime_') && Cookie.read('_OperateTimer_') && maxtime>=0){
+      var minutes = Math.floor(maxtime/60);
+      var seconds = Math.floor(maxtime%60);
+      var time = '下次手工下载时间: '+minutes+"分"+seconds+"秒";
+      if($("timer")) $("timer").innerHTML=time;
+      --maxtime;
+    }
+    else{
+      $('btn_manual').disabled = false;
+      if($("timer")) $("timer").innerHTML = '注：点击后需等待<{$sync_interval}>分钟可再次使用';
+      clearInterval(Cookie.read("_OperateTimer_"));
+      Cookie.dispose('__OperateTimer_');
+      Cookie.dispose('__OperateTime_');
+    }
+  }
+
+  function $timeDiff(t1,t2,type){
+    type=type||'t';
+    t1=typeOf(t1)=='date'?t1:new Date(t1.split('-').join('/'));
+    t2=typeOf(t2)=='date'?t2:new Date(t2.split('-').join('/'));
+    var timeDiff = (t1.getTime() - t2.getTime())/1000;
+    if(type == 'd') timeDiff = timeDiff/(60*60*24);
+    return timeDiff;
+  }
+</script>

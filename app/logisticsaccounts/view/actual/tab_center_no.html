@@ -1,0 +1,38 @@
+<style>
+.f-12{
+
+}
+</style>
+<div class="large">
+<div class="ColColorOrange clearfix">
+<table>
+<tr><td><div class="span-auto" title="">
+<a>
+<{img app="desktop" src="bundle/money.gif"}>
+</a>
+<span class="f-12">包裹总数:</span>
+<span>
+<{if $env.get.status=='4'}>
+<{$actual_status.accounted.count}>
+<{else}>
+<{$actual_status.no_match.count}>
+<{/if}>
+</span>
+</div></td><td><div class="span-auto"  title="">
+<a>
+<{img app="desktop" src="bundle/coins.gif"}>
+</a>
+<span class="f-12">账单金额:</span>
+<span><{if $env.get.status=='4'}>
+<{$actual_status.accounted.total_delivery_cost_actual|default:0|cur}>
+<{else}>
+<{$actual_status.no_match.total_delivery_cost_actual|default:0|cur}>
+<{/if}></span>
+</div></td><td></td></tr>
+
+
+</table>
+
+</div>
+
+</div>

@@ -1,0 +1,16 @@
+/*---------------------------------------------------------------------------------------------------------------
+	for ome
+ ---------------------------------------------------------------------------------------------------------------*/
+.tableform {
+    background: none repeat scroll 0 0 #F8F8F8;
+    border: 1px solid #D9D9D9;
+    border-radius: 5px;
+    margin: 5px 10px;
+    padding: 5px;
+}
+.text_left { text-align:left; }
+
+.color_1 { color:#999; }
+
+.edit_title { height:40px; line-height:40px; }
+.edit_title h3 { line-height:40px; }

@@ -1,0 +1,99 @@
+<{capture name="header"}>
+<link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+<div class="tableform">
+<div class="division">
+    <h4>发货信息</h4>
+    <p>
+    <{if $channel_detail.channel_type=='taobao'}>
+    <input type="button" name="ship_address" id='ship_address' value="获取淘宝店铺发货地址">  
+    <{/if}> &nbsp;&nbsp;<input type="button" id="select_shop" name="select_shop" value="从ERP店铺中选择">
+     </p>
+<form id="form1" name="form1" method="post">
+<table  class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr><th>名称</th><td><input type="text" id='shop_name' name="shop_name" value="<{$extend_detail.shop_name}>" size='30'></td></tr>
+<tr><th>省</th><td><input type="text" id='province' name="province" value="<{$extend_detail.province}>" size='12'></td></tr>
+ <tr><th>市</th><td><input type="text" id='city' name="city" value="<{$extend_detail.city}>" size='12'></td></tr>
+ <tr><th>地区</th><td><input type="text" id='area' name="area" value="<{$extend_detail.area}>"></td></tr>
+ <tr><th>地址</th><td><input type="text" id='address_detail' name="address_detail" value="<{$extend_detail.address_detail}>" size="80"></td></tr>
+ <tr><th>发件人</th><td><input type="text" id='default_sender' name="default_sender" value="<{$extend_detail.default_sender}>"></td></tr>
+ <tr><th>电话</th><td><input type="text" id='tel' name="tel" value="<{$extend_detail.tel}>"></td></tr>
+ <tr><th>手机</th><td><input type="text" id='mobile' name="mobile" value="<{$extend_detail.mobile}>"></td></tr>
+  <tr><th>邮编</th><td><input type="text" id='zip' name="zip" value="<{$extend_detail.zip}>"></td></tr>
+</table>
+<br>
+<{if $channel_detail.channel_type=='taobao'}>
+<table  class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0">
+<thead><tr><th>取消数量</th><th>可用数量</th><th>打印数量</th></tr> </thead>
+ <tr><td><{$extend_detail.cancel_quantity}></td>
+<td><{$extend_detail.allocated_quantity}></td>
+<td><{$extend_detail.print_quantity}></td></tr>
+</table>
+<{/if}>
+<div class="table-action">
+<input id="savebtn" type="button" name="submit" value="保存地址">
+</div>
+<input type="hidden" name="id" value="<{$extend_detail.id}>">
+<input type="hidden" name="channel_id" value="<{$channel_id}>">
+</form>
+</div> </div>
+<script>
+if ($('ship_address'))
+{
+    $('ship_address').addEvent('click',function(e){
+var url = 'index.php?app=logisticsmanager&ctl=admin_channel&act=get_ship_address&p[0]=<{$channel_id}>&finder_id=<{$env.get.finder_id}>';
+new Dialog(url,{title:'发货地址',width:500,height:300});
+
+
+});
+}
+
+if ($('savebtn'))
+{
+
+$('savebtn').addEvent('click',function(e){
+
+var _data =$('form1').toQueryString()+'&finder_id=<{$env.get.finder_id}>';
+var finder_id= '<{$env.get.finder_id}>';
+new Request({
+            url:'index.php?app=logisticsmanager&ctl=admin_channel&act=save_address',
+            data:_data,
+            method:'post',
+            onSuccess:function(rs){
+                alert('保存成功!');
+            finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+            }
+        }).send();
+
+
+});
+}
+if ($('select_shop'))
+{
+    $('select_shop').addEvent('click',function(e){
+    var finder_id = '<{$env.get.finder_id}>';
+    var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=logisticsmanager&ctl=admin_channel&act=findShop&singleselect=1');
+       var callurl='index.php?app=logisticsmanager&ctl=admin_channel&act=getShopById';
+    	Ex_Loader('modedialog',function() {
+			new finderDialog(url,{params:{url:callurl,name:'id'},width:1000,height:660,
+				onCallback:function(rs){
+					if(!rs)return;
+					rs=JSON.decode(rs);
+                    $('province').set('value',rs.province);
+                    $('city').set('value',rs.city);
+                    $('area').set('value',rs.area);
+                    $('address_detail').set('value',rs.address_detail);
+                    $('default_sender').set('value',rs.default_sender);
+                    $('tel').set('value',rs.tel);
+                    $('mobile').set('value',rs.mobile);
+                    $('shop_name').set('value',rs.shop_name);
+                    $('zip').set('value',rs.zip);
+				}
+			});
+		});
+    
+    });
+}
+</script>
+
+

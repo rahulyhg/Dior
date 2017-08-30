@@ -1,0 +1,613 @@
+<form class="tableform" method="post" action="index.php?app=<{$env.get.app}>&ctl=admin_order_retrial&act=<{if $rollback}>rollback<{else}>save<{/if}>" name="order_frm" id="order_frm">
+<div id="nosplitarea">
+  <div class="finder-detail">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td width="50%" align="center" class="border_b1px border_l1px"><span class="font_1">原始订单</span></td>
+        <td width="50%" align="center" class="border_b1px"><span class="font_2">修改后订单</span></td>
+      </tr>
+      <tr>
+        <td valign="top" class="border_l1px">
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                  <td style="padding-left:0px; margin-left:0px;" width="90"><span class="font_3">商品信息</span></td>
+                  <td width="12"><span class="color_block color_add"></span></td>
+                  <td width="24" style="padding-left:0px;" nowrap="nowrap">新增</td>
+                  <td width="12"><span class="color_block color_edit"></span></td>
+                  <td width="24" style="padding-left:0px;" nowrap="nowrap">修改</td>
+                  <td width="12"><span class="color_block color_delete"></span></td>
+                  <td width="24" style="padding-left:0px;" nowrap="nowrap">删除</td>
+                  <td width="12">&nbsp;</td>
+                  <td width="40" style="padding-left:0px;" nowrap="nowrap">&nbsp;</td>
+                  <td width="12">&nbsp;</td>
+                  <td style="padding-left:0px;">&nbsp;</td>
+              </tr>
+            </table>
+        </td>
+        <td valign="top">
+            <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="padding-left:0px; margin-left:0px;" width="90"><span class="font_3">商品信息</span></td>
+                    <td width="12"><span class="color_block color_add"></span></td>
+                    <td width="24" style="padding-left:0px;" nowrap="nowrap">新增</td>
+                    <td width="12"><span class="color_block color_edit"></span></td>
+                    <td width="24" style="padding-left:0px;" nowrap="nowrap">修改</td>
+                    <td width="12"><span class="color_block color_delete"></span></td>
+                    <td width="24" style="padding-left:0px;" nowrap="nowrap">删除</td>
+                    <td width="12">&nbsp;</td>
+                    <td width="40" style="padding-left:0px;" nowrap="nowrap">&nbsp;</td>
+                    <td width="12">&nbsp;</td>
+                    <td style="padding-left:0px;">&nbsp;</td>
+                </tr>
+            </table>
+		</td>
+      </tr>
+      <tr>
+        <td valign="top" class="border_l1px">
+        <div class="order_table_list table_mr">
+            <table width="100%" border="0" cellpadding="1" cellspacing="1" bgcolor="#BCBCBC">
+              <tr>
+              	<td valign="middle" bgcolor="#DDE3ED" style="padding: 6px 5px;">&nbsp;</td>
+                <td valign="middle" bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">货号</b></td>
+                <td valign="middle" bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">商品名称</b></td>
+                <td align="center" bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">规格</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">购买数量</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">商品单价</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">优惠价格</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">销售价格</b></td>
+              </tr>
+              
+              <{assign var=list_i value=0}>
+              <{foreach from=$order_old.item_list item=obj_item key=obj_type}>
+                  <{if $obj_type == 'pkg'}>
+                  <{foreach from=$obj_item item=items key=key_i}>
+                  	  <{assign var=list_i value=$list_i+1}>
+                      <tr <{if $items.delete == 'true'}>class="goods_pkg_delete"<{elseif $items.flag_edit == 'true'}>class="goods_pkg_edit"<{else}>class="goods_pkg_td"<{/if}> >
+                        <td align="center"><{$list_i}></td>
+                        <td align="center"><{$items.bn}></td>
+                        <td><div class="goods_title"><a title="<{$items.name}>"><{$items.name}></a></div></td>
+                        <td align="center">捆绑商品</td>
+                        <td><{$items.quantity}></td>
+                        <td><{$items.price}></td>
+                        <td><{$items.pmt_price}></td>
+                        <td><{$items.sale_price}><input name="old_sale_price[]" type="hidden" value="<{$items.sale_price}>" /></td>
+                      </tr>
+                      <{foreach from=$items.order_items item=val key=key_j}>
+                      <tr <{if $items.delete == 'true'}>class="goods_pkg_delete"<{elseif $items.flag_edit == 'true'}>class="goods_pkg_edit"<{else}>class="goods_pkg_td"<{/if}> >
+                        <td align="center">捆绑</td>
+                        <td><{$val.bn}></td>
+                        <td><div class="goods_title"><a title="<{$val.name}>"><{$val.name}></a></div></td>
+                        <td align="center">-</td>
+                        <td><{$val.nums}></td>
+                        <td><{$val.price}></td>
+                        <td><{$val.pmt_price}></td>
+                        <td><{$val.sale_price}></td>
+                      </tr>
+                      <{/foreach}>
+                  <{/foreach}>
+                  <{else}>
+                  <{foreach from=$obj_item item=items key=key_i}>
+                      <{foreach from=$items.order_items item=val}>
+                      <{assign var=list_i value=$list_i+1}>
+                      <tr <{if $val.delete == 'true'}>class="goods_delete"<{elseif $val.flag_edit == 'true'}>class="goods_edit"<{else}>class="goods_td"<{/if}> >
+                        <td align="center"><{$list_i}></td>
+                        <td><{$val.bn}></td>
+                        <td><div class="goods_title"><a title="<{$val.name}>"><{$val.name}></a></div></td>
+                        <td align="center">-</td>
+                        <td><{$val.nums}></td>
+                        <td><{$val.price}></td>
+                        <td><{$val.pmt_price}></td>
+                        <td><{$val.sale_price}><input name="old_sale_price[]" type="hidden" value="<{$val.sale_price}>" /></td>
+                      </tr>
+                      <{/foreach}>
+                  <{/foreach}>
+                  <{/if}>
+              <{/foreach}>
+            </table>
+        </div>
+        </td>
+        <td valign="top">
+        <div class="order_table_list table_ml">
+            <table width="100%" border="0" cellpadding="1" cellspacing="1" bgcolor="#BCBCBC">
+              <tr>
+              	<td bgcolor="#DDE3ED" style="padding: 6px 5px;">&nbsp;</td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">货号</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">商品名称</b></td>
+                <td align="center" bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">规格</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">购买数量</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">商品单价</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">优惠价格</b></td>
+                <td bgcolor="#DDE3ED" style="padding: 6px 5px;"><b style="color:#3D4043">销售价格</b></td>
+              </tr>
+              
+              <{assign var=list_i value=0}>
+              <{foreach from=$order_new.item_list item=obj_item key=obj_type}>
+                  <{if $obj_type == 'pkg'}>
+                      <{foreach from=$obj_item item=items key=key_i}>
+                      	   <{assign var=list_i value=$list_i+1}>
+                          <tr <{if $items.delete == 'true'}>class="goods_pkg_delete"<{elseif $items.flag_add == 'true'}>class="goods_pkg_add"<{elseif $items.flag_edit == 'true'}>class="goods_pkg_edit"<{else}>class="goods_pkg_td"<{/if}> >
+                            <td align="center"><{$list_i}></td>
+                            <td align="center"><{$items.bn}></td>
+                            <td><div class="goods_title"><a title="<{$items.name}>"><{$items.name}></a></div></td>
+                            <td align="center">捆绑商品</td>
+                            <td><{$items.quantity}></td>
+                            <td><{$items.price}></td>
+                            <td><{$items.pmt_price}></td>
+                            <td><{$items.sale_price}><input name="new_sale_price[]" type="hidden" value="<{$items.sale_price}>" /></td>
+                          </tr>
+                          
+                          <{foreach from=$items.order_items item=val key=key_j}>
+                          <tr <{if $items.delete == 'true'}>class="goods_pkg_delete"<{elseif $items.flag_add == 'true'}>class="goods_pkg_add"<{elseif $items.flag_edit == 'true'}>class="goods_pkg_edit"<{else}>class="goods_pkg_td"<{/if}> >
+                            <td align="center">捆绑</td>
+                            <td><{$val.bn}></td>
+                            <td><div class="goods_title"><a title="<{$val.name}>"><{$val.name}></a></div></td>
+                            <td align="center">-</td>
+                            <td><{$val.nums}></td>
+                            <td><{$val.price}></td>
+                            <td><{$val.pmt_price}></td>
+                            <td><{$val.sale_price}></td>
+                          </tr>
+                          <{/foreach}>
+                      <{/foreach}>
+                  <{else}>
+                      <{foreach from=$obj_item item=items key=key_i}>
+                          <{foreach from=$items.order_items item=val}>
+                          <{assign var=list_i value=$list_i+1}>
+                          <tr <{if $val.delete == 'true'}>class="goods_delete"<{elseif $val.flag_add == 'true'}>class="goods_add"<{elseif $val.flag_edit == 'true'}>class="goods_edit"<{else}>class="goods_td"<{/if}> >
+                            <td align="center"><{$list_i}></td>
+                            <td><{$val.bn}></td>
+                            <td><div class="goods_title"><a title="<{$val.name}>"><{$val.name}></a></div></td>
+                            <td align="center">-</td>
+                            <td><{$val.nums}></td>
+                            <td><{$val.price}></td>
+                            <td><{$val.pmt_price}></td>
+                            <td><{$val.sale_price}><input name="new_sale_price[]" type="hidden" value="<{$val.sale_price}>" /></td>
+                          </tr>
+                          <{/foreach}>
+                      <{/foreach}>
+                  <{/if}>
+              <{/foreach}>
+            </table>
+        </div>
+        </td>
+      </tr>
+      
+      <tr>
+        <td valign="top" class="border_l1px"><span class="font_3">金额信息</span></td>
+        <td valign="top"><span class="font_3">金额信息</span></td>
+      </tr>
+      <tr>
+        <td valign="top" class="border_l1px">
+        <div class="table_style table_mr">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="130" align="right" class="border_l_1px color_4A9CEE">商品总金额</td>
+                <td class="color_5a5a"><{$order_old.cost_item|cur}></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_l_1px color_4A9CEE">销售金额</td>
+                <td class="color_5a5a"><span id="old_total_amount">&nbsp;</span></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_l_1px color_4A9CEE">让利或增加金额</td>
+                <td class="color_5a5a"><{$order_old.discount|cur}></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_b_1px border_l_1px color_4A9CEE">快递费用</td>
+                <td class="border_b_1px color_5a5a"><{$order_old.shipping.cost_shipping|cur}></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_l_1px color_4A9CEE"><b>合计</b></td>
+                <td><b class="color_5a5a"><{$order_old.total_amount|cur}></b></td>
+              </tr>
+            </table>
+        </div>
+        </td>
+        <td valign="top">
+            <div class="table_style table_ml">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="125" align="right" class="border_l_1px color_4A9CEE">商品总金额</td>
+                <td class="<{if $order_new.cost_item != $order_old.cost_item}>font_change<{else}>color_5a5a<{/if}>"><{$order_new.cost_item|cur}></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_l_1px color_4A9CEE">销售金额</td>
+                <td class="color_5a5a"><span id="new_total_amount">&nbsp;</span></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_l_1px color_4A9CEE">让利或增加金额</td>
+                <td class="<{if $order_new.discount != $order_old.discount}>font_change<{else}>color_5a5a<{/if}>"><{$order_new.discount|cur}></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_b_1px border_l_1px color_4A9CEE">现快递费用</td>
+                <td class="border_b_1px <{if $order_new.shipping.cost_shipping != $order_old.shipping.cost_shipping}>font_change<{else}>color_5a5a<{/if}>"><{$order_new.shipping.cost_shipping|cur}></td>
+              </tr>
+              <tr>
+                <td align="right" class="border_l_1px color_4A9CEE"><b>合计</b></td>
+                <td class="color_00c"><b <{if $order_new.total_amount != $order_old.total_amount}>class="font_change"<{else}>class="color_5a5a"<{/if}>><{$order_new.total_amount|cur}></b></td>
+              </tr>
+            </table>
+            </div>
+        </td>
+      </tr>
+      
+      <{if $setting_is_monitor=='true' && $monitor_flag.cost_multiple && $rollback != 'true'}>
+      <tr>
+        <td valign="top" class="border_l1px">
+            <div class="table_style table_mr monitor">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td width="130" align="right" class="border_l_1px color_487">整单价格参考范围&nbsp;&nbsp;</td>
+                    <td class="font_change color_5a5a">&nbsp;<{$old_price_monitor.cost}> - <{if $monitor_flag.sales_multiple && $new_price_monitor.price>0}><{$old_price_monitor.price}><{else}>不限<{/if}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_b_1px border_l_1px color_487">现整单金额&nbsp;&nbsp;</td>
+                    <td class="border_b_1px font_change color_5a5a">&nbsp;<{$order_old.total_amount}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487"><b>预计盈亏&nbsp;&nbsp;</b></td>
+                    <td class="font_change color_5a5a">&nbsp;<b><{$order_profit.old.value}></b>&nbsp;&nbsp;&nbsp;<{if $order_profit.old.value < 0}><{img app='ome' src='price_down.png' }><{else}><{img app='ome' src='price_up.png' }><{/if}></td>
+                  </tr>
+                  <{if $old_price_monitor.bn}>
+                  <tr>
+                    <td align="right" class="border_l_1px color_4A9CEE">&nbsp;</td>
+                    <td>有未设置成本价的商品，具体货号为：<span class="font_change"><{$old_price_monitor.bn}></span></td>
+                  </tr>
+                  <{/if}>
+                </table>
+            </div>            
+        </td>
+        <td valign="top">
+            <div class="table_style table_mr monitor">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td width="130" align="right" class="border_l_1px color_487">整单价格参考范围&nbsp;&nbsp;</td>
+                    <td class="font_change">&nbsp;<{$new_price_monitor.cost}> - <{if $monitor_flag.sales_multiple && $new_price_monitor.price>0}><{$new_price_monitor.price}><{else}>不限<{/if}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_b_1px border_l_1px color_487">现整单金额&nbsp;&nbsp;</td>
+                    <td class="border_b_1px font_change">&nbsp;<{$order_new.total_amount}></td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="border_l_1px color_487"><b>预计盈亏&nbsp;&nbsp;</b></td>
+                    <td class="font_change">
+                    &nbsp;<b><{$order_profit.new.value}></b>&nbsp;&nbsp;&nbsp;
+                    <{if $order_profit.new.value < 0}><{img app='ome' src='price_down.png' }><{else}><{img app='ome' src='price_up.png' }><{/if}>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<b class="color_333">系统建议：<{$order_profit.new.msg}></b>
+                    </td>
+                  </tr>
+                  <{if $new_price_monitor.bn}>
+                  <tr>
+                    <td align="right" class="border_l_1px color_4A9CEE">&nbsp;</td>
+                    <td bgcolor="#efefef">亲您已经开启了价格监控，但没有设置商品的成本价，具体货号为：<span class="font_change"><{$new_price_monitor.bn}></span></td>
+                  </tr>
+                  <{/if}>
+                </table>
+            </div>
+        </td>
+      </tr>
+      <{/if}>
+      
+      <tr>
+        <td valign="top" class="border_l1px"><span class="font_3">配送信息</span></td>
+        <td valign="top"><span class="font_3">配送信息</span></td>
+      </tr>
+      <tr>
+        <td valign="top" class="border_l1px">
+            <div class="table_style table_mr">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td class="font_text"><b>收货人：</b><{$order_old.consignee.name}></td>
+                <td class="font_text"><b>手机/电话：</b><{$order_old.consignee.mobile}><{if $order_old.consignee.telephone}>/<{$order_old.consignee.telephone}><{/if}></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="font_text"><b>收货地区：</b><{$order_old.consignee.ship_area}></td>
+                </tr>
+              <tr>
+                <td colspan="2" class="font_text"><b>收货地址：</b><{$order_old.consignee.addr}></td>
+                </tr>
+            </table>
+            </div>
+        </td>
+        <td valign="top">
+			<div class="table_style table_ml">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td class="font_text"><b>收货人：</b><{$order_new.consignee.name}></td>
+                <td class="font_text"><b>手机/电话：</b><{$order_new.consignee.mobile}><{if $order_new.consignee.telephone}>/<{$order_new.consignee.telephone}><{/if}></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="font_text"><b>收货地区：</b><{$order_new.consignee.ship_area}></td>
+                </tr>
+              <tr>
+                <td colspan="2" class="font_text"><b>收货地址：</b><{$order_new.consignee.addr}></td>
+                </tr>
+            </table>
+            </div>
+        </td>
+      </tr>
+      <tr>
+        <td valign="top" class="border_l1px"><span class="font_3">备注信息</span></td>
+        <td valign="top"><span class="font_3">客服修改备注</span></td>
+      </tr>
+      <tr>
+        <td valign="top" class="border_l1px">
+            <div class="table_style table_mr">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="65" nowrap="nowrap" class="font_text"><b>订单备注：</b></td>
+                <td class="font_text">
+                    <{if $order_old.mark_text}>
+                        <{foreach from=$order_old.mark_text item=items}>
+                            <div id="memo_show">
+                            <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                            </div>
+                        <{/foreach}>
+                    <{/if}>
+                </td>
+              </tr>
+              <tr>
+                <td class="font_text"><b>会员备注：</b></td>
+                <td class="font_text">
+                	<{if $order_old.custom_mark}>
+                        <{foreach from=$order_old.custom_mark item=items}>
+                            <div id="memo_show">
+                            <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                            </div>
+                        <{/foreach}>
+                    <{/if}>
+                </td>
+              </tr>
+            </table>
+            </div>
+        </td>
+        <td valign="top">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td valign="top" class="font_text" style="color:red;">&nbsp;&nbsp;&nbsp;<{if $order_old.kefu_remarks}><{$order_old.kefu_remarks}><{else}>暂无信息<{/if}></td>
+            </tr>
+            <tr>
+              <td align="left" style="padding-left:0px;"><span class="font_3">订单复审备注</span></td>
+            </tr>
+            
+            <{if $rollback}>
+            <tr>
+              <td valign="top" class="font_text" style="color:red;">&nbsp;&nbsp;&nbsp;<{$row.remarks}></td>
+            </tr>
+            <{else}>
+            <tr>
+              <td class="font_text"><textarea name="remarks" cols="60" rows="3" id="remarks" style="width:90%;"></textarea></td>
+            </tr>
+            <{/if}>
+            
+          </table></td>
+      </tr>
+    </table>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td><input name="id" type="hidden" id="id" value="<{$row.id}>" /><input name="verify" type="hidden" id="verify" value="fail" /></td>
+        <td width="300" align="center">
+            <{if $rollback}>
+            <button class="btn btn-secondary close" type="button" id="btn_rollback" name="btn_rollback"><span><span>确认恢复原订单</span></span></button>&nbsp;&nbsp;<button class="btn btn-secondary" onclick="if(confirm('确定退出?'))window.close()" type="button"><span><span>退出本次操作</span></span></button>
+            <{else}>
+            <button class="btn btn-primary dialogBtn" onclick="setRetrial(1)" type="button" id="btn_submit" name="btn_submit"><span><span>审核通过</span></span></button>&nbsp;&nbsp;<button class="btn btn-secondary close" onclick="setRetrial(0)" type="button" id="btn_submit_no" name="btn_submit_no"><span><span>审核不通过</span></span></button>&nbsp;&nbsp;<button class="btn btn-secondary" onclick="if(confirm('确定退出?'))window.close()" type="button"><span><span>退出本次操作</span></span></button>
+            <{/if}>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+</form>
+<style type="text/css">
+.tableform th, .tableform td { padding:5px; }
+.dialog .dialog-content-body { background:#fff; }
+.table-action .btn, .btn-primary { height:24px; line-height:24px; }
+.order_table_list { height:auto; border:1px solid #dbdbdb; padding:5px; }
+.order_table_list table { border-spacing:1px; border-collapse:separate; }
+
+.font_1 { font-size:14px; font-weight:bold; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#666; }
+.font_2 { font-size:14px; font-weight:bold; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#00F; }
+.font_3 { font-size:13px; padding-left:5px; font-weight:bold; font-family:"微软雅黑", Arial, Helvetica, sans-serif; color:#333; }
+.font_text { color:#999; }
+.font_change { font-family:"微软雅黑 Bold", "微软雅黑", Arial, Helvetica, sans-serif; font-size:13px; color:#d51d28; }
+
+.color_333 { color:#333; }
+.color_00c { color:#0000CC; }
+.color_4A9CEE { color:#4A9CEE; }
+.color_487 { color:#487808; }
+.color_5a5a { font-family:"微软雅黑 Bold", "微软雅黑", Arial, Helvetica, sans-serif; font-size:13px; color:#5a5a5a; }
+
+.border_b1px { border-bottom:1px solid #000; }
+.border_l1px { border-right:1px solid #000; }
+.border_b_1px { border-bottom:1px solid #797979; }
+.border_l_1px { border-right:1px solid #797979; }
+
+.table_style { border:1px solid #dbdbdb; padding:5px; font-family:"微软雅黑 Bold", "微软雅黑", Arial, Helvetica, sans-serif; font-size:12px; }
+.table_ml { margin-left:5px; }
+.table_mr { margin-right:5px; }
+
+.goods_title { width:100px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+.goods_title a { color:#333; text-decoration:none; background:none; }
+.goods_title a:hover { color:#333; text-decoration:none; background:#efefef; }
+.goods_td td { background-color:#fff; }
+
+.goods_delete td { background-color:#F2F2F2; color:#B5B5B5; }
+.goods_delete td a { color:#B5B5B5; }
+
+.goods_add td { background-color:#E7EFE2; color:#487808; }
+.goods_add td a { background-color:#E7EFE2; color:#487808; }
+
+.goods_edit td { background-color:#F8ECEC; color:#F6625B; }
+.goods_edit td a { color:#F6625B; }
+
+.goods_pkg_td td { background-color:#fff; }
+
+.goods_pkg_delete td { background-color:#F2F2F2; color:#B5B5B5; }
+.goods_pkg_delete td a { color:#B5B5B5; }
+
+.goods_pkg_list_td td { background-color:#fff; }
+
+.goods_pkg_list_delete td { background-color:#F2F2F2; color:#B5B5B5; }
+.goods_pkg_list_delete td a { color:#B5B5B5; }
+
+.goods_pkg_add td { background-color:#E7EFE2; color:#487808; }
+.goods_pkg_add td a { color:#487808; }
+
+.goods_pkg_edit td { background-color:#F8ECEC; color:#F6625B; }
+.goods_pkg_edit td a { color:#F6625B; }
+
+.monitor { background-color:#E7EFE2; }
+
+.color_block { display:block; margin-top:4px; width:10px; height:10px; border:1px solid #efefef; }
+.color_add { background-color:#487808; }
+.color_edit { background-color:#F6625B; }
+.color_delete { background-color:#B5B5B5; }
+.color_normal { background-color:#fff; }
+.color_group { background-color:#D8E8FE; }
+</style>
+<script language="javascript" type="text/javascript">
+total_amount();
+function total_amount()
+{
+	var old_sale_price=0, new_sale_price=0;
+	var old_totals = $$('input[name^=old_sale_price[]');
+	var new_totals = $$('input[name^=new_sale_price[]');
+
+	old_totals.each(function(e,i){
+		//totalarr.push(new Function('return '+e.value)());
+		if(parseFloat(e.value) != 'NaN')
+		{
+			old_sale_price += parseFloat(e.value);
+		}
+	});
+	$("old_total_amount").set('html', '￥'+old_sale_price.toFixed(2));
+	
+	new_totals.each(function(e,i){
+		if(parseFloat(e.value) != 'NaN')
+		{
+			new_sale_price += parseFloat(e.value);
+		}
+	});
+	
+	$("new_total_amount").set('html', '￥'+new_sale_price.toFixed(2));
+	
+	if(old_sale_price.toFixed(2) != new_sale_price.toFixed(2))
+	{
+		document.getElementById("new_total_amount").className = 'font_change';
+	}
+}
+function setRetrial(act)
+{
+	var val		= 'fail';
+	if(act == '1')
+	{
+		val	= 'success';
+	}
+	document.getElementById("verify").value		= val;
+}
+function submit_frm()
+{
+	var remarks		= $('remarks').value;
+	if(remarks == "" || remarks.length < 5)
+	{
+		alert("至少输入5个字符以上的复审备注信息；");
+		document.getElementById("remarks").focus();
+		return false;
+	}
+	
+	var verify	= $('verify').value;
+	var msg		= '不通过';
+	if(verify == 'success')
+	{
+		msg		= '通过';
+	}
+	
+	if(confirm('您审核订单为 "'+msg+'" 状态，是否继续？'))
+	{
+		return true;
+	}
+	else
+	{
+		return false;	
+	}
+}
+function rollback_frm()
+{
+	if(confirm('您确定回滚订单，是否继续？'))
+	{
+		return true;
+	}
+	else
+	{
+		return false;	
+	}
+}
+(function(){	
+	<{if $rollback}>
+	$('order_frm').store('target',{
+	    onRequest:function(){
+	       $('btn_rollback').set('disabled', 'true');
+	    },
+	    onComplete:function(jsontext){
+	       var json = Json.evaluate(jsontext);
+	       if (typeof(json.error) != 'undefined'){
+	           $('btn_rollback').set('disabled', '');
+	       }else{
+	           $('btn_rollback').set('disabled', 'true');
+	           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+	           window.close();
+	       }
+	    }
+	});
+	$('btn_rollback').addEvent('click',function()
+	{
+		//判断
+		var flag		= rollback_frm();
+		if(!flag)
+		{
+			return false;
+		}
+		$('order_frm').fireEvent('submit',{stop:$empty});
+    });
+	<{else}>
+	$('order_frm').store('target',{
+	    onRequest:function(){
+	       $('btn_submit').set('disabled', 'true');
+		   $('btn_submit_no').set('disabled', 'true');
+	    },
+	    onComplete:function(jsontext){
+	       var json = Json.evaluate(jsontext);
+	       if (typeof(json.error) != 'undefined'){
+	           $('btn_submit').set('disabled', '');
+			   $('btn_submit_no').set('disabled', '');
+	       }else{
+	           $('btn_submit').set('disabled', 'true');
+			   $('btn_submit_no').set('disabled', 'true');
+	           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+	           window.close();
+	       }
+	    }
+	});
+	$('btn_submit').addEvent('click',function()
+	{
+		//判断
+		var flag		= submit_frm();
+		if(!flag)
+		{
+			return false;
+		}
+		$('order_frm').fireEvent('submit',{stop:$empty});
+    });
+	$('btn_submit_no').addEvent('click',function()
+	{
+		//判断
+		var flag		= submit_frm();
+		if(!flag)
+		{
+			return false;
+		}
+		$('order_frm').fireEvent('submit',{stop:$empty});
+    });
+	<{/if}>
+})();
+</script>

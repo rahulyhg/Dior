@@ -1,0 +1,71 @@
+<style>
+    .notice a {color: blue; font-size: 12px; font-weight: 700;margin-left: 4px; margin-right: 4px;}
+    .notify {border-color: #FFD324;font-size: 12px; }
+    .processBarBg {border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;}
+    .processBar {background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;}
+</style>
+<p></p>
+<h4>数据归档</h4>
+<div class="division"  id="information">
+                本次获取大约 <span id="iTotal" style="color:#083E96"><{$pagenum}></span> 页订单，每页500条 ,共<{$total}> 条订单
+                
+            </div>
+            <div id="processBarBg" class="processBarBg">
+                <div id="processBar" class="processBar">
+                    &nbsp;
+                </div>
+            </div>
+<div class="table-action">
+                <{button label="开始" type="botton" name="Start" id="btn-run"}>
+            </div>
+<script>
+var currentTime = <{$currentTime}>;
+$('btn-run').addEvent('click', function(){
+    doRun();
+    });
+
+function doRun() {
+     doTotal = 0;
+    displayProcessInfo();
+    
+    $('btn-run').disabled = true;
+    $('btn-run').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+
+    doAjaxProcess(1);
+}
+
+ /**
+     * 显示信息进度
+     */
+    function displayProcessInfo() {
+        
+        $('iTotal').set('html', getTotal());
+       
+    }
+
+    function getTotal() {
+        displayTotal = '<{$pagenum}>';
+        return displayTotal;
+    }
+
+    function doAjaxProcess(idx) {
+        if (doTotal >= getTotal()) {
+            $('processBar').setStyle('width', '100%');
+            $('btn-run').set('html', '<span><span>处理已完成，本窗口将在3秒后自动关闭！</span></span>');
+            //setTimeout("$('btn-run').getParent('.dialog').retrieve('instance').close();finderGroup['<{$env.get.finder_id}>'].refresh();",2000);
+        } else {
+            
+            new Request({url:'index.php?app=archive&ctl=order&act=ajaxDoAuto',method:'post',data:'ajaxParams='+<{$params}>+'&pageBn='+currentTime,
+                onComplete:function(result){
+                    if(!result) return;
+                    
+                    doTotal++;
+                    
+                    displayProcessInfo();
+                    $('processBar').setStyle('width', (doTotal*100/(getTotal())) + '%');
+                    doAjaxProcess(idx+1);
+                }
+            }).send();
+        }
+    }
+</script>

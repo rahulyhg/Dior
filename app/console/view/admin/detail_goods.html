@@ -1,0 +1,36 @@
+<div class="division">
+    <h3>出入库详情</h3>
+    <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+            <tr>
+                <th><{t}>出入库单号<{/t}></th>
+                <th><{t}>货号<{/t}></th>
+                <th><{t}>出入库类型<{/t}></th>
+                <th><{t}>出入库数量<{/t}></th>
+                <!-- <th><{t}>仓库名称<{/t}></th> -->
+                <th><{t}>出入库价格<{/t}></th>
+                <th><{t}>出入库时间<{/t}></th>
+            </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$rows item=item}>
+            <tr class="ColColorBlue" <{if $item.type_id == 1 || $item.type_id == 4 || $item.type_id == 30 || $item.type_id == 31 || $item.type_id == 50 || $item.type_id == 60 || $item.type_id == 7}> style="background-color: rgb(216, 216, 216);"<{/if}> >
+                <td><{$item.iostock_bn}></td>
+                <td><{$item.bn}></td>
+                <td><{$item.type_name}></td>
+                <!-- if $item.type_name == '采购入库' || $item.type_name =='退货入库' || $item.type_name =='换货入库' || $item.type_name =='调拨入库' ||$item.type_name =='残损入库' -->
+                <!-- 入库 -->
+                <{if $item.type_id == 1 || $item.type_id == 4 || $item.type_id == 30 || $item.type_id == 31  || $item.type_id == 32 || $item.type_id == 50 || $item.type_id == 60 || $item.type_id == 7}>
+                <td><{$item.nums}></td>
+                <!-- 出库 -->
+                <{else}>
+                <td>-<{$item.nums}></td>
+                <{/if}>
+                <!-- <td><{$item.branch_name}></td> -->
+                <td><{$item.iostock_price|cur}></td>
+                 <td><{$item.create_time}></td>
+            </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>

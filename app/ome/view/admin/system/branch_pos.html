@@ -1,0 +1,98 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<h5 class="head-title">添加/编辑货位:</h5>
+<div class="tableform">
+           <div class="division">
+<form method="post" action="index.php?<{$env.server.QUERY_STRING}>" id="form-branch_pos">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+
+        <tbody>
+        <tr>
+          <th><em class="c-red">*</em> 货位名称：</th>
+          <td colspan="2"><input name="store_position" size="20" type="text" id="store_position" vtype="required" value="<{$pos.store_position}>"/>
+          <input name="store_position2" type="hidden" id="store_position2" value="<{$pos.store_position}>"/>
+          <{help}><{t}>仓库中货架位置的唯一名称，支持字母、数字、文字<{/t}><{/help}>
+                         
+          </td>
+        </tr>
+
+		<tr>
+          <th>所属仓库：</th>
+          <td colspan="2">
+            <{if $is_super}>
+                <{if count($branch_list)=='1'}>
+                    <input type="hidden" name="branch_id" value="<{$branch_list.0.branch_id}>" />
+                    <{$branch_list.0.name}>
+                <{elseif count($branch_list)>'5' }>
+                    <{input type="select" name="branch_id" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=$pos.branch_id}> <span style="color:red">*</span>
+                <{else}>
+                    <{foreach from=$branch_list item=items key=keys}>
+                    <input type="radio" name="branch_id" vtype="requiredradio" <{if ($keys==0 && !$pos.branch_id) || $pos.branch_id == $items.branch_id}>checked="checked"<{/if}> value="<{$items.branch_id}>" />
+                    <{$items.name}>
+                    <{/foreach}> <span style="color:red">*</span>
+                <{/if}>
+            <{else}>
+                <{if !$branch_list_byuser}>
+                    <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。  *</font>
+                    <script>
+                       $$("input","button","select").set('disabled','disabled');
+                    </script>
+                <{else}>
+                    <{if count($branch_list_byuser)=='1'}>
+                        <{$branch_list_byuser.0.name}>
+                        <input type="hidden" name="branch_id" value="<{$branch_list_byuser.0.branch_id}>" />
+                    <{elseif count($branch_list_byuser)>'5'}>
+                        <{input type="select" name="branch_id" vtype="required" rows=$branch_list_byuser valueColumn="branch_id" labelColumn="name" value=$pos.branch_id}> <span style="color:red">*</span>
+                    <{else}>
+                        <{foreach from=$branch_list_byuser item=items key=keys}>
+                        <input type="radio" name="branch_id" vtype="requiredradio" <{if $keys==0 && !$pos.branch_id}>checked="checked"<{elseif $pos.branch_id == $items.branch_id}>checked="checked"<{/if}> value="<{$items.branch_id}>" />
+                        <{$items.name}>
+                        <{/foreach}> <span style="color:red">*</span>
+                    <{/if}>
+                <{/if}>
+            <{/if}>
+          
+		<{help}><{t}>当前所新建的货位隶属仓库<{/t}><{/help}>
+		
+		</td>
+        </tr>
+		<tr style="display:none;">
+          <th>警戒值：</th>
+          <td  colspan="2">
+          <input name="stock_threshold" vtype="number" size="6" type="text" id="stock_threshold" value="<{$pos.stock_threshold}>"/>
+          <{help}><{t}>当前仓库实际货品库存量小于该值时需要补货<{/t}><{/help}>
+          
+		</td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="table-action">
+      <{button label="保存" type="submit" id="btn-branch_pos" name="Submit"}> &nbsp;&nbsp; <{button label="关闭" onclick="javascript:void(window.close());" class="btn-secondary" type="button"}>
+      </div>
+<{if $pos.pos_id!=''}>
+ <input type="hidden" name="pos_id" value="<{$pos.pos_id}>">
+
+<{/if}>
+
+</form>
+  </div>
+    </div>
+<script>
+$('form-branch_pos').store('target',{
+    onRequest:function(){
+       $('btn-branch_pos').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn-branch_pos').set('disabled', '');
+       }else{
+           $('btn-branch_pos').set('disabled', 'true');
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           window.close();
+       }
+    }
+    });
+</script>  
+    

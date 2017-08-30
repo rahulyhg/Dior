@@ -1,0 +1,264 @@
+<style>
+    .notice a {color: blue; font-size: 12px; font-weight: 700;margin-left: 4px; margin-right: 4px;}
+    .notify {border-color: #FFD324;font-size: 12px; }
+    .processBarBg {border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;}
+    .processBar {background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;}
+</style>
+<div id="auto_activeOrder" class="tableform">
+<{if $all_dlycorp==3}>
+<div class="division notify" style="padding-left:20px;padding-bottom: 15px;text-align:left">
+<h3>系统检测到原来的"自动审单规则"，
+        <br/>
+<{img app='ome' src='dlycorp.png' }>
+        <br>
+原先“启用”全境物流，但未设置到具体收货地区的分组订单将进入<font color="red">人工审单</font><br><br></h3>
+<h3><font color="red">请及时检查和修改“自动选物流规则”！</font></h3>
+</div>
+<{/if}>
+<{if $is_allow}>
+    <{ if $orderCnt<1 }>
+    <div class="notice" style="padding-top: 15px;padding-bottom: 15px;">
+        <br/>
+        当前订单暂存区中没有可处理的订单，请稍后再试……
+        <br/>
+    </div>
+    <{area inject=".mainFoot"}>
+    <div class="table-action">
+        <{button label="关闭" type="botton" isCloseDialogBtn="true" }>
+    </div>
+    <{/area}>
+    <{ elseif $config }>
+    <div class="notice" style="padding-top: 15px;padding-bottom: 15px;">
+        你还没有完成自动审单的全部设置，你可通过下面的信息和链接进行调整后再操作：
+        <br/>
+        <br/>
+        <{ if $config.noOrderDefined }>
+            <a href="index.php?app=omeauto&ctl=order_type&act=index" target="_top">订单分组设置</a>
+        <{ /if }>
+        <{ if $config.noAutoConfirmDefaultRole }>
+            <a href="index.php?app=omeauto&ctl=autoconfirm&act=index" target="_top">自动审单设置</a>
+        <{ /if }>
+        <{ if $config.noAutoBranchRole }>
+            <a href="index.php?app=omeauto&ctl=autobranch&act=index" target="_top">仓库分配规则</a>
+        <{ /if }>
+    </div>
+    <{ else }>
+    <div class="note">
+        缓存区可操作订单共 <font color="red"><span id="bufferOrderCnt"><{$bufferOrderCnt}></span></font>，本次操作订单 <font color="red"><span id="orderCnt"><{$orderCnt}></span></font> 个，
+        预计其中 <font color="red"><span id="orderGroupOrdCnt"><{$orderGroupOrdCnt}></span></font> 个订单可合并为  <font color="red"><span id="orderGroupCnt"><{$orderGroupCnt}></span></font> 个发货。
+    </div>
+    <div class="division">
+        <form method="post" action="index.php?app=omestart&ctl=admin_order&act=doAuto" id="form-setting">
+            <div class='division'  id="config">
+                <h5>获取订单选项：</h5>
+                <select name="shop_id" id="select_shop" style="max-width:90px;_width:90px;">
+                    <option value="all">全部店铺</option>
+                    <{foreach from=$shopList item=item}>
+                    <option value="<{$item.shop_id}>"><{$item.name}></option>
+                    <{/foreach}>
+                </select>
+                &nbsp;&nbsp;
+                <label><input type="radio" name="fetchType" id="fetchAll" checked />获取所有可操作订单</label>
+                &nbsp;&nbsp;
+                <label><input type="radio" name="fetchType" id="fetchCustom" />获取<input type="text" id="fetchNum" name="fetchNum" value="100" size="3"/> 条 </label>
+            </div>
+            <div class="division" style="display:none;" id="information">
+                本次获取大约 <span id="iTotal" style="color:#083E96"></span> 个订单，
+                <span id="iSucc" style="color:green"></span> 个已自动确认并生成发货单，
+                <span id="iFail" style="color:red"></span> 个进入手工确认流程，请稍候……
+            </div>
+            <div id="processBarBg" class="processBarBg">
+                <div id="processBar" class="processBar">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="table-action">
+                <{button label="开始" type="botton" name="Start" id="btn-run"}>
+            </div>
+        </form>
+    </div>
+    <{/if}>
+<{else}>
+    <div class="notice" style="padding-top: 15px;padding-bottom: 15px; text-align:center; font-size:25px; line-height:40px;">
+        上次执行获取订单时间：<font color="#FF0000"><{$lastGetOrderTime}></font><br>
+        本次距上次操作，时间还没有超过<font color="#FF0000"><{$getOrderIntervalTime}></font>分钟，请稍后重试！
+    </div>
+    <{area inject=".mainFoot"}>
+    <div class="table-action">
+        <{button label="关闭" type="botton" isCloseDialogBtn="true" }>
+    </div>
+    <{/area}>
+<{/if}>
+</div>
+<script>
+    /*一次JS调用产生20个订单组的调用*/
+    var MaxProcessOrderNum = 10;
+    var OrderGroups = <{$orderGroup}>;
+    var currentTime = <{$currentTime}>;
+    var OrderQueue = new Array();
+
+    var doTotal = 0;
+    var doSucc = 0;
+    var doFail = 0;
+    var all_dlycorp = '<{$all_dlycorp}>';
+
+    /*选择店铺时更新操作数据*/
+    if($('select_shop')){
+        $('select_shop').addEvent('change', function() {
+            if(this.value){
+                var shopId = this.value;
+                new Request({url:'index.php?app=ome&ctl=admin_order_auto&act=ajaxGetAutoData',method:'post',data:'shopId='+shopId,
+                    onComplete:function(result){
+                        if(!result){ return;}
+                        ret = JSON.decode(result);
+                        if(ret['orderCnt']>0){
+                            OrderQueue = new Array();
+                            OrderGroups = ret['OrderGroups'];
+                            currentTime = ret['currentTime']; 
+
+                            $('bufferOrderCnt').set('html', ret['bufferOrderCnt']);
+                            $('orderCnt').set('html', ret['orderCnt']);
+                            $('orderGroupOrdCnt').set('html', ret['orderGroupOrdCnt']);
+                            $('orderGroupCnt').set('html', ret['orderGroupCnt']);
+                        }else{
+                            OrderQueue = new Array();
+                            OrderGroups = '';
+                            currentTime = ''; 
+
+                            $('bufferOrderCnt').set('html', 0);
+                            $('orderCnt').set('html', 0);
+                            $('orderGroupOrdCnt').set('html', 0);
+                            $('orderGroupCnt').set('html', 0);
+                            return MessageBox.error('没有可操作数据！');
+                        }
+                    }
+                }).send();
+            }
+        });
+    }
+
+    /**
+     * 生成操作队列
+     *
+     * @param void
+     * @author hzjsq (2011/3/25)
+     */
+    function initOptQueue() {
+        
+        var OrderHash = '';
+        var OrderNum = 0;
+        var OrderKey = '';
+
+        if (OrderGroups == '') {
+            return;
+        }
+
+        var LeaveProcessOrderNum = getTotal();
+        if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+            MaxProcessOrderNum = LeaveProcessOrderNum;
+        }
+
+        for ( OrderKey in OrderGroups) {
+            if (OrderHash == '')
+                OrderHash = OrderKey + '||' + OrderGroups[OrderKey]['orders'];
+            else
+                OrderHash = OrderHash + ';' + OrderKey + '||' + OrderGroups[OrderKey]['orders'];
+            OrderNum ++;
+            if (OrderNum >= MaxProcessOrderNum) {
+                OrderQueue.push(OrderHash);
+                OrderNum =0;
+                OrderHash = '';
+                LeaveProcessOrderNum = LeaveProcessOrderNum - MaxProcessOrderNum;
+                if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+                    MaxProcessOrderNum = LeaveProcessOrderNum;
+                }
+            }
+        }
+        if (OrderHash != '') {
+            OrderQueue.push(OrderHash);
+        }
+    }
+
+    /**
+     * 执行AJAX调用并开始获取订单
+     *
+     * @param void
+     * @return void
+     */
+    function doRun() {
+        initOptQueue();
+        if (OrderQueue.length == 0) {
+            return ;
+        }
+        //禁用开始按钮
+        doTotal = 0;
+        doSucc = 0;
+        doFail = 0;
+
+        displayProcessInfo();
+        $('config').style.display = 'none';
+        $('information').style.display ='';
+        $('btn-run').disabled = true;
+        $('btn-run').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+
+        doAjaxProcess(1);
+    }
+
+    /**
+     * 执行一次AJAX调用
+     */
+    function doAjaxProcess(idx) {
+        if (idx > OrderQueue.length || doTotal >= getTotal()) {
+            $('processBar').setStyle('width', '100%');
+            $('btn-run').set('html', '<span><span>处理已完成，本窗口将在3秒后自动关闭！</span></span>');
+            setTimeout("$('btn-run').getParent('.dialog').retrieve('instance').close();finderGroup['<{$env.get.finder_id}>'].refresh();",2000);
+        } else {
+            var params = OrderQueue[idx-1];
+            new Request({url:'index.php?app=ome&ctl=admin_order_auto&act=ajaxDoAuto',method:'post',data:'ajaxParams='+params+'&pageBn='+currentTime,
+                onComplete:function(result){
+                    if(!result) return;
+                    ret = JSON.decode(result);
+                    doTotal = doTotal + ret['total'];
+                    doSucc = doSucc + ret['succ']; 
+                    doFail = doFail + ret['fail'];
+                    displayProcessInfo();
+                    $('processBar').setStyle('width', (doTotal*100/(getTotal())) + '%');
+                    doAjaxProcess(idx+1);
+                }
+            }).send();
+        }
+    }
+
+    function getTotal() {
+        if ($('fetchAll').checked) {
+            displayTotal= <{$orderCnt}>;
+        } else {
+            displayTotal = $('fetchNum').value;
+        }
+        return displayTotal;
+    }
+
+    /**
+     * 显示信息进度
+     */
+    function displayProcessInfo() {
+        
+        $('iTotal').set('html', getTotal());
+        $('iSucc').set('html', doSucc);
+        $('iFail').set('html', doFail);
+    }
+
+    //初始化
+    $('btn-run').addEvent('click', function(){
+    var allDlycorpnotify = '<{$allDlycorpnotify}>';
+
+    if(all_dlycorp==3 && allDlycorpnotify!='2'){
+        var url = 'index.php?app=ome&ctl=admin_order_auto&act=notify_allDlycorp';
+        new Dialog(url,{title:'设置物流规则提醒',width:800,height:350});
+
+    }else{
+    
+        doRun();
+    }
+    });
+</script>

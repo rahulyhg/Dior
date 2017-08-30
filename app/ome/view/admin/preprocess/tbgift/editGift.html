@@ -1,0 +1,235 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/modedialog.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<form method="post" id="fm1" action="index.php?app=ome&ctl=admin_preprocess_tbgift&act=updateGift">
+<input type="hidden" name="goods_id" value="<{$gift.goods_id}>" />
+  <div class="tableform">
+
+    <div class="division">
+      <h5>赠品基本信息</h5>
+      <table>
+      <tr><td>赠品名称：<input type="text" vtype="required" name="name" value="<{$gift.name}>"></td></tr>
+      <tr><td>赠品编码：<input type="text" vtype="required" name="gift_bn" value="<{$gift.gift_bn}>" disabled></td>
+      <input type="hidden"  id="goods_type" name="goods_type" value="<{$goods_type}>">
+      </tr>
+      </table>
+      <h5 style="margin-top:10px;">赠品对应的货品信息</h5>
+      <{button label="货品添加" id="purchase-find-btn"}>
+      <{button label="捆绑货品添加" id="purchase-find-pkg-btn"}>
+      <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th>货品名称</th>
+            <th style="width:30px;">删除</th>
+          </tr>
+        </thead>
+        <tbody id="dataNode">
+          <tr>
+            <td colspan="7" style="padding:0;"><div class="note" style="margin:0;"> 暂无对应的货品信息 </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div align="right">
+        <{button type="button" id="purchase-delall-btn" label="全部删除" }></div> </div>
+    <div id="cc" class="noprint table-action"> <{button type="button" class="btn" id="purchase-save-btn" label="保 存"}> &nbsp; <{button type="button" class="btn" id="return-btn" label="返 回" onclick="javascript:window.close();"}></div>
+  </div>
+</form>
+<script>
+(function(){
+var visiTips = new Tips({
+		onShow:function(tip,el){
+			el.addClass('active');
+			tip.setStyle('display','block');
+		},
+		text: function(element){
+			if(element.get('visibility')=='false'){
+				return '隐藏商品';
+			}else{
+				return '';
+			}
+		}
+});
+    var goods_type = "<{$goods_type}>";
+    if(goods_type == 'bind'){
+       $('purchase-find-btn').setStyle('display','none');
+    }else{
+       $('purchase-find-pkg-btn').setStyle('display','none');
+    }
+
+    var callurl='index.php?app=ome&ctl=admin_preprocess_tbgift&act=getProducts',store=[];
+    var pkg_callurl='index.php?app=ome&ctl=admin_preprocess_tbgift&act=getPkgProducts',store=[];
+    new Request({url:'index.php?app=ome&ctl=admin_preprocess_tbgift&act=getEditProducts&p[0]='+<{$gift.goods_id}>,
+    onComplete:function(rs){
+        rs=JSON.decode(rs);
+        store.combine(rs);
+        createProduct(store);
+    }}).send();
+
+    var tpl='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'
+        +'  <td>{bn}<input type="hidden" name="pid[]" value="{product_id}"></td><td class="product-name" visibility="">{name}</td>'
+        +'  <td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'
+        +'</tr>';
+
+    $('purchase-find-btn').addEvent('click',function(e){
+        var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_preprocess_tbgift&act=findProduct');
+        new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:660,
+            onCallback:function(rs){
+                if(!rs)return;
+                rs=JSON.decode(rs);
+                init(rs);
+            }
+        });
+    });
+     //添加捆绑商品
+    $('purchase-find-pkg-btn').addEvent('click',function(e){
+        var url ='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_preprocess_tbgift&act=findPkgProduct');
+        new finderDialog(url,{params:{url:pkg_callurl,name:'product_id[]'},width:1000,height:660,
+            onCallback:function(rs){
+                if(!rs)return;
+                rs=JSON.decode(rs);
+                init(rs);
+            }
+        });
+    });
+
+
+    var pag,rows;
+    function emptyData(){
+        var noData='<tr>'
+            +'<td colspan="7" style="padding:0;"><div class="note" style="margin:0;"> 暂无对应的货品信息 </div></td>'
+            +'</tr>';
+        $('dataNode').set('html',noData);
+    }
+    function createProduct(data){
+        pag=new PageData(tpl,data,{'updateMain':$('dataNode'),'pageNum':15,
+        'onShow':function(){
+             var _this=this;
+             $$('#dataNode input[type]').addEvent('change',function(e){
+                 var pid=this.getParent('tr').get('key'),value=this.value;
+                _this.editData(pid,[this.get('key'),value]);
+            });
+
+            rows=$ES('#dataNode tr');
+            rows.each(function(item,i){
+                item.addEvent('click',function(e){
+                    this.toggleClass('selected');
+                });
+                item.getElement('.btn-delete-item').addEvent('click',function(e){
+                    if(_this.selectData(item.get('key')) && confirm('确定要删除 '+ _this.selectData(item.get('key'))['name'] +' 吗？')) _this.delData(item.get('key'));
+                    if(!$E('#dataNode tr')) emptyData();
+                });
+            });
+            
+			$ES('.product-name').each(function(item){
+				if(item.get('visibility')=='false'){
+					item.setStyle('color','#808080');
+				}
+			});
+			$ES('.product-name').removeEvent('mouseover').addEvent('mouseover',function(e){
+				if (this.get('visibility')=='false')
+				{
+					var e  = new Event(e), el = e.target;
+					visiTips.attach(el);
+					el.addEvent('mouseleave',function(){
+						this.removeClass('active');
+					});
+					el.fireEvent('mouseenter',e);
+				}
+		  });
+        }
+        });
+    }
+    function init(rs){
+        var tmparr=findProduct(rs,'product_id');
+         store.unshift.apply(store,tmparr.reverse());
+         createProduct(store);
+    }
+    function findProduct(arr,PRIMARY){
+        if(!store.length)return arr;
+        store.each(function(a){
+            arr.each(function(b){
+                if(a[PRIMARY]==b[PRIMARY])arr.erase(b);
+            });
+        });
+        return arr;
+    }
+
+    function delProduct(obj,arr){
+        arr.each(function(d){obj.delData(d);});
+    }
+
+    $('purchase-delall-btn').addEvent('click',function(e){
+        if(!pag||!pag.data)return;
+        var delarr=[];
+        pag.data.each(function(d){
+             delarr.push(d['product_id']);
+        });
+        if(confirm('确认删除全部采购商品吗？')){
+            delProduct(pag,delarr);
+            emptyData();
+        }
+    });
+
+
+    $('purchase-save-btn').addEvent('click',function(e){
+        var form=this.getParent('form');
+        if(pag){
+            var data=pag.toHideInput($('dataNode').getElement('tr'));
+             form.store('target',{extraData:data,
+              onComplete:function(jsontext){
+				  var json = Json.evaluate(jsontext);
+
+				  if (typeof(json.error) == 'undefined'){
+					  opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+					  setTimeout('window.close()',200);
+				  }
+              }});
+        }
+        form.fireEvent('submit',e);
+    });
+})();
+
+function chgexigence(o){
+    o.checked?$("exigence").show():$("exigence").hide();
+}
+function validSupplier(element){
+    element=$(element);
+    new Element('span',{'class':'error caution notice-inline','html':'本项必填'}).injectAfter(element);
+    element.removeEvents('blur').addEvent('blur',function(){
+       if(validate(element)) element.removeEvent('blur',arguments.callee);
+    });
+}
+
+function pushDate(o){
+    if(o.value!==""){
+        if(/^\d*$/.test(o.value)){
+            if (o.getNext('.error')) o.getNext('.error').dispose();
+            $("pushdate").set("text",(new Date(Date.parse(new Date())+86400000 * o.value.toInt())).toLocaleDateString());
+        }
+        else o.value="";
+    }
+    else $("pushdate").empty();
+}
+
+function prichange(ss){
+    if (ss == 1){
+        $$('.endd').hide();
+        $('price').set('value', '');
+    }else{
+        $$('.endd').show();
+    }
+}
+
+function checkName(thisval){
+    if(/!|！/.test(thisval)){
+        var val = thisval.replace("!","");
+        val = val.replace("！","");
+        $('purchase_name').set('value', val);
+    }
+}
+
+</script>

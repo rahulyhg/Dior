@@ -1,0 +1,179 @@
+<form method="post" enctype="multipart/form-data" id="import_form"
+	action="index.php?app=ome&ctl=admin_order_groupon&act=doImport"
+	class="tableform"><input type="hidden" name="app" value="ome" />
+<input type="hidden" name="model" value="order" />
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td style="text-align: right; padding-top: 3px; padding-right: 10px;"><{help
+		docid="76" type="link"}><{t}>点击查看帮助<{/t}><{/help}></td>
+	</tr>
+</table>
+
+<div id="information" class="division" style="display:none;">
+    <div style="color:#ff0000;"><b>错误信息如下：</b></div>
+    <div id="errorInfo" style="width:450px;height:150px;padding:5px;overflow-y:auto;line-height:150%;border:1px solid #999;"></div>
+</div>
+
+<h4><{t}>第一步：请填写导入参数<{/t}></h4>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <th>标题：</th>
+        <td><{input type="text" name="groupon_name" vtype="required" }><em class="red">*</em></td>
+    </tr>
+	<tr>
+		<th><{t}>请选择订单类型：<{/t}></th>
+		<td><select name='pluginId'>
+			<{foreach from=$pluginList key=key item=item}>
+			<option value='<{$key}>'><{$item}></option>
+			<{/foreach}>
+		</select><a target="_blank" href="index.php?app=ome&ctl=admin_order_groupon&act=exportOrderTemplate" label="导出模板">
+            <span>导出模板          </span>
+        </a></td>
+	</tr>
+	<tr>
+		<th>来源店铺：</th>
+		<td><select name="shop_id" id="shop_id">
+			<option value="">-选择店铺-</option>
+			<{foreach from=$shopData item=shop}>
+			<option value="<{$shop.shop_id}>"><{$shop.name}></option>
+			<{/foreach}>
+		</select></td>
+	</tr>
+	<tr>
+		<th>是否自动支付：</th>
+		<td><input type="radio" name="is_pay" value="yes" id="is_pay_yes">自动 <input
+			type="radio" name="is_pay" value="no" checked id="is_pay_no">手动
+		<div class="division" id="el_pay_division" style="display:none;">
+		<table cellpadding="0" cellspacing="0" border="0">
+			<tr>
+				<th><{t}>收款银行：<{/t}></th>
+				<td colspan="3"><{input type='text' id='payBank' name='bank'
+				value='' width="100"}> <{input id="selectAccount" type="select"
+				name='select_account' options=$pay_account value=''}></td>
+			</tr>
+			<tr>
+				<th><{t}>收款帐号：<{/t}></th>
+				<td colspan="3"><{input type='text' id='payAccount'
+				name='account' value='' width="200"}></td>
+			</tr>
+			<tr>
+				<th><{t}>付款类型：<{/t}></th>
+				<td colspan="3"><{input type="radio" name="pay_type"
+				options=$typeList value=$pay_type vtype='requiredradio'}></td>
+			</tr>
+			<tr>
+				<th><{t}>支付方式：<{/t}></th>
+				<td><{if $payment}> 
+				<{input type="select" id="payment" name='payment'
+				rows=$payment valueColumn="id" labelColumn="custom_name"
+				value=$payment_id}> <{else}> <select id='payment'
+					name='payment'>
+				</select> <em class="red">请先添加或同步前端店铺支付方式</em> <{/if}></td>
+				<th></th>
+				<td></td>
+			</tr>
+			<tr>
+				<th><{t}>支付帐号：<{/t}></th>
+				<td><{input type='text' name='pay_account' width="100" }></td>
+				<th></th>
+				<td></td>
+			</tr>
+			<tr>
+				<th><{t}>支付单备注：<{/t}></th>
+				<td colspan="3"><textarea name="memo" cols="80" rows="5"></textarea></td>
+			</tr>
+		</table>
+		</div>
+		</td>
+	</tr>
+	<!-- <tr>
+		<th>是否需要发货：</th>
+		<td><input type="radio" name="is_ship" value="yes">需要 <input
+			type="radio" name="is_ship" value="no" checked>不需要</td>
+	</tr> -->
+</table>
+</div>
+</table>
+
+<h4><{t}>第二步：上传您要导入的文件<{/t}></h4>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<th><{t}>上传文件：<{/t}></th>
+		<td><input type="file" name="import_file" /></td>
+	</tr>
+	<tr>
+		<th>&nbsp;</th>
+		<td><{button class="btn-primary" id='btn-submit' label="上传" type="button"}></td>
+	</tr>
+</table>
+</div>
+</form>
+
+<script>
+(function(){
+    $('import_form').store('target',{
+        onComplete:function(jsontext){
+            var json = JSON.decode(jsontext);
+            if (json.result == 'succ'){
+                $('btn-submit').set('html', '<span><span>上传</span></span>');
+                $('btn-submit').set('disabled', '');
+                MessageBox.success('订单导入成功！');
+            }else{
+                MessageBox.error('订单导入失败！');
+                $('information').style.display ='';
+                var errorInfo = '';
+                for(var key=0; key<json['msg'].length;key++){
+                    errorInfo = errorInfo + json['msg'][key] + '<br />';
+                }
+                $('errorInfo').set('html', errorInfo);
+                $('btn-submit').set('html', '<span><span>上传</span></span>');
+                $('btn-submit').set('disabled', '');
+            }
+        }
+    });
+
+    $('btn-submit').addEvent('click',function(){
+        $('information').style.display ='none';
+        $('errorInfo').set('html', '');
+        $('import_form').fireEvent('submit',{stop:$empty});
+    });
+
+    $$('input[name^=pay_type]').addEvent('click', function(){
+        var order_id = 0, shop_id = $('shop_id').value, pay_type = this.value;
+        W.page('index.php?app=ome&ctl=admin_finance&act=payment_by_pay_type&p[0]='+order_id+'&p[1]='+shop_id+'&p[2]='+pay_type,{update:$('payment'),onComplete:function(){
+            if($('payment').length <= 1){
+                $('payment').disabled = 'disabled';
+            }else{
+                $('payment').disabled = '';
+            }
+        }});
+    });
+
+    $('selectAccount').addEvent('change', function(e){
+      e=new Event(e);
+      var ipt=e.target;
+      var str = ipt.value;
+      var aItems = str.split('-');
+      $('payBank').value = aItems[0];
+      $('payAccount').value = aItems[1];
+    });
+
+    $('is_pay_yes').addEvent('click', function(){
+    	show_pay_ui();  
+    });
+    
+    $('is_pay_no').addEvent('click', function(){
+        show_pay_ui();  
+    });
+
+    function show_pay_ui(){
+    	 if($('is_pay_yes').checked){
+             $('el_pay_division').style.display = '';
+         }else{
+             $('el_pay_division').style.display = 'none';
+         }
+    }
+})();
+</script>

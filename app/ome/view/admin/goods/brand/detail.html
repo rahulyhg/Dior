@@ -1,0 +1,82 @@
+<form id="brandForm" action="index.php?app=ome&ctl=admin_brand&act=save"  method="post">
+<input type="hidden" name="brand_id" value="<{$brandInfo.brand_id}>">
+<div class="tableform">
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <th><{t}>品牌名称：<{/t}></th>
+  <td><{input type="text" name="brand_name" value=$brandInfo.brand_name vtype="required"}><em><font color='red'>*</font></em></td>
+</tr>
+<{if $brandInfo.brand_id > 0}>
+<tr>
+  <th><{t}>品牌别名：<{/t}></th>
+  <td><{input type="text" name="brand_keywords" value=$brandInfo.brand_keywords}><{t}>（|分隔，以|开头与结尾）<{/t}></td>
+</tr>
+<{/if}>
+<tr>
+  <th><{t}>网址：<{/t}></th>
+  <td><{input type="text" name="brand_url" style="width:240px" value=$brandInfo.brand_url}></td>
+</tr>
+<{if $brandInfo.brand_logo}>
+<tr>
+  <th>&nbsp;</th>
+  <td><img src="<{$brandInfo.brand_logo|storager}>"></td>
+</tr>
+<{/if}>
+</table>
+</div>
+
+<{if $gtype.status > 0}>
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tr>
+  <th><{t}>商品类型关联：<{/t}></th>
+  <td>
+  <{if $brandInfo.type}>
+      <fieldset>
+          <{foreach from=$type item=row}>
+              <label> <{if $brandInfo.type[$row.type_id]}> <{$row.name}><{/if}>  &nbsp; 
+          <{/foreach}></label>
+      </fieldset>
+  <{else}>
+      <lable>---</lable>
+  <{/if}>
+  </td>
+</tr>
+</table>
+</div>
+<{else}>
+<input type="hidden" class="gType" name="gtype[]" value="<{$type.default.type_id}>">
+<{/if}>
+
+  <div class="table-action">
+	<{button type="submit" id="btn-brand"  label="保存"}>
+</div>
+
+</form>
+<script>
+
+$('brandForm').store('target',{
+    onRequest:function(){
+       $('btn-brand').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('btn-brand').set('disabled', '');
+       }else{
+           $('btn-brand').set('disabled', 'true');
+           if(opener && opener.finderGroup && opener.finderGroup['<{$env.get.finder_id}>']){
+              opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+              window.close();
+           }
+       }
+    }
+});
+
+<{if $env.get._finder_name}>
+$('brandForm').store('target',{
+    update:'messagebox'
+});
+<{/if}>
+</script>

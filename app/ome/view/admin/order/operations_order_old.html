@@ -1,0 +1,164 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{script src="coms/autocompleter.js" app='desktop'}>
+<{/capture}>
+<div id="issplitarea"></div>
+<div id="nosplitarea">
+  <div class="finder-detail">
+    <table  cellspacing="0" cellpadding="0" border="0">
+      <tbody>
+        <tr>
+        <td style="text-align: left;" ><h3>发货单信息</h3></td>
+        </tr>
+      </tbody>
+    </table>
+    <{include file="admin/order/order_edit_item_log_old.html"}>
+  </div>
+</div>
+
+<div class="finder-detail">
+<div id="order_edit_receiver">
+  <table width="100%" class="gridlist">
+    <thead>
+      <tr>
+        <th style="text-align:left;">配送信息</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <table width="100%" border="0" cellpadding="0" cellspacing="0" class="delivery-info">
+           <tr>
+            <th>收货人姓名：</th>
+            <td><{$operation_detail.log_name }></td>
+            <th>送货时间：</th>
+            <td><{$operation_detail.log_r_time}></td>
+            <th>收货地区：</th>
+            <td>
+              <{$operation_detail.log_area|region}> <em class="c-red">*</em> </td>
+           </tr>
+           <tr>
+             <th>联系手机：</th>
+             <td><{$operation_detail.log_mobile}></td>
+             <th>邮政编码：</th>
+             <td><{$operation_detail.log_zip }></td>
+            <th>收货地址：</th>
+            <td><{$operation_detail.log_addr }> <em class="c-red">*</em></td>
+            </tr>
+           <tr>
+             <th>联系电话：</th>
+             <td><{$operation_detail.log_telephone}></td>
+             <th>Email地址：</th>
+             <td><{$operation_detail.log_email}></td>
+            <th>&nbsp;</th>
+            <td>&nbsp;</td>
+          </tr>
+         </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+
+  <div class="finder-detail">
+    <h3 >订单信息</h3>
+    <div class="division" style="background:#fff; " id="order_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody><tr>
+            <th>订单号：</th>
+            <td><{$operation_detail.order_bn}></td>
+            <th><b>订单总金额：</b></th>
+            <td><b id="total_amount_show"><{$operation_detail.total_amount}> 元</b></td>
+            <th>订单折扣或涨价：</th>
+            <td><{$operation_detail.log_discount}><br />要给顾客便宜100元，则输入"-100";要提高订单价格100元，则输入"100".</td>
+          </tr>
+          <tr>
+            <th>下单日期：</th>
+            <td><{$operation_detail.createtime}> <span style="color:#84A2AD;">(至今<{$order.difftime}>)</span></td>
+            <th>配送费用：</th>
+            <td><{$operation_detail.cost_shipping}></td>
+            <th>支付方式：</th>
+            <td><{$operation_detail.pay_name}></td>
+          </tr>
+          <tr>
+            <th>商品总金额：</th>
+            <td><{$operation_detail.cost_item}></b></td>
+            <th>配送方式：</th>
+            <td><{$operation_detail.shipping_name}></td>
+            <th>支付手续费：</th>
+            <td><{$operation_detail.cost_payment|cur}> </td>
+          </tr>
+          <tr>
+            <th>订单优惠金额：</th>
+            <td><{$operation_detail.pmt_order|cur}></td>
+            <th>保价：</th>
+            <td><{$operation_detail.cost_protect}></td>
+            <th>税金：</th>
+            <td><{$operation_detail.cost_tax}> </td>
+          </tr>
+          <tr>
+            <th>商品优惠金额：</th>
+            <td><{$operation_detail.pmt_goods}></td>
+            <th>商品重量：</th>
+            <td><{$operation_detail.weight}></td>
+            <th>发票抬头：</th>
+            <td><{$operation_detail.tax_title}></td>
+          </tr>
+          <tr>
+            <th>已支付金额：</th>
+            <td><{$operation_detail.payed}></td>
+            <th>支付币种：</th>
+            <td><{$operation_detail.currency}></td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="finder-detail" style="margin-top:10px;">
+    <div><h3>购买人信息</h3></div>
+    <div class="division" style="background:#fff;" id="buyer_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+          <tr>
+            <th>会员用户名：</th>
+             <td><{$operation_detail.mem_uname}></td>
+            <th>姓名：</th>
+             <td><{$operation_detail.mem_name}></td>
+            <th>联系电话：</th>
+            <td><{$operation_detail.mem_telephone}></td>
+            <th>手机：</th>
+             <td><{$operation_detail.mem_mobile}></td>
+          </tr>
+          <tr>
+            <th>Email：</th>
+            <td><{$operation_detail.mem_email}></td>
+            <th>邮政编码：</th>
+            <td><{$operation_detail.mem_zipcode}></td>
+            <th>详细地址：</th>
+            <td><{$operation_detail.mem_area}></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <{capture name='footbar'}>
+    <table cellspacing="0" cellpadding="0" class="table-action">
+	  <tbody><tr valign="middle">
+	    <td>
+	      <{button label="关闭" class="btn-primary" id="closeBut"}>
+	    </td>
+	    </tr>
+    </tbody></table>
+<{/capture}>
+
+<script>
+$('closeBut').addEvent('click', function(event){
+    window.close();
+});
+</script>

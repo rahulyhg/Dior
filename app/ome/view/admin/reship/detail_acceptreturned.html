@@ -1,0 +1,37 @@
+<div class="tableform">
+<{if $detail.refuse_memo}>
+<div class="division">
+
+<table cellspacing="0" cellpadding="0" border="0" >
+  <tr>
+    <td><strong><{t}>拒绝理由：<{/t}></strong><{$detail.refuse_memo}></td>
+  </tr>
+</table>
+
+</div>
+<{else}>
+<div class="division">
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th><{t}>快递单号:<{/t}></th>
+    <td><{$detail.shiplogino|default:'-'}></td>
+    <th><{t}>快递公司:<{/t}></th>
+    <td><{$detail.shipcompany|default:'-'}></td>
+    <th><{t}>快递费用:<{/t}></th>
+    <td><{$detail.shipmoney|cur}></td>
+    <th><{t}>是否到付:<{/t}></th>
+    <td><{$detail.shipdaofu|default:'-'}></td>
+  </tr>
+  <tr>
+    <th><{t}>收货备注：<{/t}></th>
+    <td><{$detail.memo|default:'-'}></td>
+  </tr>
+</table>
+
+</div>
+<{/if}>
+
+
+ </div>
+ 

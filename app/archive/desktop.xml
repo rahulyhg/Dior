@@ -1,0 +1,28 @@
+<desktop>
+    <permissions>
+         <permission id="archive_set">归档设置</permission>
+         <permission id="archive_search">归档设置</permission>
+		 <permission id="archive_log">归档日志</permission>
+    </permissions>  
+	<workground name="订单" id="order_center" order="100">
+        
+        <menugroup name="订单查看">
+           
+			<menu controller='order' action='search' permission='archive_search' display='true' order='10000101'>归档订单</menu>
+			
+        </menugroup> 
+        
+       
+    </workground>
+    <workground name="系统" id="setting_tools"  order="1000">
+        
+        <menugroup name="归档设置">
+            <menu controller='order' action='index' permission='archive_set' display='true' order='10000100'>数据归档设置</menu>
+			<!--<menu controller='order' action='search' permission='archive_search' display='true' order='10000101'>数据归档查询</menu>-->
+			<menu controller='log' action='index' permission='archive_log' display='true' order='10000102'>数据归档日志</menu>
+        </menugroup> 
+        
+       
+    </workground>
+   
+</desktop>

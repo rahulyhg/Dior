@@ -1,0 +1,25 @@
+<div class="tableform">
+    <{if $refundinfo.product_data}>
+    <h4>申请商品明细</h4>
+        <div class="division">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+                <tbody>
+                    <tr>
+                        <th>货号</th>
+                        <th>价格</th>
+                        <th>数量</th>
+                    </tr>
+                    <{foreach from=$refundinfo.product_data item=product_data}>
+                    <tr>
+                        <td><{$product_data.bn}></td>
+                        <td><{$product_data.price}></td>
+                        <td><{$product_data.num}></td>
+                    </tr>
+                    <{/foreach}>
+                </tbody>
+            </table>
+    <{/if}>
+</div>
+<script>
+
+</script>

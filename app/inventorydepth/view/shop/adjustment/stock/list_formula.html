@@ -1,0 +1,51 @@
+<form action="s" method="post">
+    <div class='division'>
+    <table id="dataNode" width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+    <thead>
+      <tr>
+        <th></th>
+        <th>公式名称</th>
+        <th>公式内容</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+    <tbody>
+    <{foreach from=$list item=row}>
+    <tr>
+    <td style="width:14px;"><input type="radio" name="formulaId" value="<{$row.formula_id}>" formula="<{$row.content.result}>"/></td>
+    <td><{$row.heading}></td>
+    <td><{$row.content.result}></td>
+    <td align="center" nowrap style="width:30px;"><{img src='icons/icon_delete.gif' alt='删除' class='del-formula'}></td>
+    </tr>
+    <{/foreach}>
+    </tbody>
+    </table>
+    </div>
+    <div class="gridlist-footer"><{$pager}>&nbsp;&nbsp;共<{$count}>条，每页显示<{$pagelimit}>条 </div>
+    <div class="table-action">
+        <{button label="确定" type="button" id="btn_confirm"}> &nbsp;&nbsp; <{button label="关闭" type="button" class="btn-secondary" isclosedialogbtn="1"}>
+    </div>
+</form>
+<script>
+  $('btn_confirm').addEvent('click',function(e){
+      var rel = $('dataNode').getElement('[type=radio]:checked');
+      if(rel){
+        var value = rel.get('formula');
+        $('result').value = value;
+        $('formula_new').show();
+
+        var imgTarget = $('expansion').getElement('img');
+        imgTarget.className = 'asc';
+        imgTarget.set('src',$('expansion').get('ascimgsrc'));
+        
+        this.getParent('.dialog').retrieve('instance').close();
+      }
+      else {
+        alert('请先选择公式.');
+      }
+  });
+  $$('.del-formula').addEvent('click',function(e){
+	  var id=this.getParent('tr').getElement('[type=radio]').value;
+	  new Request({url:'index.php?app=inventorydepth&ctl=shop_adjustment&act=delFormula',onComplete:function(){this.getParent('tr').destroy();}.bind(this)}).post('formula_id='+id);
+  });
+</script>

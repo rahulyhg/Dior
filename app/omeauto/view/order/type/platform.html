@@ -1,0 +1,19 @@
+<{input type="select" name="shop_type" rows=$shop_type valueColumn="key" labelColumn="label" value=$current_shop_type id='shop_type' value=$init.content.type required='true'}>
+
+
+<script>
+    (function(){
+        function displayDetail(role) {
+            new Request.HTML({
+                url : 'index.php?app=omeauto&ctl=order_type&act=ajax',
+                method : 'post',
+                update : $('shop_area')
+            }).post('p[0]=platform&p[1]=getShopByType&p[2]='+$('shop_type').value + '&p[3]='+role);
+        }
+    
+        /*$('shop_type').addEvent('change',function(){
+            displayDetail();
+        });
+        displayDetail('<{$role}>');*/
+    })();
+</script>

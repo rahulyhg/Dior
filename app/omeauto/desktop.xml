@@ -1,0 +1,29 @@
+<desktop>
+    <permissions>
+        <permission id="order_type">分组规则设置</permission>
+        <permission id="auto_confirm">自动审单规则</permission>
+        <permission id="auto_dispatch">自动分派规则</permission>
+        <permission id="auto_branch">仓库分配规则</permission>
+        <permission id="delivery_group">发货单分组规则</permission>
+        <permission id="branch_bind">仓库绑定设置</permission>
+		<permission id="auto_branchset">默认仓库设置</permission>
+        </permissions>
+
+    <workground name="系统" id="setting_tools"  order="800">
+        <menugroup name="订单自动设置">
+            <menu controller='order_type' action='index' permission='order_type' display='true' order='4500100'>分组规则设置</menu>
+            <menu controller='autoconfirm' action='index' permission='auto_confirm' display='true' order='4500200'>自动审单规则</menu>
+            <menu controller='autodispatch' action='index' permission='auto_dispatch' display='true' order='4500300'>自动分派规则</menu>
+			<menu controller='autobranchset' action='index' permission='auto_branch' display='true' order='4500400'>自动仓库规则</menu>
+           <!-- <menu controller='autobranch' action='index' permission='auto_branch' display='true' order='4500400'>仓库分配规则</menu>-->
+           	<menu controller='autobranch' action='index' permission='auto_branchset' display='true' order='4500410'>默认仓库设置</menu>
+            <menu controller='order_type' action='delivery' permission='delivery_group' display='true' order='4500500'>发货单分组规则</menu>
+		</menugroup>
+	</workground>
+	 <workground name="基础档案" id="goods_manager"  order="500">
+        <menugroup name="仓库物流管理">
+            <menu controller='branchbind' action='index' permission='branch_bind' display='true' order='8000801'>仓库绑定设置</menu>
+            
+		</menugroup>
+	</workground>
+</desktop>

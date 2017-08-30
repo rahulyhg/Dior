@@ -1,0 +1,265 @@
+<{capture name="header"}>
+	<style media="print">
+		div{font-size:14pt; }
+		.PageNext{page-break-after: always;}
+	</style>
+	<style media="screen">
+		div{font-size:12px ;}
+	</style>
+	<style>
+		.order-box{ height:auto; padding:10px 10px 0 10px; margin:5px 20px 0 20px; }
+		.order-box li{ padding:3px 0}
+		.order-tr{ font-weight:bold; border-bottom:1px solid #000;}
+		.table-border{ margin:10px 0; border-top:2px solid #333;border-bottom:2px solid #333}
+		.order-box td{ padding:3px 5px; vertical-align:top}
+		.order-font{ font-weight:bold; padding:0 5px; clear:both; height:25px; line-height:25px; margin:5px 0 25px 0}
+	</style>
+<{/capture}>
+
+<{ if $errIds }>
+<div class="errormsg notice" id="errormsg">
+    <div id="msg" class="msg">注意：本次打印数据中的一些单据有问题，这些数据将被忽略(详细内容见下面列表)！！！</div>
+    <br>
+		<{ foreach from=$errIds item=id }>
+			<{$allItems[$id]['delivery_bn']}> &nbsp; : &nbsp; <{$errInfo[$id]}><br>
+		<{ /foreach }>
+</div>
+<{ /if }>
+
+
+<{if $err=='false'}>
+	<{foreach from=$items item=group}>
+		<{if $group.stock}>
+			<div class="order-box">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #666">
+				<tr >
+					<td colspan="12"  class="order-boder1">
+						<div class="order-tr" style="padding:0 1px; float:left; font-weight:bold">备货单明细</div>
+						<div style="padding:0 5px; float:right; ">打印日期： <{$time}></div>
+					</td>
+				</tr>
+				<tr>
+					<td width="13%" style="font-weight:bold;">货号：</td>
+					<td width="13%" style="font-weight:bold;">货位：</td>
+					<td width="20%" style="font-weight:bold;">商品名称：</td>
+					<td width="10%" style="font-weight:bold;">商品规格：</td>
+					<td width="6%" style="font-weight:bold;">商品数量：</td>
+					<td width="auto" style="font-weight:bold;" align='center'>盒子号<盒号(件数)-序号>：</td>
+				</tr>
+				<{foreach from=$group.stock item=item name=ff}>
+				<tr>
+					<td ><{$item.bn}></td>
+					<td ><{$item.store_position}></td>
+					<td><{if $is_front_pname}><{$item.product_name}><{else}><{$item.name}><{/if}></td>
+					<td><{$item.spec_info|default:'--'}></td>
+					<td ><{$item.num}></td>
+					<td align='center'><{$item.box}></td>
+				</tr>
+				<{/foreach}>
+				</table>
+				<table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #666">
+					<tr>
+						<td align="right">
+						<{assign var="delivery_total_price" value=$group.delivery_total_price+$group.delivery_discount_price}>
+						备货单数量总计：<{$group.delivery_total_nums}> 
+						出库金额总计：<{$delivery_total_price}>(备货单中如有捆绑商品，所有的金额统计不计算捆绑商品的金额。)
+						</td>
+					</tr>
+					<tr>
+						<td align="right">
+							备货单金额总计：<{$group.delivery_total_price|default:0}>
+							优惠金额总计：<{$group.delivery_discount_price|default:0}>
+						</td>
+					</tr>
+				</table>
+				<table  width="100%" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td  align="left" class="order-font">批次号：<{$group.idents_range|default:$ident}></td>
+						<td><div align="right" class="order-font">Powered by ShopEx.cn</div></td>
+					</tr>
+				</table>
+				<div align="right" class="" style="border-bottom:1px dashed #666; height:25px; line-height:25px"></div>
+				</div>
+		<{/if}>
+		
+		<{if $group.delivery}>
+			<{foreach from=$group.delivery item=item}>
+			<div style="page-break-after: always; margin:0">
+				<div class="order-box">
+				<table width="100%" cellpadding="0" cellspacing="0" border="0" >
+					<tr>
+						<td colspan="2" class="order-tr">
+						发货底单<{if $item.is_code=='true'}>(订单支付方式：货到付款)<{/if}>
+						<{if $item.shop_logo_url}>
+						&nbsp;&nbsp;&nbsp;&nbsp;<img src="<{$item.shop_logo_url}>" width="257" height="50" alt="京东商城">
+						<{elseif $item.shop_name}>
+						&nbsp;&nbsp;&nbsp;&nbsp;(来源店铺：<{$item.shop_name}>)
+						<{/if}>
+						</td>
+					</tr>
+					<tr>
+						<td width="65%" rowspan="4" valign="top" style="padding:5px 0">
+							<{$item.delivery_bn|barcode}>
+						</td>
+						<td valign="middle" style="padding:5px 0">
+							发货单号：<span style="font-weight:bold"><{$item.delivery_bn}></span>
+						</td>
+					</tr>
+					<tr>
+						<td valign="middle" style="padding:5px 0">
+							打印批次号：<{$idents[$item.delivery_id]}>
+						</td>
+					</tr>
+					<tr>
+						<td valign="middle" style="padding:5px 0">订单号：<{$item.order_bn}></td>
+					</tr>
+					<tr>
+						<td valign="middle" style="padding:5px 0">会员名：<{$item.member_name}></td>
+					</tr>
+					<tr>
+						<td colspan="2" >打印日期： <{$time}></td>
+					</tr>
+					<tr>
+						<td colspan="2" >操作员： <{$item.op_name}></td>
+					</tr>
+					<tr>
+						<td colspan="2" >盒子号：<{$item.box}></td>
+					</tr>
+				</table>
+				<table border="0" align="center" width="100%" cellpadding="0"  cellspacing="0"  class="table-border">
+					<tr >
+						<td><b>商品名称</b></td>
+						<td><b>商品规格</b></td>
+						<td><b>货号</b></td>
+						<td><b>货位</b></td>
+						<td><b>数量</b></td>
+						<td class="price"><b> 单价 </b></td>
+					</tr> 
+					<{foreach from=$item.delivery_items item=i}>
+					<tr>
+						<td><{if $is_front_pname}><{$i.product_name}><{else}><{$i.name}><{/if}></td>
+						<td ><{$i.addon|default:'--'}></td>
+						<td ><{$i.bn}></td>
+						<td ><{$i.store_position}></td>
+						<td><{$i.number}></td>
+						<td class="price" align='right'><{$i.price|cur}></td>
+					</tr>
+					<{/foreach}>
+					<{if !empty($total)}>
+					<tr>
+						<td colspan="2" style="text-align:right; padding-right:10px;">共计</td>
+						<td style="font-weight:bold;  padding-right:10px;"><{$total}></td>
+					</tr>
+					<{/if}>
+				</table>
+				<table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #666">
+					<tr>
+						<td align="right">
+							发货单数量总计：<{$item.delivery_total_nums}>
+							<span class="price">
+							<{if $item.order_total_amount}>
+						&nbsp;订单总金额:<{$item.order_total_amount|cur}>&nbsp;&nbsp;商品总金额:<{$item.order_cost_item|cur}>
+							<{/if}>
+							</span>
+						</td>
+					</tr>
+				</table>
+
+				<div class="order-tr" style="padding:0 5px; height:28px; line-height:28px;">收货人信息</div>
+					<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+						<td width="65%" rowspan="5">
+							订单备注：
+							<{foreach name="m1" from=$item._mark_text key=key item=item1}>
+								<br><{$key}>:
+								<{foreach from=$item1 item=it}>
+								<br>&nbsp;&nbsp;&nbsp;&nbsp;<b><{$it.op_content}></b> <{$it.op_time}> by <{$it.op_name}>
+								<{/foreach}>
+							<{/foreach}>
+						<br /><br />
+							订单附言：
+							<{foreach name="m2" from=$item._mark key=key item=item2}>
+								<br><{$key}>:
+								<{foreach from=$item2 item=it}>
+								<br>&nbsp;&nbsp;&nbsp;&nbsp;<b><{$it.op_content}></b> <{$it.op_time}> by <{$it.op_name}>
+								<{/foreach}>
+							<{/foreach}>
+                        <br/><br/>发票信息:
+                        <{foreach from=$item._tax_info item=item3}>
+                            <br/><{$item3.order_bn}>:
+                                <br/>&nbsp;&nbsp;&nbsp;&nbsp;发票抬头：<{$item3.tax_title}>&nbsp;&nbsp;发票号：<{$item3.tax_no}>
+                        <{/foreach}>
+						</td>
+						<td >收货人：<{$item.consignee.name}></td>
+					</tr>
+					<tr>
+						<td >电话：<{$item.consignee.telephone}></td>
+					</tr>
+					<tr>
+						<td >手机：<{$item.consignee.mobile}></td>
+					</tr>
+					<tr>
+						<td>邮编：<{$item.consignee.zip}></td>
+					</tr>
+					<tr>
+						<td>地址：<{$item.consignee.area|region}> <{$item.consignee.addr}></td>
+					</tr>
+					<tr>
+						<td colspan="2"><div class="order-font">签字：</div></td>
+					</tr>
+					<tr>
+					<td align="left" class="order-font"></td>
+						<td><div align="right" class="order-font">Powered by ShopEx.cn</div></td>
+					</tr>
+					</table>
+					<div align="right" class="" style="border-bottom:1px dashed #666; height:25px; line-height:25px"></div>
+					<div style="clear:both"></div>
+				</div>
+			</div>
+			<{/foreach}>
+		<{/if}>
+		<div class='PageNext'></div>
+	<{/foreach}>
+<{/if}>
+
+<script>
+var err = <{$err}>;
+if (err==true){
+	new Dialog(new Element("div.tableform",{html:'<div class="division">部分发货单已被合并或者拆分</div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'}),{
+        title:'错误',
+        width:230,
+        height:130,
+        modal:true,
+        resizeable:false});
+}
+
+function re_finder(){
+    opener.finderGroup['<{$env.get.finder_id}>'].unselectAll();
+	opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+    window.close();
+}
+
+function changePrint()
+{
+    new Dialog(new Element("div.tableform",{html:'<div id="pause" class="division">正在提交数据<{img app="desktop" src="loading.gif"}></div><div class="table-action"><{button label="关闭" onclick="re_finder();"}></div>'}),{
+        title:'提示',
+        width:230,
+        height:130,
+        modal:true,
+        resizeable:false}
+    );
+    var printname= $('printname').value;
+    new Request({url:'index.php?app=wms&ctl=admin_receipts_print&act=setPrintStatus',method:'post',data:'type=stock_dly&str='+printname+'&current_otmpl_name=<{$current_otmpl_name}>&sku=<{$sku}>',
+        onSuccess:function(json){
+          if (json == 'true'){
+              $('pause').getParent('.dialog').retrieve('instance').close();
+              window.print();
+          }else {
+              $('pause').set('text',json);
+          }
+        }
+    }).send();
+}
+
+</script>
+

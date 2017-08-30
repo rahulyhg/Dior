@@ -1,0 +1,125 @@
+<{area inject=".mainHead"}>
+    <{css src="style.css" app='omeanalysts'}>
+<{/area}>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+    <td width="100%" valign="top" bgcolor="#E4E4E4" style="padding:12px 8px">
+    <div class="cir_top">
+        <img src="<{$env.app.res_url}>/cir_topleft.jpg" class="cir_left" />
+        <img src="<{$env.app.res_url}>/cir_topright.jpg" class="cir_right" />
+    </div>
+    <div class="cir_rightbox">
+        <h4>
+            <div class="title_left" >
+            <{$path}><span style="font-size:12px; color:gray;">(数据非及时显示，当天数据请于第二天查看)</span>&nbsp;<{button label="导出" id="editarea" type="button"}>
+            </div>
+            <{include file="ome/search.html"}>
+        </h4>
+
+        <div class="tableform">
+            <div class="division" style="border:1px solid #ccc;">
+
+            <div style="height:250px;overflow:auto;" class="list-charts">
+
+              <{foreach from=$shop_list item=shop}>
+              <div style="height:220px;overflow:hidden;width:47%;float:left;">
+                <div class="loading" >
+                  <iframe frameborder="0" src="index.php?app=omeanalysts&ctl=ome_productSaleRank&act=sale_rank&title=<{$rank_data[$shop.shop_id].title}>&categories=<{$rank_data[$shop.shop_id].categories}>&data=<{$rank_data[$shop.shop_id].data}>" scrolling="no" width="100%" height="220" onload="$(this).getParent().removeClass('loading')"></iframe>
+                </div>
+                <div title="点击查看大图" onclick="loadchart('<{$rank_data[$shop.shop_id].title}>',<{$rank_data[$shop.shop_id].categories}>,<{$rank_data[$shop.shop_id].data}>);" style="height:220px;overflow:hidden;width:100%;position:relative;top:-220px;left:0;cursor:pointer"></div>
+              </div>
+              <{/foreach}>
+
+            </div>
+            <script>
+            /*设置图表区域大小*/
+            function setSize(){
+                var h = window.getSize().y - $$('.list-charts')[0].getPosition().y;
+                $$('.list-charts')[0].setStyle('height',h-$$('.list-charts')[0].getPatch().y);
+            }
+            setSize();
+            window.addEvent('resize',function(){
+                setSize();
+            });
+            /*****end******/
+
+            function chartview(title,categories,series){
+              Asset.javascript('<{$env.app.res_url}>/js/highcharts.js',{onload:function(){
+                var chart = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'chart0',
+                        defaultSeriesType: 'column',
+                        backgroundColor: '#f6f6f6',
+                        margin: [ 50, 50, 50, 80]
+                    },
+
+                    title: {
+                        text: title
+                    },
+                    xAxis: {
+                        categories: categories,//['2011-11-01', '2011-11-02', '2011-11-03', '2011-11-04', '2011-11-05', '2011-11-06'],
+                        labels: {
+                            rotation: -30,
+                            align: 'right',
+                            style: {
+                                font: 'normal 12px Verdana, sans-serif'
+                            }
+                         }
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: ''
+                        }
+                    },
+                    plotOptions:{
+                        column:{
+                            dataLabels:{
+                                enabled:true
+                            }
+                        }
+                    },
+                    tooltip: {
+                        formatter: function() {
+                            return '<b>'+ this.series.name +'</b><br/>'+
+                            this.x +': '+ this.y;
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'right',
+                        x: 0,
+                        y: 60,
+                        borderWidth: 0
+                    },
+                    series: series//[{name: '下单量',data: [0, 0, 0, 0, 0, 0]},{name: '发货量',data: [0, 0, 0, 0, 0, 0]}]
+                });
+              }});
+            }
+            function loadchart(title,categories,data){
+                new Dialog(new Element('div'),{title:'',width:550,height:320,resizeable:false,onLoad:function(e){
+                    new Element('div#chart0',{style:'width:550px;height:320px'}).inject(this.dialog_body);
+                    chartview(title,categories,data);
+                }});
+            };
+            </script>
+            </div>
+        </div>
+    </div>
+    <div class="cir_bottom">
+        <img src="<{$env.app.res_url}>/cir_bottomleft.jpg" class="cir_left" />
+        <img src="<{$env.app.res_url}>/cir_bottomright.jpg" class="cir_right" />
+    </div>
+    </td>
+</tr>
+</table>
+<script>
+(function(){
+    $('editarea').addEvent('click',function(e){
+      new 
+      //Dialog('index.php?app=omeio&ctl=admin_task&act=create_export&_params[app]=omeanalysts&_params[mdl]=analysis_productsSale&_params[time_from]=<{$time_from}>&_params[time_to]=<{$time_to}>',{width:400,height:170,title:'队列导出'});
+      Dialog('index.php?app=omeanalysts&ctl=ome_productSaleRank&act=index2&action=export&_params[app]=omeanalysts&_params[mdl]=analysis_ome_productsSale&_params[time_from]=<{$time_from}>&_params[time_to]=<{$time_to}>',{width:400,height:170,title:'生成报表'});
+    });
+  })();
+</script>

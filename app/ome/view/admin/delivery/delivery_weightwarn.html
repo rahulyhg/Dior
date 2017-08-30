@@ -1,0 +1,81 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<div class="division" id='product-form'>
+<div class="tableform">
+
+
+<table cellspacing="10" cellpadding="0" border="0" width="80%" class="gridlist">
+<tbody>
+     
+<tr >
+    <td >
+    <p>
+    <h2><font color="red">
+    <p>该包裹总重量超出误差允许范围</p>
+   请及时检查包裹内货品是否正确
+    </font></h2>
+    <h3><font color="red">若包裹正确，请及时联系系统管理员对报警设置进行修改</font></h3>
+    </p>
+      </td>
+     
+      </tr>
+  </tbody> 
+</table>
+
+</div>
+
+
+<table align=center style="padding-top:10px;">
+<tr align=center><td <{if $problem_package!='1'}>style="display:none"<{/if}>><button type="button" id="still-submit" style="font-size:1.5em;font-weight: 600; height: 40px; width:100px;cursor: pointer;display: -moz-inline-stack;line-height: 30px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>仍然发货</span></span></button></td><td><button type="button" id="btn-cancel" style="font-size:1.5em;font-weight: 600; height: 40px; width:150px;cursor: pointer;display: -moz-inline-stack;line-height: 30px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>检查后再发货</span></span></button></td><td align=center><input type="text" id="barcode" name="barcode" style="height:20px;vertical-align:bottom;" /></td></tr>
+<tr align=center style="padding-top:6px;"><td <{if $problem_package!='1'}>style="display:none"<{/if}>><h4>对应确认之条码</h4></td><td><h4>对应取消之条码</h4></td><td><h4>输入条码"<{$stock_confirm}>"可实现"仍然发货"操作<br>
+输入条码"<{$stock_cancel}>"可实现"检查后再发货"操作</h4></td></tr>
+</table>
+</div>
+
+</div>
+<input type="hidden" name="logi_no" value="<{$logi_no}>">
+<input type="hidden" name="weight" value="<{$weight}>">
+
+<script>
+$('barcode').focus();
+$('barcode').addEvent('keyup',function(e){
+    var barcode = $('barcode').value;
+    var stock_confirm = '<{$stock_confirm}>';
+    var stock_cancel = '<{$stock_cancel}>';
+    if(e.code==13)
+    {
+        
+        if(barcode==stock_confirm || barcode==stock_cancel){
+        
+            if(barcode=='<{$stock_confirm}>'){
+                $('still-submit').fireEvent('click',e);
+            }else if(barcode=='<{$stock_cancel}>'){
+                $('btn-cancel').fireEvent('click',e);
+            }
+        }else{
+            alert('非法操作');
+            return false;
+        }
+    }
+    return false;
+});
+$('btn-cancel').addEvent('click',function(e){
+    $('logi_no').set('value','');
+    $('weight').set('value','');
+
+   
+    $('product-form').getParent('.dialog').retrieve('instance').close();
+
+
+});
+if($('still-submit')){
+    $('still-submit').addEvent('click',function(e){
+    $('warn_status').set('value',1);
+    $('product-form').getParent('.dialog').retrieve('instance').close();
+    $('ome_single_delivery').fireEvent('submit',{stop:$empty});
+
+    });
+}
+</script>

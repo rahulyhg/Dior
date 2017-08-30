@@ -1,0 +1,76 @@
+<div class="division">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>API同步日志备份周期：</th>
+                <td>
+                    <select name="set[ome.api_log.clean_time]">
+                        <option value="7" <{if $setData.ome_api_log_clean_time=='7'}>selected="selected"<{/if}>>7天</option>
+                        <option value="15" <{if $setData.ome_api_log_clean_time=='15' || $setData.ome_api_log_clean_time == ''}>selected="selected"<{/if}>>半个月</option>
+                        <option value="21" <{if $setData.ome_api_log_clean_time=='21'}>selected="selected"<{/if}>>21天</option>
+                        <option value="31" <{if $setData.ome_api_log_clean_time=='31'}>selected="selected"<{/if}>>一个月</option>
+                    </select>
+                    <span style='margin-left:5px;'>设置天数以上的同步日志将被清除</span>
+                </td>
+            </tr>
+            <tr>
+                <th>忽略配送方式并在备注中标记：</th>
+                <td>
+                    <input type="radio" name="set[ome.checkems]" value="false" <{if $setData.ome_checkems == 'false'}> checked<{/if}>>关闭
+                    <input type="radio" name="set[ome.checkems]" value="true" <{if $setData.ome_checkems == 'true'}> checked<{/if}>>开启
+                    <span style='margin-left:5px;'>只针对淘宝拍拍店铺定义的EMS配送方式</span>
+                </td>
+            </tr>
+            <tr>
+                <th>订单备注显示方式：</th>
+                <td>
+                    <input type="radio" name="set[ome.order.mark]" value="all" <{if $setData.ome_order_mark == 'all'}> checked<{/if}>>显示全部
+                    <input type="radio" name="set[ome.order.mark]" value="last" <{if $setData.ome_order_mark == 'last'}> checked<{/if}>>显示最新
+                </td>
+            </tr>
+            <tr>
+                <th>TAB显示方式：</th>
+                <td>
+                    <input type="radio" name="set[desktop.finder.tab]" value="1" <{if $setData.desktop_finder_tab == '1'}> checked<{/if}> >快速显示
+                    <input type="radio" name="set[desktop.finder.tab]" value="2" <{if $setData.desktop_finder_tab != '1'}> checked<{/if}> >普通显示
+                </td>
+            </tr>
+            <tr>
+                <th>条形码唯一码合并：</th>
+                <td>
+                    <input type="radio"  name="set[ome.product.serial.merge]" value="false" <{if $setData.ome_product_serial_merge == 'false'}> checked<{/if}>>关闭
+                    <input type="radio"  name="set[ome.product.serial.merge]" value="true" <{if $setData.ome_product_serial_merge == 'true'}> checked<{/if}>>开启
+                    <span style='margin-left:5px;'>开启条形码唯一码合并</span>
+                    <span id="serial_separate">
+                        设置分隔符：<input type="text" name="set[ome.product.serial.separate]" size=6 value="<{$setData.ome_product_serial_separate}>" vtype="required" />
+                        <span class="red">请用一个特殊字符作为分隔符</span>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <th>执行发货方式：</th>
+                <td><input type="radio" name="set[ome.delivery.method]" value="on" <{if $setData.ome_delivery_method == 'on'}> checked<{/if}>>启用
+                    <input type="radio" name="set[ome.delivery.method]" value="off" <{if $setData.ome_delivery_method == 'off'}> checked<{/if}>>不启用 <span style='margin-left:5px;'>启用【在线下单】方式执行发货操作 (如果不启用，默认使用【自己联系物流】方式执行发货操作) 该方式只针对淘宝</span></td>
+            </tr>
+            <tr>
+                <th>同步订单备注是否暂停订单：</th>
+                <td>
+                    <input type="radio" name="set[ome.orderpause.to.syncmarktext]" value="true"  <{if $setData.ome_orderpause_to_syncmarktext != 'false'}> checked <{/if}> />是
+                    <input type="radio" name="set[ome.orderpause.to.syncmarktext]" value="false" <{if $setData.ome_orderpause_to_syncmarktext == 'false'}> checked <{/if}> />否
+
+                    <span class='setting-notice'>暂停操作只适用于已审核的订单</span>
+                </td>
+            </tr>
+            <tr>
+                <th>API同步失败自动重试间隔时间：</th>
+                <td>
+                    <select name="set[ome.apifail.retry]">
+                        <option value="2" <{if $setData.ome_apifail_retry=='2'}>selected="selected"<{/if}>>2分钟</option>
+                        <option value="5" <{if $setData.ome_apifail_retry=='5'}>selected="selected"<{/if}>>5分钟</option>
+                        <option value="10" <{if $setData.ome_apifail_retry=='10'}>selected="selected"<{/if}>>10分钟</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,59 @@
+<form name="form1" id="purchase_cancel" method="POST" action="index.php?app=wms&ctl=admin_purchase&act=doRefund">
+<script>
+$('t1').set('html', '');
+$('t1').set({'styles':{'color':'red','font-weight':'bold'}});
+var click=0;
+function once(){
+    if (click > 0){
+        return false;
+    }else {
+        click++;
+    }
+    $('t1').set('text', '');
+    $('memo_flag').set('value','1');
+    $('t1').set({'styles':{'color':'black','font-weight':'normal'}});
+}
+
+
+var _form = $('purchase_cancel');
+var btn = $('btn-cancel');
+//var finder = finderGroup['<{$env.get.finder_id}>'];
+_form.store('target',{
+onComplete:function(){
+
+    try{
+
+        var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+        //console.info(btn,_dialogIns);
+     }catch(e){}
+
+    if(_dialogIns){
+         //console.info(_dialogIns);
+        _dialogIns.close();
+        //finder.refresh.delay(400,finder);
+    }   
+}
+});
+
+</script>
+<div class="division">
+<table width="100%">
+    <tr>
+        <td><b>注意：此操作会将未入库的所有商品都取消采购，请慎重操作</b></td>
+    </tr>
+    <tr>
+        <td align="left"><textarea id="t1" name="memo" cols="40" rows="5"></textarea></td>
+    </tr>
+    <tr>
+        <td align="left">经办人：<{input type="text" name="operator" vtype="required" size="8" id="operator" value="{$operator}" }></td>
+    </tr>
+</table>
+</div><table cellspacing="0" cellpadding="0" border="0" align="center" class="tableAction">
+<tr>
+    <td align="center"><b class="submitBtn"><{button type='submit' label='终止' id="btn-cancel" class="btn btn-primary" }></b></td>
+  </tr>
+</table>
+<input type='hidden' name='memo_flag' id='memo_flag' value=''>
+<input type='hidden' name='po_id' value='<{$id}>'>
+<input type='hidden' name='type' value='<{$type}>'>
+</form>

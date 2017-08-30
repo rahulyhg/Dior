@@ -1,0 +1,18 @@
+<desktop>	
+    <workground name="系统" id="setting_tools" order="800">
+	 <menugroup name="物流管理">
+            <menu controller='admin_rule' action='index'  permission='logistics_rule' display='true' order='3000200'>自动选物流设置</menu>
+			<menu controller='admin_area' action='index' permission='logistics_rule' display='true' order='3000300'>地区设置</menu>
+         
+    </menugroup>    
+		
+	</workground>
+	
+<permissions>
+            <permission id="logistics_rule">规则设置</permission>
+        
+    </permissions>
+
+
+
+</desktop>

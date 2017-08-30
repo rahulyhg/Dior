@@ -1,0 +1,110 @@
+
+<div class="division" id='support-shops'>
+<span style="padding-bottom:8px;"><font style="font-size:14px;font-weight:bold">物流公司优先规则设置</font>&nbsp;&nbsp; <a href="http://top.shopex.cn/ecos/tpl/tghelp.zip" target="_blank">帮助手册</a><br><br></span>
+<div style="padding-left:18px;"><h4>注意:必须先在<a href="index.php?app=ome&ctl=admin_dly_corp&act=index">"物流公司管理"</a>内建立物流公司与仓库的关系</h4></div>
+    <form method='post' action='index.php?app=logistics&ctl=admin_branch_rule&act=saveBranchRule'>
+        <div class="tableform">
+<h4><{t}>第一步：选择仓库<{/t}>(只支持发货仓库)</h4>
+<div class="division">
+<table width="100%" border="0">
+  <tr>
+   
+    <td>
+    <div style='width:600px;'>
+    <{foreach from=$branch_list item=item }>
+                <div class='span-auto'>
+                    <input type='radio'  name='branch_id' value='<{$item.branch_id}>' class='branch_id'><{$item.name}>
+                </div>
+            <{/foreach}></div></td>
+  </tr>
+  
+</table>
+
+        </div>
+  <h4><{t}>第二步：选择规则类型(注:切换规则类型将删除上次设置的规则)<{/t}></h4>   
+  <div class="division">
+  <table width="100%" border="0">
+  
+  <tr>
+   
+    <td><{help}>系统将自动开启上一次设置的规则<{/help}><input type="radio" class='set_rule' name="set_rule" value="custom"> 自定义规则   
+       <{help}>父级仓库规则一旦发生改动，子级仓库规则同步改动<{/help}> 
+      <input type="radio" class='set_rule' name="set_rule" value="other">复用其他仓库规则</td>
+  </tr>
+  </table>
+ <div class="table-action">
+            <{button label="确定" type="button" id='btn-primary'}>
+        </div>
+        </div>
+        </form>
+<style>
+.span-auto{
+width:120px;
+padding:5px;
+}
+
+</style>
+<script>
+   
+    $('btn-primary').addEvent('click',function(e){
+        var _form = this.form;
+        if (_form.getElements("input[name='branch_id']:checked").length <=0)
+        {
+            MessageBox.error('请选择仓库');return false;
+        }
+        _form.fireEvent('submit',e);
+    });
+    $$('.branch_id').addEvent('click',function(e){
+        var branch_id = this.value;
+
+        new Request({url:'index.php?app=logistics&ctl=admin_rule&act=getBranchRule&branch_id='+branch_id,
+        onRequest:function(){
+
+        },
+        onComplete:function(rs){
+            if(rs){
+                rs = JSON.decode(rs);
+                if(rs.type=='custom'){
+                    $$('.set_rule').each(function(i,index){
+                        if(i.value=='custom'){
+                            i.set('checked','checked');
+                        }
+                    
+                    });
+                }
+                if(rs.type=='other'){
+                    $$('.set_rule').each(function(i,index){
+                        if(i.value=='other'){
+                            i.set('checked','checked');
+                        }
+                    
+                    });
+                }
+            }else{
+               $$('.set_rule')[0].set('checked','checked'); 
+            }
+        }}).send();
+  
+    
+    });
+
+$$('.set_rule')[0].set('checked','checked');
+$$('.set_rule').addEvent('click',function(e){
+var _form = this.form;
+var branch_id = $E("input[name='branch_id']:checked").value;
+var rule = this.value;
+new Request({url:'index.php?app=logistics&ctl=admin_rule&act=getBranchRule&branch_id='+branch_id,
+        onRequest:function(){
+
+        },
+        onComplete:function(rs){
+            if(rs){
+                rs = JSON.decode(rs);
+ 
+                if(rule!=rs.type){
+                    confirm('切换规则,将会自动将之前的规则将会删除,确定吗?');
+                }
+            }
+        }}).send();
+});
+</script>

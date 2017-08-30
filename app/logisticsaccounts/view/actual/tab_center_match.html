@@ -1,0 +1,56 @@
+<style>
+.f18{
+width:100px;
+text-align:right;
+
+height:20px;
+padding:0;
+}
+.f-12{
+
+}
+.accounted_tab tr td{
+border:1px solid #cccccc;
+}
+</style>
+<div class="large">
+<div class="ColColorOrange clearfix">
+<table>
+<tr><td><div class="span-auto" title="">
+<a>
+<{img app="desktop" src="bundle/money.gif"}>
+</a>
+<span class="f-12">包裹数:</span>
+<span class="">
+<{$actual_status.hasmatched.count}>
+
+</span>
+</div></td><td><div class="span-auto"  title="">
+<a>
+<{img app="desktop" src="bundle/coins.gif"}>
+</a>
+<span class="f-12">总金额:&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="f18"><{$actual_status.hasmatched.total_delivery_cost_actual|default:0|cur}></span>
+</div></td></tr>
+<tr><td><div class="span-auto" title="">
+<a>
+<{img app="desktop" src="bundle/money.gif"}>
+</a>
+<span class="f-12">已记账数:</span>
+<span class=""><{$actual_status.hasmatched_accounted.count|default:0}></span>
+</div></td><td><div class="span-auto"  title="">
+<a>
+<{img app="desktop" src="bundle/coins.gif"}>
+</a>
+<span  class="f-12">记账金额:</span>
+<span class="f18"><{$actual_status.hasmatched_accounted.total_actual_amount |default:0|cur}></span>
+</div></td></tr>
+
+</table>
+
+
+
+
+</div>
+
+</div>

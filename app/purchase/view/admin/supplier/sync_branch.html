@@ -1,0 +1,52 @@
+<form id='syncForm' method="post" action="index.php?app=purchase&ctl=admin_supplier&act=do_syncSupplier">
+<div class="division">
+    <table width='100%' cellspacing="0" cellpadding="0">
+            <tr>
+                <th>选择WMS:</th>
+                <td>
+                <select name="wms_id">
+                <{foreach from=$channel item=channel}>
+                <option value="<{$channel.channel_id}>"><{$channel.channel_name}></option>
+                <{/foreach}>
+                </select>
+                </td>
+    </tr>
+    
+    <input type="hidden" name="supplier_id" value='<{$supplier_id}>'>
+</table>
+ <div class="table-action">
+<{button class="btn-primary" type="button" id="saveBtn" label="同步"}>
+       <{button class="btn-secondary" type="button" id="close" label="取消"}>
+</div>
+</div>
+</form>
+<script>
+$('saveBtn').addEvent('click',function(e){
+    var querystring = $('syncForm').toQueryString();
+    new Request ({
+        url:'index.php?app=purchase&ctl=admin_supplier&act=do_syncSupplier',
+        method:'post',
+         data:querystring,
+        onRequest: function () {
+        
+        },
+        onSuccess: function(result) {
+            result = JSON.decode(result);
+
+            if (result.rsp =='succ') {
+                alert(result.msg);
+                finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                $('saveBtn').getParent('.dialog').retrieve('instance').close();
+            }else{
+                alert(result.msg);
+            }
+        }
+    }).send();
+
+
+});
+
+$('close').addEvent('click', function(event){
+ $('close').getParent('.dialog').retrieve('instance').close();
+});
+</script>

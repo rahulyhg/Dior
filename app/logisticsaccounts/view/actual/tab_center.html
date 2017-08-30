@@ -1,0 +1,18 @@
+<{if ($env.get.flt=='confirm') || ($env.get.flt=='confirmview')}>
+
+<{if $env.get.status=='2' ||$env.get.status=='3'}>
+
+<{include file="actual/tab_center_confirmdiff.html" app="logisticsaccounts"}>
+<{else}>
+<{include file="actual/tab_center_confirm.html" app="logisticsaccounts"}>
+<{/if}>
+<{else}>
+
+<{if $env.get.status=='1'}>
+<{include file="actual/tab_center_match.html" app="logisticsaccounts"}>
+<{elseif $env.get.status=='2' ||$env.get.status=='3'}>
+<{include file="actual/tab_center_diff.html" app="logisticsaccounts"}>
+<{else}>
+<{include file="actual/tab_center_no.html" app="logisticsaccounts"}>
+<{/if}>
+<{/if}>

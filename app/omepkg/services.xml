@@ -1,0 +1,22 @@
+<services>
+    <service id="desktop_finder.omepkg_mdl_pkg_goods">
+        <class>omepkg_finder_pkg_goods</class>
+    </service>
+    
+    <service id="omepkg_order_split">
+        <class>omepkg_order_split</class>
+    </service>
+    
+    <service id="ome.product">
+        <class>omepkg_ome_product</class>
+    </service>
+    
+    <service id="data_clear">
+        <class>omepkg_data</class>
+    </service>
+
+	<service id="ome_fail_modify_order_after">
+        <class>omepkg_order_fail</class>
+    </service>
+	
+</services>

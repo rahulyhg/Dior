@@ -1,0 +1,82 @@
+<style type="text/css">
+.dlog-txt {
+    text-align:center;
+}
+
+.explain {
+    margin: 10px 0;
+}
+
+.expand {
+
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType = 0, startColorstr = #89A5C4, endColorstr = #5279A5);
+    background: -webkit-linear-gradient(top, #89A5C4, #5279A5);
+    background: -moz-linear-gradient(top, #89A5C4, #5279A5);
+    background: -ms-linear-gradient(top, #89A5C4, #5279A5);
+    border: 1px solid #4C6684;
+    border-radius: 4px;
+    color: #FFF;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    height: 32px;
+    line-height: 32px;
+    width: 115px;
+    margin: 20px auto;
+}
+
+.expand span {
+    color: #FFF;
+    font-size: 12px;
+}
+
+.expand a {
+    width: 100%;
+    display: block;
+}
+
+.expand a,
+.expand a:link,
+.expand a:visited,
+.expand a:hover {
+    text-decoration: none;
+}
+
+.tooltip-info {
+    color: #888;
+    font-size: 12px;
+}
+
+.more,
+.more:link,
+.more:visited,
+.more:hover {
+    text-decoration: none;
+}
+
+.more span {
+    color: #0059B2;
+    font-size: 12px;
+}
+
+</style>
+<div class="dlog-txt explain">未安装控件，不能打印</div>
+<div class="dlog-txt explain">请下载安装</div>
+<div class="dlog-txt expand">
+    <a href="#" id="downloadurl" target="_blank"><span>立即下载</span></a>
+</div>
+<div class="dlog-txt">
+    <span class="wd">本控件由ShopEx ERP提供，</span><a href="http://www.shopex.cn/products/erp/" target="_blank" class="more"><span>了解更多</span></a>
+</div>
+<script>
+function downFile() {
+    new Request({url:'index.php?app=ome&ctl=admin_order&act=downloadPrintSite',
+        onComplete:function(result){
+            if(!result) return;
+            ret = JSON.decode(result);
+            $("downloadurl").set('href', ret.url);
+        }  
+    }).send();
+}
+downFile();
+</script>

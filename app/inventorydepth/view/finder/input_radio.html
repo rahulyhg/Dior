@@ -1,0 +1,23 @@
+<div id="<{$params.domid}>" class="object-select clearfix" style="display:inline-block;*zoom:1;" <{$addons}> >
+  <div class="label" id="<{$id}>" rel="<{$string}>"><{$string}></div>
+  <div class="handle">&nbsp;</div>
+  <input type="hidden" name="<{$params.name}>" vtype="<{$params.vtype}>" value="<{if is_array($params.value)}><{$params.value|implode:','}><{else}><{$params.value}><{/if}>" />
+</div>
+<script>
+  var current_url = $empty; var change_url = function(url){return url;};
+  $('<{$params.domid}>').getElements('.label,.handle').addEvent('click', function(e){
+    var newurl = change_url.call(current_url,'<{$url}>');
+    Ex_Loader('modedialog',function(){
+      new finderDialog(newurl, {
+        handle:'handle_<{$params.domid}>',
+        onCallback:function(rs){<{if $callback}><{$callback}>(rs,$('handle_<{$params.domid}>'));<{/if}>},
+        params:{
+          url:'<{$return_url}>',
+          type:'<{$params.type}>',
+          name:'data[]',
+          postdata:'app_id=<{$params.app_id}>&<{$object}>'
+        }
+      });
+    });
+  });
+</script>

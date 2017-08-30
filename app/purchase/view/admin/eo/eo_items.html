@@ -1,0 +1,37 @@
+<script>
+//关闭POP
+$('closeBut').addEvent('click', function(event){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+</script>
+<div class="tableform">
+<div class="division">
+<table width="100%" border="0" class="gridlist">
+<thead>
+      <tr>
+        <th>货品名称</th>
+        <th>货号</th>
+        <th>单位</th>
+        <th>入库数量</th>
+        </tr>
+        </thead>
+      <{foreach from=$detail item=items}>
+      <tbody>
+      <tr>
+        <td><{$items.goods_name}></td>
+        <td><{$items.bn}></td>
+        <td><{$items.unit}></td>
+        <td><{$items.nums}></td>
+        </tr>
+        </tbody>
+        <{/foreach}>
+    </table>
+</div>
+<table width="100%" border="0">
+<thead>
+<tr><td align="center">
+<{button class="btn btn-primary" type="button" id="closeBut" label="关闭"}>
+</td></tr>
+</thead>
+</table>
+</div>

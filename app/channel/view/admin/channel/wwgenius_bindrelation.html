@@ -1,0 +1,73 @@
+
+
+<div class="tableform">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;请选择要绑定的店铺:
+<form method="post" action="index.php?app=channel&ctl=admin_channel&act=do_wwgenius_bind&type=<{$type}>" id="form-group">    
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+		    <tr>
+		    <{foreach from=$shop_info item=value key=key}>
+		    		<{if !$kv_shop_id[$value.shop_id]}>
+		    			<td><input type='radio' name='shop_id' value="<{$value.shop_id}>"><{$value.name}></td>
+		    		<{/if}>
+		    		
+		    		
+		    <{/foreach}>
+	        </tr>
+        </tbody>
+      </table>
+      <input type='hidden' name='channel_id' value="<{$channel_id}>">
+</form>   
+</div>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="submit_btn" ><span><span><{t}>确定<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+(function(){
+    var _form = $('form-group');//表单ID 
+    var btn   = $('submit_btn');//按钮ID
+    
+    var finder = finderGroup['<{$env.get.finder_id}>'];
+    _form.store('target',{
+        onComplete:function(){
+        },
+        onSuccess:function(response){
+            var hash_res_obj = JSON.decode(response);
+            if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+                try{
+                    var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+                }catch(e){}
+
+                if(_dialogIns){
+                     finder.refresh();
+                    _dialogIns.close();
+                }
+            }
+        }
+    });
+
+    btn.addEvent('click',function(){
+      _form.fireEvent('submit',{stop:$empty});
+    });
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+

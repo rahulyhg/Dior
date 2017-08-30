@@ -1,0 +1,102 @@
+<script>
+$('start_modify').addEvent('click', function(){
+    $('modify_body').setStyle('display', '');
+    //$('show').setStyle('display', 'none');
+    $('modify_tr').setStyle('display', 'none');
+});
+$('close_modify').addEvent('click', function(){
+    $('modify_body').setStyle('display', 'none');
+    //$('show').setStyle('display', '');
+    $('modify_tr').setStyle('display', '');
+});
+</script>
+
+    <div class="tableform">
+    	<div class="division">
+        
+        <{if $detail.statement_status<>'2'}>
+        <table width='100%' cellspacing="0" cellpadding="0">
+            <tr>
+                <td colspan="4">付款单未结算</td>
+            </tr>
+        </table>
+        <{else}>
+       
+        <table width='100%' cellspacing="0" cellpadding="0" id="show">
+            <tr>
+                <th>结算金额:</th>
+                <td>
+                <{$detail.paid|cur}>
+                </td>
+                <th>结算余额:</th>
+                <td>
+                <{$detail.balance|cur}>
+                </td>
+            </tr>
+            <tr>
+                <th>银行帐号:</th>
+                <td  colspan="2">
+                <{$detail.bank_no}>
+                </td>
+            </tr>
+            
+            <tr>
+                <th>结算人:</th>
+                <td>
+                <{$username}>
+                </select>
+                </td>
+                <th>结算日期：</th>
+                <td>
+                <{$detail.statement_time|date_format:"%Y-%m-%d"}>
+                </td>
+            </tr>
+            
+            <tr>
+                <th>结算备注:</th>
+                <td colspan="2">
+                <{foreach from=$detail.memo item=items}>
+				<div id="memo_show">
+				<b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+				</div>
+				<{/foreach}>
+                </td>
+            </tr>
+        </table>
+        </div>
+        
+        <div class="division" id="modify_body" style="display:none;">
+        <form id="detail" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+        <input type="hidden" name="cs_id" value="<{$detail.cs_id}>" />
+    
+        <table width='100%' cellspacing="0" cellpadding="0">
+            <tr>
+                <th>银行帐号:</th>
+                <td  colspan="2">
+                <{input type="text" name="bank_no" value=$detail.bank_no }>
+                </td>
+            </tr>
+            
+            <tr>
+                <th>追加备注:</th>
+                <td colspan="2">
+                <textarea name="memo" cols="80" rows="8"></textarea>
+                </td>
+            </tr>
+            
+            <tr>
+                <th colspan="2">
+                  <{button class="btn-primary" type="submit" label="保存" }>
+                  <{button class="btn-primary" type="button" id="close_modify" label="关闭" }>
+                </th>
+            </tr>
+        </table>
+	    </form>
+	    </div>
+	    
+	    <div class="table-action" id="modify_tr">
+                <{button class="btn-primary" id="start_modify" type="button" label="修改" }>
+  	    </div>
+      
+        <{/if}>
+   </div>

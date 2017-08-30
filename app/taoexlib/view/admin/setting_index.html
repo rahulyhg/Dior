@@ -1,0 +1,21 @@
+<div class="tableform">
+    <h3>短信设置</h3>
+    <div class="division">
+
+    <form method="post" action="index.php?app=taoexlib&ctl=admin_setting&act=index" id="form-setting">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+                 <div class="notice">开启后请&nbsp;<a style="color:green;" href='index.php?app=taoexlib&ctl=admin_sms_sample&act=index'>添加模板</a>，和&nbsp;<a style="color:green;" href='index.php?app=taoexlib&ctl=admin_sms_rule&act=index'>添加规则</a></div>
+            </tbody>
+            <tbody>
+                <{foreach from=$setView item=view key=key}>
+                    <{$view}>
+                <{/foreach}>
+            </tbody>
+        </table>
+        <div class="table-action">
+            <{button label="提交" type="submit" name="submit" id="btn-setting"}>
+        </div>
+    </form>
+    </div>
+</div>

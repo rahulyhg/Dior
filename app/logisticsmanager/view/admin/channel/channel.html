@@ -1,0 +1,375 @@
+<style>
+select{width:120px;}
+</style>
+<div class="tableform">
+    <div class="division">
+        <form method="post" action="index.php?app=logisticsmanager&ctl=admin_channel&act=do_save" id="form_channel">
+        <input type="hidden" name="channel_id" value="<{$channel.channel_id}>">
+        <input type="hidden" name="bind_status" value="<{$channel.bind_status}>">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>名称：</th>
+                <td><{input type="text" name="name" id="name" value=$channel.name size="30" vtype="required"}></td>
+            </tr>
+
+            <tr>
+                <th>来源类型：</th>
+                <td>
+                    <{if $channel.channel_type}>
+                        <{input type="select" id='channel_type' name='channel_type' rows=$channels value=$channel.channel_type valueColumn="code" labelColumn="name" disabled="disabled"}>
+                        <input type="hidden" name="channel_type" value="<{$channel.channel_type}>">
+                    <{else}>
+                        <{input type="select" id='channel_type' name='channel_type' rows=$channels value=$channels.0.code valueColumn="code" labelColumn="name"}>
+                    <{/if}>
+                </td>
+            </tr>
+
+            <tr>
+                <th>物流公司：</th>
+                <td id='logistics_td'>
+                    <{if $channel.channel_type}>
+                        <{input type="select" id='logistics_code' name='logistics_code' rows=$logistics value=$channel.logistics_code valueColumn="code" labelColumn="name" disabled="disabled"}>
+                    <{else}>
+                        <{input type="select" id='logistics_code' name='logistics_code' rows=$logistics value=$logistics.0.code valueColumn="code" labelColumn="name"}>
+                    <{/if}>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="wlbinfo">
+        <tbody>
+            <tr>
+                <th>主店铺：</th>
+                <td>
+                    <{if $channel.shop_id}>
+                        <{input type="select" name='shop_id' rows=$shopList value=$channel.shop_id valueColumn="shop_id" labelColumn="name" disabled="disabled"}>
+                    <{else}>
+                        <{input type="select" name='shop_id' rows=$shopList value=$shopList.0.shop_id valueColumn="shop_id" labelColumn="name"}>
+                    <{/if}>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="emsinfo">
+        <tbody>
+            <tr>
+                <th>客户号：</th>
+                <td><{input type="text" name="emsuname" value=$channel.emsuname size="30"}></td>
+            </tr>
+            <tr>
+                <th>密码：</th>
+                <td><{input type="password" name="emspasswd" value=$channel.emspasswd size="30"}></td>
+            </tr>
+        </tbody>
+
+        </table>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="jdinfo">
+            <tbody>
+<tr>
+            <th>店铺:</th>
+            <td><{if $channel.shop_id}>
+                        <{input type="select" name='jd_shop_id' rows=$jdshopList value=$channel.shop_id valueColumn="shop_id" labelColumn="name" }>
+                    <{else}>
+                         <{input type="select" name='jd_shop_id' rows=$jdshopList  valueColumn="shop_id" labelColumn="name"}> 
+                    <{/if}></td>
+             </tr>
+                <tr>
+                    <th>商家编码：</th>
+                    <td><{input type="text" name="jdbusinesscode" value=$channel.jdbusinesscode size="30"}></td>
+                </tr>
+            
+            </tbody>
+            
+        </table>
+
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="taobaoinfo">
+        <tbody>
+            <tr>
+                <th>主店铺：</th>
+                <td>
+                    <{if $channel.shop_id}>
+                        <{input type="select" name='taobao_shop_id' rows=$shopList value=$channel.shop_id valueColumn="shop_id" labelColumn="name" disabled="disabled"}>
+                    <{else}>
+                        <{input type="select" name='taobao_shop_id' rows=$shopList value=$shopList.0.shop_id valueColumn="shop_id" labelColumn="name"}>
+                    <{/if}>
+                </td>
+            </tr>
+        </tbody>
+
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="sf">
+        <tbody>
+            <tr>
+                <th>付款方式：</th>
+                <td id='pay_method_td'>
+                    <{if $channel.pay_method}>
+                        <{input type="select" id='pay_method' name='pay_method' rows=$pay_method value=$channel.pay_method valueColumn="code" labelColumn="name" disabled="disabled"}>
+                    <{else}>
+                        <{input type="select" id='pay_method' name='pay_method' rows=$pay_method value=$pay_method.0.code valueColumn="code" labelColumn="name"}>
+                    <{/if}>
+                </td>
+            </tr>
+            <tr>
+                <th>顾客编码：</th>
+                <td><{input type="text" name="sfbusinesscode" value=$channel.sfbusinesscode size="30"}></td>
+            </tr>
+            <tr>
+                <th>密码：</th>
+                <td><{input type="text" name="sfpassword" value=$channel.sfpassword size="30"}></td>
+            </tr>
+            <tr>
+                <th>月结号：</th>
+                <td><{input type="text" name="sfcustid" value=$channel.sfcustid size="30"}></td>
+            </tr>
+        </tbody>
+        </table>
+
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="yunda">
+        <tbody>
+            <tr>
+                <th>客户号：</th>
+                <td><{input type="text" name="yundauname" value=$channel.yundauname size="30"}></td>
+            </tr>
+            <tr>
+                <th>密码：</th>
+                <td><{input type="text" name="yundapassword" value=$channel.yundapassword size="30"}></td>
+            </tr>
+        </tbody>
+        </table>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="sto">
+        <tbody>
+            <tr>
+                <th>客户名称：</th>
+                <td><{input type="text" name="sto_custname" value=$channel.sto_custname size="30"}></td>
+            </tr>
+            <tr>
+                <th>网点名称：</th>
+                <td><{input type="text" name="sto_cutsite" value=$channel.sto_cutsite size="30"}></td>
+            </tr>
+            <tr>
+                <th>密码：</th>
+                <td><{input type="password" name="sto_cutpwd" value=$channel.sto_cutpwd size="30"}></td>
+            </tr>
+        </tbody>
+        </table>
+        <div class="table-action">
+            <{button label="提交" type="submit" name="submit" id="btn-submit"}>
+            <{button label="关闭" type="button" id="btn-close"}>
+        </div>
+        </form>
+    </div>
+</div>
+<script>
+(function() {
+    //关闭按钮
+    $('btn-close').addEvent('click', function(){
+        $('btn-close').getParent('.dialog').retrieve('instance').close();
+    });
+    $('form_channel').removeEvents('submit').addEvent('submit', function(e) {
+        e.stop();
+        if($('name').value==''){
+            return MessageBox.error('店铺名称不能为空！');
+        }
+        new Request ({
+            url:this.action,
+            onRequest:function(e){
+                //提交按钮:disabled
+                $('btn-submit').set('disabled', 'true');
+                $('btn-submit').getElements('span')[1].set('text','正在保存');
+            },
+            onComplete:function(result){  
+                if (result != 'SUCC'){
+                    MessageBox.error(result);
+                    //提交按钮:enabled
+                    $('btn-submit').set('disabled', '');
+                    $('btn-submit').getElements('span')[1].set('text','提交');
+                }else{
+                    //提交按钮:disabled
+                    var findId = "<{$env.get.finder_id}>";
+                    if (findId != '') {
+                        finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                    }
+                    $('btn-close').getParent('.dialog').retrieve('instance').close();
+                }
+            }
+        })[this.method](this);
+    });
+    $('channel_type').addEvent('change',function(){
+        var type = $("channel_type").value;
+        if (type=='wlb') {
+            $('wlbinfo').show();
+            $('emsinfo').hide();
+            $('jdinfo').hide();
+            $('taobaoinfo').hide();
+            $('sf').hide();
+            $('yunda').hide();
+            $('sto').hide();
+        } else if(type=='ems') {
+            $('wlbinfo').hide();
+            $('emsinfo').show();
+            $('jdinfo').hide();
+            $('taobaoinfo').hide();
+            $('sf').hide();
+            $('yunda').hide();
+            $('sto').hide();
+        } else if(type=='360buy') {
+            $('emsinfo').hide();
+            $('wlbinfo').hide();
+            $('jdinfo').show();
+            $('taobaoinfo').hide();
+            $('sf').hide();
+            $('yunda').hide();
+            $('sto').hide();
+        } else if(type=='taobao') {
+            $('emsinfo').hide();
+            $('wlbinfo').hide();
+            $('jdinfo').hide();
+            $('taobaoinfo').show();
+            $('sf').hide();
+            $('yunda').hide();
+            $('sto').hide();
+        } else if (type=='sf') {
+            $('emsinfo').hide();
+            $('wlbinfo').hide();
+            $('jdinfo').hide();
+            $('taobaoinfo').hide();
+            $('sf').show();
+            $('yunda').hide();
+            $('sto').hide();
+        }
+        else if (type=='yunda') {
+            $('emsinfo').hide();
+            $('wlbinfo').hide();
+            $('jdinfo').hide();
+            $('taobaoinfo').hide();
+            $('sf').hide();
+            $('yunda').show();
+            $('sto').hide();
+        }
+        else if (type=='sto') {
+            $('emsinfo').hide();
+            $('wlbinfo').hide();
+            $('jdinfo').hide();
+            $('taobaoinfo').hide();
+            $('sf').hide();
+            $('yunda').hide();
+            $('sto').show();
+        }
+        new Request({
+            url:'index.php?app=logisticsmanager&ctl=admin_channel&act=getLogistics',
+            data:'type='+type,
+            method:'post',
+            onSuccess:function(response){
+                var temp = '<select name="logistics_code" class="x-input-select inputstyle">';
+                if(response){
+                    var result = JSON.decode(response);
+                    Object.each(result,function(i,index){
+                        temp+='<option value='+i.code+'>'+i.name+'</option>';
+                    });
+                }
+                temp+='</select>';
+                $('logistics_td').show();
+                $('logistics_td').set('html', temp);
+            }
+        }).send();
+        if (paymethodlist(type)) {
+            new Request({
+                url:'index.php?app=logisticsmanager&ctl=admin_channel&act=getPayMethod',
+                data:'type='+type,
+                method:'post',
+                onSuccess:function(response){
+                    var temp1 = '<select name="pay_method" class="x-input-select inputstyle">';
+                    if(response){
+                        var result = JSON.decode(response);
+                        Object.each(result,function(i,index){
+                            temp1+='<option value='+i.code+'>'+i.name+'</option>';
+                        });
+                    }
+                    temp1+='</select>';
+                    $('pay_method_td').show();
+                    $('pay_method_td').set('html', temp1);
+                }
+            }).send();
+        }
+    });
+    <{if $channel.channel_type=='ems'}>
+        $('wlbinfo').hide();
+        $('emsinfo').show();
+        $('jdinfo').hide();
+        $('taobaoinfo').hide();
+        $('sf').hide();
+        $('yunda').hide();
+        $('sto').hide();
+    <{elseif $channel.channel_type=='wlb'}>
+        $('wlbinfo').show();
+        $('emsinfo').hide();
+        $('jdinfo').hide();
+        $('taobaoinfo').hide();
+        $('sf').hide();
+        $('yunda').hide();
+        $('sto').hide();
+    <{elseif $channel.channel_type=='360buy'}>
+        $('wlbinfo').hide();
+        $('emsinfo').hide();
+        $('jdinfo').show();
+        $('taobaoinfo').hide();
+        $('sf').hide();
+        $('yunda').hide();
+        $('sto').hide();
+    <{elseif $channel.channel_type=='taobao'}>
+        $('wlbinfo').hide();
+        $('emsinfo').hide();
+        $('jdinfo').hide();
+        $('taobaoinfo').show();
+        $('sf').hide();
+        $('yunda').hide();
+        $('sto').hide();
+    <{elseif $channel.channel_type=='sf'}>
+        $('wlbinfo').hide();
+        $('emsinfo').hide();
+        $('jdinfo').hide();
+        $('taobaoinfo').hide();
+        $('sf').show();
+        $('yunda').hide();
+        $('sto').hide();
+    <{elseif $channel.channel_type=='yunda'}>
+        $('wlbinfo').hide();
+        $('emsinfo').hide();
+        $('jdinfo').hide();
+        $('taobaoinfo').hide();
+        $('sf').hide();
+        $('yunda').show();
+        $('sto').hide();
+    <{elseif $channel.channel_type=='sto'}>
+        $('emsinfo').hide();
+        $('wlbinfo').hide();
+        $('jdinfo').hide();
+        $('taobaoinfo').hide();
+        $('sf').hide();
+        $('yunda').hide();
+        $('sto').show();
+    <{else}>
+        $('wlbinfo').hide();
+        $('emsinfo').hide();
+        $('jdinfo').hide();
+        $('taobaoinfo').hide();
+        $('logistics_td').hide();
+        $('sf').hide();
+        $('yunda').hide();
+        $('sto').hide();
+    <{/if}>
+function paymethodlist(type) {
+    var typelist = Array('sf');
+    var status = false;
+    for(var i in typelist) {
+        if (typelist[i] == type) {
+            status = true;
+            break;
+        }
+    }
+    return status;
+}
+})();
+</script>

@@ -1,0 +1,171 @@
+<style>
+.error {background-color: #FBE3E4;color: #8A1F11;border-color: #FBC2C4;margin-left:5px;}
+</style>
+
+<div class="division" id='tgstockcost-config'>
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>存货计价法：</th>
+                <td>
+                <{input type='select' name='extends_set[tgstockcost_cost]' id='stockcost_cost' options=$tgstockcost.setting.cost.options value=$setData.tgstockcost_cost }>
+
+                    <span id="stockcost_cost_desc" style="color:red;padding-left:5px;">
+                        <span id="stockcost_cost_desc_"></span>
+                        <span id="stockcost_cost_desc_1">说明：不考虑成本项 </span>
+                        <span id="stockcost_cost_desc_2">统一按照商品的一个成本价进行计算</span>
+                        <span id="stockcost_cost_desc_3">将新采购商品的成本与库存总成本进行平均</span>
+                        <span id="stockcost_cost_desc_4">按照商品入库时的先后顺序，进行独立成本计算</span>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <th>盘点/调账成本取值：</th>
+                <td>
+                <{input type='select' name='extends_set[tgstockcost_get_value_type]' options=$tgstockcost.setting.get_value_type.options value=$setData.tgstockcost_get_value_type id='stockcost_get_value_type'}>
+                </td>
+            </tr>
+
+            <tr>
+               <td class="notice" colspan="2">
+                <p style="font-size:15px;"><span style="font-weight:bold;">说明</span><br><br><span style="font-weight:bold;">存货计价法</span>：表示企业当前库存的成本如何计算.<br><br>
+                 <span style="font-weight:bold;">盘点/调账成本取值</span>：表示当进行人工调账或者盘点引起企业库存发生变化时，变化的商品成本如何计算.
+                </p>
+                <p style="font-size:15px;">
+                   <span style="font-weight:bold;color:red;">特别提示</span>
+                    <p style="font-size:15px;">
+                        <span style="font-weight:bold;">"启用成本设置”</span>： 启用成本设置后，系统将按照设定的”成本方式“进行成本计算”，<span style="font-weight:bold;color:red;">请务必到“商品管理”中进行成本价的维护</span>，仓库中现有商品的成本将用商品信息中的成本进行计算，即 “当前库存成本”=“库存数量” * “商品成本价”。
+                    </p>
+                    <p style="font-size:15px;">
+                        <span style="font-weight:bold;">“更改成本设置”</span>： 更改成本设置后，系统会按照新的成本计算方式，进行成本核算<span style="font-weight:bold;color:red;">（推荐期末，所有业务结束后进行）</span>。不会影响以前已经发生的成本，但对于仓库中现有商品的成本将用商品信息中的成本进行计算，即 “当前库存成本”=“库存数量” * “商品成本价”，<span style="font-weight:bold;color:red;">企业如果想修正成本数据，需要到“商品管理”中进行成本价的维护</span>。
+                    </p>
+                    <p style="font-size:15px;">
+                        <span style="font-weight:bold;">“期末成本调整”</span>： 期末成本调整后，系统会对于仓库中现有商品的成本进行重新计算。<span style="font-weight:bold;color:red;">企业如果想修正成本数据，需要到“商品管理”中进行成本价的维护</span>。即 “当前库存成本”=“库存数量” * “商品成本价”， 相当于 "加权平均"<span style="font-weight:bold;color:red;">（推荐期末，工作业务结束后进行）</span>不会影响以前已经发生的成本。
+                    </p>
+                </p>
+               </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="table-action">
+        <{button label=启用成本设置 type="button" name="button" id="tgstockcost-btn-start" }>
+        <{button label=更改成本设置 type="button" name="button" id="tgstockcost-btn-modify" }>
+        <{button label=期末成本调整 type="button" name="button" id="tgstockcost-btn-initial" }>
+    </div>
+</div>
+<div>
+ <h3>库存成本变更日志</h3>
+ <table class='gridlist' cellpadding=0,cellspacing=0,border=0 style='width:40%;'>
+    <thead>
+        <tr>
+            <th>变更时间</th>
+            <th>存货计价法</th>
+            <th>盘点/调账成本取值</th>
+            <th>日志类型</th>
+            <th>操作人</th>
+        </tr>
+    </thead>
+    <tbody>
+    <{if $tgstockcost.operations}>
+    <{foreach from=$tgstockcost.operations item=item}>
+    <tr>
+        <td><{$item.install_time|cdate:FDATE_FTIME}></td>
+        <td><{$item.tgstockcost_cost}></td>
+        <td><{$item.tgstockcost_get_value_type}></td>
+        <td><{$item.type}></td>
+        <td><{$item.op_name}></td>
+    </tr>
+    <{/foreach}>
+    <{else}>
+    <tr>
+        <td colspan="5" style='padding:0;'><div class='note' style='margin:0;'>暂无操作记录</div></td>
+    </tr>
+    <{/if}>
+    </tbody>
+ </table>
+</div>
+<script type="text/javascript">
+
+window.addEvent('domready',function(){
+    <{if $tgstockcost.install_time}>
+        $$('#stockcost_cost','#stockcost_get_value_type','#tgstockcost-btn-start').set('disabled','true');
+    <{else}>
+        $$('#tgstockcost-btn-modify','#tgstockcost-btn-initial').set('disabled','true');
+    <{/if}>
+
+    function costDesc(){
+        $ES('#stockcost_cost_desc span').hide();
+
+        var v = $E('#stockcost_cost option:selected').get('value');
+
+        $('stockcost_cost_desc_' + v).show();
+    }
+
+    costDesc();
+
+    $('stockcost_cost').addEvent('change',function(){
+        costDesc();
+    });
+
+
+
+    $('tgstockcost-btn-modify').addEvent('click',function(){
+        new Dialog('index.php?app=tgstockcost&ctl=setting&act=dialogSetting',{'title':'库存成本设置'});
+    });
+
+    $('tgstockcost-btn-initial').addEvent('click',function(){
+        if (!confirm('你确认要做期末调整吗？')) {return true;}
+
+        var _btn = this;
+        new Request({
+            url:'index.php?app=tgstockcost&ctl=setting&act=initial',
+            onSuccess:function(response){
+                var resp =  JSON.decode(response);
+                if (resp.success) {
+                    MessageBox.success(resp.success);
+                }else if(resp.error){
+                    MessageBox.error(resp.error);
+                } else {
+                    MessageBox.error('请求失败');
+                }
+                
+                _btn.disabled = false;
+            },
+            onRequest:function(response){
+                _btn.disabled = true;
+            }
+        }).send();
+    });
+
+    $('tgstockcost-btn-start').addEvent('click',function(){
+        if (!confirm('修改后，库存成本将做一次初期，请谨慎使用！\n\n确认要修改？')) {return true;}
+        var _btn = this;
+        new Request({
+            url:'index.php?app=tgstockcost&ctl=setting&act=save',
+            data:$('tgstockcost-config'),
+            method:'post',
+            onSuccess:function(response){
+                var resp =  JSON.decode(response);
+                if (resp.error) {
+                    _btn.disabled = false;
+                    return MessageBox.error(resp.error);
+                } else if (resp.success) {
+                    $$('#stockcost_cost','#stockcost_get_value_type','#tgstockcost-btn-start').set('disabled','true');
+                    return MessageBox.success(resp.success);
+                } else {
+                    _btn.disabled = false;
+                    return MessageBox.error('请求失败');
+                }
+            },
+            onRequest:function(){
+                _btn.disabled = true;
+            }
+        }).send();
+    });
+});
+
+
+</script>
+
+

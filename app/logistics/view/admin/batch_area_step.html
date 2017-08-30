@@ -1,0 +1,110 @@
+<style>
+.areabox{
+padding:2px;
+
+}
+.weight_rule{
+padding:4px;
+
+}
+</style>
+批量规则设置<br>
+<div class="tableform">
+<form method="POST" id='area_rule_form' action='index.php?app=logistics&ctl=admin_area_rule&act=saveBatchAreaRule'>
+
+<div class="division">
+
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+<tr >
+<th >地区:</th>
+                    <td>
+<{$region_name}>
+                    </td>
+</tr>
+ </table>
+</div>
+
+
+<{include file='admin/rule_file.html'}>
+ 
+
+         <div class="table-action">
+                <{button type="button" label="保存" id="create_rule_save" }>
+            </div>
+
+<input type="hidden" name="region_id" value="<{$region_id}>">
+<input type="hidden" name="obj_id" value="<{$obj_id}>">
+</form>
+</div>
+<script>
+var corp_id=<{$dly_corp_list}>;
+$('create_rule_save').addEvent('click',function(e){
+    var set_type = $('area_rule_form').getElements('input[name^=set_type]:checked').get('value');
+
+    if(set_type=='weight'){
+        compareValueFlag = $$('.weight_rule').every(function(etd){
+        min_weight = etd.getChildren('input[name^=min_weight]').get('value');
+        max_weight = etd.getChildren('input[name^=max_weight]').get('value');
+        if(max_weight=='-1'){
+        above_set++;
+        }
+        if((min_weight>max_weight || min_weight==max_weight) && max_weight!='-1'){
+            
+            return false;
+         
+        }
+        return true;
+        });
+        if( !compareValueFlag )return MessageBox.error('<{t}>重量最小值大于最大值<{/t}>');
+        
+        //区间判断重复
+        var length=$$('.weight_rule').length;
+        //alert(length);
+        for(i=0;i<length;i++){
+        imin = $$('.weight_rule')[i].getChildren('input[name^=min_weight]').get('value');
+        imax = $$('.weight_rule')[i].getChildren('input[name^=max_weight]').get('value');
+
+        for(j=i+1;j<length;j++){
+
+        min=$$('.weight_rule')[j].getChildren('input[name^=min_weight]').get('value')/1;
+        max=$$('.weight_rule')[j].getChildren('input[name^=max_weight]').get('value')/1;
+
+        if(imax=='-1'){
+            if(min>imin/1){
+                return MessageBox.error(min+'大于'+imin+',<{t}>不可以大于以上区间重量最小值<{/t}>');
+            }
+        }
+        if(imax>min){
+        return MessageBox.error(imax+'大于'+min+'<{t}>重复区间存在<{/t}>');
+        }
+        }
+        }
+//
+    }
+    var form=this.getParent('form');
+    var _this=this;
+    form.store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+                        show_area_list();
+                        _this.getParent('.dialog').retrieve('instance').close();
+
+                    }
+                }catch(e){}
+            }
+        });
+        form.fireEvent('submit',e);
+});
+
+
+
+
+
+</script>

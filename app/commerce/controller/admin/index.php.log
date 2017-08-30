@@ -1,0 +1,23 @@
+array (
+  'set' => 'on',
+  'bind_url' => '33',
+  'license_url' => '44',
+  'callback_url' => '56',
+  'node_id' => '',
+)array (
+  'bind_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/bind/erp/',
+  'license_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/service/erp/',
+  'callback_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/callback/erp',
+  'node_id' => '1',
+)array (
+  'set' => 'on',
+  'bind_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/bind/erp/',
+  'license_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/service/erp/',
+  'callback_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/callback/erp',
+  'node_id' => '1',
+)array (
+  'bind_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/bind/erp/',
+  'license_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/service/erp/',
+  'callback_url' => 'http://sds.ex-sandbox.com/private_matrix_api/index.php/callback/erp',
+  'node_id' => '1',
+)

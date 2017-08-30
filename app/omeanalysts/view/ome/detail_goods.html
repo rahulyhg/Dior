@@ -1,0 +1,26 @@
+<div class="division">
+    <table width="100%" class="gridlist" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+            <tr>
+                <th><{t}>货品编号<{/t}></th>
+                <th><{t}>货品名称<{/t}></th>
+                <th><{t}>销售量<{/t}></th>
+                <th><{t}>销售额<{/t}></th>
+                <th><{t}>退换货量<{/t}></th>
+                <th><{t}>退换货率<{/t}></th>
+            </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$products item=item}>
+            <tr class="ColColorBlue" <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}> >
+                <td><{$item.bn}></td>
+                <td><{$item.name}></td>
+                <td><{$item.sale_num}></td>
+                <td><{$item.sale_amount}></td>
+                <td><{$item.reship_num}></td>
+                <td><{$item.reship_ratio}></td>
+            </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>

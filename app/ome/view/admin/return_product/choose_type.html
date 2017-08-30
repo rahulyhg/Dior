@@ -1,0 +1,105 @@
+<div id='after-apply'>
+<form action="index.php?app=ome&ctl=admin_return&act=save&p[0]=<{$status}>&finder_id=<{$finder_id}>" method="post" id="add_link">
+  <div class="tableform">
+    <div class="division">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr>
+          <input type="hidden" name="return_id" value="<{$return_id}>">
+          <input type="hidden" name="status" value="3">
+          <input type='hidden' name='choose_type_flag' value='1'>
+          <th><{t}>请为售后单号:<{$return_bn}>,选择转换类型:<{/t}></th>
+          <td>
+            <select id='choose_type' name='choose_type' onchange="choosetype(this);">
+            <option value="1">退货单</option>
+            <option value="2">换货单</option>
+            <option value="3">退款申请单</option>
+            </select> <em><font color='red'>*</font></em><{help}>将改售后单转成相应的单据，以便后续处理。<{/help}>
+          </td>
+        </tr>
+      </table>
+      <div class="tableform" id="refundapply" style="display:none;">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" id="insert_html">
+             <{include file="admin/return_product/refund/detail.html" app="ome"}>
+        </table>
+      </div>
+    </div>
+  </div>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" onclick="sub_form(event);"}> &nbsp; &nbsp;
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+</form>
+</div>
+<script>
+
+function sub_form(event) {
+    $('add_link').fireEvent('submit',new Event(event));
+}
+
+function choosetype(obj){
+   if(obj.value == '3'){
+       $('refundapply').setStyle('display','block');
+       $('refundapply').getElements('input,select,textarea').set('disabled',false);
+   }else{
+       $('refundapply').setStyle('display','none');
+       $('refundapply').getElements('input,select,textarea').set('disabled',true);
+   }
+}
+var choose_type_value = '<{$choose_type_value}>';
+if (choose_type_value>0)
+{
+    $('choose_type').getElement('option[value='+choose_type_value+']').selected=true;
+    choosetype($('choose_type'));
+
+}
+$('add_link').store('target',{
+    onComplete:function(resp){
+        resp = JSON.decode(resp);
+        if (resp.error)
+        {
+            return false;
+        }
+        if($('add_link').getParent('.dialog')){
+            window.finderGroup['<{$finder_id}>'].refresh.delay(400,finderGroup['<{$finder_id}>']);
+        }
+
+        var choose_type = $E('#add_link select[name="choose_type"] option:selected').get('value');
+        if (choose_type!=3) {
+          var title = ''; var type = '';
+          if (choose_type == 1) {
+            title = '编辑退货单';
+            type = 'return';
+          }else if(choose_type==2){
+            title = '编辑换货单';
+            type = 'change';
+          }
+
+          var return_id = $E('#add_link input[name="return_id"]').get('value');
+
+          /*弹出编辑窗*/
+          new Request.HTML({
+            url:'index.php?app=ome&ctl=admin_return&act=gotoreceipt&p[0]='+return_id+'&p[1]='+type+'&finder_id=<{$finder_id}>',
+            update:$('after-apply'),
+            onComplete:function(){
+              var dialog = $('after-apply').getParent('.dialog').retrieve('instance');
+              dialog.setTitle(title);
+              dialog.setDialogWidth();
+            }
+          }).send();
+          
+          //$('after-apply').getParent('.dialog').retrieve('instance').close();
+          //new Dialog('index.php?app=ome&ctl=admin_return&act=gotoreceipt&p[0]='+return_id+'&p[1]='+type+'&finder_id=<{$finder_id}>');
+          // $('after-apply').getParent('.dialog').retrieve('instance').close();
+        }else{
+            if (resp.success)
+            {
+                var dialog = $('after-apply').getParent('.dialog').retrieve('instance');
+                dialog.close();
+            }
+        }
+
+    }
+});
+
+</script>    
+

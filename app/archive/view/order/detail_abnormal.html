@@ -1,0 +1,25 @@
+<div class="tableform">
+    <h4>订单异常备注</h4>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+        <tr>
+            <th ><{t}>异常类型：<{/t}></th>
+            <td >
+                <{foreach from=$abnormal_type item=abt name=ab_type}>
+                <{if $abt.type_id == $abnormal.abnormal_type_id}><{$abt.type_name}><{/if}>
+                <{/foreach}>
+            </td>
+        </tr>
+        <tr>
+            <th><{t}>异常备注：<{/t}></th>
+            <td>
+                <{foreach from=$abnormal.abnormal_memo item=items}>
+                    <div id="memo_show">
+                        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+                    </div>
+                <{/foreach}>
+            </td>
+
+        </tr>
+    </table>
+</div>
+

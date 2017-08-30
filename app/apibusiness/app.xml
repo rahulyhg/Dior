@@ -1,0 +1,18 @@
+<app>
+    <name>收订业务</name>
+    <main_app exclusion="true">false</main_app>
+    <description>收订业务</description>
+
+    <author>
+        <name>淘管开发团队</name>
+        <email>taog@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0.0</version>
+    <license>shopex license</license>
+     
+	<depends>
+        <app>base</app>
+	</depends>
+</app>

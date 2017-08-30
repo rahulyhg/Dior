@@ -1,0 +1,119 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<style>
+    .goods_lists th {font-size: 1.8em; text-align: left;padding-left: 15px; border-bottom-width: 2px;border-bottom-color: #CCCCCC;border-bottom-style: solid;}
+    .goods_lists td {font-size: 1.5em; text-align: left;padding-left: 15px; border-bottom-width: 1px;border-bottom-color: #CCCCCC;border-bottom-style:dashed;}
+    .info_lists th {font-size: 1.2em; text-align: left;padding-left: 15px; border-bottom-width: 2px;border-bottom-color: #CCCCCC;}
+    .info_lists td {font-size: 1.2em; text-align: left;padding-left: 15px; border-bottom-width: 2px;border-bottom-color: #CCCCCC;}
+</style>
+<div class="tableform">
+     <form id="form-process" method="post" action="index.php?app=ome&ctl=admin_delivery_back&act=doprocess">
+    <div class="clear division">
+
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="info_lists">
+        <tr>
+            <th>发货单号:</th>
+            <td><{$info.delivery_bn}></td>
+            <th>发货时间:</th>
+            <td><{$info.delivery_time|cdate}></td>
+            <th>物流公司:</th>
+            <td><{$info.logi_name|default:'-'}></td>
+            <th>物流单号:</th>
+            <td><{$info.logi_no|default:'-'}></td>
+        </tr>
+        <tr>
+            <th>收货人姓名:</th>
+            <td><{$info.consignee.name}></td>
+            <th>收货人地区:</th>
+            <td><{$info.consignee.area|region}></td>
+            <th>收货人地址:</th>
+            <td><{$info.consignee.addr}></td>
+            <th>收货人邮编:</th>
+            <td><{$info.consignee.zip}></td>
+        </tr>
+        <tr>
+            <th>收货人固定电话:</th>
+            <td><{$info.consignee.telephone|default:'-'}></td>
+            <th>收货人Email:</th>
+            <td><{$info.consignee.email|default:'-'}></td>  
+            <th>收货人手机:</th>
+            <td><{$info.consignee.mobile|default:'-'}></td> 
+            <th>配送方式:</th>
+            <td><{$info.delivery|default:'-'}></td>                      
+        </tr>
+        <tr>
+            <th>收货仓库:</th>
+            <td><{$delivery_branch}></td>
+            <th>退货仓库:</th>
+            <td>  <select name="instock_branch">
+                    <{foreach from=$branch_lists item=branch}>
+                        <option value="<{$branch.branch_id}>" <{if $info.branch_id==$branch.branch_id}>selected<{/if}>><{$branch.name}></option>
+                    <{/foreach}>
+                        </select></td>  
+            <th></th>
+            <td></td> 
+            <th></th>
+            <td></td>                      
+        </tr>
+    </table>
+    </div>
+
+    <div class="clear division">
+       
+        <input type="hidden" name="delivery_id" value="<{$deliveryId}>" />
+        <input type="hidden" name="order_ids" value="<{$orderIds}>" />
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="goods_lists">
+            <thead>
+                <tr>
+                    <th><{t}>货号<{/t}></th>
+                    <th><{t}>商品名称<{/t}></th>
+                    <th><{t}>可退入数量<{/t}></th>
+                
+                </tr>
+            </thead>
+            <tbody>
+            <{foreach from=$items item=item}>
+                <tr>
+                    <input type="hidden" name="product_id[<{$item.item_id}>]" value="<{$item.product_id}>" />
+                    <td><{$item.bn}></td>
+                    <td><{$item.product_name}></td>
+                    <td><{$item.number}></td>
+                  
+                </tr>
+            <{/foreach}>
+            </tbody>
+        </table>
+        <div class="table-action">  
+            <{button label="确认拒收" class="btn-primary" type="button" onclick="subCheckForm(event);"}>
+            <{button label="取消" class="btn-secondary" isCloseDialogBtn="true" onclick="window.location='index.php?app=ome&ctl=admin_delivery_refuse&act=check';"}>
+        </div>   
+        
+    </div>
+  </form>  
+</div>
+<script>
+    window.addEvent('domready', function(){
+        if(!$('form-process'))return;
+        var _form=$('form-process'),_formActionURL=_form.get('action'); 
+        subCheckForm = function (event){  
+           var target={onComplete:function(){}};
+
+           $extend(target,{
+               onComplete:function(data){
+                   var rs =JSON.decode(data);
+                   if( rs && rs.success ){
+                       MessageBox.success(rs.success);
+                       window.location.href = 'index.php?app=ome&ctl=admin_delivery_back&act=check';
+                   }else{
+                        MessageBox.error(rs.error);
+                   }
+                }
+           });
+
+          _form.store('target',target);
+          _form.set('action',_formActionURL).fireEvent('submit',new Event(event));
+        };
+    });
+</script>

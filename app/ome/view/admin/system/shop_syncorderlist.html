@@ -1,0 +1,84 @@
+<{if $config.is_config eq 'off'}> 
+    <div class="tableform">
+        <span class="red"><{$config.error_msg}></span>
+    </div>
+<{else}>
+<div class="tableform">
+        <div>
+            <form action="index.php?<{$env.server.QUERY_STRING}>" method="post" id="useform">
+                <div>
+                    <span>开始日期</span>：<{input type="date" name="starttime" vtype="date" value=$starttime id="starttime" }> 
+                    <span>结束日期：</span><{input type='date' vtype='date' name='endtime' value=$endtime id="endtime"}>
+                    <input type="hidden" name="syncorderlist" value="1" />
+                    <input type="hidden" name="shop_id" value="<{$shop_id}>" />
+                    <input type="hidden" name="order_type" id="order_type" value="<{$order_type}>" /> 
+                    <input type="button" name="submit_button" value="查询" onclick="checkdate()" />
+                </div>
+            </form>
+        </div>
+        <div class="division" style="border:none;">
+            <{if $ayncOrderBns|count > 0}>
+            <table class="gridlist" width="100%">
+                <thead>
+                    <tr>
+                         <th>订单编号</th>
+                         <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <{foreach from=$ayncOrderBns key=key item=item}>
+                    <tr>
+                        <td><{$item}></td>
+                        <td><span class="syncorderbutton"><button type="button" value_order_bn="<{$item}>">重新同步</button></span></td>
+                    </tr>
+                    <{/foreach}>
+                </tbody>
+            </table>
+            <{else}>
+                <table class="gridlist" width="100%"><tr><td><span class="red"><{$config.error_msg}></span></td></tr></table>
+            <{/if}>
+        </div>
+</div>
+<script language="javascript">
+    $$('.syncorderbutton button').addEvent('click', function(){
+        var order_bn = this.getProperty("value_order_bn");
+        this.disabled = true;
+        new Request({
+            url:'index.php?app=ome&ctl=admin_shop&act=sync_order',
+            data:'order_id='+order_bn+"&shop_id="+"<{$shop_id}>&order_type="+$("order_type").value,
+            method:'post',
+            onSuccess:function(response){
+                var resp =  JSON.decode(response);
+                if(resp.rsp=="fail"){
+                        var msg = resp.msg ? resp.msg : resp.res;
+                        MessageBox.error(msg);
+                }else{ MessageBox.success("获取成功");}
+                }
+         }).send();
+    });
+    function checkdate(){
+        var starttime = $('starttime').value;
+        var endtime = $('endtime').value;
+        
+        start = starttime.split('-');
+        end = endtime.split('-');
+        
+        starttime = start[1]+"/"+start[2]+"/"+start[0];
+        endtime = end[1]+"/"+end[2]+"/"+end[0];
+        
+        sd=Date.parse(starttime);
+        ed=Date.parse(endtime);
+        if ((sd-ed) >0) {
+            alert('结束日期不能小于开始日期！');
+            return false;
+        } 
+        if((ed-sd)>6*24*3600*1000){
+            alert('查询周期不能超过7天！');
+            $("starttime").focus();
+            return false;
+        }else{
+             $('useform').fireEvent('submit',{stop:$empty});
+        }
+    }
+</script>
+<{/if}>

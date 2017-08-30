@@ -1,0 +1,13 @@
+<div class="finder-packet chart-tabs">
+    <ul class="clearfix over">
+      <li class="current">
+         <a href="javascript:void(0);"><span><{t}>售后类型分布统计<{/t}></span></a>
+      </li>
+    </ul>
+</div>
+ <div class="tableform">
+        <div class="division" style="border:1px solid #ccc;">
+           <iframe frameborder="0" src="index.php?app=omeanalysts&ctl=ome_rmatype&act=chart_view&type_id=<{$type_id}>&time_from=<{$timefrom}>&time_to=<{$timeto}>" scrolling="no"  width="100%" height="300" onload="$(this).getParent().removeClass('loading')"></iframe>
+        </div>
+    </div>
+

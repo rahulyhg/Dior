@@ -1,0 +1,234 @@
+<script>
+//关闭POP
+$('close_state').addEvent('click', function(event){
+    this.getParent('.dialog').retrieve('instance').close();
+});
+
+//表单项过滤
+function itemFilter(str,patrn)
+{
+    if (patrn.exec(str)) return true;
+    else return false;
+}
+
+//结算余额计算
+$('paid').addEvent('blur',function(event){
+
+    var ini_paid = <{$detail.refund}>;//应收金额
+    var paid = $('paid').get('value');//结算金额
+    var pattrn = /^[0-9.]{1,12}$/;
+    
+    //过滤表单项
+    if(itemFilter(paid,pattrn)==false && paid!=''){
+        alert('结算金额只能输入数字，且最多为8位！');
+        $('paid').set('value','');
+        return false;
+    }
+    if (paid>ini_paid){
+        alert('结算金额不能大于应收金额！');
+        $('paid').set('value','');
+        return false;
+    }
+});
+
+//结算成功处理
+function statementHand(){
+    alert('结算成功');
+    $('stateForm').getParent('.dialog').retrieve('instance').close();
+    
+}
+//结算确认
+function statementConfirm(){
+
+    if(window.confirm('确定要执行此次结算吗？')){
+        return true;
+    }else return false;
+}
+
+//提交表单
+function sendForm(event)
+{
+    var _form = $('stateForm');
+    var _formActionURL = _form.get('action');
+    _form.set('action',_formActionURL).fireEvent('submit',new Event(event));
+    statementHand();
+
+    /*
+    var forms = $('stateForm');
+    var formActionURL = _form.get('action');
+    //提交结算申请
+    forms.set('send', {
+          url: formActionURL, 
+          method: 'post',
+          onComplete: function(){
+            statementHand();
+          }
+    });
+    forms.send();//发送表单数据
+    */
+}
+//POP弹窗口
+function popup(html)
+{
+    html = encodeURI(encodeURI(html));
+    new Dialog('index.php?<{$env.server.QUERY_STRING|replace:"statement":"stateConfirm"}>&p[0]='+html,{
+          title:'结算确认',
+          width:300,
+          height:180,
+          modal:true,
+          resizeable:false
+    });
+}
+
+var _form = $('stateForm');
+var _formActionURL = _form.get('action');
+
+//结算判断
+function statementDo(event){
+
+    //获取初始值:结算金额、退款类型、付款方式
+    var paid = $('paid').get('value');//结算金额
+    var ini_paid = <{$detail.refund}>;//应收金额
+    var ptype = $('ptype').get('value');//退款类型
+    var po_type = $('po_type').get('value');//付款方式
+    var deposit_balance = $('deposit_balance').get('value');//预付款
+    var difference = ini_paid - paid;//差额 = 应收金额 - 结算金额 
+
+    //结算金额不能为0
+    /*if (paid<1){
+        alert('结算金额不能为0！');
+        $('paid').set('value',ini_paid);
+        $('paid').focus();
+        return false;
+    }*/
+    
+    //根据 - 退款类型及付款方式 - 选择处理代码段
+    if(paid){
+            
+            //如果退款类型为入库退款的赊购方式
+            if (ptype=='po' && po_type=='credit')
+            {
+                //如果差额为0
+                if (difference=='0')
+                {
+                   //执行结算
+                   var sTrue = statementConfirm();
+                   
+                   if(sTrue==true){
+                      //提交结算申请
+                      sendForm(event);
+                   }
+                }
+                else
+                {
+                   //差额不为0
+                   //弹出POP窗口，让操作员选择继续还是取消结算
+                   var html = '您的结算金额：<span class="red">' + paid + '</span>元<br/>应收金额：<span class="red">' +ini_paid+ '</span>元;<br/>';
+                   html += '结算差额不为0，继续结算将忽略差额！';
+                   popup(html);
+                }
+            }
+            else
+            {
+                //如果差额为0
+                if (difference=='0')
+                {
+                   //执行结算
+                   var sTrue = statementConfirm();
+                   if(sTrue==true){
+                      //提交结算申请
+                      sendForm(event);
+                   }
+                }
+                else
+                {
+                   //差额不为0
+                   //弹出POP窗口，让操作员选择继续还是取消结算
+                   var html = '您的结算金额：<span class="red">' + paid + '</span>元<br />结算差额不为0，继续结算操作吗？';
+                   popup(html);
+                }
+            }
+    }
+    else
+    {
+        alert('请输入结算金额！');
+        $('paid').focus();
+    }
+}
+
+</script>
+
+<form id="stateForm" name="stateForm" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+<input type="hidden" name="refund_id" id="refund_id" value="<{$detail.refund_id}>" />
+<input type="hidden" name="deposit_balance" id="deposit_balance" value="<{$deposit_balance}>" />
+<input type="hidden" name="is_deduction" id="is_deduction" value="false" />
+<div class="tableform">
+    <div class="division">
+        <table width='100%' cellspacing="0" cellpadding="0">
+            <tr>
+                <th>退货单编号：</th>
+                <td>
+                <{$rp_bn}>
+                </td>
+                <th>应收金额：</th>
+                <td>
+                <{input type="hidden" name="ini_paid" id="ini_paid" value="{$detail.refund}"}> 
+                <span class="amount"><{$detail.refund|cur}></span>=商品总额(<span class="red"><{$detail.product_cost|cur}></span>)+物流费用(<span class="red"><{$detail.delivery_cost|cur}></span>)
+                </td>
+            </tr>
+            <tr>
+                <th>退款类型：</th>
+                <td>
+                <{input type="hidden" name="ptype" id="ptype" value="{$detail.type}"}>
+                <{$returntype[$detail.type]}>
+                
+                <{input type="hidden" name="po_type" id="po_type" value="{$detail.po_type}"}>
+                (<{$returnpaytype[$detail.po_type]}>)
+                </td>
+                <th>供应商：</th>
+                <td>
+               <{$supplier['name']}>
+                </td>
+            </tr>
+            
+            <tr>
+                <td colspan="4"><div style="height:25px; padding-left:13px; line-height:25px; font-weight:bold; margin-bottom:6px; border-bottom:1px solid #ccc">结算操作</div></td>
+            </tr>
+            
+            <tr>
+                <th>结算金额：</th>
+                <td>
+                <input type="text" size="12" name="paid" id="paid" value="<{$detail.refund|replace:".000":""}>" vtype="required" /> <em class="red">*</span>
+                </td>
+                <th>结算方式：</th>
+                <td>
+                <select name="payment">
+                    <option value="">请选择</option>
+                    <{foreach from=$payment item=item key=key}>
+                    <option value="<{$item.id}>" <{if $item.id==$detail.payment}> selected <{/if}> ><{$item.custom_name}></option>
+                    <{/foreach}>
+                </select>
+                </td>
+            </tr>
+            <tr>
+                <th>银行帐号：</th>
+                <td>
+                <{input type="text" name="bank_no"  value="" }>
+                </td>
+                <th>经办人：</th>
+                <td><{input type="text" name="operator" id="operator" value="{$supplier['operator']}"}></td>
+            </tr>
+            
+            <tr>
+                <th>备注：</th>
+                <td colspan="3"><{input type="textarea" name="memo"  value="" rows="5" cols="60" }></td>
+            </tr>
+        </table>
+        <div class="table-action">
+    <{button class="btn-primary" type="button" id="startStatementDO" label="结算" onclick="statementDo(event);" }>
+    <{button class="btn-secondary" type="button" id="close_state" label="取消" }>
+    <{input type="hidden" name="statementSubmit" value="do" }>
+</div>
+   </div>
+   </div>
+</form>

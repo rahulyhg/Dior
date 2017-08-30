@@ -1,0 +1,46 @@
+<div id="present">
+  <div class="gridlist" >
+    <table class="nosplit" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>购买数量</th>
+        <th>商品价格</th>
+        </tr>
+     </thead>
+     <tbody id="itemlist">
+    <{foreach from=$operation_detail.item_list item=objs key=obj_type}>
+       <{foreach from=$objs item=obj}>
+        <{if $obj_type == 'pkg'}>
+        <{foreach from=$obj.order_items item=item}>
+        <{if $item.delete == 'true'}>
+        <{assign var='pkg_del' value="true"}>
+        <{else}>
+        <{assign var='pkg_del' value="false"}>
+        <{/if}>
+        <{/foreach}>
+       <tr class="bindtitle tr_line" title="<{$obj.obj_type}>" pkg-type="pkg" g-id="<{$obj.goods_id}>" pkg-id="<{$obj.goods_id}>" <{if $pkg_del=='true'}>style="background-color: rgb(216, 216, 216);"  pkg-del="b"<{else}> pkg-del="a"<{/if}> >
+       <td><{$obj.bn}></td>
+       <td><b><{$obj.name}></b></td>
+       <td>-</td>
+       <td><{$obj.quantity}></td>
+       <td><{$obj.price}></td>
+       </tr><{/if}>
+       <{foreach from=$obj.order_items item=item}>
+       <tr pkg-id="<{$obj.goods_id}>" title="<{$obj.obj_type}>:<{$item.item_type}>" <{if $item.delete == 'true'}>style="background-color: rgb(216, 216, 216);" pkg-del="b"<{else}> pkg-del="a"<{/if}> id="tr_<{$item.item_id}>" g-bn="<{$item.bn}>" g-pid="<{$item.product_id}>" g-pname="<{$item.name}>" g-type="<{$item.item_type}>"  pkg-type="<{$item.item_type}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>">
+       <td <{if $item.item_type == 'gift' || $item.item_type == 'adjunct'}>class="<{$item.item_type}>"<{/if}>><span class="number"><{$item.bn}></span></td>
+       <td ><span class="goodsname"><{$item.name}></span></td>
+       <td><{$item.addon}></td>
+       <td ><{$item.quantity}></td>
+       <td ><{if $item.item_type=='pkg'}> 0<{else}><{$item.price}><{/if}></td>
+       </tr>
+       <{/foreach}>
+       <{/foreach}>
+    <{/foreach}>
+      </tbody>
+     </table>
+     <div style="text-align: right; line-height:30px;"><b>商品总金额:<{$operation_detail.cost_item}></span>元</b></div>
+  </div> 
+</div>

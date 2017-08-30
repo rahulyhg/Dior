@@ -1,0 +1,61 @@
+<style>
+.exapmle{color:red}
+</style>
+<div class='division'>
+    <h4>退货信息
+    <font color='red'>(退货信息将作为退货申请接受时回传至淘宝平台的)</font><input type="button" id='selectaddress' name='selectaddress' value='选择退货地址'>
+    </h4>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr>
+            <th><t>退货地址:</t></th>
+            <td>
+            <input type="text" id='reship_addr' name='reship_addr' value='<{$return_product_taobao.reship_addr}>' size='40'>
+            </td>
+        </tr>
+        <tr>
+            <th><t>退货邮编:</t></th>
+            <td>
+            <input type="text" id='reship_zip' name='reship_zip' value='<{$return_product_taobao.reship_zip}>' size="6" maxlength="6"><span class='exapmle'>(示例值:310000)</span>
+            </td>
+        </tr>
+        <tr>
+            <th><t>退货联系人:</t></th>
+            <td><input type="text" id='reship_name' name='reship_name' value='<{$return_product_taobao.reship_name}>'>
+            </td>
+        </tr>
+        <tr>
+            <th><t>退货电话:</t></th>
+            <td>
+                <input type="text" id='reship_phone' name='reship_phone' value='<{$return_product_taobao.reship_phone}>' size="20"><span class='exapmle'>(示例值:05718848388)</span>
+            </td>
+         </tr>
+        <tr>
+            <th><t>退货手机:</t></th>
+            <td>
+            <input type="text" id='reship_mobile' name='reship_mobile' value='<{$return_product_taobao.reship_mobile}>' size="15"><span class='exapmle'>(示例值:18628219999)</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+$("selectaddress").addEvent('click',function(e){
+        var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=ome&ctl=admin_return_address&act=findAddress&singleselect=1');
+       var callurl='index.php?app=ome&ctl=admin_return_address&act=getAddressById';
+    	Ex_Loader('modedialog',function() {
+			new finderDialog(url,{params:{url:callurl,name:'id'},width:1000,height:660,
+				onCallback:function(rs){
+					if(!rs)return;
+					rs=JSON.decode(rs);
+                    $('reship_addr').set('value',rs.address);
+                    $('reship_zip').set('value',rs.zip_code);
+                    $('reship_name').set('value',rs.contact_name);
+                    $('reship_phone').set('value',rs.phone);
+                    $('reship_mobile').set('value',rs.mobile_phone);
+				}
+			});
+		});
+	});
+
+    
+</script>

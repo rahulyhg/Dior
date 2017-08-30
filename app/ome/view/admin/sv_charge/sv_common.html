@@ -1,0 +1,80 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css"> 
+<{/capture}>
+
+sv_common
+
+<!--
+ <div class="division division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <th>平台订单号:</th><td><{$pro_detail.order_id}></td>
+    </tr>
+    <tr>
+    
+   <th>订单状态:</th><td><{if $pro_detail.recieved=='true'}>已收货<{else}>未收货<{/if}><{if $pro_detail.verify=='true'}>已质检<{else}>未质检<{/if}></td>
+   </tr>
+   <tr>
+    <th>
+    
+    提出申请的时间：</th>
+    <td><{$pro_detail.add_time|cdate:FDATE_STIME}></td>
+  </tr>
+</table>
+</div>
+
+<br />
+
+
+<h4>申请售后服务的商品</h4>
+<div class="division division">
+<table width="100%" border="0"  cellpadding="0" cellspacing="0">
+ <thead>
+  <tr>
+    <th>货号</th>
+    <th>商品名称</th>
+    <th>数量</th>
+    <th>所属仓库</th>
+  </tr>
+  </thead><tbody>
+  <{foreach from=$pro_detail.items item=items}>  
+  
+  <tr>
+    <td><{$items.bn}></td>
+    <td><{$items.name}></td>
+    <td><{$items.num}></td>
+    <td><{$items.branch_id}></td>
+  </tr>
+ 
+  <{/foreach}> 
+   </tbody>
+</table>
+</div>
+<{if $pro_detail.attachment!=''}>
+
+<br />
+
+<h4>附件下载</h4>
+<div class="division division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+ 
+  <tr>
+    <td> <a class="margin10" href="javascript:file_download()"><{t}>请点击下载该附件<{/t}></a></td>
+  </tr>
+</table>
+</div>
+<{/if}>
+
+<br />
+
+
+<h4>详细说明</h4>
+<div class="division division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+ 
+  <tr>
+    <td> <{$pro_detail.content|escape:"html"}></td>
+  </tr>
+</table>
+</div>
+-->

@@ -1,0 +1,15 @@
+<style>
+   .new_style{
+    background-position: 0 10px;padding-left: 35px;
+   }
+</style>
+  <div class="large">
+      <div class="ColColorOrange clearfix">
+          <{foreach from=$detail key=key item=item name="info"}> 
+                <span class="f-12 new_style"><{if $item.icon}><{img src="bundle/{$item.icon}" app='desktop'}><{/if}><{$key}>:</span><strong class="f-18"><{$item.value}></strong>
+          <{if ($item.col%6) eq 0}>
+               <br/><br/>
+          <{/if}>
+          <{/foreach}>
+      </div>
+  </div>

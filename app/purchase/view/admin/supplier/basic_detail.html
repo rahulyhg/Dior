@@ -1,0 +1,104 @@
+<div class="tableform"> 
+	<div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+			<tr>
+                <td colspan="4"><h4>基本信息</h4></td> 
+            </tr>
+			<tr>
+				<th style='text-align:right;'>供应商编码:</th>
+				<td>
+				<{$supplier.bn}>
+				</td>
+				<th style='text-align:right;'>供应商名称:</th>
+				<td><{$supplier.name}></td>
+			</tr>
+			<tr>
+                <th style='text-align:right;'>供应商缩写:</th>
+                <td>
+                <{$supplier.brief}>
+                </td>
+                <th style='text-align:right;'>地区</th>
+                <td><{$supplier.area|region}></td>
+            </tr>
+            
+			<tr>
+				<th style='text-align:right;'>电话:</th>
+				<td>
+				<{$supplier.telphone}>
+				</td>
+				<th style='text-align:right;'>详细地址:</th>
+                <td><{$supplier.addr}></td>
+			</tr>
+			<tr>
+				<th style='text-align:right;'>传真</th>
+                <td><{$supplier.fax}></td>
+				<th style='text-align:right;'>邮编:</th>
+				<td><{$supplier.zip}></td>
+			</tr>
+			<tr>
+                <th style='text-align:right;'>采购员:</th>
+                <td><{$supplier.operator}></td>
+                <th style='text-align:right;'>信用等级:</th>
+                <td>
+                <{if $supplier.credit_lv }>
+                <{$supplier.credit_lv}>分
+                <{else}>
+                    未评分
+                <{/if}>
+                </td>
+            </tr>
+            <tr>
+                <th style='text-align:right;'>供应品牌:</th>
+                <td colspan="3">
+                  <{foreach from=$brand item=item key=key}>
+                   <{$item}> &nbsp;&nbsp;
+                  <{/foreach}>
+                </td>
+            </tr>
+            
+            <tr>
+                <th style='text-align:right;'>备注:</th>
+                <td colspan="3"><{$supplier.memo}></td>
+            </tr>
+            
+			<tr>
+                <td colspan="4"><h4>联系人信息</h4></td> 
+            </tr>
+			<{foreach from=$supplier.contacter item=items}>
+			<tr>
+				<th style='text-align:right;'>联系人：</th>
+				<td>
+				<{$items.name}>
+				</td>
+				<th style='text-align:right;'>电话:</th>
+				<td><{$items.telphone}></td>
+			</tr>
+			<tr>
+                <th style='text-align:right;'>E-mail：</th>
+                <td>
+                <{$items.email}>
+                </td>
+                <th style='text-align:right;'>qq/旺旺:</th>
+                <td><{$items.qqwangwang}></td>
+            </tr>
+            <tr>
+                <td colspan="4"><b></b></td> 
+            </tr>
+			<{/foreach}>
+			
+			
+			<tr>
+                <td colspan="4"><h4>财务信息</h4></td> 
+            </tr>
+			<tr>
+				<th style='text-align:right;'>银行帐号:</th>
+				<td>
+				<{$supplier.account}>
+				</td>
+				<th style='text-align:right;'>开户行</th>
+                <td><{$supplier.bank}></td>
+			</tr>
+			
+		</table>
+   </div>
+</div>

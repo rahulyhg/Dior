@@ -1,0 +1,236 @@
+<style>
+.areabox{
+padding:2px;
+
+}
+</style>
+一级地区规则d设置<br>
+<div class="tableform">
+<form method="POST" id='rule_form' action='index.php?app=logistics&ctl=admin_area_rule&act=saveAreaRule'>
+
+<div class="division">
+<div style="display:none"><input type="button" name="button" value="添加区域"></div>
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+<tr >
+<th >选择地区:</th>
+                    <td><input type="text" id='first_city' name='first_city' readonly=true class="lnk" onclick='regionSelect(this)' value="<{$rule_obj.region_name}>">
+                    <input type='hidden' id='p_region_id' name='p_region_id' value="<{$rule_obj.region_id}>"/>
+                    </td>
+</tr>
+ <tr >
+        <th></th><td><input type='radio' class='first_rule_weight' name='set_type' value='weight' <{if $rule_obj.set_type=='weight'}>checked<{/if}> checked onclick="showArea('weight')">按重量区间设置
+        <input type='radio' class='first_rule_weight' name='set_type' value='nothing' onclick="showArea('nothing')" <{if $rule_obj.set_type=='nothing'}>checked<{/if}>>按任意重量设置</td>
+ </tr>
+            
+             
+            
+    </table>
+</div>
+<div class="division" id='first_rule_weight_one'>
+ 
+<div id="spec_body">
+  </div>
+  <div style='padding:10px'><input type="button" id ='addspec' value='添加重量区间'></div>
+</div>
+<div class="division" id='first_rule_weight_nothing' style='display:none'>
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+ <tr >
+                    <th></th><td>
+                    
+  首选物流公司:<select name='default_corp_id' id='corp_id'>
+                   <{foreach from=$dly_corp item=dly_corp}>
+                    <option value='<{$dly_corp.corp_id}>'><{$dly_corp.name}></option>
+                    <{/foreach}>
+                    </select>
+                    
+                   </td>
+                   
+                
+             </tr>
+            <tr><td></td><td><span id="auto_supp" style="position:relative;">
+         
+          <input type="text" id="supplier" value="" name="supplier" vtype="required" class="x-input" />
+          <input type="hidden" name="order_id" id="order_id" value="" />
+        </span></td></tr>
+    </table>
+
+</div>
+ 
+
+         <div class="table-action">
+                <{button type="button" label="保存" id="create_rule_save" }>
+            </div>
+<input type="hidden" name="rule_id" value="<{$rule.rule_id}>">
+<input type="hidden" name="rule_type" value="<{$type}>">
+</form>
+</div>
+<script>
+var options={
+    'getVar':'bn',
+    'fxOptions':false,
+    callJSON:function(){return window.autocompleter_json;},
+    injectChoice:function(json){
+      var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+      choice.store('_data',json);
+      choice.inputValue = json[this.options.getVar];
+      this.addChoiceEvents(choice).inject(this.choices);
+    },
+    onHide:function(){
+      if(!this.selected)return;
+      var json=this.selected.retrieve('_data');
+      json=$splat(json);
+      init(json);
+      MessageBox.success('加载订单信息成功!!');
+        },
+        onFocus:function(ipt){
+      ipt.value='';
+    }
+    };
+    new Autocompleter.script($E('#auto_supp input[type=text]'),"", $merge(options,{
+    'getVar':'order_bn',
+    selectFirst:false,
+    injectChoice:function(json){
+    
+      var order_id=json["order_id"]?"("+json["order_id"]+")":"";
+      var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar]+order_id)});
+      choice.store('_data',json);
+      choice.inputValue = json[this.options.getVar];
+      this.addChoiceEvents(choice).inject(this.choices);
+        },
+        onHide:function(){
+          if(!this.selected)return;
+          var json=this.selected.retrieve('_data');
+          $('order_id').set("value",json["order_id"]);
+          
+        },
+        onFocus:$empty
+  }));
+  </script>
+<script>
+var corp_id=$('corp_id');
+corp_id=corp_id.getElements('option');
+
+function regionSelect(el){
+    var el=$(el);
+    Ex_Loader('modedialog',function(){
+    new ModeDialog('index.php?app=eccommon&ctl=regions&act=showRegionTreeList&p[0]='+el.uid,{
+    width:250,height:340,params:{iptText:el,iptHidden:el.getParent().getElement('input[type=hidden]')}});
+    });
+}
+
+    var new_city_item = 0;
+    var new_area_item = 0;
+    var getTemp = function(i,v){
+        
+        var max_weight_value=0;
+        var j=0;
+        if(i!=0){
+            var j=i-1; 
+            if($('spec_body')){
+                if($('spec_body').getLast()){
+                    max_weight_value = $('spec_body').getLast().getElement('input[name^=max_weight]').value;
+                    max_weight_value++;
+                }
+            }
+           
+        }
+
+        temp='<div id="first-weight-'+i+'">重量:<input type="text" id="min_weight'+i+'" name="min_weight['+i+']" size=10 >至<input type="text" id="max_weight'+i+'" name="max_weight['+i+']" size=10 > 首选物流公司:';
+
+        temp+='<select name="corp_id['+i+']">';
+      if(corp_id){
+      corp_id.each(function(i,index){
+
+      temp+='<option value='+i.value+'>'+i.text+'</option>';
+      });
+        }
+      temp+="</select>&nbsp;&nbsp;&nbsp;&nbsp;";
+      temp+="<a onclick='deleteArea($(this).getParent(\"div\"))' >删除</a>";
+      temp+="</div>";
+
+      return temp;
+    };
+    var areaweight=0;
+    
+    $('addspec').addEvent('click',function(e){
+        var add_above=0;
+        $$('.weight_rule').each(function(etd){
+            above_max_weight = etd.getChildren('input[name^=max_weight]').get('value')/1;
+            if(above_max_weight=='-1'){
+                add_above++;
+                
+            }
+
+        });
+      if(add_above>=1){
+        return MessageBox.error('<{t}>以上区间存在不可以再添加!<{/t}>');
+    }else{  
+      var newRow=new Element('div[class="areabox"]',{html:getTemp(new_city_item++,[1,2])}).inject($('spec_body'));
+     }
+    });
+
+
+
+function deleteArea(d,area,i){
+    if (!confirm('删除后无法恢复，确定要删除吗？')){
+        return;
+    }
+
+    d.remove();
+    if(area){
+        if(area.length==1){
+            i.dispose();
+        }
+    }
+
+
+}
+
+
+function showArea(setType){
+
+   
+   
+    if(setType=='weight'){
+        $('first_rule_weight_one'+i).setStyle('display','');
+        $('first_rule_weight_nothing'+i).setStyle('display','none');
+
+    }
+    if(setType=='nothing'){
+        $('first_rule_weight_nothing'+i).setStyle('display','');
+        $('first_rule_weight_one'+i).setStyle('display','none');
+    }
+}
+
+
+
+var addArea_item=0;
+var addAreatemp_item=1;
+function addarea(i){
+addAreatemp_item++;
+    var newRow = new Element('li[class=division][style=padding:2px',{html:addAreaTemp(i,addAreatemp_item)}).inject($('addarea'+i));
+}
+
+$('create_rule_save').addEvent('click',function(e){
+    var form=this.getParent('form');
+    var _this=this;
+    form.store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+     
+                        _this.getParent('.dialog').retrieve('instance').close();
+                       
+                    }
+                }catch(e){}
+            }
+        });
+        form.fireEvent('submit',e);
+});
+</script>

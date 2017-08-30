@@ -1,0 +1,1552 @@
+apibusiness
+U    lib/request/apiname.php
+U    lib/request/whitelist.php
+A    lib/request/v1/meilishuo.php
+U    lib/request/v1/taobao.php
+U    lib/request/v1/tmall.php
+U    lib/request/v1/alibaba.php
+U    lib/response/aftersale/abstract.php
+U    lib/response/order/abstractbase.php
+U    lib/response/order/wx/abstract.php
+A    lib/response/order/meilishuo
+A    lib/response/order/meilishuo/b2cv1.php
+A    lib/response/order/meilishuo/abstract.php
+U    lib/response/order/plugin/tax.php
+A    lib/response/order/plugin/crm.php
+U    lib/response/order/taobao/b2bv1.php
+U    lib/response/aftersalev2/abstract.php
+U    lib/response/aftersalev2/tmall/v1.php
+A    lib/response/aftersalev2/meilishuo
+A    lib/response/aftersalev2/meilishuo/v1.php
+===================================================================
+--- lib/request/apiname.php     (revision 943)
++++ lib/request/apiname.php     (revision 947)
+@@ -120,3 +120,6 @@
+ 
+ //淘宝全链路接口
+ define("ADD_TMC_MESSAGE_PRODUCE", "store.tmc.message.produce");
++
++#美丽说同意退款、退货（退款退货用的同一个接口）
++define("MEILISHUO_REFUND_GOOD_RETURN_AGREE", "store.refund.good.return.agree");
+Index: lib/request/whitelist.php
+===================================================================
+--- lib/request/whitelist.php   (revision 943)
++++ lib/request/whitelist.php   (revision 947)
+@@ -37,6 +37,7 @@
+              'mogujie'   => $this->mogujie,
+              'gome'   => $this->gome,
+              'wx'   => $this->wx,
++             'meilishuo'=>$this->meilishuo
+         );
+     }
+ 
+@@ -362,4 +363,10 @@
+         LOGISTICS_OFFLINE_RPC,
+         UPDATE_ITEMS_QUANTITY_LIST_RPC,
+     );
++    #meilishuoRPC服务接口
++    private $meilishuo = array(
++        LOGISTICS_OFFLINE_RPC,
++        UPDATE_ITEMS_QUANTITY_LIST_RPC,
++        MEILISHUO_REFUND_GOOD_RETURN_AGREE
++    );
+ }
+\ No newline at end of file
+Index: lib/request/v1/meilishuo.php
+===================================================================
+--- lib/request/v1/meilishuo.php        (revision 0)
++++ lib/request/v1/meilishuo.php        (revision 947)
+@@ -0,0 +1,61 @@
++<?php
++/**
++* meilishuo（美丽说)接口请求实现
++*/
++class apibusiness_request_v1_meilishuo extends apibusiness_request_partyabstract{
++    
++    /**
++     * 获取发货参数
++     *
++     * @param Array $delivery 发货单信息
++     * @return Array
++     * @author
++     **/
++    protected function getDeliveryParam($delivery){
++        $param = array(
++                'tid'          => $delivery['order']['order_bn'],
++                'company_code' => trim($delivery['dly_corp']['type']),
++                'logistics_no' => $delivery['logi_no'] ? $delivery['logi_no'] : '',
++        );
++        return $param;
++    }
++    /**
++     * 取得退款申请对应状态接口名     *
++     * @return void
++     * @author
++     **/
++    protected function refund_apply_api($status){
++        $api_method = '';
++        switch($status){
++            #同意退款
++            case '2':
++                $api_method = MEILISHUO_REFUND_GOOD_RETURN_AGREE;
++                break;
++        }
++        return $api_method;
++    }
++    protected function aftersale_api($status){
++        $api_method = '';
++        switch( $status ){
++            #同意退货
++            case '3':
++                $api_method = MEILISHUO_REFUND_GOOD_RETURN_AGREE;
++                break;
++        }
++        return $api_method;
++    }
++    protected function format_aftersale_params($aftersale,$status){
++        $params = array(
++                'refund_id'     =>$aftersale['return_bn'],
++                //'addr_id'  => '',
++        );
++        return $params;
++    }
++    protected function format_refund_applyParams($refund,$status){
++        $params = array(
++                'refund_id'  =>$refund['refund_apply_bn'],
++                //'addr_id'  => '',
++        );
++        return $params;
++    }              
++}
+Index: lib/response/order/wx/abstract.php
+===================================================================
+--- lib/response/order/wx/abstract.php  (revision 943)
++++ lib/response/order/wx/abstract.php  (revision 947)
+@@ -51,4 +51,57 @@
+     
+         return $components;
+     }     
++    /**
++     * 纠正微信小店的货号(微信前端打的不对)
++     *
++     * @return void
++     * @author
++     **/
++    protected function reTransSdf(){
++        parent::reTransSdf();
++    
++        if(!$this->_ordersdf['lastmodify']){
++            $this->_ordersdf['lastmodify'] = date('Y-m-d H:i:s',time());
++        }
++        #获取货号
++        foreach ($this->_ordersdf['order_objects'] as $objkey => &$object) {
++            $product_info   = array();
++            $goods_id = $object['shop_goods_id'];
++            $product_info  = $this->item_get($goods_id);
++            foreach ($object['order_items'] as $k => &$v) {
++                #重新获取货号
++                if ($product_info && $product_info['skus']) {
++                    $v['bn']      = $product_info['skus'][$v['shop_product_id']]['bn'];
++                    $object['bn'] = $product_info['skus'][$v['shop_product_id']]['bn'];
++                }
++            }
++        }
++    }
++    protected function item_get($num_iid){
++        static $goods;
++        if ($goods[$num_iid]) {
++            return $goods[$num_iid];
++        }
++        $rs = kernel::single('apibusiness_router_request')->setShopId($this->_shop['shop_id'])->item_get($num_iid,$this->_shop['shop_id']);
++        if ($rs->rsp == 'fail' || !$rs->data ){
++            $this->_apiLog['info'][] = '获取商品详细('.$rs->msg_id.')失败：' . $num_iid;
++            return array();
++        }
++    
++        $data = json_decode($rs->data,true);
++        $this->_apiLog['info'][] = '获取商品详细('.$rs->msg_id.')成功：' . $num_iid;
++    
++        if ($rs->rsp == 'succ' && $data) {
++            $item = $data['item'];
++            unset($data);
++    
++            if ($item['skus']['sku']) {
++                foreach ($item['skus']['sku'] as $key => $value) {
++                    $goods[$num_iid]['skus'][$value['sku_id']]['sku_id'] = $value['sku_id'];
++                    $goods[$num_iid]['skus'][$value['sku_id']]['bn'] = $value['bn'];
++                }
++            }
++        }
++        return $goods[$num_iid];
++    }        
+ }
+\ No newline at end of file
+Index: lib/response/order/meilishuo/b2cv1.php
+===================================================================
+--- lib/response/order/meilishuo/b2cv1.php      (revision 0)
++++ lib/response/order/meilishuo/b2cv1.php      (revision 947)
+@@ -0,0 +1,49 @@
++<?php
++class apibusiness_response_order_meilishuo_b2cv1 extends  apibusiness_response_order_meilishuo_abstract{ 
++    /*     
++     * 是否接收订单
++    * @return void
++    * @author
++    **/
++    protected function canAccept(){
++        $result = parent::canAccept();
++        if ($result === false) {
++            return false;
++        }
++        #未支付的订单拒收
++        if ($this->_ordersdf['pay_status'] == '0') {
++            $this->_apiLog['info']['msg'] = '未支付订单不接收';
++            return false;
++        }
++        return true;
++    }
++            
++    /**
++     * @return void
++     * @author
++     **/
++    public function canCreate(){
++        if ($this->_ordersdf['status'] != 'active') {
++            $this->_apiLog['info']['msg'] = ($this->_ordersdf['status'] == 'dead') ? '取消的订单不接收' : '完成的订单不接收';
++            return false;
++        }
++        #美丽说创建订单的时候，未支付订单不接受
++        if($this->_ordersdf['pay_status'] != '1'){
++            $this->_apiLog['info']['msg'] =  '未支付美丽说订单不接收';
++            return false;
++        }
++    }
++    /**
++     * 允许更新
++     *
++     * @return void
++     * @author
++     **/
++    protected function canUpdate(){
++        if( $this->_ordersdf['status'] != 'active'){
++            $this->_apiLog['info']['msg'] = '取消的订单不接收';
++            return false;
++        }
++        return parent::canUpdate();
++    } 
++}
+\ No newline at end of file
+Index: lib/response/order/meilishuo/abstract.php
+===================================================================
+--- lib/response/order/meilishuo/abstract.php   (revision 0)
++++ lib/response/order/meilishuo/abstract.php   (revision 947)
+@@ -0,0 +1,54 @@
++<?php
++/**
++* meilishuo(美丽说)订单处理 抽象类
++*/
++abstract class apibusiness_response_order_meilishuo_abstract extends apibusiness_response_order_abstractbase
++{
++    /**
++     * 是否接收订单
++     *
++     * @return void
++     * @author 
++     **/
++    protected function canAccept()
++    {
++        $result = parent::canAccept();
++        if ($result === false) {
++            return false;
++        }
++
++        #未支付的款到发货订单拒收
++        if ($this->_ordersdf['shipping']['is_cod'] != 'true' && $this->_ordersdf['pay_status'] == '0') {
++            $this->_apiLog['info']['msg'] = '未支付订单不接收';
++            return false;
++        }
++
++        return true;
++    }
++    /**
++     * 订单转换淘管格式
++     *
++     * @return void
++     * @author
++     **/
++    public function component_convert()
++    {
++    
++        parent::component_convert();
++    
++        $this->_newOrder['pmt_goods'] = abs($this->_newOrder['pmt_goods']);
++        $this->_newOrder['pmt_order'] = abs($this->_newOrder['pmt_order']);
++    }   
++    /**
++     * 需要更新的组件
++     *
++     * @return void
++     * @author
++     **/
++    protected function get_update_components()
++    {
++        $components = array('markmemo','custommemo');
++    
++        return $components;
++    }     
++}
+\ No newline at end of file
+Index: lib/response/aftersalev2/abstract.php
+===================================================================
+--- lib/response/aftersalev2/abstract.php       (revision 943)
++++ lib/response/aftersalev2/abstract.php       (revision 947)
+@@ -841,6 +841,7 @@
+                     }
+                     $product = $productModel->dump(array('bn'=>$item['bn']));
+                     $reship_items[] = array(
++                       'op_id'=>16777215,
+                        'bn'     =>$item['bn'],
+                        'num'    =>$item['num'],
+                        'price'  =>$price,
+Index: lib/response/aftersalev2/tmall/v1.php
+===================================================================
+--- lib/response/aftersalev2/tmall/v1.php       (revision 943)
++++ lib/response/aftersalev2/tmall/v1.php       (revision 947)
+@@ -591,12 +591,12 @@
+             $refund_item_list = $refund_item_list['return_item'];
+             $item_list = array();
+             foreach ($refund_item_list as $k=>$item) {
+-                $bn = $item['outer_id'];
++                //$bn = $item['outer_id'];
+                 $oid = $item['oid'];
+                 if ($sdf['refund_type'] == 'reship') {
+                     $oid = $sdf['oid'];
+                 }
+-                $order_objects = $oOrder_objects->dump(array('order_id'=>$order_id,'bn'=>$bn,'oid'=>$oid),'obj_type,obj_id');
++                $order_objects = $oOrder_objects->dump(array('order_id'=>$order_id,'oid'=>$oid),'obj_type,obj_id'); 
+                 if ($order_objects) {
+                     $obj_type = $order_objects['obj_type'];
+                     $obj_id = $order_objects['obj_id'];
+Index: lib/response/aftersalev2/meilishuo/v1.php
+===================================================================
+--- lib/response/aftersalev2/meilishuo/v1.php   (revision 0)
++++ lib/response/aftersalev2/meilishuo/v1.php   (revision 947)
+@@ -0,0 +1,101 @@
++<?php
++class apibusiness_response_aftersalev2_meilishuo_v1 extends apibusiness_response_aftersalev2_v1{
++    
++    /**
++     * 验证是否接收
++     *
++     * @return void
++     * @author 
++     **/
++    protected function canAccept($tgOrder=array()){
++        
++        if ($this->_refundsdf['status'] == 'success' || $this->_refundsdf['refund_type'] == 'refund') {
++        
++            if (bccomp($tgOrder['payed'], $this->_refundsdf['refund_fee'],3) < 0) {
++                $this->_apiLog['info']['msg'] = '退款失败,支付金额('.$tgOrder['payed'].')小于退款金额('.$this->_refundsdf['refund_fee'].')';
++                return false;        
++            }
++        }
++        // 订单状态判断
++        if ($tgOrder['process_status'] == 'cancel') {
++            $this->_apiLog['info']['msg'] = '订单['.$this->_refundsdf['tid'].']已经取消，无法退款';
++            return false;
++        }
++        return true;
++    }
++
++    /**
++     * 添加退款单
++     *
++     * @return void
++     * @author 
++     **/
++    public function add(){
++        parent::add();
++        $orderModel = app::get(self::_APP_NAME)->model('orders');
++        $order_bn  = $this->_refundsdf['tid'];
++        $shop_id     = $this->_shop['shop_id'];
++        $tgOrder = $orderModel->dump(array('order_bn'=>$order_bn,'shop_id'=>$shop_id),'pay_status,status,process_status,order_id,payed,cost_payment,ship_status');
++        if (strtolower($this->_refundsdf['has_good_return']) == '1') {//需要退货才更新为售后单
++            if (in_array($tgOrder['ship_status'],array('0'))) {
++                #有退货，未发货的,做退款
++                $this->refund_add();
++            }else{
++                #有退货，已发货的,做售后
++                $this->aftersale_add();
++            }
++        }else{
++            #无退货的，直接退款
++            $this->refund_add();
++        }
++    }
++    
++    protected function format_data($sdf)
++    {
++        $sdf['modified'] = strtotime($sdf['modified']);
++        $sdf['has_good_return'] = strtolower($sdf['has_good_return']);
++        $sdf['good_return_time'] = strtotime($sdf['good_return_time']);
++        $orderModel = app::get(self::_APP_NAME)->model('orders');
++        $order_objectModel = app::get(self::_APP_NAME)->model('order_objects');
++        $oOrder_items = app::get(self::_APP_NAME)->model('order_items');
++        $order_bn    = $sdf['tid'];
++        $shop_id     = $this->_shop['shop_id'];
++        $tgOrder = $orderModel->dump(array('order_bn'=>$order_bn,'shop_id'=>$shop_id),'order_id');
++        $order_id = $tgOrder['order_id'];
++        if ($sdf['refund_item_list']) {
++            $refund_item_list = json_decode($sdf['refund_item_list'],true);
++            $refund_item_list = $refund_item_list['return_item'];
++            $item_list = array();
++            foreach ($refund_item_list as $k=>$item ) {
++                $oid = trim($item['oid']);
++                $order_object = $order_objectModel->dump(array('oid'=>$oid,'order_id'=>$order_id));
++                if ($order_object) {
++                    $obj_type = $order_object['obj_type'];
++                    $obj_id = $order_object['obj_id'];
++                    $order_items = $oOrder_items->getlist('bn,price,nums',array('obj_id'=>$obj_id));
++                    if ($order_items) {
++                        foreach ($order_items as $ok=>$ov) {
++                            $item_list[$ok]=array(
++                                'num'=>   $ov['nums'],
++                                'bn'=>   $ov['bn'],
++                                'price'=>$ov['price'],
++                            );
++                        }
++                    }
++                
++                }else{
++                     $item_list[]=array(
++                            'num'=>   $item['nums'],
++                            'bn'=>   $item['outer_id'],
++                            'price'=>$item['price'],
++                     );
++                }
++            }
++            $sdf['refund_item_list'] = $item_list;
++        }
++ 
++        return $sdf;
++    }
++}
++
++?>
+\ No newline at end of file
+
+Property changes on: .
+___________________________________________________________________
+Modified: svn:mergeinfo
+   Merged /dev/shopex_erp:r938-940
+   Merged /tags/shopex_erp:r946
+   Index: lib/request/apiname.php
+===================================================================
+--- lib/request/apiname.php     (revision 947)
++++ lib/request/apiname.php     (revision 952)
+@@ -112,6 +112,17 @@
+ define('LOGISTICS_ADDRESS_SEARCH','store.logistics.address.search');//卖家地址库
+ define('REFUND_GOOD_RETURN_CHECK','store.eai.order.refund.good.return.check');//回填退货物流信息
+ define('GET_TRADE_REFUND_RPC','store.eai.order.refund.get');//单拉退款单信息
++
++#天猫2015年新的售后接口
++define('GET_TRADE_REFUND_I_RPC','store.eai.order.refund.i.get');#单拉退款单信息
++define('AGREE_RETURN_I_GOOD_TMALL','store.tmall.refund.i.good.return.agree');#同意退货
++define('REFUSE_RETURN_I_GOOD_TMALL','store.tmall.refund.i.good.return.refuse');#拒绝退货
++define('GET_REFUND_I_MESSAGE_TMALL','store.tmall.refund.i.message.get');#获取凭证
++define('REFUNSE_REFUND_I_TMALL','store.tmall.refund.i.refuse');#获取拒绝退款
++define('AGREE_REFUND_I_TMALL','store.tmall.trade.refund.i.examine');#同意退款
++
++
++
+ // 获取电子面单
+ define("GET_WAYBILL_NUMBER",'store.waybillallocation.requestwaybillnum');
+ 
+Index: lib/request/whitelist.php
+===================================================================
+--- lib/request/whitelist.php   (revision 947)
++++ lib/request/whitelist.php   (revision 952)
+@@ -223,6 +223,14 @@
+         UPDATE_TRADE_SHIPPING_ADDRESS_RPC,//回写淘宝收货地址
+         GET_TRADE_REFUND_RPC,//单拉售后退款单
+         ADD_TMC_MESSAGE_PRODUCE,//淘宝全链路接口
++        
++        
++        GET_TRADE_REFUND_I_RPC,
++        AGREE_RETURN_I_GOOD_TMALL,
++        REFUSE_RETURN_I_GOOD_TMALL,
++        GET_REFUND_I_MESSAGE_TMALL,
++        REFUNSE_REFUND_I_TMALL,
++        AGREE_REFUND_I_TMALL
+         );
+ 
+     /**
+Index: lib/request/v1/tmall.php
+===================================================================
+--- lib/request/v1/tmall.php    (revision 947)
++++ lib/request/v1/tmall.php    (revision 952)
+@@ -87,10 +87,10 @@
+         $api_method = '';
+         switch($status){
+             case '2':
+-                $api_method = AGREE_REFUND_TMALL;
++                $api_method = AGREE_REFUND_I_TMALL;
+             break;
+             case '3':
+-                $api_method = REFUNSE_REFUND_TMALL;
++                $api_method = REFUNSE_REFUND_I_TMALL;
+             break;
+         }
+ 
+@@ -163,10 +163,10 @@
+         $api_method = '';
+         switch( $status ){
+             case '3':
+-                $api_method = AGREE_RETURN_GOOD_TMALL;
++                $api_method = AGREE_RETURN_I_GOOD_TMALL;
+             break;
+             case '5':
+-                $api_method = REFUSE_RETURN_GOOD_TMALL;
++                $api_method = REFUSE_RETURN_I_GOOD_TMALL;
+             break;
+         }
+         return $api_method;
+Index: lib/request/abstract.php
+===================================================================
+--- lib/request/abstract.php    (revision 947)
++++ lib/request/abstract.php    (revision 952)
+@@ -1533,7 +1533,7 @@
+            
+             $params['refund_type'] = $refundinfo['refund_phase'];
+             $params['refund_version'] = $refundinfo['refund_version'];
+-            $api_method = GET_REFUND_MESSAGE_TMALL;
++            $api_method = GET_REFUND_I_MESSAGE_TMALL;
+         }else{
+             $api_method = GET_REFUND_MESSAGE;
+         }
+@@ -1633,7 +1633,11 @@
+         $title = "店铺(".$this->_shop['name'].")获取前端店铺".$order_bn."的售后单详情";
+ 
+         $api_name = GET_TRADE_REFUND_RPC;
+-
++        $tbbusiness_type = strtoupper($this->_shop['tbbusiness_type']);
++        #天猫的凭证获取走新接口
++        if($tbbusiness_type == 'B'){
++            $api_name = GET_TRADE_REFUND_I_RPC;
++        }
+         $rsp = $this->_caller->call($api_name,$params,$shop_id,$time);
+        
+         $result = array();
+ome
+lib/aftersale/request/meilishuo.php
+lib/refund/apply.php
+lib/syncorder.php
+lib/service/aftersale.php
+lib/shop/type.php
+lib/rpc/response/order.php
+lib/return/product.php
+lib/event/receive/delivery.php
+model/orders.php
+model/delivery.php
+Index: model/delivery.php
+===================================================================
+--- model/delivery.php  (revision 6536)
++++ model/delivery.php  (revision 6568)
+@@ -820,18 +820,31 @@
+                     $filter2['delivery_id'] = $r['delivery_id'];
+                 }
+             }
+-            $filter2['delivery_id'] = $r['delivery_id'];
++            $filter2['delivery_id'] = $r['delivery_id']; 
+             if ($filter2['delivery_id']){
+                 $this->update($data, $filter2);
+             }
++
+             if ($data['status']=='ready') {
+               //子发货单更新成独立发货主单，请求wms创建
+                 $original_data = kernel::single('ome_event_data_delivery')->generate($r['delivery_id']);
+                 $wms_id = kernel::single('ome_branch')->getWmsIdById($original_data['branch_id']);
+-                kernel::single('ome_event_trigger_delivery')->create($wms_id, $original_data, false);
+-            
++                $result = kernel::single('ome_event_trigger_delivery')->create($wms_id, $original_data, false);
++                $result = json_encode($result);
++                $oOperation_log->write_log('delivery_modify@ome',$r['delivery_id'],"发货单开始发送第三方结果".$result,NULL,$opInfo);
++                //判断当前是否为自有仓当前订单状态是否为暂停如果为暂停置为恢复
+                 
++                $channelLib = kernel::single('channel_func');
++                $is_selfWms = $channelLib->isSelfWms($wms_id);
++                if ($is_selfWms) {
++                    $orderids = $this->getOrderIdByDeliveryId(array($r['delivery_id']));
++                    foreach ($orderids as $orderid ) {
++                        kernel::single('ome_order_func')->update_order_pay_status($orderid);
++                    }
++                }
+             }
++                    
++                
+         }
+         $data = null;
+         return true;
+@@ -3279,6 +3292,7 @@
+                 foreach ($d2o as $oId) {
+                     $ids[] = $oId['order_id'];
+                 }
++                
+                 kernel::database()->exec("UPDATE sdb_ome_orders SET " . join(',', $updatebody) . " WHERE order_id IN (" . join(',', $ids) . ")");
+             }
+         }
+
+Property changes on: model/delivery.php
+___________________________________________________________________
+Modified: svn:mergeinfo
+   Merged /dev/shopex_erp/model/delivery.php:r6302,6305,6327,6332,6337,6344,6350,6352,6354,6356,6358,6361-6362,6397,6406,6408,6410,6420-6421,6432,6440-6442,6491,6500,6528,6540,6562-6565
+   Merged /tags/shopex_erp/model/delivery.php:r6492,6503-6567
+
+Index: model/orders.php
+===================================================================
+--- model/orders.php    (revision 6536)
++++ model/orders.php    (revision 6568)
+@@ -3274,10 +3274,66 @@
+                             }
+                         }
+                     }
++                    
++                    $rs = array('rsp'=>'succ','msg'=>'');
++                    return $rs;
+                 }
+             }
+         }
+         
++        #[拆单]发货单全部成功发货
++        if(!empty($dly_ids) && empty($pause_dly) && $flag == false)
++        {
++            $order_id_list    = array();
++            
++            //处理订单对应多个发货单
++            foreach ($dly_ids as $key => $delivery_id)
++            {
++                //取仓库信息
++                $deliveryInfo = $dlyObj->dump($delivery_id,'delivery_id, is_bind');
++                
++                //是否是合并发货单
++                if($deliveryInfo['is_bind'] == 'true')
++                {
++                    //取关联订单号进行暂停
++                    $order_ids = $dlyObj->getOrderIdByDeliveryId($deliveryInfo['delivery_id']);
++                    if($order_ids){
++                        foreach ($order_ids as $id){
++                            $order_id_list[]    = $id;
++                        }
++                    }
++                }
++            }
++            $order_id_list[]    = $order_id;
++            $order_id_list      = array_unique($order_id_list);
++            
++            foreach ($order_id_list as $id){
++                $order['order_id'] = $id;
++                $order['pause'] = 'true';
++                $this->save($order);
++                $oOperation_log->write_log('order_modify@ome',$id,'订单暂停');
++            }
++            
++            
++            //订单暂停状态同步
++            if ($service_order = kernel::servicelist('service.order'))
++            {
++                foreach($service_order as $object=>$instance)
++                {
++                    if(method_exists($instance, 'update_order_pause_status'))
++                    {
++                        foreach ($order_id_list as $id)
++                        {
++                            $instance->update_order_pause_status($id);
++                        }
++                    }
++                }
++            }
++            
++            $rs = array('rsp'=>'succ','msg'=>'');
++            return $rs;
++        }
++        
+         #[全部]成功暂停OR取消的发货单_则执行
+         if($pause_dly && $flag == false)
+         {
+@@ -3483,6 +3539,7 @@
+     function renewOrder_split($order_id)
+     {
+         $flag   = false;//标记有未能暂停的发货单
++        $pause_dly  = array();//需要恢复的发货单
+         
+         if ($order_id){
+             $o = $this->dump($order_id,'pause');
+@@ -3503,7 +3560,14 @@
+                     {
+                         //取仓库信息
+                         $deliveryInfo = $dlyObj->dump($delivery_id,'*');
+-    
++                        
++                        #[自有仓]OR[第三方仓]已发货的发货单不执行
++                        if($deliveryInfo['status'] == 'succ')
++                        {
++                            continue;
++                        }
++                        $pause_dly[]    = $deliveryInfo;
++                        
+                         $wms_id = $branchLib->getWmsIdById($deliveryInfo['branch_id']);
+                         if($wms_id){
+                             $is_selfWms = $channelLib->isSelfWms($wms_id);
+@@ -3590,6 +3654,56 @@
+                         }
+                     }
+                 }
++                
++                #[拆单]发货单全部成功发货
++                if(!empty($dly_ids) && empty($pause_dly) && $flag == false)
++                {
++                    $order_id_list    = array();
++                    
++                    //处理订单对应多个发货单
++                    foreach ($dly_ids as $key => $delivery_id)
++                    {
++                        //取仓库信息
++                        $deliveryInfo = $dlyObj->dump($delivery_id,'delivery_id, is_bind');
++                    
++                        //是否是合并发货单
++                        if($deliveryInfo['is_bind'] == 'true')
++                        {
++                            //取关联订单号进行暂停
++                            $order_ids = $dlyObj->getOrderIdByDeliveryId($deliveryInfo['delivery_id']);
++                            if($order_ids){
++                                foreach ($order_ids as $id){
++                                    $order_id_list[]    = $id;
++                                }
++                            }
++                        }
++                    }
++                    $order_id_list[]    = $order_id;
++                    $order_id_list      = array_unique($order_id_list);
++                    
++                    foreach ($order_id_list as $id){
++                        $order['order_id'] = $id;
++                        $order['pause'] = 'false';
++                        $this->save($order);
++                        $oOperation_log->write_log('order_modify@ome',$id,'订单恢复');
++                    }
++                    
++                    //订单恢复状态同步
++                    if ($service_order = kernel::servicelist('service.order'))
++                    {
++                        foreach($service_order as $object=>$instance)
++                        {
++                            if(method_exists($instance, 'update_order_pause_status'))
++                            {
++                                foreach ($order_id_list as $id)
++                                {
++                                    $instance->update_order_pause_status($id);
++                                }
++                            }
++                        }
++                    }
++                }
++                
+                 return ($flag ? false : true);
+             }
+         }
+Index: lib/refund/apply.php
+===================================================================
+--- lib/refund/apply.php        (revision 6536)
++++ lib/refund/apply.php        (revision 6568)
+@@ -257,7 +257,7 @@
+                 $apply_id = $apply['apply_id'];
+                 $status = $apply['status'];
+                 if (in_array( $status,array('0','1'))){
+-                    if (in_array($apply['shop_type'],array('tmall')) && $apply['source'] == 'matrix') {
++                    if (in_array($apply['shop_type'],array('tmall','meilishuo')) && $apply['source'] == 'matrix') {
+                         $return_batch = $batchList[$apply['shop_id']];
+                         $refund = array(
+                             'apply_id'=>$apply['apply_id'],
+Index: lib/finder/shop.php
+===================================================================
+--- lib/finder/shop.php (revision 6536)
++++ lib/finder/shop.php (revision 6568)
+@@ -20,6 +20,7 @@
+         $taobao_session = strval($taobao_session);
+         $certi_id = base_certificate::get('certificate_id');
+         $url = OPENID_URL."?open=taobao&certi_id=".$certi_id."&node_id=".$node_id."&refertype=ecos.ome&callback_url=http://".$_SERVER['HTTP_HOST'].kernel::base_url()."/index.php/api";
++
+         if ($shoptype=='taobao' and $node_id and ($taobao_session=='true' or $taobao_session==1)){
+             //$reset_login = '<a href="'.$url.'" target="_blank"><b>重新登录</a></a>';
+         }
+@@ -205,10 +206,12 @@
+         $certi_id = base_certificate::get('certificate_id');
+         $api_url = kernel::base_url(true).kernel::url_prefix().'/api';
+         $url = OPENID_URL."?open=taobao&certi_id=".$certi_id."&node_id=".$node_id."&refertype=ecos.ome&callback_url=".$api_url;
++        
+         if ($shop_type=='taobao' and $node_id and ($taobao_session=='false' or $taobao_session=='False' or $taobao_session==false) ){
+             //$button2 = ' | <a href="'.$url.'" target="_blank">登录淘宝</a>';
+         }
+         $callback_url = urlencode(kernel::openapi_url('openapi.ome.shop','shop_callback',array('shop_id'=>$shop_id)));
++
+         $app_id = "ome";
+         $api_url = urlencode($api_url);
+         if (!$node_id){ 
+Index: lib/syncorder.php
+===================================================================
+--- lib/syncorder.php   (revision 6536)
++++ lib/syncorder.php   (revision 6568)
+@@ -241,11 +241,14 @@
+                   $order_items[$i_k]['bn'] = $i_v['bn'];
+                   $order_items[$i_k]['name'] = $i_v['name'];
+                   $product_attr = array();
++                  #微信小店前端没有规格下来
++                  if(($order_sdf['shop_type'] == 'wx') && (!empty($i_v['sku_properties']))){
+                   $sku_properties = explode(';',$i_v['sku_properties']);
+                   foreach($sku_properties as $si=>$sp){
+                     $_sp = explode(':',$sp);
+                     $product_attr[$si]['label'] = $_sp[0];
+                     $product_attr[$si]['value'] = $_sp[1];
++                      }
+                   }
+                   $order_items[$i_k]['product_attr'] = $product_attr;
+                   $order_items[$i_k]['quantity'] = $i_v['num'];
+Index: lib/service/aftersale.php
+===================================================================
+--- lib/service/aftersale.php   (revision 6536)
++++ lib/service/aftersale.php   (revision 6568)
+@@ -44,6 +44,15 @@
+             $returninfo['imgext']         = $memo['imgext'];
+         }
+         
++        if($returninfo['source'] == 'matrix' && $returninfo['shop_type'] == 'tmall'){
++            #拒绝退货的
++            if($status == '5'){
++                #没有凭证的，不再往前端打请求，避免二次请求
++                if(empty($memo)){
++                    return true;
++                }
++            }
++        }
+         $rs = $this->router->setShopId($returninfo['shop_id'])->update_aftersale_status($returninfo,$status,$mod);
+         if ($mod == 'sync') {
+             return $rs;
+Index: lib/shop/type.php
+===================================================================
+--- lib/shop/type.php   (revision 6536)
++++ lib/shop/type.php   (revision 6568)
+@@ -28,7 +28,9 @@
+             'wx' => '微信',
+             'gome' => '国美',
+             'mogujie' => '蘑菇街',
+-            'icbc'=>'工行'
++            'icbc'=>'工行',
++            'ccb'=>'建行',
++            'meilishuo'=>'美丽说'
+           );
+         return $shop_type;
+     }
+@@ -48,7 +50,7 @@
+      * @return array
+      */
+     static function shop_list(){
+-        $shop = array('taobao','paipai','youa','360buy','yihaodian','qq_buy','dangdang','amazon','yintai','vjia','alibaba','suning','icbc','mogujie','gome','wx');
++        $shop = array('taobao','paipai','youa','360buy','yihaodian','qq_buy','dangdang','amazon','yintai','vjia','alibaba','suning','icbc','mogujie','gome','wx','ccb','meilishuo');
+         return $shop;
+     }
+ 
+Index: lib/rpc/response/order.php
+===================================================================
+--- lib/rpc/response/order.php  (revision 6536)
++++ lib/rpc/response/order.php  (revision 6568)
+@@ -24,12 +24,12 @@
+      */
+     public function add($sdf, &$responseObj){
+         //11.10临时增加收订统计监控
+-        if(defined('MONITOR_ORDER_ACCEPT') && MONITOR_ORDER_ACCEPT){
+-            $redis = new Redis();
+-            $redis->connect(MONITOR_REDIS_HOST, MONITOR_REDIS_PORT);
+-            $redis->incr('taoguan:apiorder.recv_succ');
+-            $redis->zIncrBy('taoguan:apiorder:host_list.'.date('Ymd'),1,$_SERVER['SERVER_NAME']);
+-        }
++//        if(defined('MONITOR_ORDER_ACCEPT') && MONITOR_ORDER_ACCEPT){
++//            $redis = new Redis();
++//            $redis->connect(MONITOR_REDIS_HOST, MONITOR_REDIS_PORT);
++//            $redis->incr('taoguan:apiorder.recv_succ');
++//            $redis->zIncrBy('taoguan:apiorder:host_list.'.date('Ymd'),1,$_SERVER['SERVER_NAME']);
++//        }
+ 
+         $log = &app::get('ome')->model('api_log');
+ 
+Index: lib/return/product.php
+===================================================================
+--- lib/return/product.php      (revision 6536)
++++ lib/return/product.php      (revision 6568)
+@@ -30,9 +30,9 @@
+                     'status'=>'3',
+                     'return_id'=>$return_id,
+                 );
+-                if ((in_array($return['shop_type'],array('taobao','tmall'))) && $return['source'] == 'matrix') {
++                if ((in_array($return['shop_type'],array('taobao','tmall','meilishuo'))) && $return['source'] == 'matrix') {
+                     $mod = 'async';
+-                    if ($return['shop_type'] == 'tmall') {
++                    if ($return['shop_type'] == 'tmall' || $return['shop_type']== 'meilishuo') {
+                         $api = TRUE;
+                         $adata['choose_type_flag'] = '0';
+                         $mod = 'sync';
+Index: lib/event/receive/delivery.php
+===================================================================
+--- lib/event/receive/delivery.php      (revision 6536)
++++ lib/event/receive/delivery.php      (revision 6568)
+@@ -422,7 +422,7 @@
+         //对EMS直联电子面单作处理（以及京东360buy）(京东先回写运单号）
+         if (app::get('logisticsmanager')->is_installed()) {
+             $channel_type = $deliveryObj->getChannelType($deliveryInfo['logi_id']);
+-            if ($channel_type  && $channel_type == '360buy' && class_exists('logisticsmanager_service_' . $channel_type)) {
++            if ($channel_type  && (in_array($channel_type,array('360buy','taobao'))) && class_exists('logisticsmanager_service_' . $channel_type)) {
+                 $channelTypeObj = kernel::single('logisticsmanager_service_' . $channel_type);
+                 $channelTypeObj->delivery($deliveryInfo['delivery_id']);
+             }
+Index: lib/aftersale/request/meilishuo.php
+===================================================================
+--- lib/aftersale/request/meilishuo.php (revision 0)
++++ lib/aftersale/request/meilishuo.php (revision 6568)
+@@ -0,0 +1,42 @@
++<?php
++class ome_aftersale_request_meilishuo  extends ome_aftersale_abstract{
++
++    function show_aftersale_html(){
++        
++        $html = '';
++        return $html;
++    }
++    function pre_save_refund($apply_id,$data){
++        $rs = array('rsp'=>'succ','msg'=>'成功','data'=>'');
++        $oRefund_apply = &app::get('ome')->model('refund_apply');
++        $refunddata = $oRefund_apply->refund_apply_detail($apply_id);
++        
++        #2是接受申请状态
++        if ($data['status'] == '2') {
++            $result = kernel::single('ome_service_refund_apply')->update_status($refunddata,2,'sync');
++            return $result;
++        }
++    }
++    /**
++     * 售后保存前的扩展
++     * @param
++     * @return
++     * @access  public
++     * @author
++     */
++    function pre_save_return($data){
++        set_time_limit(0);
++        $rs = array('rsp'=>'succ','msg'=>'','data'=>'');
++        $return_id = $data['return_id'];
++        $status = $data['status'];
++        if($status == '3') {
++            $rsp = kernel::single('ome_service_aftersale')->update_status($return_id,'3','sync');
++            if ($rsp  && $rsp['rsp'] == 'fail') {
++                $rs['rsp'] = 'fail';
++                $rs['msg'] = $rsp['msg'];
++            }
++        }
++        return $rs;
++    }
++}
++?>
+\ No newline at end of file
+
+Property changes on: .
+___________________________________________________________________
+Modified: svn:mergeinfo
+   Merged /dev/shopex_erp:r6500,6528,6540,6562-6565
+   Merged /tags/shopex_erp:r6503-6567
+logisticsmanager
+A    model/waybill.php
+U    controller/admin/express/template.php
+U    controller/admin/waybill.php
+U    controller/admin/channel.php
+A    dbschema/channel_extend.php
+U    dbschema/express_template.php
+U    lib/service/waybill.php
+U    lib/service/taobao.php
+U    lib/service/sf.php
+U    lib/rpc/request/yunda.php
+U    lib/rpc/request/taobao.php
+U    lib/rpc/request/360buy.php
+U    lib/finder/express/template.php
+U    lib/finder/channel.php
+U    desktop.xml
+U    task.php
+U    view/admin/delivery/template.html
+U    view/admin/stock/template.html
+A    view/admin/channel/download_address.html
+A    view/admin/channel/detail_address.html
+
+
+
+===================================================================
+--- lib/rpc/request/taobao.php  (revision 338)
++++ lib/rpc/request/taobao.php  (revision 348)
+@@ -60,6 +60,7 @@
+                                 'package_wdjc' => '',
+                                 'package_wd' => '',
+                                 'json_packet' => '',
++                                'package_id'=>$v['trade_order_info']['package_id'],
+                             );
+                             //保存电子面单扩展信息
+                             $this->saveWaybillExtend($waybillExtned, true);
+@@ -82,4 +83,184 @@
+         $ret['data'] = $waybillCodeArr;
+         return $ret;
+     }
++
++    /**
++     * 取消面单号
++     * @param  
++     * @return  
++     * @access  public
++     * @author sunjing@shopex.cn
++     */
++    public function cancel_billno($data) {
++        
++        $method = 'store.wlb.waybill.cancel';
++        $writelog = array(
++            'log_type' => 'other',
++            'log_title' => '淘宝云栈电子面单取消',
++            'original_bn' => $data['billno'],
++            
++        );
++        $channel_id = $data['channel_id'];
++        $serviceObj = kernel::single('logisticsmanager_service_taobao');
++        $delivery_id = $data['delivery_id'];
++
++        
++        $deliveryObj = &app::get('ome')->model('delivery');
++        $delivery = $serviceObj->getDelivery($delivery_id);
++        $trade_order_list = array($delivery['delivery_bn']);
++        $channel = $serviceObj->getChannel($data['channel_id']);
++        $shipping_address = $serviceObj->getShippingAddress($data['channel_id']);
++        $waybill_extend = $serviceObj->getWaybillExtend(array('logi_no'=>$data['billno'],'channel_id'=>$data['channel_id']));
++        //$trade_order_list = implode(',',$trade_order_list);
++        $params = array(
++            'trade_order_list'=>json_encode($trade_order_list),
++            'cp_code'=>$channel['logistics_code'],
++            'waybill_code'=>$data['billno'],
++            'package_id'=>$delivery['delivery_bn'],
++            'real_user_id'=>$shipping_address['seller_id'],
++        
++        );
++
++        $callback = array(
++            'class' => get_class($this),
++            'method' => 'cancel_billno_callback',
++        );
++        $this->emptyGenId();
++        $result = $this->request($method, $params, $callback, $channel['shop_id'], $writelog);
++        if (empty($callback) && $result) {
++                $this->rpc_log($result);
++        }else{
++            return false;
++        }
++
++        return $result;
++    }
++
++    
++    /**
++     * 获取订购地址
++     * @param   
++     * @return  
++     * @access  public
++     * @author sunjing@shopex.cn
++     */
++    function get_ship_address($params)
++    {
++        $rs = array('rsp'=>'fail','msg'=>'获取失败');
++        $shop_id = $params['shop_id'];
++        $method = 'store.wlb.waybill.search';
++        $writelog = array(
++            'log_type' => 'other',
++            'log_title' => '淘宝订购地址获取',
++            'original_bn' => $data['billno'],
++            
++        );
++        
++        unset($params['shop_id']);
++        $callback = array(
++
++        );
++        $this->emptyGenId();
++        $result = $this->request($method, $params, $callback, $shop_id, $writelog);
++
++        if (empty($callback) && $result) {
++                $this->get_ship_address_process($result,$params);
++        }
++        if ($result['rsp']=='succ') {
++            $rs = array('rsp'=>'succ','msg'=>'获取成功');
++        }
++        return $rs;
++    }
++
++    public function get_ship_address_process($result , $params) {
++        //状态
++        $status = isset($result['rsp']) ? $result['rsp'] : '';
++        $data = empty($result['data']) ? '' : json_decode($result['data'], true);
++        $ret = $this->rpc_log($result);
++
++        if ($status == 'succ' ) {
++               $data = $data['waybill_apply_subscription_info'][0]['branch_account_cols']['waybill_branch_account'][0];
++               $address = $data['shipp_address_cols']['waybill_address'][0];
++               $channel_id = $params['channel_id'];
++               $process_params = array(
++                'cancel_quantity'=>$data['cancel_quantity'],
++                'allocated_quantity'=>$data['allocated_quantity'],
++                'province'=>$address['province'],
++                'city'=>$address['city'],
++                'address_detail'=>$address['address_detail'],
++                'waybill_address_id'=>$address['waybill_address_id'],
++                'area'=>$address['area'],
++                'channel_id'=>$channel_id,
++                'print_quantity'=>$data['print_quantity'],
++                'seller_id'=>$data['seller_id'],
++               );
++               $extendObj = app::get('logisticsmanager')->model('channel_extend');
++               $extend = $extendObj->dump(array('channel_id'=>$channel_id),'id');
++               if ($extend) {
++                   $process_params['id'] = $extend['id'];
++               }
++
++               $extendObj->save($process_params);
++        }else {
++            
++        }
++       
++        
++    }
++
++    /**
++    * 云栈面单确认
++    */
++    public function delivery($params) {
++        $method = 'store.wlb.waybill.print';
++
++        $writelog = array(
++            'log_type' => 'other',
++            'log_title' => '淘宝云栈官方电子面单打印确认',
++            'original_bn' => $params['billno'],
++        );
++
++        $callback = array(
++            'class' => get_class($this),
++            'method' => 'delivery_callback',
++        );
++
++        $result = $this->request($method, $params, $callback,$params['shop_id'], $writelog);
++        if (empty($callback) && $result) {
++                $this->rpc_log($result);
++        }else{
++            return false;
++        }
++        return $result;
++
++    }
++
++     
++    /**
++     * 淘宝打印确认回调
++     * @param 
++     * @return  
++     * @access  public
++     * @author sunjing@shopex.cn
++     */
++    public function delivery_callback($result)
++    {
++        $ret = $this->callback($result);
++        return true;
++    }
++
++    
++    /**
++     * 取消单号回调.
++     * @param  
++     * @return  
++     * @access  public
++     * @author sunjing@shopex.cn
++     */
++    function cancel_billno_callback($result)
++    {
++
++        $ret = $this->callback($result);
++        return true;
++    }
+ }
+Index: lib/rpc/request/360buy.php
+===================================================================
+--- lib/rpc/request/360buy.php  (revision 338)
++++ lib/rpc/request/360buy.php  (revision 348)
+@@ -95,7 +95,7 @@
+         $params['salePlat'] = $data['salePlat'];//销售平台编码
+         $params['customerCode'] = $data['customerCode'];//商家编码
+         $params['orderId'] = $data['orderId'];//ERP发货单
+-        $params['thrOrderId'] = $data['thrOrderId'];//京东订单
++        $params['thrOrderId'] = substr($data['thrOrderId'],0,98);//京东订单  不能超过100所以先截取
+         $params['senderName'] = $data['senderName'];//寄件人姓名 必填
+         $params['senderAddress'] = $data['senderAddress'];//寄件人地址 必填
+         if ($data['senderTel']) {
+Index: lib/finder/express/template.php
+===================================================================
+--- lib/finder/express/template.php     (revision 338)
++++ lib/finder/express/template.php     (revision 348)
+@@ -9,7 +9,7 @@
+ 
+         $finder_id = $_GET['_finder']['finder_id'];
+         $type = $row['template_type'];
+-        
++
+         switch ($type) {
+             case 'delivery':
+                 $act = 'editDeliveryTmpl';
+@@ -30,10 +30,14 @@
+ $button.= <<<EOF
+         <a href="index.php?app=logisticsmanager&ctl=admin_express_template&act=$act1&p[0]=$id&finder_id=$finder_id" class="lnk" target="_blank">复制</a>
+ EOF;
++if (!in_array($type,array('delivery','stock'))) {
++    
++
+ $button.= <<<EOF
+         <span onclick="window.open('index.php?app=logisticsmanager&ctl=admin_express_template&act=downloadTmpl&p[0]=$id')" class="lnk">下载</span> 
+ EOF;
+-        $string = '';
++}
++$string = '';
+         $string .= $button;
+ 
+         return $string;
+Index: lib/finder/channel.php
+===================================================================
+--- lib/finder/channel.php      (revision 338)
++++ lib/finder/channel.php      (revision 348)
+@@ -4,6 +4,7 @@
+     var $column_control = '操作';
+     var $column_control_width = '60';
+     var $column_control_order = COLUMN_IN_HEAD;
++     var $detail_shop_address='发货地址';
+     var $detail_log = '导入面单号记录';
+     function column_control($row){
+         $channel_id = $row[$this->col_prefix.'channel_id'];
+@@ -46,7 +47,7 @@
+         }
+     }
+ 
+-    var $column_waybillnum = '可用单据';
++    var $column_waybillnum = '可用单号';
+     var $column_waybillnum_width = '80';
+     var $column_waybillnum_order = COLUMN_IN_TAIL;
+     function column_waybillnum($row){
+@@ -57,7 +58,7 @@
+ 
+         $count = $waybillObj->count($filter);
+ 
+-        return $count;
++        return "<span class=show_list channel_id=".$filter['channel_id']." billtype='active'><a >".$count."</a></span>";
+     }
+ 
+     var $column_shop = '适用店铺';
+@@ -87,7 +88,6 @@
+         }
+ 
+     }
+-
+     function detail_log($channel_id){
+         
+         $render = app::get('logisticsmanager')->render();
+@@ -101,4 +101,77 @@
+         $render->pagedata['log_list'] = $log_list;
+         return $render->fetch('admin/channel/detail_log.html');
+     }
++    
++     /**
++     * 作废物流单号.
++     * @param  
++     * @return  
++     * @access  
++     * @author sunjing@shopex.cn
++     */
++    var $column_recycle_waybill='作废单号';
++    var $column_recycle_waybill_width = '80';
++    function column_recycle_waybill($row)
++    {
++        $waybillObj = app::get('logisticsmanager')->model('waybill');
++        $filter = array('status'=>2);
++        $filter['channel_id'] = $row[$this->col_prefix.'channel_id'];
++        $filter['logistics_code'] = $row[$this->col_prefix.'logistics_code'];
++
++        $count = $waybillObj->count($filter);
++        
++        
++        return "<span class='show_list' channel_id=".$filter['channel_id']." billtype='recycle' ><a >".$count."</a></span>";
++    }
++
++    /**
++     * 作废物流单号.
++     * @param  
++     * @return  
++     * @access  
++     * @author sunjing@shopex.cn
++     */
++    var $column_use_waybill='已用单号';
++    var $column_use_waybill_width = '80';
++    function column_use_waybill($row)
++    {
++        $waybillObj = app::get('logisticsmanager')->model('waybill');
++        $filter = array('status'=>1);
++        $filter['channel_id'] = $row[$this->col_prefix.'channel_id'];
++        $filter['logistics_code'] = $row[$this->col_prefix.'logistics_code'];
++
++        $count = $waybillObj->count($filter);
++        
++        
++        return "<span class='show_list' channel_id=".$filter['channel_id']." billtype='used' ><a >".$count."</a></span>";
++    }
++    /**
++     * 店铺地址
++     * @param   
++     * @return  
++     * @access  public
++     * @author sunjing@shopex.cn
++     */
++    function detail_shop_address($channel_id)
++    {
++        $render = app::get('logisticsmanager')->render();
++        $channelObj =  app::get('logisticsmanager')->model('channel');
++        $channel_detail = $channelObj->dump($channel_id,'channel_type,bind_status');
++        $render->pagedata['channel_id'] = $channel_id;
++        $render->pagedata['channel_detail'] = $channel_detail;
++        $extendObj = app::get('logisticsmanager')->model('channel_extend');
++        $extend = $extendObj->dump(array('channel_id'=>$channel_id),'*');
++        $render->pagedata['extend_detail'] = $extend;
++        unset($extend);
++        return $render->fetch('admin/channel/detail_address.html');
++    }
++
++
++
++
++
++
++
++
++
+ }
+Index: desktop.xml
+===================================================================
+--- desktop.xml (revision 338)
++++ desktop.xml (revision 348)
+@@ -6,11 +6,11 @@
+ 
+     <workground name="系统" id="setting_tools"  order="1000">
+         <menugroup name="物流管理">
+-            <menu controller='admin_express_template' action='stock' permission='delivery_template_manager' display='false' order='3000440'>备货面单管理</menu>
+-            <menu controller='admin_express_template' action='delivery' permission='delivery_template_manager' display='false' order='3000450'>发货面单管理</menu>
++            <menu controller='admin_express_template' action='stock' permission='delivery_template_manager' display='true' order='3000440'>备货面单管理</menu>
++            <menu controller='admin_express_template' action='delivery' permission='delivery_template_manager' display='true' order='3000450'>发货面单管理</menu>
+             <menu controller='admin_express_template' action='index' permission='waybill_manager' display='true' order='3000500'>快递面单管理</menu>
+             <menu controller='admin_channel' action='index' permission='waybill_manager' display='true' order='3000600'>电子面单来源</menu>
+-            <menu controller='admin_waybill_log' action='index' permission='waybill_manager' display='true' order='3000700'>面单异常请求</menu>
++            <!--<menu controller='admin_waybill_log' action='index' permission='waybill_manager' display='true' order='3000700'>面单异常请求</menu>-->
+             <menu controller='admin_logistics_log' action='index' permission='waybill_manager' display='true' order='3000800'>物流回填日志</menu>
+         </menugroup>
+     </workground>
+Index: view/admin/delivery/template.html
+===================================================================
+--- view/admin/delivery/template.html   (revision 338)
++++ view/admin/delivery/template.html   (revision 348)
+@@ -37,11 +37,19 @@
+     <div class="side-bx-bd">
+         <{t}>宽<{/t}>
+         <input id="template_width" name="template_width" size="2" maxlength="4" value="<{$tmpl.template_width}>" style="width:24px">
+-        mm <{t}>长<{/t}>
++        mm <{t}>高<{/t}>
+         <input id="template_height" name="template_height" size="2" maxlength="4" value="<{$tmpl.template_height}>" style="width:24px">
+         mm
+     </div>
+-
++   <div class="side-bx-title">
++        <h3><{t}>纸张类型<{/t}></h3>
++    </div>
++    <div class="side-bx-bd">
++        <select name="page_type">
++        <option value='1' <{if $tmpl.page_type=='1'}>selected<{/if}>>标准</option>
++        <option value='2' <{if $tmpl.page_type=='2'}>selected<{/if}>>卷筒</option>
++        </select>
++    </div>
+     <div class="side-bx-title">
+         <h3><{t}>单据背景图<{/t}></h3>
+     </div>
+Index: view/admin/stock/template.html
+===================================================================
+--- view/admin/stock/template.html      (revision 338)
++++ view/admin/stock/template.html      (revision 348)
+@@ -37,11 +37,16 @@
+     <div class="side-bx-bd">
+         <{t}>宽<{/t}>
+         <input id="template_width" name="template_width" size="2" maxlength="4" value="<{$tmpl.template_width}>" style="width:24px">
+-        mm <{t}>长<{/t}>
++        mm <{t}>高<{/t}>
+         <input id="template_height" name="template_height" size="2" maxlength="4" value="<{$tmpl.template_height}>" style="width:24px">
+         mm
+     </div>
+-
++      <div class="side-bx-bd">
++        <select name="page_type">
++        <option value='1' <{if $tmpl.page_type=='1'}>selected<{/if}>>标准</option>
++        <option value='2' <{if $tmpl.page_type=='2'}>selected<{/if}>>卷筒</option>
++        </select>
++    </div>
+     <div class="side-bx-title">
+         <h3><{t}>单据背景图<{/t}></h3>
+     </div>
+@@ -71,6 +76,7 @@
+     <br /><br />
+ 
+ <textarea id="template_data" name="template_data" style="display:none">
++
+ <{if $tmpl.template_data}>
+ <{$tmpl.template_data}>
+ <{else}>
+@@ -144,6 +150,7 @@
+ /* 加载打印控件编辑器 */
+ function loadReport() {
+     var s = document.getElementById("template_data").value;
++
+     var browerType = parseInt("<{$userAgent.type}>");
+     try {
+         /* 0 = 面单, 1 = 发货单*/
+@@ -232,6 +239,7 @@
+         return '';
+     }
+     var textval = embed1.savereport();
++
+     $("template_data").set('html',textval);
+     var _data =$('template_form').toQueryString()+'&finder_id=<{$env.get.finder_id}>';
+     new Request ({
+Index: view/admin/channel/download_address.html
+===================================================================
+--- view/admin/channel/download_address.html    (revision 0)
++++ view/admin/channel/download_address.html    (revision 348)
+@@ -0,0 +1,37 @@
++<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist" id='download_memo'>
++    <tr>
++        <td>下载中,请稍候</td>
++    </tr>
++
++</table>
++<div class="table-action">
++  <{button label="关闭" class="btn-primary" type='button' onclick="this.getParent('.dialog').retrieve('instance').close();"}> 
++</div>
++
++<script>
++window.addEvent('domready', function() {
++    new Request({
++       url : 'index.php?app=logisticsmanager&ctl=admin_channel&act=download_address&p[0]=<{$channel_id}>',
++       method : 'post',
++
++       onComplete : function(rs){
++            var rs = JSON.decode(rs);
++
++            if(rs.rsp == 'succ'){
++              
++              finderGroup["<{$finder_id}>"].refresh.delay(400,finderGroup["<{$finder_id}>"]);
++              $('download_memo').getParent('.dialog').retrieve('instance').close();
++            }else{
++              alert(rs.msg);
++              
++              finderGroup["<{$finder_id}>"].refresh.delay(400,finderGroup["<{$finder_id}>"]);
++              $('download_memo').getParent('.dialog').retrieve('instance').close();
++            }
++       }
++    }).send();
++
++});
++
++
++</script>
++
+Index: view/admin/channel/detail_address.html
+===================================================================
+--- view/admin/channel/detail_address.html      (revision 0)
++++ view/admin/channel/detail_address.html      (revision 348)
+@@ -0,0 +1,37 @@
++<{capture name="header"}>
++    <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
++<{/capture}>
++<div class="division">
++    <h4>发货地址<font color='red'>(只适用于淘宝云栈用户)</font></h4>
++    <{if $channel_detail.channel_type=='taobao'}>
++    <input type="button" name="ship_address" id='ship_address' value="获取店铺发货地址">
++    <{/if}>
++    <br>
++<table  class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0">
++<thead><tr><th>省</th><th>市</th><th>地区</th><th>地址</th><th>取消数量</th><th>可用数量</th><th>打印数量</th></thead></tr>
++
++<tr>
++<td><{$extend_detail.province}></td>
++<td><{$extend_detail.city}></td>
++<td><{$extend_detail.area}></td>
++<td><{$extend_detail.address_detail}></td>
++<td><{$extend_detail.cancel_quantity}></td>
++<td><{$extend_detail.allocated_quantity}></td>
++<td><{$extend_detail.print_quantity}></td></tr>
++</table>
++</div>
++<script>
++if ($('ship_address'))
++{
++    $('ship_address').addEvent('click',function(e){
++var url = 'index.php?app=logisticsmanager&ctl=admin_channel&act=get_ship_address&p[0]=<{$channel_id}>&finder_id=<{$env.get.finder_id}>';
++new Dialog(url,{title:'发货地址',width:500,height:300});
++
++
++});
++}
++
++
++</script>
++
++
+
+Property changes on: .
+___________________________________________________________________
+Modified: svn:mergeinfo
+   Merged /branches/stable_bugfix:r306-341
+   Merged /dev/shopex_erp:r342-345
+   Merged /tags/shopex_erp:r347
+Index: lib/rpc/request/taobao.php
+===================================================================
+--- lib/rpc/request/taobao.php  (revision 348)
++++ lib/rpc/request/taobao.php  (revision 353)
+@@ -12,7 +12,7 @@
+             'shipping_address' => json_encode($data['shipping_address']),
+             'trade_order_info_cols' => json_encode($data['trade_order_info_cols']),
+         );
+-        $method = 'store.wlb.waybill.get';
++        $method = 'store.wlb.waybill.i.get';
+         $writelog = array(
+             'log_type' => 'other',
+             'log_title' => '获取淘宝云栈面单_' . $data['cp_code'],
+@@ -148,7 +148,7 @@
+     {
+         $rs = array('rsp'=>'fail','msg'=>'获取失败');
+         $shop_id = $params['shop_id'];
+-        $method = 'store.wlb.waybill.search';
++        $method = 'store.wlb.waybill.i.search';
+         $writelog = array(
+             'log_type' => 'other',
+             'log_title' => '淘宝订购地址获取',
+
+Property changes on: .
+___________________________________________________________________
+Modified: svn:mergeinfo
+   Merged /dev/shopex_erp:r351
+   Merged /tags/shopex_erp:r352

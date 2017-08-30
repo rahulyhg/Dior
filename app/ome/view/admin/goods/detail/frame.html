@@ -1,0 +1,94 @@
+
+<form action="index.php?app=ome&ctl=admin_goods_editor&act=toAdd&type=<{$type}>" method="post" name="gEditor" id="gEditor">
+  <input type="hidden" name="goods[goods_id]" value="<{$goods.goods_id}>" id="gEditor-GId-input"/>
+ 
+  <div id="gEditor-Body">
+     <{include file="admin/goods/detail/page.html"}>
+  </div>
+</form>
+<script>
+        
+var goodsEditor = null;
+
+var goodsEditFrame = (function(){
+  goodsEditor = new omeShopExGoodsEditor('gEditor',{url:'<{$url}>',goods_id:'<{$goods.id}>'});
+    var SESS_ID='<{$session_id}>';
+	
+    /*
+     *  sign:{
+           1:保存并增加相似商品,
+           2:保存并返回,
+           3:保存当前不返回，
+   *    }       
+   */
+   var _form=$('gEditor'),_formActionURL=_form.get('action'); 
+   subGoodsForm = function (event,sign){  
+	   var specOBJ='';	
+	   if($('productNode')&&$('productNode').retrieve('specOBJ')){
+			if(!$('productNode').retrieve('specOBJ').data.length){
+				return new MessageBox('请先添加货品!!!',{type:'error',autohide:true});
+			}
+			specOBJ=$('productNode').retrieve('specOBJ').toHideInput($('productNode').getElement('tr'));	
+	   }
+	
+	   var target={extraData:$('finder-tag').toQueryString()+'&'+specOBJ,onComplete:function(){}};
+	 
+	   switch (sign){
+			case 1:
+				$extend(target,{
+					onComplete:function(){
+						clearOldValue();
+				}});
+			break;
+			case 2:
+				$extend(target,{
+					onComplete:function(rs){
+	                    if( JSON.decode(rs).success=='添加成功'){
+	                    	var fg = opener.finderGroup;
+	                    	for(fid in fg){
+	                    	    if(fid){
+	                    	       fg[fid].refresh();
+	                    	    }
+	                    	}
+		                    window.close();
+	                    }
+                    }}
+				);
+			break;
+			case 3:
+                $extend(target,{
+					onComplete:function(rs){
+	                	var fg = opener.finderGroup;
+	                	for(fid in fg){
+	                	    if(fid){
+	                	       fg[fid].refresh();
+	                	    }
+	                	}
+						var id = JSON.decode(rs).goods_id;              
+						if(id > 0){
+							$('gEditor-GId-input').value =id;					
+						}
+      if(JSON.decode(rs).success){
+        history.go(0);
+      }
+					}}
+				);
+			break;				
+	   }
+
+		_form.store('target',target);
+        _form.set('action',_formActionURL+'&but='+sign).fireEvent('submit',new Event(event));
+    };
+
+	var clearOldValue=function(){
+		 $('id_gname').set('value','');		
+            $('gEditor-GId-input').set('value','');	
+		 if($$('.product_id').length)
+		 $$('.product_id').each(function(el){
+			el.value='';
+		 });         
+	}
+});
+
+goodsEditFrame();
+</script>

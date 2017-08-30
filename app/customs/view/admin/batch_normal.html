@@ -1,0 +1,42 @@
+<div id='shop-list'>
+<form method='post' action='index.php?app=customs&ctl=admin_orders&act=do_normal' id="form-order" name="order_frm" isCloseDialog>
+    <table width="100%" >
+        <tbody>
+            <tr>
+              <td width="50">&nbsp;</td>
+              <td>&nbsp;</td>
+        </tr>
+            <tr>
+                <td><input type='hidden' name='cid' value='<{$cid}>'></input></td>
+                <td><span style="color:red;">*</span>本次批量操作可还原为普通订单共 <b style="color:red;"><{$count}></b> 个！
+                <br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;确认后，请点击<em style="color:red;">“还原为普通订单”</em>按钮？
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="table-action">
+          <table width="100%" cellspacing="0" cellpadding="0">
+            <tbody>
+              <tr>
+                <td>
+                <{if $count > 0}>
+                <button class="btn btn-primary" id="btn-submit" onclick='dosubmit()'><span><span><{t}>还原为普通订单<{/t}></span></span></button>
+                <{/if}>
+                </td>
+              </tr>
+            </tbody>
+      </table>
+  </div>
+</form>
+<script>
+function dosubmit(){
+    $("form-order").fireEvent('submit',{stop:function(){}});
+}
+(function(){
+  var finder = finderGroup['<{$env.get.finder_id}>'];
+
+})();
+</script>
+</div>

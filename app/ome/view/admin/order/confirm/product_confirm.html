@@ -1,0 +1,21 @@
+<div id="present">
+    <table class="nosplit gridlist clear" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+          <th style="width:12%;">货号</th>
+          <th>商品名称</th>
+          <th style="width:6%;">规格</th>
+          <th style="width:8%;">价格</th>
+          <th style="width:6%;">购买数量</th>
+          <{if $split_model}>
+          <th style="width:6%;">待发货数量</th>
+          <{/if}>
+          <{foreach from=$branch_list item=branch}>
+          <th style="width:7%;" data-storeid="<{$branch.branch_id}>" <{if $branch.branch_id == $selected_branch_id}>class="selected"<{/if}>><a href="javascript:void(0);" class="select_branch" title="<{t}>联系人：<{/t}><{$branch.uname}>&#13;<{t}>电话：<{/t}><{$branch.phone}>&#13;<{t}>手机：<{/t}><{$branch.mobile}>"><{$branch.name}></a></th>
+          <{/foreach}>
+        </tr>
+      </thead>
+      <tbody id="dataNode">
+      </tbody>
+    </table>
+</div>

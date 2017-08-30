@@ -1,0 +1,53 @@
+<form method='post' id="import_form" class="tableform">
+<div class="division" >
+<span>选择日期:</span>
+<{input type="date" vtype="date" name="time_from" style="width:66px; font-family:arial;" value=$time_from}>至<{input type="date" vtype="date" name="time_to" style="width:66px; font-family:arial;" value=$time_to}>
+</div>
+<span id="result"></span>
+<div class="table-action">
+<{button label=$___desktop="开始生成"|t:'desktop' id="ImportBtn"  type="submit"}>
+</div>
+</form>
+<script>
+(function(){
+    var dataAction = $('import_form');
+    from=dataAction.getElement('input[name=time_from]'),
+    to=dataAction.getElement('input[name=time_to]');
+
+    $('ImportBtn').addEvent('click',function(e){
+        if(!check_data(from,to)) return false;
+        e.stop();
+        var succData = 'time_from='+from.value+'&time_to='+to.value;
+        new Request({url:'index.php?app=omeanalysts&ctl=ome_analysis&act=regenerate_report&p[0]=<{$type}>&p[1]=<{$action}>',method:'post',data:succData,
+            onComplete:function(json){
+                if (json == 'succ'){
+                    alert('已放入队列');
+                }else{
+                    alert('失败');
+                }
+            }  
+        }).send();
+    });
+
+    var check_data = function(from,to){
+        var data=[],
+        _return=[from,to].every(function(el){
+
+            if(!/^(19|20)[0-9]{2}-([1-9]|0[1-9]|1[012])-([1-9]|0[1-9]|[12][0-9]|3[01])+$/.test(el.value)){
+              new MessageBox('<{t}>请录入日期格式yyyy-mm-dd<{/t}>',{type:'error',autohide:true});
+              el.focus();
+              return false;
+            }
+            data.push(Date.parse(el.value.replace(/-/gi,"/")));
+            return true;
+        });
+
+        if(!_return)return null;
+        if(data[1]<data[0]){
+            return MessageBox.error('<{t}>选择开始时间必须早于结束时间<{/t}>');
+        }
+        return _return;
+    }
+
+})();
+</script>

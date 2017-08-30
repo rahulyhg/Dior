@@ -1,0 +1,28 @@
+<style type="text/css">
+.gridlist tr th{width: 100px;height: 30px;text-align: right;}
+</style>
+<form action='<{if $thisUrl}><{$thisUrl}><{else}>index.php?app=omecsv&ctl=admin_to_export&act=treat<{/if}>' method='post' id='export_form' enctype="multipart/form-data">
+    <div class="division" >
+
+        <table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+            <tr>
+                <th>导出文件格式：</th>
+                <td>
+                    <{input type='select' name='_io_type' options=$ioType required=true}>
+                </td>
+            </tr>
+            <{foreach from=$export_input item=item key=key}>
+            <tr>
+                <th><{$item.label}>：</th>
+                <td><{$item.input}></td>
+            </tr>
+            <{/foreach}>
+        </table>
+
+        <{toinput from=$data}>
+
+    </div>
+    <div class='table-action'>
+        <{button id='export-btn' type="submit" label=$___desktop="导出"|t:'desktop' app="desktop" icon="btn_get_world.gif"}>
+    </div>
+</form>

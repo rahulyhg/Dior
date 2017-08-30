@@ -1,0 +1,64 @@
+<div class="tableform">
+  <h3>库存收发明细</h3>
+  <div class="division">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0"  align="center">
+        <tbody>
+          <tr>
+            <th>仓库：</th>
+            <td><select name="branch_id" id="input_branch_id" ><{foreach from=$branch_data item=item}><option value="<{$item.branch_id}>"><{$item.name}></option><{/foreach}></select></td>
+          </tr>
+          <tr>
+            <th><em class="c-red">*</em> 时间段</th>
+            <td><{input type="date" name="start_time" id="input_start_time" value=$data.start_time required=true}> 
+至
+ <{input type="date" name="end_time" id="input_end_time" value=$data.end_time required=true}></td>
+          </tr>
+          <tr>
+            <th> 货号：</th>
+            <td><input type="text" name="bn" id="input_bn" /> 多个货号以西文逗号分隔</td>
+          </tr>
+          </tbody>
+      </table>
+      <div align="center"><a id="view_a" target="_blank"><{button label="查看" class="btn-primary view" type="button"}> </a><a id="download_a" target="dialog::{width:400,height:170,title:'导出'}"><{button label="下载" class="btn-primary download" type="button"}></a></div>
+  </div>
+</div>
+<script>
+$$(".view").addEvent("click",function()
+{
+	var branch_id = $("input_branch_id").value;
+	var start_time = $("input_start_time").value;
+	var end_time = $("input_end_time").value;
+	if(!check_data($("input_start_time"),$("input_end_time"))) return false;
+	var bn = $("input_bn").value;
+	$("view_a").href='index.php?app=tgstockcost&ctl=costdetail&act=view_detail&branch_id='+branch_id+"&start_time="+start_time+"&end_time="+end_time+"&bn="+bn;
+});
+$$(".download").addEvent("click",function()
+{
+	var branch_id = $("input_branch_id").value;
+	var start_time = $("input_start_time").value;
+	var end_time = $("input_end_time").value;
+	if(!check_data($("input_start_time"),$("input_end_time"))) return false;
+	var bn = $("input_bn").value;
+	$("download_a").href='<{$href_export}>'+'&_params[time_from]='+start_time+'&_params[time_to]='+end_time+'&_params[branch_id]='+branch_id+'&_params[bn]='+bn;
+});
+
+
+function check_data(from,to){
+      var data=[],
+      _return=[from,to].every(function(el){
+        if(!/^(19|20)[0-9]{2}-([1-9]|0[1-9]|1[012])-([1-9]|0[1-9]|[12][0-9]|3[01])+$/.test(el.value)){
+          new MessageBox('<{t}>请录入日期格式yyyy-mm-dd<{/t}>',{type:'error',autohide:true});
+          el.focus();
+          return false;
+        }
+        data.push(Date.parse(el.value.replace(/-/gi,"/")));
+        return true;
+      });
+
+      if(!_return)return null;
+      if(data[1]<data[0]){
+        return MessageBox.error('<{t}>选择开始时间必须早于结束时间<{/t}>');
+      }
+      return _return;
+    }
+</script>

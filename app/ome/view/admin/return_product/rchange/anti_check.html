@@ -1,0 +1,25 @@
+<form action="index.php?app=ome&ctl=admin_return_rchange&act=save_check&p[0]=<{$reship_id}>&p[1]=0&p[2]=1&finder_id=<{$env.get.finder_id}>" method="post" id="add_link">
+<input type='hidden' name='need_sv' value='false'>
+</form>
+<div>确定要将单据号为:<{$reship_bn}>,进行反审核吗?</div>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" onclick="sub_form(event);"}> &nbsp; &nbsp;
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+<script>
+
+function sub_form(event) {
+    $('add_link').fireEvent('submit',new Event(event));
+}
+
+$('add_link').store('target',{
+    onComplete:function(){
+        if($('add_link').getParent('.dialog')){
+        	window.finderGroup['<{$env.get.finder_id}>'].refresh();
+        	$('add_link').getParent('.dialog').retrieve('instance').close();
+        }
+    }
+});
+
+</script>    
+

@@ -1,0 +1,104 @@
+<div class="division">
+<form action="index.php?app=ome&ctl=admin_stock&act=edit" method="post">
+<table class="gridlist" width="100%" border="0">
+ <thead>
+  <tr>
+    <th><t>货号</t></th>
+    <th><t>商品名称</t></th>
+    <th><t>总库存量</t></th>
+    <th>仓库</th>
+    <th>货位</th>
+  </tr>
+   </thead>
+ <tbody>
+  <tr>
+    <td align="center"><{$pro_detail.bn}></td>
+    <td><{$pro_detail.product_name}></td>
+    <td><{$pro_detail.store}></td>
+    <td>
+	<{input type="select" name='branch_id' rows=$branch_list valueColumn="branch_id" labelColumn="name" onchange="getOp(this.value)"}>
+	
+    </td>
+    <td><select name="pos_id" id="pos_id" vtype="required">
+
+    </select>
+<a target="dialog::{width:400,height:200,title:'关联货位'}" href="index.php?ctl=admin_stock&act=change_pos&app=ome&p[0]=<{$return.return_id}>">关联货位</a>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="5" align="center"><{button label="关联" type="submit" name="Submit"}></td>
+    </tr>
+ </tbody>
+</table>
+<input type="hidden" name="product_id" value="<{$product_id}>">
+</form>
+</div>
+
+<div class="division"> 
+<form method="post" action="index.php?app=ome&ctl=admin_stock&act=dosave" id="branch_process">
+<input type="hidden" name="do_action" id="do_action">
+<table class="gridlist" width="100%" border="0">
+<thead>
+  <tr>
+    <th colspan="2"><t>仓库</t></th>
+	<th width="17%"><t>货位</t></th>
+    <th width="36%">是否默认货位</th>
+    <th width="18%"><t>库存量</t></th>
+    <th width="8%"><t>冻结库存量</t></th>
+    <th width="9%">所在仓库在途量</th>
+  </tr>
+  </thead>
+   <tbody>
+   <{foreach from=$pro_detail.items item=items}>
+	<input type="hidden" name="branch_id[<{$items.pos_id}>]" value="<{$items.branch_id}>">
+  <tr align="center">
+  <td width="2%"><input name="ckid[]" type="checkbox" value="<{$items.pos_id}>" checked="checked" /></td>
+    <td width="10%"><{$items.name}></td>
+	
+	<td><{$items.store_position}></td>
+    <td><{if $items.default_pos=='true'}>是<{else}>否<{/if}></td>
+    <td>
+    <{$items.store}>
+    </td>
+    <td><{$items.store_freeze}></td>
+    <td>&nbsp;</td>
+  </tr>
+ <{/foreach}>
+<!-- <tr>
+    <td colspan="7" align="center"><input type="button" class="btn" onclick="save_pos();" value="保存修改库存"/>
+	<input type="button" class="btn" value="重置货位" onclick="reset_pos();"/>     </td>
+	</tr>
+	 <tr><td colspan="2">-->
+ 
+ </tbody>
+</table>
+<input type="hidden" name="product_id" value="<{$product_id}>">
+
+<div class="table-action">
+	<!--<{button class="btn-primary" onclick="save_pos();" label="保存修改库存"}>-->
+	<{button class="btn-primary" onclick="reset_pos();" label="重置货位"}>
+</div>
+</form>
+</div>
+
+<script>
+function save_pos(){
+
+   	$('do_action').value = 'save_branch';
+	$('branch_process').fireEvent('submit',{stop:$empty});
+ }
+function reset_pos(){
+
+   	$('do_action').value = 'reset_branch';
+	$('branch_process').fireEvent('submit',{stop:$empty});
+ } 
+
+function getOp(branch_id){
+
+	if(branch_id){
+	    W.page('index.php?app=ome&ctl=admin_stock&act=get_op&p[0]='+branch_id+'&p[1]=true',{update:$('pos_id')});
+	}else{
+	    $('pos_id').empty();
+	}
+}
+</script>

@@ -1,0 +1,68 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+
+
+<table cellspacing="0" cellpadding="0" border="0" width="100%">
+    <tr>
+      <td>
+          <div class="division">
+          <h4>收退款单据列表</h4>
+            <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+              <thead>
+                <tr>
+                  <th>支付开始时间</th>
+                  <th>支付单下载时间</th>
+                  <th>平台支付单号</th>
+                  <th>支付金额</th>
+                  <th>支付方式</th>
+                </tr>
+              </thead>
+              <tbody>
+              <{foreach from=$payments item=payment}>
+                <tr>
+                  <td><{$payment.t_begin}></td>
+                  <td><{$payment.download_time}></td>
+                  <td><{$payment.payment_bn}></td>
+                  <td><{$payment.money}></td>
+                  <td><{$payment.paymethod}></td>
+                </tr>
+              <{/foreach}>
+              </tbody>
+            </table>
+         
+        </div>
+      </td>
+      <td>
+       
+        <div class="division">
+         <h4>退款单据列表</h4>
+          <table cellspacing="0" class="gridlist"  cellpadding="0" border="0" width="100%">
+           <colgroup></colgroup>
+          <colgroup></colgroup>     
+            <thead>
+              <tr>
+                <th>退款开始时间</th>
+                <th>退款单下载时间</th>
+                <th>平台退款单号</th>
+                <th>退款金额</th>
+                <th>退款类型</th>
+              </tr>
+            </thead>
+            <tbody>
+            <{foreach from=$refunds item=refund}>
+              <tr>
+                <td><{$refund.t_ready|date:"Y-m-d H:i:s"}></td>
+                <td><{$refund.download_time|date:"Y-m-d H:i:s"}></td>
+                <td><{$refund.refund_bn}></td>
+                <td><{$refund.money}></td>
+                <td><{$refund.paymethod}></td>
+              </tr>
+            <{/foreach}>
+            </tbody>
+            
+          </table>
+        
+      </div></td>
+  </tr>
+</table>

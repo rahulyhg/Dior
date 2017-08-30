@@ -1,0 +1,48 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+
+<form method="post" action="index.php?app=taoexlib&ctl=ietask&act=save_ietask">
+<{toinput from=$env.post}>
+    <div class="tableform">
+        <div class="division">
+            <input type="radio" checked="" value="csv" name="_io_type">csv
+            <span style="padding:0 10px">
+                <button class="btn btn-has-icon" app="desktop" type="submit">
+                    <span>
+                        <span>
+		                    <i class="btn-icon">
+		                    <{img app="desktop" src="bundle/btn_get_world.gif"}></i>
+                    导出</span>
+                    </span>
+                </button>
+            </span><br>
+            <input id="app" name="app" type="hidden" value="<{$app}>" />
+            <input id="model" name="model" type="hidden" value="<{$model}>" />
+            <input id="task_name" name="task_name" type="hidden" value="<{$task_name}>" />
+        </div>
+    </div>
+</form>
+
+<script>
+var form = document.getElementById('finder-form-<{$finder_id}>');
+var inputs = form.getElementsByTagName('input');
+var filter_data = document.getElementById('filter_data').value;
+
+if(filter_data == '') {
+    // finder查询条件
+    for(var i=0;i<inputs.length;i++){
+        if(inputs[i].value != '') {
+            if(inputs[i].name != '') {
+                filter_data += inputs[i].name + '=' + inputs[i].value + '&';
+            }else{
+                filter_data += inputs[i].value + '&';
+            }
+        }
+    }
+    document.getElementById('filter_data').value = filter_data;
+}
+</script>

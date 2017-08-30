@@ -1,0 +1,804 @@
+<h3>发货打印配置</h3>
+<div class="gridlist-action data-action" id="dataAction" style="margin-bottom:10px;padding:5px; border:0;">
+	<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<td nowrap="nowrap" style="width:auto;">
+			<div class="tabs-wrap select-tabs delivery-cfg-tab">
+			<ul style="margin-top:2px;padding:0;">
+				<li class="tab current" >
+					<span><a href="javascript:void(0);"><{t}>基本配置<{/t}></a></span>
+				</li>
+                
+                <li class="tab ">
+					<span><a href="javascript:void(0);"><{t}>拆单配置<{/t}></a></span>
+				</li>
+                
+				<li class="tab " <{if $basic_cfg}>style="display:none;"<{/if}>>
+					<span><a href="javascript:void(0);"><{t}>单品打印配置<{/t}></a></span>
+				</li>
+				<li class="tab " <{if $basic_cfg}>style="display:none;"<{/if}>>
+					<span><a href="javascript:void(0);"><{t}>多品打印配置<{/t}></a></span>
+				</li>
+			</ul>
+			</div>
+		</td>
+	</tr>
+	</table>
+</div>
+<form action='index.php?app=wms&ctl=admin_delivery_cfg&act=save' method='post'>
+<!--基本配置-->
+<div class='delivery-cfg-item'>
+	<div class='tableform'>
+		<div class="division">
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table'>
+				<tbody>
+				<tr>
+					<th><{t}>批量打印数量：<{/t}></th>
+					<td>
+						<{input type="text" vtype="required&&unsignedint" name="set[wms_batch_print_nums]"  value=$data.wms_batch_print_nums|default:100 }>
+						<{help}>批量打印单据数量上限<{/help}>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+            <table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table' >
+                <tbody>
+				<tr>
+					<th><{t}>备货单：<{/t}></th>
+					<td>
+						<{input  type="radio"  name="set[stock]" class="delivery-cfg-stock" options=$setting.stock.options separator='&nbsp;' value=$data.stock|default:'1' }>
+						<{help}>用于仓库拣货，可以将所选发货单按商品进行分组，提升拣货效率，特别适用于2次分拣<{/help}>
+						<span class='relate-span'>
+						备货单商品名称：
+						<{input type="select" name="set[wms_delivery_is_printstock]" options=$setting.wms_delivery_is_printstock.options value=$data.wms_delivery_is_printstock|default:'2' required='required' }>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>发货单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[delie]" class="delivery-cfg-delie" options=$setting.delie.options separator='&nbsp;' value=$data.delie|default:'1' }>
+						<{help}>又叫做购物清单，是给客户的购物凭证,可以在反面印刷退换货表格，建议使用激光打印机。<{/help}>
+						<span class='relate-span'>
+						发货单商品名称：
+						<{input type="select" name="set[wms_delivery_is_printdelivery]" options=$setting.wms_delivery_is_printdelivery.options value=$data.wms_delivery_is_printdelivery|default:'2' required='required' }>
+                        &nbsp;&nbsp;&nbsp;<{input type="radio"  name="set[print_order]" options=$setting.print_order.options separator='&nbsp;' value=$data.print_order|default:'0'}>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>联合单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[merge]" class="delivery-cfg-merge" options=$setting.merge.options separator='&nbsp;' value=$data.merge|default:'1' }>
+						<{help}>主要用于2次分拣，先打分组备货单再打发货单。例如一次打100单，分组是20，就会先打1-20的备货单，再打1-20的发货单；21-40的备货单....<{/help}>
+						<span class='relate-span'>
+						联合单商品名称：
+						<{input type="select" name="set[wms_delivery_merge_print]" options=$setting.wms_delivery_merge_print.options value=$data.wms_delivery_merge_print|default:'2' required='required' }>
+						&nbsp;联合打印分组数：<{input type="text" name="set[wms_eachgroup_print_count]" value=$data.wms_eachgroup_print_count|default:20 vtype="unsignedint" size="4"}>
+						<{help}>该值可根据手推车格子数来设定。<{/help}>
+						</span>
+					</td>
+				</tr>
+                </tbody>
+            </table>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table'>
+				<tbody>
+				<tr>
+					<th><{t}>快递单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[expre]" options=$setting.expre.options separator='&nbsp;' value=$data.expre|default:'1' disabled=true }>
+						<{help}>一般使用针式打印机连续打印。快递单不能选择(必选)。<{/help}>
+						<span class='relate-span'>
+						快递单商品名称：
+						<{input type="select" name="set[wms_delivery_is_printship]" options=$setting.wms_delivery_is_printship.options value=$data.wms_delivery_is_printship|default:'2' required='required' }>
+                        &nbsp;&nbsp;&nbsp;<{input type="radio"  name="set[print_pkg_goods]" options=$setting.print_pkg_goods.options separator='&nbsp;' value=$data.print_pkg_goods|default:'0'}>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>分组效验：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[verify]" options=$setting.verify.options separator='&nbsp;' value=$data.verify|default:'1' }>
+						<{help}>开启分组效验<{/help}>
+						<span class='relate-span'>发货单分组：<div style="padding-top:5px;width:auto;">
+							<{foreach from=$orderTypes item=item key=key}>
+								<input type="checkbox"  name="set[wms_delivery_verify_group][<{$item.tid}>]" value="<{$item.tid}>" <{if $data.wms_delivery_verify_group[$item.tid]}>checked<{/if}> /> <{$item.name}>
+							<{/foreach}>
+							</div>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>分组发货：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[consign]" options=$setting.consign.options separator='&nbsp;' value=$data.consign|default:'1' }>
+						<{help}>开启分组发货<{/help}>
+						<span class='relate-span delivery-group'>发货单分组：<table style="width:auto;">
+						<{foreach from=$orderTypes item=item key=key}>
+							<tr>
+							<td>
+							<input type="checkbox" name="set[wms_delivery_consign_group][<{$item.tid}>]" value="<{$item.tid}>" <{if $data.wms_delivery_consign_group[$item.tid]}>checked<{/if}> /> <{$item.name}>
+							</td>
+							<td>
+							重量：<input type="text" name="set[wms_delivery_consign_weight][<{$item.tid}>]" value="<{$data.wms_delivery_consign_weight[$item.tid]}>" size="5" />克
+							</td>
+							</tr>
+						<{/foreach}>
+						</table></span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>打印格式：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[wms_delivery_print_style]" options=$setting.print_style.options separator='&nbsp;' value=$data.wms_delivery_print_style|default:'1'}>
+
+						
+					</td>
+				</tr>
+    			<tr>
+					<th><{t}>打印版本：<{/t}></th>
+					<td>
+						<{input type="radio"  class='delivery_print_version' name="set[wms_delivery_print_devision]" options=$setting.print_devision.options separator='&nbsp;' value=$data.wms_delivery_print_devision}>
+
+						
+					</td>
+				</tr>
+				<!-- 以下是开启发货、备货模式 -->
+				
+    			<tr>
+					<th><{t}>发货打印模板：<{/t}></th>
+					<td>
+						<{input type="radio"  class='delivery_print_mode' name="set[wms_delivery_print_mode]" options=$setting.print_mode.options separator='&nbsp;' value=$data.wms_delivery_print_mode}>
+
+						
+					</td>
+				</tr>
+                <tr>
+                    <th><{t}>备货打印模板：<{/t}></th>
+                    <td>
+                        <{input type="radio"  class='delivery_print_mode' name="set[wms_stock_print_mode]" options=$setting.stock_print_mode.options separator='&nbsp;' value=$data.wms_stock_print_mode}>
+
+
+                    </td>
+                </tr>
+           
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!--拆单配置-->
+<div class='delivery-cfg-item'>
+    <div class='tableform'>
+        <div class="division">
+            <table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table'>
+                <tbody>
+                    <tr>
+                        <th><{t}>是否启动拆单：<{/t}></th>
+                        <td><{input type="radio"  name="set[split]" class="delivery-cfg-delie" options=$setting.split.options separator='&nbsp;&nbsp;&nbsp;' value=$data.split|default:'0' }>&nbsp;&nbsp;<a target="_blank" href="index.php?app=ome&ctl=admin_operation_log&act=split_logs" style="color:#0066cc; text-decoration:none;" title="详细查看配置历史日志">(详细配置日志)</a></td>
+                    </tr>
+                    
+                    <{if $data.split == '1'}>
+                        <tr id="show_split_setting">
+                            <th>&nbsp;</th>
+                            <td>
+                              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td width="275" valign="top">
+                                      <div id="split_type_1" <{if $data.split_model == '1'}>class="split_focus"<{else}>class="split_gray"<{/if}> >
+                                          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                              <td><strong>拆单方式(<b style="color:#ff0000;">推荐</b>)：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_model]" class="delivery-cfg-delie" value="1" <{if $data.split_model == '1'}>checked="checked"<{/if}> ><label> 按子订单方式进行拆分订单</label></td>
+                                            </tr>
+                                            <tr>
+                                              <td><strong>回写方式：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td style="line-height:24px;"><span>&nbsp;淘宝、天猫、shopex 支持子订单部分回写<br /><a id="split_type_1a">对于不支持拆单的平台</a></span></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_class]" class="delivery-cfg-delie" value="1" <{if $data.split_class == '1'}>checked="checked"<{/if}> ><label > 回写第一张</label>&nbsp;&nbsp;<input type="radio" name="set[split_class]" class="delivery-cfg-delie" value="2" <{if $data.split_class == '2'}>checked="checked"<{/if}> ><label > 回写最后一张</label></td>
+                                            </tr>
+                                          </table>
+                                      </div>
+                                  </td>
+                                  <td width="20">&nbsp;</td>
+                                  <td width="275" valign="top">
+                                      <div id="split_type_2" <{if $data.split_model == '2'}>class="split_focus"<{else}>class="split_gray"<{/if}> >
+                                          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                              <td><strong>拆单方式：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_model]" class="delivery-cfg-delie" value="2" <{if $data.split_model == '2'}>checked="checked"<{/if}> ><label> 按sku方式拆分订单</label></td>
+                                            </tr>
+                                            <tr>
+                                              <td><strong>回写方式：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td style="line-height:24px;"><span>&nbsp;shopex（易开店、EC-Store） 支持sku部分回写<br /><a id="split_type_2a">对于不支持拆单的平台</a></span></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_send]" class="delivery-cfg-delie" value="1" <{if $data.split_send == '1'}>checked="checked"<{/if}> ><label > 回写第一张</label>&nbsp;&nbsp;<input type="radio" name="set[split_send]" class="delivery-cfg-delie" value="2" <{if $data.split_send == '2'}>checked="checked"<{/if}> ><label > 回写最后一张</label></td>
+                                            </tr>
+                                          </table>
+                                      </div>
+                                  </td>
+                                  <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </td>
+                      </tr>                    
+                    <{else}>
+                        <tr id="show_split_setting" style="display:none;">
+                            <th>&nbsp;</th>
+                            <td>
+                              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td width="275" valign="top">
+                                      <div id="split_type_1" class="split_focus">
+                                          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                              <td><strong>拆单方式(<b style="color:#ff0000;">推荐</b>)：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_model]" class="delivery-cfg-delie" value="1"><label> 按子订单方式进行拆分订单</label></td>
+                                            </tr>
+                                            <tr>
+                                              <td><strong>回写方式：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td style="line-height:24px;"><span>&nbsp;淘宝、天猫、shopex 支持子订单部分回写<br /><a id="split_type_1a">对于不支持拆单的平台</a></span></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_class]" class="delivery-cfg-delie" value="1"><label > 回写第一张</label>&nbsp;&nbsp;<input type="radio" name="set[split_class]" class="delivery-cfg-delie" value="2"><label> 回写最后一张</label></td>
+                                            </tr>
+                                          </table>
+                                      </div>
+                                  </td>
+                                  <td width="20">&nbsp;</td>
+                                  <td width="275" valign="top">
+                                      <div id="split_type_2" class="split_focus">
+                                          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                              <td><strong>拆单方式：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_model]" class="delivery-cfg-delie" value="2"><label> 按sku方式拆分订单</label></td>
+                                            </tr>
+                                            <tr>
+                                              <td><strong>回写方式：</strong></td>
+                                            </tr>
+                                            <tr>
+                                              <td style="line-height:24px;"><span>&nbsp;shopex（易开店、EC-Store） 支持sku部分回写<br /><a id="split_type_2a">对于不支持拆单的平台</a></span></td>
+                                            </tr>
+                                            <tr>
+                                              <td>&nbsp;<input type="radio" name="set[split_send]" class="delivery-cfg-delie" value="1"><label > 回写第一张</label>&nbsp;&nbsp;<input type="radio" name="set[split_send]" class="delivery-cfg-delie" value="2"><label > 回写最后一张</label></td>
+                                            </tr>
+                                          </table>
+                                      </div>
+                                  </td>
+                                  <td>&nbsp;</td>
+                                </tr>
+                            </table>
+                        </td>
+                      </tr>
+                    <{/if}>
+                    
+                <{if $order_num}>    
+                    <tr>
+                      <th>&nbsp;</th>
+                      <td><h3>拆单未发货订单列表（<span style="color:#ff0000; font-weight:normal;">温馨提示：如需修改"拆单方式"，请先处理完之前的拆分订单！</span>）</h3></td>
+                    </tr>
+                    <tr>
+                      <th>&nbsp;</th>
+                      <td>
+                          <div id="split_rule">
+                              <table class="gridlist" cellpadding="0,cellspacing=0,border=0">
+                                  <thead>
+                                        <tr>
+                                          <th>编号</th>
+                                          <th>订单号</th>
+                                          <th>所属店铺</th>
+                                          <th>确认状态</th>
+                                          <th>发货状态</th>
+                                          <th>订单总额</th>
+                                          <th>最后更新</th>
+                                          <th>拆单数量</th>
+                                          <th>已发货数量</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                    <{foreach from=$order_list item=val key=key}>
+                                        <tr>
+                                          <td><{$val.order_id}></td>
+                                          <td><{$val.order_bn}></td>
+                                          <td><{$val.shop_name}></td>
+                                          <td><{$val.process_status}></td>
+                                          <td><{$val.ship_status}></td>
+                                          <td style="text-align:left;"><{$val.total_amount|cur}></td>
+                                          <td><{$val.last_modified|cdate}></td>
+                                          <td><{$val.dly_count}></td>
+                                          <td><strong style="color:#ff0000;"><{$val.dly_succ}></strong></td>
+                                        </tr>
+                                    <{/foreach}>
+                                    <tr>
+                                      <td colspan="9" style="text-align:right;">共<b style="color:#ff0000;"><{$order_num}></b>条记录，查看更多请到订单列表栏目……&nbsp;&nbsp;</td>
+                                    </tr>
+                                    </tbody>
+                              </table>
+                        </div>
+                      </td>
+                    </tr>
+                <{/if}>
+                    <tr>
+                      <th>&nbsp;</th>
+                      <td><h3>拆单后平台回写规则</h3></td>
+                    </tr>
+                    <tr>
+                      <th>&nbsp;</th>
+                      <td>
+                          <div id="split_rule">
+                              <table class="gridlist" cellpadding="0,cellspacing=0,border=0">
+                                  <thead>
+                                        <tr>
+                                          <th>平台</th>
+                                          <th>平台是否支持拆单</th>
+                                          <th>平台支持拆单的模式</th>
+                                          <th>ERP回写平台规则</th>
+                                      </tr>
+                                    </thead>
+                                    
+                                    <tbody>
+                                        <tr>
+                                          <td>淘宝、天猫、分销王</td>
+                                          <td>支持</td>
+                                          <td>支持子订单拆单</td>
+                                          <td>可支持子订单回写 支持子部分发货回写</td>
+                                        </tr>
+                                        <tr>
+                                          <td>易开店、EC-Store</td>
+                                          <td>支持</td>
+                                          <td>支持SKU拆单</td>
+                                          <td>可支持任意sku拆分回写 支持部分发货回写</td>
+                                        </tr>
+                                        <tr>
+                                          <td>京东等其他平台</td>
+                                          <td>不支持</td>
+                                          <td>不支持拆单</td>
+                                          <td>可支持任意sku拆分回写 支持部分发货回写</td>
+                                        </tr>
+                                    </tbody>
+                              </table>
+                        </div>
+                      </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<style type="text/css">
+.split_focus { border:1px solid #3367AC; background:#fff; }
+.split_gray { border:1px solid #ccc; background:#efefef; }
+
+.split_focus strong, .split_gray strong { font-weight:bold; }
+.split_focus a, .split_gray a { color:#0066cc; text-decoration:none; }
+#split_type_1a, #split_type_2a { color:#0066cc; text-decoration:none; }
+#split_rule { width:auto; max-width:800px; }
+#split_rule table { width:800px; }
+#split_rule table td { height:24px; line-height:24px; text-align:center; }
+#split_rule table th { height:26px; line-height:26px; font-weight:bold; text-align:center; }
+</style>
+</div>
+
+<!--单品配置-->
+<div class='delivery-cfg-item'>
+	<!--<div class="error">欲配置该项，先关闭单品、多品混合打印!!!</div>-->
+	<div class='tableform  delivery-cfg-single'>
+		<div class="division">
+			<div class='notice'>单品打印是将单一SKU的发货单集中打印，排列顺序是按照货位，商品，数量，方便拣货。</div>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table'>
+				<tbody>
+				<tr>
+					<th><{t}>批量打印数量：<{/t}></th>
+					<td>
+						<{input type="text" vtype="required&&unsignedint" name="set[single][wms_batch_print_nums]"  value=$data.single.wms_batch_print_nums|default:100 }>
+						<{help}>批量打印单据数量上限<{/help}>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>备货单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[single][stock]" class="delivery-cfg-stock" options=$setting.stock.options separator='&nbsp;' value=$data.single.stock|default:'1' }>
+						<{help}>用于仓库拣货，可以将所选发货单按商品进行分组，提升拣货效率，特别适用于2次分拣<{/help}>
+						<span class='relate-span'>
+						备货单商品名称：
+						<{input type="select" name="set[single][wms_delivery_is_printstock]" options=$setting.wms_delivery_is_printstock.options value=$data.single.wms_delivery_is_printstock|default:'2' required='required' }>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>发货单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[single][delie]" class="delivery-cfg-delie" options=$setting.delie.options separator='&nbsp;' value=$data.single.delie|default:'1' }>
+						<{help}>又叫做购物清单，是给客户的购物凭证,可以在反面印刷退换货表格，建议使用激光打印机。<{/help}>
+						<span class='relate-span'>
+						发货单商品名称：
+						<{input type="select" name="set[single][wms_delivery_is_printdelivery]" options=$setting.wms_delivery_is_printdelivery.options value=$data.single.wms_delivery_is_printdelivery|default:'2' required='required' }>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>联合单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[single][merge]" class="delivery-cfg-merge" options=$setting.merge.options separator='&nbsp;' value=$data.single.merge|default:'1' }>
+						<{help}>主要用于2次分拣，先打分组备货单再打发货单。例如一次打100单，分组是20，就会先打1-20的备货单，再打1-20的发货单；21-40的备货单....<{/help}>
+						<span class='relate-span'>
+						联合单商品名称：
+						<{input type="select" name="set[single][wms_delivery_merge_print]" options=$setting.wms_delivery_merge_print.options value=$data.single.wms_delivery_merge_print|default:'2' required='required' }>
+						&nbsp;联合打印分组数：<{input type="text" name="set[single][wms_eachgroup_print_count]" value=$data.single.wms_eachgroup_print_count|default:20 vtype="unsignedint" size="4"}>
+						<{help}>该值可根据手推车格子数来设定。<{/help}>
+						</span>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<!--多品配置-->
+<div class='delivery-cfg-item '>
+	<!--<div class='error'>欲配置该项，先关闭单品、多品混合打印!!!</div>-->
+	<div class='tableform delivery-cfg-multi'>
+		<div class="division">
+			<div class='notice'>是将多sku发货单集中打印，特别提供为2次分拣设计的联合打印，这样快递单打印100单，如果2次分拣分组为20 则联合打印先输出1-20 的备货单，再打印1-20的发货单；再21-40 的备货单....</div>
+			<table width="100%" cellspacing="0" cellpadding="0" border="0" class='delivery-cfg-table'>
+				<tbody>
+				<tr>
+					<th><{t}>批量打印数量：<{/t}></th>
+					<td>
+						<{input type="text" vtype="required&&unsignedint" name="set[multi][wms_batch_print_nums]"  value=$data.multi.wms_batch_print_nums|default:100 }>
+						<{help}>批量打印单据数量上限<{/help}>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>备货单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[multi][stock]" class="delivery-cfg-stock" options=$setting.stock.options separator='&nbsp;' value=$data.multi.stock|default:'1' }>
+						<{help}>用于仓库拣货，可以将所选发货单按商品进行分组，提升拣货效率，特别适用于2次分拣<{/help}>
+						<span class='relate-span'>
+						备货单商品名称：
+						<{input type="select" name="set[multi][wms_delivery_is_printstock]" options=$setting.wms_delivery_is_printstock.options value=$data.multi.wms_delivery_is_printstock|default:'2' required='required' }>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>发货单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[multi][delie]" class="delivery-cfg-delie" options=$setting.delie.options separator='&nbsp;' value=$data.multi.delie|default:'1' }>
+						<{help}>又叫做购物清单，是给客户的购物凭证,可以在反面印刷退换货表格，建议使用激光打印机。<{/help}>
+						<span class='relate-span'>
+						发货单商品名称：
+						<{input type="select" name="set[multi][wms_delivery_is_printdelivery]" options=$setting.wms_delivery_is_printdelivery.options value=$data.multi.wms_delivery_is_printdelivery|default:'2' required='required' }>
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>联合单：<{/t}></th>
+					<td>
+						<{input type="radio"  name="set[multi][merge]" class="delivery-cfg-merge" options=$setting.merge.options separator='&nbsp;' value=$data.multi.merge|default:'1' }>
+						<{help}>主要用于2次分拣，先打分组备货单再打发货单。例如一次打100单，分组是20，就会先打1-20的备货单，再打1-20的发货单；21-40的备货单....<{/help}>
+						<span class='relate-span'>
+						联合单商品名称：
+						<{input type="select" name="set[multi][wms_delivery_merge_print]" options=$setting.wms_delivery_merge_print.options value=$data.multi.wms_delivery_merge_print|default:'2' required='required' }>
+						&nbsp;联合打印分组数：<{input type="text" name="set[multi][wms_eachgroup_print_count]" value=$data.multi.wms_eachgroup_print_count|default:20 vtype="unsignedint" size="4"}>
+						<{help}>该值可根据手推车格子数来设定。<{/help}>
+						</span>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<div class="table-action">
+<{button label="提交" type="submit" name="submit" id="btn_submit" }>
+</div>
+</form>
+<script>
+$$('input[name=set[split]]').addEvent('click',function(e)
+{
+	var value = this.value;
+	var order_num	= parseInt('<{$order_num}>');
+	
+	if(order_num > 0)
+	{
+		alert("还有 "+ order_num +" 条部分拆分的订单，请先处理完毕再关闭拆单功能，\n\n否则发货回写 与 生成销售单会出现问题！");
+		return false;
+	}
+	
+	if(value == '1')
+	{
+		document.getElementById('show_split_setting').style.display	= '';
+	}
+	else
+	{
+		document.getElementById('show_split_setting').style.display	= 'none';
+	}
+});
+$$('input[name=set[split_model]]').addEvent('click',function(e)
+{
+	var value = this.value;
+	var order_num	= parseInt('<{$order_num}>');
+	
+	if(order_num > 0)
+	{
+		if(!confirm("有未处理完的拆分订单，确定要改变拆分方式？"))
+		{
+			return false;
+		}
+	}
+	
+	if(value == '1')
+	{
+		document.getElementById("split_type_1").className	= "split_focus";
+		document.getElementById("split_type_2").className	= "split_gray";
+	}
+	else
+	{
+		document.getElementById("split_type_1").className	= "split_gray";
+		document.getElementById("split_type_2").className	= "split_focus";
+	}
+});
+
+function submit_frm()
+{
+	var set_split		= document.getElementsByName("set[split]");
+	var set_split_val	= '';
+	for(var i=0; i<set_split.length; i++)
+	{
+		if(set_split[i].checked == true)
+		{
+			set_split_val	= set_split[i].value;
+		}
+	}
+	var split_model		= document.getElementsByName("set[split_model]");
+	var split_model_val	= '';
+	for(var i=0; i<split_model.length; i++)
+	{
+		if(split_model[i].checked == true)
+		{
+			split_model_val	= split_model[i].value;
+		}
+	}	
+	var split_class		= document.getElementsByName("set[split_class]");
+	var split_class_val	= '';
+	for(var i=0; i<split_class.length; i++)
+	{
+		if(split_class[i].checked == true)
+		{
+			split_class_val	= split_class[i].value;
+		}
+	}
+	var split_send		= document.getElementsByName("set[split_send]");
+	var split_send_val	= '';
+	for(var i=0; i<split_send.length; i++)
+	{
+		if(split_send[i].checked == true)
+		{
+			split_send_val	= split_send[i].value;
+		}
+	}
+	
+	if(set_split_val == '1')
+	{
+		if(split_model_val == '1')
+		{
+			if(split_class_val != '1' && split_class_val != '2')
+			{
+				alert("请选择\"回写方式\"！");
+				return false;
+			}
+		}
+		else if(split_model_val == '2')
+		{
+			if(split_send_val != '1' && split_send_val != '2')
+			{
+				alert("请选择\"回写方式\"！");
+				return false;
+			}			
+		}
+		else
+		{
+			alert("请选择\"拆单方式\"！");
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+window.addEvent('domready',function(e)
+{	
+	//判断拆单配置的有效性 ExBOY
+	$('btn_submit').addEvent('click',function()
+	{
+		var flag		= submit_frm();
+		if(flag)
+		{
+			_form.fireEvent('submit',{stop:$empty});
+		}
+		else
+		{
+			return false;
+		}
+    });
+	
+	if($E('.delivery-cfg-tab li')) new ItemAgg($ES('.delivery-cfg-tab li'),$ES('.delivery-cfg-item'),{
+	  activeName:'current',
+	  itemsClass:'delivery-cfg-item-cur'
+	});
+
+	$ES(".delivery-cfg-item input[type=radio]").addEvent('click',function(){
+		var span = this.getNext('.relate-span');
+		if ($defined(span))
+		{
+			if (this.value=='0')
+			{
+				span.hide();
+			}else{
+				span.show();
+			}
+		}
+	});
+
+	function showSpan(){
+		var radio = this.getParent('tr').getElement("input:checked");
+		if (radio.value=='0')
+		{
+			this.hide();
+		}
+	}
+	$ES(".relate-span").each(function(el){
+		var _showSpan = showSpan.bind(el);
+		_showSpan();
+	});
+	if ($defined($ES("input[name^='set[wms_delivery_consign_group]']")))
+	{
+		$ES("input[name^='set[wms_delivery_consign_group]']").addEvent('click',function(){
+			var weight = this.getParent('tr').getElement("input[name^='set[wms_delivery_consign_weight]']");
+			if (this.checked)
+			{
+				weight.set('readonly',false);
+			}else{
+				weight.set('readonly',true);
+				weight.set('value','');
+			}
+		});
+
+		function writeWeight(){
+			var radio = this.getParent('tr').getElement("input:checked");
+			if (!radio)
+			{
+				this.set('readonly',true);
+				this.set('value','');
+			}
+		}
+		$ES(".delivery-group input[name^='set[wms_delivery_consign_weight]']").each(function(el){
+			var _writeWeight = writeWeight.bind(el);
+			_writeWeight();
+		});
+	}
+	function disabledMerge(){
+		var parentTable = this.getParent('table');
+		var merge = $ES(".delivery-cfg-merge",parentTable);
+
+        if (merge.length==0)
+        {  
+            return ;
+        }
+
+		var delie_value = $E(".delivery-cfg-delie:checked",parentTable).get('value');
+		var stock_value = $E(".delivery-cfg-stock:checked",parentTable).get('value');
+		if (delie_value==1 || stock_value==1)
+		{
+			merge.removeProperty('checked');
+			merge.each(function(el){
+				if (el.value == 0)
+				{
+					el.set('checked',true);
+					el.fireEvent('click');
+				}
+			});
+			//merge.set('disabled','disabled');
+		}
+		if (stock_value == 0 && delie_value == 0)
+		{
+			//merge.removeProperty('disabled');
+		}
+	}
+
+	$ES('.delivery-cfg-table tbody').each(function(item){
+		var _disabledMerge = disabledMerge.bind(item);
+		_disabledMerge();
+	});
+
+	$ES('.delivery-cfg-stock').addEvent('change',function(){
+		var _disabledMerge = disabledMerge.bind(this);
+		_disabledMerge();
+	});
+	$ES('.delivery-cfg-delie').addEvent('change',function(){
+		var _disabledMerge = disabledMerge.bind(this);
+		_disabledMerge();
+	});
+
+	function disabledStock(){
+		var parentTable = this.getParent('table');
+		var stock = $ES(".delivery-cfg-stock",parentTable);
+        if (stock.length==0)
+        {
+            return;
+        }
+		var merge_value = $E(".delivery-cfg-merge:checked",parentTable).value;
+		if (merge_value == 1)
+		{
+			stock.removeProperty('checked');
+			stock.each(function(el){
+				if (el.value == 0)
+				{
+					el.set('checked',true);
+					el.fireEvent('click');
+				}
+			});
+			//stock.set('disabled','disabled');
+		}else{
+			//stock.removeProperty('disabled');
+		}
+	}
+	function disabledDelie(){
+		var parentTable = this.getParent('table');
+		var delie  = $ES('.delivery-cfg-delie',parentTable);
+        if (delie.length==0)
+        {
+            return;
+        }
+
+		var merge_value = $E(".delivery-cfg-merge:checked",parentTable).value;
+		if (merge_value == 1)
+		{
+			delie.removeProperty('checked');
+			delie.each(function(el){
+				if (el.value == 0)
+				{
+					el.set('checked',true);
+					el.fireEvent('click');
+				}
+			});
+			//delie.set('disabled','disabled');
+		}else{
+			//delie.removeProperty('disabled');
+		}
+	}
+
+	$ES('.delivery-cfg-table tbody').each(function(item){
+		var _disabledStock = disabledStock.bind(item);
+		var _disabledDelie = disabledDelie.bind(item);
+		_disabledStock();
+		_disabledDelie();
+	});
+	$ES('.delivery-cfg-merge').addEvent('change',function(){
+		var _disabledStock = disabledStock.bind(this);
+		var _disabledDelie = disabledDelie.bind(this);
+		_disabledStock();
+		_disabledDelie();
+	});
+
+ $$('.delivery_print_version').addEvent('click',function(){
+ confirm('切换打印版本，请备份好现有使用模板，并修改打印发货和联合打印模板重新载入默认，以免影响您的正常打印!');
+ });
+});
+</script>

@@ -1,0 +1,197 @@
+<{capture name="header"}>
+<{css src="style.css" app="ome"}>
+<{/capture}>
+<form id="supplierform" action="index.php?<{$env.server.QUERY_STRING}>" method="post" >
+    <div class="tableform">
+	<h3>基本信息</h3>
+	<div class="division">
+		<table width='100%' cellspacing="0" cellpadding="0">
+			<tr>
+                <th>供应商编码:</th>
+                <td>
+                <{input type="alphaint&&required" name="bn" id="bn" value="" maxlength='32' }> <em class="c-red">*</em>
+                </td>
+                <th>供应商简称:</th>
+                <td><{input type="text&&required" value="" name="name" id="name"}> <em class="c-red">*</em></td>
+            </tr>
+            <tr>
+                <th>供应商快速索引:</th>
+                <td>
+                <{input type="text" name="brief" id="brief" value="" maxlength='20' size='12' }>
+                </td>
+                <th>公司名称:</th>
+                <td>
+                <{input type="text" name="company" id="company" value="" maxlength='20' size='20' }>
+                </td>
+            </tr>
+            <tr>
+                <th>所在地区:</th>
+                <td>
+                <{input type='region' app='eccommon' name="area" value="" }></td>
+                <th>街道地址:</th>
+                <td><{input type="text" name="addr" value="" size="40" }></td>
+            </tr>
+            <tr>
+                <th>邮编:</th>
+                <td>
+                <{input type="text" value="" name="zip"  size='6' }></td>
+                <th>电话/手机:</th>
+                <td><{input type="text" name="telphone"  value=""  size='12' }></td>
+            </tr>
+            <tr>
+                <th>信用等级::</th>
+                <td>
+               <select name="credit_lv">
+                    <option value="">请选择</option>
+                    <{foreach from=$credit_lev item=value key=keys }>
+                      <option value="<{$keys}>"><{$value}></option>
+                    <{/foreach}>
+                </select>
+                </td>
+                <th>传真:</th>
+                <td><{input type="text" name="fax"  value="" size='12' }>
+                </td>
+            </tr>
+            <tr>
+                <th>到货天数：</th>
+                <td>
+                <{input type="number" name="arrive_days"  value="" size='3' }> <span class="notice-inline">天</span>
+                </td>
+                <th>采购员:</th>
+                <td><{input type="text" name="operator" value="" size='8' }>
+                </td>
+            </tr>
+            <tr>
+                <th>供应品牌:</th>
+                <td colspan="3">
+                  <span id="brand_span"></span>
+                  <input type="hidden" name="choice_flag" id="choice_flag" value="0" />
+                  <{button type="button" id="choice_brand" label="选择"}>
+
+                  <!--
+                  <span style="display:none;">
+                  <{foreach from=$brand item=item key=key}>
+                   <input type="checkbox" name="brand[]" value="<{$item.brand_id}>" /> <{$item.brand_name}>
+                  <{/foreach}>
+                  </span>
+                   -->
+                </td>
+            </tr>
+            <tr>
+                <th>备注:</th>
+                <td colspan="3"><{input type="textarea" name="memo"  value="" rows="5" style="width:90%" }></td>
+            </tr>
+            </table>
+            </div>
+
+            <h3>联系人信息</h3>
+            <div class="division">
+                <table class="gridlist" cellpadding="0" cellspacing="0">
+                  <caption>
+                    <{button label="添加联系人" id="add_lianximan" }>
+                  </caption>
+                  <thead>
+                    <th style="width:20%">联系人</th>
+                    <th style="width:20%">电话</th>
+                    <th style="width:25%">E-mail</th>
+                    <th style="width:20%">qq/旺旺</th>
+                    <th style="width:5%">操作</th>
+                  </thead>
+                  <tbody id="lianximan">
+                  </tbody>
+                </table>
+	        </div>
+
+		<h3>财务信息</h3>
+		<div class="division">
+		<table cellspacing="0" cellpadding="0">
+			<tr>
+				<th>开户行:</th>
+                <td><{input type="text" name="bank"  value="" size="32"}></td>
+				<th>银行帐号:</th>
+				<td>
+				<{input type="text" name="account" value="" size="32"}>
+				</td>
+			</tr>
+		</table>
+   </div>
+   </div>
+
+   <div class="table-action">
+		<{input type="hidden" name="addSubmit" value="do" }>
+       <{button class="btn-primary" type="submit" id="saveCurrent" label="保存"}>
+	   <{button class="btn-secondary" type="button" id="closeBut" label="取消"}>
+   </div>
+</form>
+<script>
+(function(){
+//刷新并关闭窗口
+$('supplierform').store('target',{
+    onRequest:function(){
+       $('saveCurrent').set('disabled', true);
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('saveCurrent').set('disabled', false);
+       }else{
+           $('saveCurrent').set('disabled', true);
+           opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+           setTimeout('window.close()',500);
+       }
+    }
+});
+
+//关闭POP
+$('closeBut').addEvent('click', function(event){
+	if ($('bn').get('value') || $('name').get('value')){
+		if (confirm('您已填写供应商信息，确实要取消返回吗?')){
+			window.close();
+	    }
+	}else{
+		window.close();
+	}
+});
+
+//选择品牌
+$('choice_brand').addEvent('click',function(){
+    var url = 'index.php?<{$env.server.QUERY_STRING|replace:"addsupplier":"choice_brand"}>&p[0]=';
+	new Dialog(url,{
+	    title:'品牌选择',
+	    width:550,
+	    height:300,
+	    modal:true,
+	    resizeable:false
+	});
+});
+
+//表单项过滤
+function itemFilter(str,patrn)
+{
+    if (patrn.exec(str)) return true;
+    else return false;
+}
+//删除联系人
+function del(obj,type){
+    if (type==0) var parent = obj.getParent();
+    else  var parent = obj.getParent("tr");
+    if (confirm('真的要删除吗?')){
+        parent.destroy();
+        return true;
+    }else return false;
+}
+//添加联系人
+$('add_lianximan').addEvent('click', function(){
+    var html = '<td><input type="text" name="lianxi_name[]" size="15" /></td>';
+        html += '<td><input type="text" name="lianxi_telphone[]" size="15" /></td>';
+        html += '<td><input type="text" name="lianxi_email[]" size="15" /></td>';
+        html += '<td><input type="text" name="lianxi_qqwangwang[]" size="15" /></td>';
+        html += '<td><{img src="bundle/delecate.gif" app="desktop" class="pointer del"}></td>';
+
+    new Element('tr',{html:html}).inject('lianximan').getElement('.del').addEvent('click',function(){
+        del(this,1);
+    });
+});
+
+})();
+</script>

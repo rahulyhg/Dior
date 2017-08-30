@@ -1,0 +1,42 @@
+<form method="post" action="index.php?app=ome&ctl=admin_order&act=pause_order">
+<div class="tableform">
+ <table border="0">
+      <tbody>
+      <tr>
+            <td>
+            <span style="font-weight:bold">确定要暂停此订单么?</span><br>
+            <{if $orders.process_status!='unconfirmed'}>
+              暂停已生成发货单，已发送第三方的将会向第三方请求<br>第三方仓库同意后才可以暂停!
+              <{/if}>
+            </td>
+        </tr>
+     
+        
+        
+      </tbody>
+    </table>
+
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="submit"><span><span><{t}>继续暂停<{/t}></span></span></button><button class="btn btn-primary" id="cancel"><span><span><{t}>关闭<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+<input type="hidden" name="order_id" value="<{$order_id}>">
+<input type="hidden" name="finder_id" value="<{$env.get.finder_id}>">
+</form>
+<script>
+(function(){
+    var finder_id = '<{$env.get.finder_id}>';
+    $('cancel').addEvent('click',function(e){
+        $('cancel').getParent('.dialog').retrieve('instance').close();
+        finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+    });
+
+   
+})();
+</script>

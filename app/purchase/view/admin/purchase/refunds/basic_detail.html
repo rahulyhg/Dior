@@ -1,0 +1,34 @@
+<div class="tableform">
+<table class="orderdetails_basic" cellspacing="0" cellpadding="0">
+<tr>
+    <td>
+        <div class="division">
+            <table cellpadding="0" cellspacing="0">
+                <tbody>
+                    <tr><th>退款单号：</th><td><{$detail.refund_bn}></td></tr>
+                    <tr><th>生成日期：</th><td> <{$detail.add_time|date_format:"%Y-%m-%d"}></td></tr>
+                    <tr><th>供应商：</th><td><{$supplier_name}></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </td>
+    <td>
+        <div class="division">
+            <table cellpadding="0" cellspacing="0">
+                <tbody>
+                    <tr><th><{if $rp_type=='po'}>采购单编号：</th><td> <{$bn}><{else}></th><td><{/if}></td></tr>
+                    <tr>
+                        <th>应收金额：</th>
+                        <td>
+                            <span class="amount"><{math equation="x+y" x=$detail.product_cost|default:0 y=$detail.delivery_cost|default:0 format="￥%.2f"}></span>
+                            =商品总额(<span class="red"><{$detail.product_cost|cur}></span>)+物流费用(<span class="red"><{$detail.delivery_cost|cur}></span>)
+                        </td>
+                    </tr>
+                    <tr><th>经办人：</th><td><{$detail.operator}></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </td>
+</tr>
+</table>
+</div>

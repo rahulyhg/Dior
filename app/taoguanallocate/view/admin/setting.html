@@ -1,0 +1,7 @@
+            <tr>
+                <th>调拨方式：</th>
+                <td><select name="set[taoguanallocate.appropriation_type]">
+                    <option value="directly" <{if $setData.taoguanallocate_appropriation_type=='directly'}>selected="selected"<{/if}>>直接调拨</option>
+                    <option value="io" <{if $setData.taoguanallocate_appropriation_type=='io'}>selected="selected"<{/if}>>出入库调拨</option>
+                </select></td>
+            </tr>

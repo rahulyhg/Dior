@@ -1,0 +1,18 @@
+<div id='product-selected-body'>
+<{include file="finder/input-row.html" app="inventorydepth"}>
+</div>
+<{area inject=".mainFoot"}>
+<div class='table-action'>
+    <{button label='确定' id='primary-btn' onclick='change_products();'}>
+</div>
+<{/area}>
+<script>
+function change_products(){
+    var handle = $('hand-selected-product').getNext('div');
+    handle.setHTML($('product-selected-body').innerHTML);
+    var length = $('product-selected-body').getElements('.row').length;
+    var html = '已选择了'+length+'个货品,'+"<a href='javascript:void(0);' onclick='product_selected_show();'>查看选中货品.</a>";
+    $('hand-selected-product').setHTML(html);
+    $('primary-btn').getParent('.dialog').retrieve('instance').close();
+}
+</script>

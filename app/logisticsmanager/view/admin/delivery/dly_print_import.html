@@ -1,0 +1,25 @@
+<div style=" margin:10px;">
+      
+    <div class="notice"><{t}>上传dtp格式的快递单模板包<{/t}></div>
+    
+    <form id="form1" enctype="multipart/form-data" action="index.php?app=logisticsmanager&ctl=admin_express_template&act=doUploadnormal" method="post">
+        <{input type="sfile" name="package" f_type="public"}>
+        <{button label="上传" type="submit" id="btn-upload"}>
+    </form>
+</div>
+<script>
+(function(){
+
+  $('btn-upload').addEvent('click',function(){return check();});
+
+  function check(){
+    var pak = $E("input[name=package]");
+    if (pak.value == ''){
+        alert("请选择dtp格式的快递单模板包");
+        return false;
+    }
+    //$('form1').fireEvent('submit',{stop:function(){}});
+    return true;
+  }
+})();
+</script>

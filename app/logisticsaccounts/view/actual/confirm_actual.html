@@ -1,0 +1,90 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/finder.js" app="desktop"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{script src="coms/modedialog.js" app="desktop"}>
+<{/capture}>
+<div class="finder-title">
+<h2 class="head-title span-auto">
+物流账单
+<span class="num">
+(共
+<em class="count2"><{$actual_status.all}></em>
+条)
+</span>
+
+</h2><div id="messagebox" class="msgbox ">加载完成...</div>
+<div class="top_extra clear">
+<div id="dataAction" class="data-action" style="padding:5px;">
+<{include file="actual/tab_header.html" app="logisticsaccounts"}>
+</div>
+</div>
+
+<div class="large">
+<div class="ColColorOrange clearfix">
+<form id='actualform' method="post" action="index.php?app=logisticsaccounts&ctl=admin_actual&act=batch_accounted">
+
+
+<table width="50%" border="1" align="center" cellpadding="0" cellspacing="0" class="girdlist">
+  <tr>
+    <td width="68">&nbsp;</td>
+    <th width="78" ><t>包裹数(个)</t></th>
+    <th width="77"><t>费用（元</t>）</th>
+    <th width="17" ><t>备注</t></th>
+  </tr>
+  <tr>
+    <th><{help}>指物流公司对账单内的全部预收费用汇总<{/help}><t>原始预收</t></th>
+    <td><{$summary_actual.actual_package}></td>
+    <td><{$summary_actual.total_delivery_cost_actual}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <th><{help}>指系统内不存在的记录汇总<{/help}><t>未匹配</t></th>
+    <td><{$summary_actual.no_matched_count|default:'0'}></td>
+    <td><{$summary_actual.no_matched_money|default:'0'}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <th><{help}>指系统内已有记账历史的记录汇总<{/help}><t>已记账</t></th>
+    <td><{$summary_actual.has_accounted_count|default:'0'}></td>
+    <td><{$summary_actual.has_accounted_money|default:'0'}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <th><{help}>指原始预收中除去未匹配、已记账的记录汇总<{/help}><t>有效预收</t></th>
+    <td><{math equation="x-y-z" x=$summary_actual.actual_package y=$summary_actual.no_matched_count z=$summary_actual.has_accounted_count}></td>
+    <td><{math equation="x-y-z" x=$summary_actual.total_delivery_cost_actual y=$summary_actual.no_matched_money z=$summary_actual.has_accounted_money}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <th><{help}>指淘管ERP系统内与对账单，对账成功且未记账的记录汇总<{/help}><t>系统评估</t></th>
+    <td><{$summary_actual.delivery_package}></td>
+    <td><{$summary_actual.total_delivery_cost_expect}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <th colspan="4">请输入实际支付总金额:<{input type="text" id='adjust_money' name="adjust_money" vtype="required&&number" value=$summary_actual.total_delivery_cost_actual}>
+<input type="button" id="batch_accounted" name="batch_accounted" value="批量记账"></th>
+    </tr>
+	<tr>
+    <th colspan="4">注:全部批量记账，系统将自动为已匹配.比预估低比高，以均摊额的方式记账</th>
+  </tr>
+  <tr>
+    <th colspan="4">均摊公式说明：
+
+每笔记账金额=（每笔预收费用-（有效预收-实际支付金额）/有效预收笔数），
+
+其中，总笔数=预收笔数-未匹配笔数-已记账笔数</th>
+  </tr>
+  
+</table>
+
+</table>
+<input type="hidden" name="task_id" value="<{$task_id}>">
+</form>
+</div>
+
+</div>
+</div>

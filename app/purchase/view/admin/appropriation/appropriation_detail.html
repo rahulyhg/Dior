@@ -1,0 +1,43 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+
+<form name="form1" method="POST" action="index.php?app=purchase&ctl=admin_purchase&act=doDetail">
+<div class="tableform">
+
+<h4>调拔单信息:</h4>
+
+<div class="gridlist">
+<table border="0" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+	<th>商品名称:</th>
+	<th >货号:</th>
+	<th>源仓库:</th>
+	<th>源货位:</th>
+	<th>调入仓库</th>
+	<th>调入货位</th>
+	
+	<th >数量</th>
+   </tr>
+ </thead>  
+ <tbody>
+<{foreach from=$appropriation item=appropriation}>   
+<tr>
+	<td><{$appropriation.product_name}></td>
+	 <td ><{$appropriation.bn}></td>
+	<td ><{$appropriation.from_branch}></td>
+    <td ><{$appropriation.from_pos}></td>
+    <td><{$appropriation.to_branch}></td>
+    <td ><{$appropriation.to_pos}></td>
+   
+    <td><{$appropriation.num}></td>
+   
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>
+</div>
+</form>

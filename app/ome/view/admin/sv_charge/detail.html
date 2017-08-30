@@ -1,0 +1,178 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="tableform"> 
+
+<div class="message"><strong>买家说：</strong><{$pro_detail.title}></div>
+ <div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+  <tr>
+    <th>平台订单号：</th><td><span class="font16px fontbold fontcolorBlack"><{$order.order_bn}></span></td>
+    </tr>
+    <tr>
+    
+   <th>订单状态：</th><td><span class="font14px fontcolorOrange fontbold"><{if $pro_detail.recieved=='true'}>已收货<{else}>未收货<{/if}><{if $pro_detail.verify=='true'}>已质检<{else}>未质检<{/if}></span></td>
+   </tr>
+   <tr>
+    <th>
+    
+    提出申请的时间：</th>
+    <td><span class="fontcolorOrange"><{$pro_detail.add_time|cdate:FDATE_STIME}></span></td>
+  </tr>
+  </tbody>
+</table>
+</div>
+
+<br />
+
+
+<h4>申请售后服务的商品</h4>
+<div class="division">
+<table width="100%" border="0" class="gridlist"  cellpadding="0" cellspacing="0">
+ <thead>
+  <tr>
+    <th>货号</th>
+    <th>商品名称</th>
+    <th>数量</th>
+    <th>所属仓库</th>
+  </tr>
+  </thead><tbody>
+  <{foreach from=$pro_detail.items item=items}>  
+  
+  <tr>
+    <td><{if $items.is_check=='是'}>
+	<a target="dialog::{width:400,title:'质检详情'}" href="index.php?app=ome&ctl=admin_sv_process&act=show_check&p[0]=<{$items.item_id}>"> 
+	<{$items.bn}></a><{else}><{$items.bn}><{/if}></td>
+    <td><{$items.name|visibility:$items.product_id}></td>
+    <td><{$items.num}></td>
+    <td><{$items.branch_name}></td>
+  </tr>
+ 
+  <{/foreach}> 
+   </tbody>
+</table>
+</div>
+<{if $pro_detail.attachment!=''}>
+
+<br />
+
+<h4>附件下载</h4>
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+ 
+  <tr>
+    <td>
+    <{if $attachment_type!='remote'}>
+    <a class="margin10" href="javascript:file_download()">请点击下载该附件</a>
+    <{else}>
+    <a class="margin10" href="<{$pro_detail.attachment}>" target="_blank">请点击下载该附件</a>
+    <{/if}>
+    </td>
+  </tr>
+</table>
+</div>
+<{/if}>
+
+<br />
+
+
+<h4>详细说明</h4>
+<div class="division">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+ 
+  <tr>
+    <td> <{$pro_detail.content|escape:"html"}></td>
+  </tr>
+</table>
+</div>
+
+
+<br />
+
+
+<h4>仓库收货信息</h4>
+<div class="division"> 
+<table width="100%" border="0" class="gridlist">
+<thead>
+  <tr>
+    <th>仓库</th>
+    <th>快递公司</th>
+    <th>快递单号</th>
+    <th>快递费用</th>
+    <th>是否到付</th>
+  </tr>
+</thead>
+<tbody>
+
+  <tr>
+    <td><{$pro_detail.process_data.branch_name}></td>
+    <td><{$pro_detail.process_data.shipcompany}></td>
+    <td><{$pro_detail.process_data.shiplogino}></td>
+    <td><{$pro_detail.process_data.shipmoney}></td>
+    <td>
+    <{if $pro_detail.process_data.shipdaofu<>'2'}>
+	    <{if $pro_detail.process_data.shipdaofu==0}>否<{else}>是<{/if}>
+    <{else}>
+        -
+    <{/if}>
+    </td>
+  </tr>
+
+</tbody>
+</table>
+</div>
+<h4>操作日志</h4>
+<div class="division">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+<thead>
+  <tr>
+    <th>操作时间</th>
+    <th>操作员</th>
+    <th>操作内容</th>
+  </tr>
+  </thead>
+  <tbody>
+ <{foreach from=$pro_detail.log item=log}>
+  <tr>
+    <td><{$log.operate_time|cdate:FDATE_STIME}></td>
+    <td><{$log.op_name}></td>
+    <td><{$log.memo}></td>
+  </tr>
+ <{/foreach}>
+ </tbody>
+</table>
+</div>
+</div>
+<script>
+function file_download(){
+    var ifm=new IFrame({src:'index.php?app=ome&ctl=admin_return&act=file_download2&p[0]=<{$pro_detail.return_id}>'});
+    ifm.injectAfter(document.body);
+}
+function visibility(e){
+	var visiTips = new Tips({
+			onShow:function(tip,el){
+				el.addClass('active');
+				tip.setStyle('display','block');
+			},
+			text: function(element){
+				if(element.get('visibility')=='false'){
+					return '隐藏商品';
+				}else{
+					return '';
+				}
+			}
+		});
+
+		var e  = new Event(e), el = e.target;
+		if (el.get('visibility')=='false')
+		{
+			visiTips.attach(el);
+			el.addEvent('mouseleave',function(){
+				el.removeClass('active');
+			});
+			el.fireEvent('mouseenter',e);
+		}
+}
+</script>

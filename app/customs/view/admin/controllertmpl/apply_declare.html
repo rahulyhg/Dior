@@ -1,0 +1,12 @@
+<script>
+    var itemData = <{$post_ids}>;
+    function getloginopage()
+	{
+        new Dialog('index.php?app=customs&ctl=admin_orders&act=ajax_declare&action=<{$action}>&itemIds='+encodeURIComponent(itemData),{width:700,height:180,title:'跨境申报订单',
+            onClose:function(){
+                self.close();
+            }
+        });
+    }
+	setTimeout('getloginopage()',1000);
+</script>

@@ -1,0 +1,184 @@
+<div class="tableform">
+    <div style="padding-left: 80px; font-size: 2.5em;font-weight: 700;">
+        分组校验<span class="num">(目前有<em class="count" style="font-weight:700;font-size:2.5em;color: red;"><{$num_available}></em>个发货单可校验)</span>
+    </div>
+<{if $is_allow}>
+    <div class="division" id="groupForm">
+        <table border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <th><span style="font-size:22px;font-weight: bold;">请选择需要批量校验的打印分组：</span></th>
+                <td><select name="delivery_group" id="delivery_group" style="width:200px;font-size: 28px;height: 40px;">
+                    <option value="">-请选择-</option>
+                    <{foreach from=$deliveryGroup item=item}>
+                    <option value='<{$item.tid}>'><{$item.name}>(<{$item.dCount}>)</option>
+                    <{/foreach}>
+                </select>
+                
+                <!--<{foreach from=$deliveryGroup item=item}>
+                    <input type="checkbox" name="delivery_group[]" value="<{$item.tid}>" /> <{$item.name}>(<{$item.dCount}>)
+                <{/foreach}>--></td>
+            </tr>
+        </table>
+    </div>
+    <div class="division" style="display:none;" id="information">
+        本次校验大约 <span id="iTotal" style="color:#083E96"></span> 个发货单，
+        <span id="iSucc" style="color:green"></span> 个已校验成功，
+        <span id="iFail" style="color:red"></span> 个校验失败，
+        失败列表如下：<br /><br /><textarea id="iFailInfo" rows="6" cols="40" style="line-height:150%"></textarea>
+    </div>
+    <div id="processBarBg" style="display:none;border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;">
+        <div style=" background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;" id='processBar'>
+            &nbsp;
+        </div>
+    </div>
+
+    <div class="division">
+        <div class="table-action">
+            <button type="button" name="Start" id="btn-run" style="font-size:2.0em;font-weight: 600; height: 45px; width:200px;cursor: pointer;display: -moz-inline-stack;line-height: 40px;overflow: visible;text-decoration: none;vertical-align: middle;" ><span><span>批量校验</span></span></button>
+    </div>
+<{else}>
+	<div style="padding-top: 15px;padding-bottom: 15px;padding-left: 80px; font-size:25px; line-height:40px;">
+		上次执行分组校验时间：<font color="#FF0000"><{$lastGroupCalibrationTime}></font><br>
+		 本次距上次操作，时间还没有超过<font color="#FF0000"><{$groupCalibrationIntervalTime}></font>分钟，请稍后重试！
+	</div>
+<{/if}>
+</div>
+
+<script>
+    /*一次JS调用产生20个订单组的调用*/
+    var MaxProcessOrderNum = 2;
+    var deliveryGroup = <{$jsonDeliveryGroup}>;
+    var currentTime = <{$currentTime}>;
+    var deliveryQueue = new Array();
+
+    var doTotal = 0;
+    var doSucc = 0;
+    var doFail = 0;
+
+    function getGroup() {
+        var groupRow = $$('#groupForm input').filter( function(item, i) {
+            return item.checked;
+        });
+        return groupRow;
+    }
+
+    /**
+     * 生成操作队列
+     *
+     * @param void
+     * @author hzjsq (2011/3/25)
+     */
+    function initOptQueue(group) {
+        var deliveryHash = '';
+        var deliveryNum = 0;
+
+        if (deliveryGroup == '') {
+            return;
+        }
+        
+        var LeaveProcessOrderNum = getTotal(group);
+        if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+            MaxProcessOrderNum = LeaveProcessOrderNum;
+        }
+        
+        for (var key=0;key<deliveryGroup[group]['deliverys'].length;key++) {
+            if (deliveryHash == '')
+                deliveryHash = group + '||' + deliveryGroup[group]['deliverys'][key];
+            else
+                deliveryHash = deliveryHash + ';' + deliveryGroup[group]['deliverys'][key];
+            deliveryNum ++;
+            if (deliveryNum >= MaxProcessOrderNum) {
+                deliveryQueue.push(deliveryHash);
+                deliveryNum =0;
+                deliveryHash = '';
+                LeaveProcessOrderNum = LeaveProcessOrderNum - MaxProcessOrderNum;
+                if (MaxProcessOrderNum > LeaveProcessOrderNum) {
+                    MaxProcessOrderNum = LeaveProcessOrderNum;
+                }
+            }
+        }
+        if (deliveryHash != '') {
+            deliveryQueue.push(deliveryHash);
+        }
+    }
+
+    /**
+     * 执行AJAX调用并开始获取订单
+     *
+     * @param void
+     * @return void
+     */
+    function doRun() {
+        var group = $('delivery_group').value;
+        if(!group){
+            return MessageBox.error('请选择打印分组！');
+        }
+        initOptQueue(group);
+        if (deliveryQueue.length == 0) {
+            return ;
+        }
+        //禁用开始按钮
+        doTotal = 0;
+        doSucc = 0;
+        doFail = 0;
+        doFailInfo = '';
+        displayProcessInfo(group);
+        $('groupForm').style.display ='none';
+        $('information').style.display ='';
+        $('processBarBg').style.display ='';
+        $('btn-run').disabled = true;
+        $('btn-run').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+        
+        doAjaxProcess(1,group);
+    }
+
+    /**
+     * 执行一次AJAX调用
+     */
+    function doAjaxProcess(idx,group) {
+        if (idx > deliveryQueue.length || doTotal >= getTotal(group)) {
+            if(!doFailInfo){
+                $('processBar').setStyle('width', '100%');
+                $('btn-run').set('html', '<span><span>处理已完成，本窗口将在3秒后自动刷新！</span></span>');
+                setTimeout("window.location.href = 'index.php?app=wms&ctl=admin_check&act=group_check';",2000);
+            }
+        } else {
+            var params = deliveryQueue[idx-1];
+            new Request({url:'index.php?app=wms&ctl=admin_check&act=ajaxDoGroupCheck',method:'post',data:'ajaxParams='+params+'&pageBn='+currentTime,
+                onComplete:function(result){
+                    if(!result) return;
+                    ret = JSON.decode(result);
+                    doTotal = doTotal + ret['total'];
+                    doSucc = doSucc + ret['succ']; 
+                    doFail = doFail + ret['fail'];
+                    for(var key=0; key<ret['failInfo'].length;key++){
+                        doFailInfo = doFailInfo + ret['failInfo'][key] + '\n';
+                    }
+                    displayProcessInfo(group);
+                    $('processBar').setStyle('width', (doTotal*100/(getTotal(group))) + '%');
+                    setTimeout(function(){doAjaxProcess(idx+1,group);},500);
+                }
+            }).send();
+        }
+    }
+
+    function getTotal(group) {
+        var total = deliveryGroup[group]['dCount'];
+
+        return total;
+    }
+
+    /**
+     * 显示信息进度
+     */
+    function displayProcessInfo(group) {
+        
+        $('iTotal').set('html', getTotal(group));
+        $('iSucc').set('html', doSucc);
+        $('iFail').set('html', doFail);
+        $('iFailInfo').set('html', doFailInfo);
+    }
+
+    //初始化
+    $('btn-run').addEvent('click', function(){doRun();});
+</script>

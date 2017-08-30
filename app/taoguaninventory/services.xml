@@ -1,0 +1,21 @@
+<services>
+    <service id="desktop_finder.taoguaninventory_mdl_inventory">
+        <class>taoguaninventory_finder_inventory</class>
+    </service>
+     <service id="data_clear">
+        <class>taoguaninventory_service_data_clear</class>
+    </service>
+	<!-- <service id="extend_filter_taoguaninventory_mdl_inventory">
+        <class>taoguaninventory_finder_extend_filter_inventory</class>
+    </service>
+	-->
+	 <service id="operation_log">
+        <class>taoguaninventory_operation_log</class>
+    </service>
+	 <service id="taoguan.iostock">
+        <class>taoguaninventory_iostock</class>
+    </service>
+	    <service id="desktop_finder.taoguaninventory_mdl_encoded_state">
+        <class>taoguaninventory_finder_encoded_state</class>
+    </service>
+</services>

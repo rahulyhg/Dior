@@ -1,0 +1,323 @@
+<div class="tableform">
+  <h3>在线盘点</h3>
+  <form action="index.php?app=purchase&ctl=admin_inventory&act=updateBranchProductPos" method="post" id="onlineForm">
+    <input type="hidden" name="branch_id" id="branch_id" value="<{$branch_id}>" />
+    <div class="division">
+      <div class="division scan_input">
+        <label for="label">条码：</label>
+        <input type="text" name="barcode" id="bar_ipt" size="60" vtype="required" />
+        <{help}><{t}><b>操作提示：</b>手动输入信息，完成后需要按Enter键(回车)提交数据，才可进行下一步操作。<{/t}><{/help}>
+        <input type="hidden" id="pro_id" name="product_id" value="" /><br />
+        <label for="label">货位：</label>
+        <input type="text" name="pos_name" id="pos_ipt" vtype="required" disabled="disabled" /><input type="hidden" name="pos_id" value="" />
+        <label for="label">数量：</label>
+        <input type="text" name="num" id="num_ipt" size="15" vtype="required&&unsigned" disabled="disabled" /> <input type="hidden" name="number" value="" />
+      </div>
+      <div class="gray_form">
+        <table border="0" class="inventory_info" style="width:70%">
+          <tr>
+            <td colspan="2">盘点商品名称：<strong id="goods_name"></strong> &nbsp;<strong class="blue" id="goods_spec"></strong></td>
+          </tr>
+          <tr>
+            <td>盘点商品货号：<strong id="goods_bn"></strong></td>
+            <td width="130">库存总数：<strong id="goods_num"></strong></td>
+          </tr>
+          <tr>
+            <td colspan="2"><table class="gridlist" style="width:100%">
+                <thead>
+                  <tr>
+                    <th>货位</th>
+                    <th>账面数量</th>
+                    <th>实际数量</th>
+                    <th>盈(+)亏(-)记录</th>
+                  </tr>
+                </thead>
+                <tbody id="dataNode">
+                </tbody>
+              </table></td>
+          </tr>
+        </table>
+        <div class="clearfix" style="width:70%;" id="more_info">
+          <div class="flt" style="display:none;"><input type="checkbox" name="delete" value="1"/> <label>删除当前货位信息</label></div>
+          <div class="frt" style="display:none;"><a href="javascript:void(0);">展开更多>></a></div>
+        </div>
+      </div>
+      <table border="0">
+        <tr>
+          <td width="20%">仓库：<{$branch_name}></td>
+          <td width="20%">盘点人：<{$op_name}></td>
+          <td>盘点时间：<{$date}></td>
+        </tr>
+      </table>
+      <div class="table-action"> <{button label="盘点" type="button" id="btn_submit" disabled='disabled'}> &nbsp; &nbsp; <{button label="清空" id="btn_reset" type="reset"}> </div>
+    </div>
+  </form>
+</div>
+<script>
+  (function(){
+    var node = $('dataNode'),
+    bar_ipt = $('bar_ipt'),
+    pos_ipt = $('pos_ipt'),
+    num_ipt = $('num_ipt'),
+    more = $('more_info'),
+    delItem = more.getElement('.flt input[type=checkbox]'),
+    submit = $('btn_submit'),
+    reset = $('btn_reset');
+
+    bar_ipt.focus();
+
+    function message(msg,el,type,delay,id){
+      msg = msg || '';
+      type = type || 'error';
+      delay = $chk(delay) ?delay : 4000;
+      id = id || 'error_msg';
+      var bool = type == 'show' ? null : type == 'success' ? true : false;
+      var err;
+      err = $(id) || new Element('span.'+type+'#'+id);
+      err.setHTML(msg).injectAfter(el);
+      if(delay) err.destroy.delay(delay,err);
+      if(!bool) try{el.select();}catch(e){}
+      return bool;
+    }
+    function validData(ipt,msg,type){
+      type = type || 'trim';
+      if (!ipt.value) return message('请输入' + msg,ipt);
+      //if (type == 'trim' && ipt.value.test(/^[\s 　]+|[\s 　]+$/)) return message(msg + '信息无法识别',ipt);
+      if (type == 'number' && !ipt.value.test(/^\d+$/)) return message(msg + '请输入数字',ipt);
+      return true;
+    }
+    function getEmpty(){
+      return '<tr><td colspan="4" class="empty">没有货位信息，可在线盘点新建货位！</td></tr>';
+    }
+    function getDataTpl(j){
+      return '<tr key='+j.pos_id+' class="associated"><td>'+j.pos_name+'</td><td><span class="hasstore" style="display:none;">'+j.store+'</span><span class="store">-</span></td><td class="num fb">-</td><td class="diff red">-</td></tr>';
+    }
+    function requestData(json){
+      json = json || node.retrieve('jsondata') || {};
+      var data = '';
+      if (!json.item || !json.item.length){
+        node.setHTML(getEmpty());
+        return;
+      }
+      json.item.each(function(json){
+        data += getDataTpl(json);
+      });
+
+      node.setHTML(data);
+      more.getElement('.flt').show();
+      if ($('newTip')) $('newTip').destroy();
+
+      delItem.set('checked',false).show().addEvent('change',function(e){
+        if (this.checked){
+          new Request({url:'index.php?app=purchase&ctl=admin_inventory&act=existDeletePosRelation',method:'post',data:'branch_id='+ $('branch_id').value +'&product_id='+ $('pro_id').value,
+            onRequest:function(){
+              MessageBox.show('正在加载...');
+            },
+            onSuccess:function(json){
+              MessageBox.success('加载完成');
+              if(json == 'false'){
+            if (!confirm("删除货位信息可能导致未完成的货品拣配单信息不可用，取消可返回当前页面继续操作!")){
+                  delItem.checked = false;
+                  return message('货位存在待出库商品，无法删除',delItem.getNext('label'));
+        }
+              }
+              node.getElements('tr.associated').removeClass('selected').addClass('gray');
+              pos_ipt.set('disabled',false).set('value','').focus();
+              num_ipt.set('disabled',true);
+              init(node.getElement('tr.associated.selected'));
+              /* node.getElements('tr.associated').set('key','delete'); */
+              return message(' &nbsp;(删除货位后，库存数量将会清空)',delItem.getNext('label'),'red',0,'newTip');
+            }
+          }).send();
+        }
+        else{
+          node.getElements('tr.associated').removeClass('gray');
+          /* node.getElements('tr.associated').erase('key'); */
+          if ($('newTip')) $('newTip').destroy();
+        }
+      });
+
+      pos_ipt.set('disabled',false).focus();
+      MessageBox.success('加载成功');
+    }
+
+    bar_ipt.addEvent('enter',function(e){
+      //if(e.key == 'enter'){
+        cleanup(true);
+        setBtn(1);
+        submitData();
+        num_ipt.set('disabled',true);
+        if(!validData(this,'条码')) return;
+        delItem.removeEvents('change');
+
+        new Request({url:'index.php?app=purchase&ctl=admin_inventory&act=getProduct', method:'post',data: this.name +"="+ this.value.trim() +"&branch_id="+ $('branch_id').value,
+          onRequest: function(){
+            MessageBox.show('正在加载...');
+          },
+          onSuccess:function(json){
+            if(json == 'false'){
+              message('商品信息在系统中不存在',this);
+              return MessageBox.error('加载失败');
+            }
+            json = JSON.decode(json);
+            node.store('jsondata',json);
+            $E('input[name=product_id]').value = json.product_id;
+            $('goods_name').setText(json.name);
+            $('goods_spec').setText(json.spec_info);
+            $('goods_bn').setText(json.bn);
+            $('goods_num').setText(json.num);
+            requestData(json);
+          }.bind(this)
+        }).send();
+      //}
+    });
+    function selectbind(tr,bool){
+      tr.addClass('selected').getSiblings('.selected').removeClass('selected');
+      num_ipt.addEvent('enter',function(e){
+        //if(e.key == 'enter'){
+          process(this,tr,bool);
+        //}
+      });
+    }
+    function process(num_ipt,tr,bool){
+      if(!validData(num_ipt,'数量','number')){
+        tr.getElement('.num').setText('-');
+        tr.getElement('.diff').setText('-');
+        return false;
+      }
+      if(tr.match('.selected')){
+        tr.getElement('.hasstore').show();
+        tr.getElement('.store').hide();
+        tr.getElement('.num').setText(num_ipt.value.toInt());
+        tr.getElement('.diff').setText(num_ipt.value.toInt() - tr.getElement('.hasstore').get('text').toInt());
+      }
+      delItem.hide().getNext('label').hide();
+      $E('input[name=number]').value = num_ipt.value;
+      pos_ipt.set('disabled',true);
+      num_ipt.set('disabled',true);
+      if(bool){
+        setBtn();
+      }
+      else submit.set('disabled',false).focus();
+      submit.removeEvents('click').addEvent('click',function(){
+          this.disabled=true;
+        this.getParent('form').fireEvent('submit',{stop:$empty});
+      });
+
+      return true;
+    }
+    function init(el){
+      if(!el) return;
+      el.getElement('.hasstore').hide();
+      el.getElement('.store').show();
+      el.getElement('.num').setText('-');
+      el.getElement('.diff').setText('-');
+    }
+
+    pos_ipt.addEvent('enter',function(e){
+      //if(e.key == 'enter'){
+        if (!validData(this,'货位')) return;
+        init(node.getElement('tr.associated.selected'));
+        var tr;
+        new Request({url:'index.php?app=purchase&ctl=admin_inventory&act=exsitPosition',method:'post',data: this.name +'='+ this.value.trim() +"&branch_id="+ $('branch_id').value,
+          onSuccess:function(json){
+            if(json == 'false'){
+              message('货位信息不存在',this);
+              return MessageBox.error('加载失败');
+            }
+            json = JSON.decode(json);
+
+            if((tr = node.getElement('tr[key='+json.pos_id+']'))){
+              if(delItem.checked == true){
+                tr.removeClass('gray');
+                //delItem.checked = false;
+              }
+              selectbind(tr,true);
+            }
+            else if(delItem.checked == true){
+              num_ipt.addEvent('enter',function(e){
+                //if(e.key == 'enter') {
+                  if(!validData(this,'数量','number')) return;
+                  $E('[name=number]').value = this.value.trim();
+
+                  var tpl='<td>'+pos_ipt.value+'</td><td><span class="hasstore">0</span><span class="store" style="display:none;">-</span></td><td class="num fb">'+num_ipt.value.toInt()+'</td><td class="diff red">'+num_ipt.value.toInt()+'</td>';
+                  var newtr= $E('tr[key='+$E('input[name=pos_id]').value+']') || new Element('tr[key='+$E('input[name=pos_id]').value+'].selected.noassociated').inject(node,'top');
+                  newtr.setHTML(tpl).getSiblings('.selected').removeClass('selected');
+
+                  num_ipt.set('disabled',true);
+                  setBtn();
+                  submit.removeEvents('click').addEvent('click',function(){
+                      this.disabled=true;
+                    this.getParent('form').fireEvent('submit',{stop:$empty});
+                  });
+                  //submit.set('html','<span><span>盘点</span></span>').set('disabled',false).focus();
+                  //reset.set('html','<span><span>清空</span></span>');
+                //}
+              });
+              submitData(true);
+            }
+            else {
+              $E('[name=pos_id]').value = '';
+              $E('[name=number]').value = '';
+              return message('货位与货品关联信息不存在',this);
+            }
+
+            $E('input[name=pos_id]').value = json.pos_id;
+            this.set('disabled',true);
+            delItem.hide().getNext('label').hide();
+            num_ipt.set('disabled',false).set('value','').focus();
+            num_ipt.addEvent('keyup',function(){
+              submit.set('disabled',false);
+            });
+          }.bind(this)
+        }).send();
+      //}
+    });
+
+    //submitData();
+
+    reset.addEvent('click',function(){
+      cleanup();
+      setBtn(1);
+      submitData();
+    });
+
+    function submitData(bool){
+      submit.removeEvents('click').addEvent('click',function(e){
+        if(bool){
+          //var json = node.retrieve('jsondata').item || {};
+          var tpl='<td>'+pos_ipt.value+'</td><td><span class="hasstore">0</span><span class="store" style="display:none;">-</span></td><td class="num fb">'+num_ipt.value.toInt()+'</td><td class="diff red">'+num_ipt.value.toInt()+'</td>';
+          var newtr= $E('tr[key='+$E('input[name=pos_id]').value+']') || new Element('tr[key='+$E('input[name=pos_id]').value+'].noassociated').inject(node,'top');
+          newtr.setHTML(tpl);
+          selectbind(newtr);
+        }else if(!process(num_ipt,node.getElement('tr[key = '+$E('input[name=pos_id]').value+']'),true)) return;
+        setBtn();
+        num_ipt.set('disabled',true);
+        $E('[name=number]').set('value',num_ipt.value);
+        submit.removeEvents('click').addEvent('click',function(){
+            this.disabled=true;
+          this.getParent('form').fireEvent('submit',{stop:$empty});
+        });
+      });
+    }
+    function cleanup(bool){
+      if(bool){
+        $$('#onlineForm input[type=text]').erase(bar_ipt).set('value','');
+      }
+      else {
+        $$('#onlineForm input[type=text]').set('value','');
+        node.setHTML('');
+      }
+      delItem.set('checked',false);
+      delItem.getNext('label').show();
+      more.getElement('.flt').hide();
+    }
+    function setBtn(bool){
+      var v;
+      if(bool) v = ['盘点','清空','blur'];
+      else v = ['确认','返回','focus'];
+      submit.set('html','<span><span>' + v[0] + '</span></span>').set('disabled',!!bool)[v[2]]();
+      reset.set('html','<span><span>' + v[1] + '</span></span>');
+    }
+  })();
+</script>

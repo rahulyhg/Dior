@@ -1,0 +1,219 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/finder.js" app="desktop"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{script src="coms/modedialog.js" app="desktop"}>
+<{/capture}>
+<style>
+.actual_list tr th { text-align: center; height: 25px; line-height: 25px; border:1px solid #cccccc;background-color:#829fd8;color:#ffffff;  white-space: normal; padding: 3px; vertical-align: middle; font-weight:bold;padding-right:10px;}
+ .actual_list tr td{ text-align: left; height: 25px; line-height: 25px; border: 1px solid #cccccc;  white-space: normal; padding: 3px; vertical-align: middle;padding-right:10px;}
+ .actual_list .actual_left tr td { text-align:right;}
+</style>
+<div class="finder-title">
+<h2 class="head-title span-auto">
+<font color="red"><{$task_bn}></font>物流账单
+<span class="num">
+(共
+<em class="count2"><{$actual_status.all.count}></em>
+条)
+</span>
+
+</h2><div id="messagebox" class="msgbox ">加载完成...</div>
+<span  style="color:#FF0000" id="note"></span>
+<div class="top_extra clear">
+<div id="dataAction" class="data-action" style="padding:5px;">
+<{if $env.get.flt=='confirm' || $env.get.flt=='confirmview'}>
+<{include file="confirm_time_header.html" app="logisticsaccounts"}>
+<{else}>
+<{include file="actual/tab_header.html" app="logisticsaccounts"}>
+<{/if}>
+
+</div>
+</div>
+<{if $env.get.flt=='confirm' || $env.get.flt=='confirmview'}>
+   <div id="confirm-center" ></div>
+<{else}>
+<form id='actualform' method="post" action="index.php?app=logisticsaccounts&ctl=admin_actual&act=batch_accounted">
+
+
+<table width="20%" border="0" align="center" cellpadding="1" cellspacing="1" class="actual_list">
+<tbody>
+  <tr>
+    <th width="30%">&nbsp;</th>
+    <th width="15%"><t>包裹数(个)</t></th>
+    <th width="15%"><t>费用（元</t>）</th>
+    <th ><t>备注</t></th>
+  </tr>
+  <tr>
+    <td style="font-weight:bold"><{help}>指物流公司对账单内的全部费用汇总<{/help}><t>原始账单</t></td>
+    <td style="text-align:right"><{$actual_status.all.count}></td>
+    <td style="text-align:right"><{$actual_status.all.total_delivery_cost_actual|cur}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <{if $actual_status.no_match.count>0}>
+  <tr>
+    <td style="font-weight:bold"><{help}>指系统内不存在的记录汇总<{/help}><t>未匹配</t></td>
+    <td style="text-align:right"><{$actual_status.no_match.count|default:'0'}></td>
+    <td style="text-align:right"><{$actual_status.no_match.total_delivery_cost_actual|default:'0'|cur}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <{/if}>
+  <{if $actual_status.accounted.count>0}>
+  <tr>
+    <td style="font-weight:bold"><{help}>指系统内已有记账历史的记录汇总<{/help}><t>重复记账</t></td>
+    <td style="text-align:right"><{$actual_status.accounted.count|default:'0'}></td>
+    <td style="text-align:right"><{$actual_status.accounted.total_delivery_cost_actual|default:'0'|cur}></td>
+    <td>&nbsp;</td>
+  </tr>
+   <{/if}>
+  <tr>
+    <td style="font-weight:bold"><{help}>指原始账单中除去未匹配、重复记账的记录汇总<{/help}><t>有效账单</t></td>
+    <td style="text-align:right"><{$actual_status.effective|default:'0'}></td>
+    <td style="text-align:right"><{$actual_status.effective_money_actual|cur}></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td style="font-weight:bold"><{help}>指淘管ERP系统内与对账单，对账成功且未记账的记录汇总<{/help}><t>系统预估</t></td>
+    <td style="text-align:right"><{$actual_status.effective|default:'0'}></td>
+    <td style="text-align:right"><{$actual_status.effective_money_expect|cur}></td>
+    <td>系统预估与有效账单金额的差额为<{$actual_status.effective_diff_money|cur}>元</td>
+  </tr>
+  <tr>
+    <td style="font-weight:bold"><{help}>有效账单里已经记账<{/help}><t>已记账</t></td>
+    <td style="text-align:right"><{$actual_status.hasaccounted.count|default:'0'}></td>
+    <td style="text-align:right"><{$actual_status.hasaccounted.total_delivery_cost_actual|cur}></td>
+    <td>有效账单已记账金额</td>
+  </tr>
+   <tr>
+    <td style="font-weight:bold"><{help}>有效账单里未记账<{/help}><t>未记账</t></td>
+    <td style="text-align:right"><{$actual_status.unaccounted.count|default:'0'}></td>
+    <td style="text-align:right"><{$actual_status.unaccounted.total_delivery_cost_actual|cur}></td>
+    <td>未记账的有效账单金额
+</td>
+  </tr>
+  <{if $env.get.flt!='view'}>
+  <{if $summary_actual.effective_money>0}>
+  <tr>
+    <td colspan="4">请输入实际支付总金额:
+    <{if $adjust_money!='0.00'}>
+    <{input type="text" id='adjust_money' name="adjust_money" vtype="required&&number" value=$adjust_money}>
+    <{else}>
+    <{input type="text" id='adjust_money' name="adjust_money" vtype="required&&number" value=$summary_actual.effective_money}>
+    <{/if}>
+<{if $actual_task_status==0 || $actual_task_status==1 || $actual_task_status==4}>
+&nbsp;&nbsp;<input type="radio" name="accounted_type" value='0'>全部&nbsp;&nbsp;
+<input type="radio" name="accounted_type" value='1' checked>未记账部分
+&nbsp;&nbsp;<input type="button" id="batch_accounted" name="batch_accounted" value="批量记账">
+<{/if}>
+</td>
+    </tr>
+	<tr>
+    <td colspan="4">注:全部批量记账，系统将自动为已匹配.比预估低，比预估高，以均摊额的方式记账,"已记账"的记录也将被均摊，记账金额会发生改变</td>
+  </tr>
+  	<tr>
+    <td colspan="4">&nbsp;&nbsp;&nbsp;&nbsp;未记账批量记账，系统将自动为已匹配.比预估低，比预估高，未记账部分的账单以均摊额的方式记账,记账金额会发生改变,已记账的部分则不受影响</td>
+  </tr>
+  <tr>
+    <td colspan="4">均摊公式说明：
+
+每笔记账金额=（每笔账单金额-（有效账单金额-实际支付金额）/有效账单笔数），
+
+其中，有效账单笔数是指已匹配、比预估低、比预估高的部分
+</th>
+  </tr>
+  <{/if}>
+  <{/if}>
+  </tbody>
+</table>
+
+</table>
+<input type="hidden" name="task_id" value="<{$task_id}>">
+<input type="hidden" name="branch_id" value="<{$acutal_task.branch_id}>">
+<input type="hidden" name="logi_id" value="<{$acutal_task.logi_id}>">
+</form>
+<br>
+<table padding="4">
+
+<tr><td>
+<font style="font-weight:bold">费用类型分为</font>
+
+</td></tr>
+
+<tr><td>
+	1、	账单金额：指物流公司的账单上的金额，一般都有单号，重量，目的地，费用，以电子表格形式提供。
+</td></tr>
+
+<tr><td>
+2、	预估费用：指系统内，根据出库称重（或者货品重量总计）及地区运费设置，自动计算出的物流预估费用。
+</td></tr>
+
+<tr><td>
+3、	记账金额：用户实际记账的物流费用。
+<br>
+</td></tr>
+<tr><td>
+<font style="font-weight:bold">对账结果分为</font>
+</td></tr>
+<tr><td>
+1、	已匹配：相同物流单号，物流公司提供的账单金额与系统预估费用相等。</td></tr>
+<tr><td>
+2、	比预估高：相同物流单号，物流公司提供的账单金额比系统预估费用高。</td></tr>
+<tr><td>
+3、	比预估低：相同物流单号，物流公司提供的账单金额比系统预估费用低。</td></tr>
+<tr><td>
+4、	未匹配：物流公司的对账单内有，而系统内不存在的单号，我们视为不是本系统发出的货。</td></tr>
+<tr><td>
+5、	重复记账：物流公司的帐单中含有在系统内已经记过账的物流单,例如混入了上个月已经记过帐的快递单。</td></tr>
+</table>
+<{/if}>
+</div>
+<script>
+(function(){
+if($('batch_accounted')){
+$('batch_accounted').addEvent('click',function(e){
+var _this=this;
+var _form=$('actualform'),_formActionURL=_form.get('action'); 
+var adjust_money = $('adjust_money').value;
+if(adjust_money==''){
+return MessageBox.error('实际记账金额不可为空！');
+}
+
+var accounted_type = $$('input[name=accounted_type]:checked').get('value');
+var confirm_title = '确定要批量记账吗?';
+if(accounted_type=='0'){
+    confirm_title = '您已经有已记账的记录，如果继续批量记账，“已记账”的记账金额将发生改变，是否继续?';
+}
+if(confirm(confirm_title)){
+ var querystring = $('actualform').toQueryString();
+ new Request({url:_formActionURL,
+ onRequest:function(){
+           $('note').set('html','请求执行中,请稍等!');
+  },
+ data:querystring,
+     onRequest:function(){
+        _this.disabled=true;
+     },
+    onComplete:function(rs){
+  
+    _this.disabled=false;
+ 
+    var json = Json.evaluate(rs);
+
+    if (typeof(json.error) != 'undefined'){
+        _this.disabled=false;
+        return MessageBox.error('无记录可以操作或操作失败!');
+    }else{
+        return MessageBox.success('记账成功');
+    }
+   }}).send();
+}
+});
+}
+
+})();
+
+
+
+</script>

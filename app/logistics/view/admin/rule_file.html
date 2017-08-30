@@ -1,0 +1,207 @@
+<style>
+.weight_rule li{
+float:left;
+padding:4px;
+text-align:left;
+}
+.weight_rule ul{
+width:600px;
+}
+.weight_left{
+width:200px;
+}
+.weight_right{
+width:380px;
+}
+select{width:80px;}
+</style>
+
+<div class="division">
+    <table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr >
+            <th><span style='color:red'>*</span>规则类型:</th>
+            <td>
+                <input type='radio' id='noweighttype' class='first_rule_weight' name='set_type' value='noweight' checked  onclick="showArea(this.value)">按任意重量设置
+                <input type='radio' id='weighttype' class='first_rule_weight' name='set_type' value='weight'  onclick="showArea(this.value)">按重量区间设置
+            </td>
+        </tr>
+    </table>
+
+    <div  id='first_rule_weight_one' style='display:none'>
+    <table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr >
+            <th>规则详情:</th>
+            <td>
+            区间类型:
+            <span class="spectype"><input type="radio" name="addspectype" class="addspectype" value="weight" checked >普通区间</span>
+            <span class="spectype"><input type="radio" name="addspectype" value="above" class="addspectype">"以上"区间</span>
+            <input type="button" id ='addspec' value='添加'>
+            <{help}>重量请输入整数,<br>请输入连续的区间,重量区间表示:左区间<=重量<右区间<{/help}>
+            <{if $rule.set_type=='weight'}>
+            <{foreach from=$rule.item_list item=item_list}>
+                <div class='weight_rule' id="<{$item_list.item_id}>">
+                    <ul>
+                        <li class="weight_left">重量:<input type="text"  name="min_weight[]" size=8 value="<{$item_list.min_weight}>" vtype="required&&unsigned">g&nbsp;&nbsp;
+                        <{if $item_list.max_weight=='-1'}>
+                            &nbsp;&nbsp以上
+                            <input type="hidden" name="max_weight[]" size=6 value="-1" >
+                        <{else}>
+                            至<input type="text" name="max_weight[]" size=8 value="<{$item_list.max_weight}>" vtype="required&&unsigned">g
+                        <{/if}>
+                        </li>
+                        <li class="weight_right">
+                            首选物流公司:<select name="corp_id[]" id="dlyCorpWeight<{$item_list.item_id}>" onchange="dlyCorpChange('Weight<{$item_list.item_id}>')">
+                                <option value='0'>--请选择--</option>
+                            <{foreach from=$dly_corp item=dlyCorp1}>
+                                <option value='<{$dlyCorp1.corp_id}>' <{if $item_list.corp_id==$dlyCorp1.corp_id}>selected<{/if}>><{$dlyCorp1.name}></option>
+                            <{/foreach}>
+                            </select>
+                            <span id="secondSpanWeight<{$item_list.item_id}>" <{if !in_array($item_list.corp_id,$elecIds)}>style="display:none;"<{/if}>>
+                            次选物流公司:<select name='second_corp_id[]' id="secondDlyCorpWeight<{$item_list.item_id}>">
+                                <option value='0'>--请选择--</option>
+                            <{foreach from=$dlyCorpNormal item=dlyCorp2}>
+                                <option value='<{$dlyCorp2.corp_id}>' <{if $item_list.second_corp_id==$dlyCorp2.corp_id}>selected<{/if}>><{$dlyCorp2.name}></option>
+                            <{/foreach}>
+                            </select>
+                            </span>
+                            <a onclick='deleteArea($(this).getParent("div"))'>删除</a>
+                        </li>
+                    </ul>
+                </div>
+                <input type="hidden" name="item_id[]" value="<{$item_list.item_id}>">
+            <{/foreach}>
+            <{/if}>
+            <div id="spec_body"></div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div id='first_rule_weight_nothing' >
+    <table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+        <tr >
+            <th>规则详情:</th>
+            <td>
+                首选物流公司:<select name='default_corp_id' id='dlyCorpNoweight' onchange="dlyCorpChange('Noweight')">
+                    <option value='0'>--请选择--</option>
+                <{foreach from=$dly_corp item=dlyCorp1}>
+                    <option value='<{$dlyCorp1.corp_id}>' <{if $rule_obj.items.0.corp_id==$dlyCorp1.corp_id}>selected<{/if}>><{$dlyCorp1.name}></option>
+                <{/foreach}>
+                </select>
+                <span id="secondSpanNoweight" style="display:none;">
+                次选物流公司:<select name='default_second_corp_id' id='secondDlyCorpNoweight'>
+                    <option value='0'>--请选择--</option>
+                <{foreach from=$dlyCorpNormal item=dlyCorp2}>
+                    <option value='<{$dlyCorp2.corp_id}>' <{if $rule_obj.items.0.second_corp_id==$dlyCorp2.corp_id}>selected<{/if}>><{$dlyCorp2.name}></option>
+                <{/foreach}>
+                </select>
+                </span>
+                <input type="hidden" name="default_item_id" value="<{$rule.item_list.0.item_id}>">                    
+            </td>
+        </tr>
+    </table>
+</div>
+</div>
+
+<script>
+var corp_id = <{$dly_corp_list}>;
+var dlyCorpNormal = <{$dlyCorpNormalJson}>;
+var electronIds = <{$electronIds}>;
+
+var getTemp = function(type,index){
+    temp='<div class="weight_rule"><ul><li class="weight_left">重量:<input type="text"  name="min_weight[]" size=8 vtype="required&&number">g&nbsp;&nbsp;至';
+    if(type=='weight'){
+        temp+='<input type="text"  name="max_weight[]" size=8 vtype="required&&number">g&nbsp;&nbsp;&nbsp;&nbsp;';
+    }else{
+        temp+='以上<input type="hidden"  name="max_weight[]" size=10 value="-1">';
+    }
+    temp+='</li><li class="weight_right">首选物流公司:';
+    temp+='<select name="corp_id[]" id="dlyCorp'+index+'" onchange="dlyCorpChange('+index+')">';
+    temp+='<option value="0">--请选择--</option>';
+    if(corp_id){
+        corp_id.each(function(i,index){
+            temp+='<option value='+i.corp_id+'>'+i.name+'</option>';
+        });
+    }
+    temp+="</select>";
+    temp+='<span id="secondSpan'+index+'" style="display:none;">次选物流公司:<select name="second_corp_id[]" id="secondDlyCorp'+index+'">';
+    temp+='<option value="0">--请选择--</option>';
+    if(dlyCorpNormal){
+        dlyCorpNormal.each(function(i,index){
+            temp+='<option value='+i.corp_id+'>'+i.name+'</option>';
+        });
+    }
+    temp+="</select></span>";
+    temp+="<a onclick='deleteArea($(this).getParent(\"div\"))' >删除</a>";
+    temp+="</li></ul></div>";
+
+    return temp;
+};
+
+function dlyCorpChange(index) {
+    var dlyCorp = 'dlyCorp'+index;
+    var secondDlyCorp = 'secondDlyCorp'+index;
+    var secondSpan = 'secondSpan'+index;
+
+    var val = $(dlyCorp).value;
+    if(electronIds.contains(val)) {
+        $(secondSpan).show();
+    } else {
+        $(secondSpan).hide();
+    }
+    $(secondDlyCorp).selectedIndex = 0;
+}
+
+$('addspec').addEvent('click',function(e){
+    var add_above=0;
+    $$('.weight_left').each(function(etd){
+        above_max_weight = etd.getChildren('input[name^=max_weight]').get('value')/1;
+        if(above_max_weight=='-1'){
+            add_above++;
+        }
+    });
+
+    var spectype = $('first_rule_weight_one').getElement("input[name='addspectype']:checked").value;
+    var index = uniqueID();
+    if(add_above>=1){
+        return MessageBox.error('<{t}>以上区间存在不可以再添加!<{/t}>');
+    }else{    
+        var newRow=new Element('div[class="areabox"]',{html:getTemp(spectype,index)}).inject($('spec_body'));
+    }
+});
+
+function showArea(setType){
+    if(setType=='weight'){
+        $('first_rule_weight_one').setStyle('display','');
+        $('first_rule_weight_nothing').setStyle('display','none');
+    }
+    if(setType=='noweight'){
+        $('first_rule_weight_nothing').setStyle('display','');
+        $('first_rule_weight_one').setStyle('display','none');
+    }
+}
+
+function deleteArea(d){
+    if (!confirm('删除后无法恢复，确定要删除吗？')){
+        return;
+    }
+    d.remove();
+    if(d.get('id')){
+        new Request({url:'index.php?app=logistics&ctl=admin_area_rule&act=deleteRule&item_id='+d.get('id'),
+            onComplete:function(rs){
+            var json = Json.evaluate(rs);
+            if (typeof(json.error) != 'undefined'){
+                alert('删除失败');
+            }else{
+                alert('删除成功');
+            }
+        }}).send();
+    }
+}
+uniqueID = (function () {
+    var id = 0;
+    return function () {
+        return id++;
+    };
+})();
+</script>

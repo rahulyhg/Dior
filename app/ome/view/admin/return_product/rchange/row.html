@@ -1,0 +1,8 @@
+<div class="span-auto row-h">货号 : <{$item.bn}></div>
+<div class="span-auto row-h">商品名称 : <{$item.name}></div>
+
+<{assign var="test_num" value=$item.store-$item.store_freeze}>
+<div>价格 : <input type='text' id='num<{$aGoods.bn}>' name='num[<{$aGoods.bn}>]' value='<{$item.price}>' size='6'> 剩余数量 : <{$test_num}> 申请数量 : <input type='text' id='num<{$aGoods.bn}>' name='num[<{$aGoods.bn}>]' value='0' size='6'></div>
+<input type="hidden" name="product[product_id][]" value="<{$item.product_id}>">
+
+

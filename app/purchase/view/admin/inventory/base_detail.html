@@ -1,0 +1,72 @@
+<div class="tableform"> 
+<h4>基本信息</h4>
+    <div class="division">
+    
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+        <thead>
+            <tr>
+                <th>盘点日期:</th>
+                <td>
+                <{$detail.inventory_date|date_format:"%Y-%m-%d"}>
+                </td>
+                <th>盘点名称:</th>
+                <td><{$detail.inventory_name}></td>
+                <th>盘点单编号:</th>
+                <td><{$detail.inventory_bn}></td>
+                <th>盘点人:</th>
+                <td><{$detail.inventory_checker}></td>
+            </tr>
+            </thead>
+            <thead>
+            <tr>
+                <th>导入状态:</th>
+                <td>
+                <{if $detail.import_status=='1'}>失败<{else}>成功<{/if}>
+                </td>
+                <th>库存更新：</th>
+                <td><{if $detail.update_status=='1'}>失败<{else}>成功<{/if}></td>
+                <th>盘点生成：</th>
+                <td><{if $detail.is_create=='1'}>未生成<{else}>已生成<{/if}></td>
+                <th>盘点确认：</th>
+                <td><{if $detail.confirm_status=='1'}>未确认<{else}>已确认<{/if}></td>
+            </tr>
+            <tr>
+                <th>复核人:</th>
+                <td>
+                <{$detail.second_checker}>
+                </td>
+                <th>财务负责人：</th>
+                <td><{$detail.finance_dept}></td>
+                <th>仓库负责人：</th>
+                <td><{$detail.warehousing_dept}></td>
+                <th>操作工号</th>
+                <td><{$detail.op_name}></td>
+            </tr>
+            <tr>
+                <th>盘点仓库:</th>
+                <td>
+                <{$detail.branch_name}>
+                </td>
+                <th>盘点类别 ：</th>
+                <td><{if $detail.inventory_type=='1'}>自定义<{else}>全盘<{/if}></td>
+                <th>差异金额：</th>
+                <td><{$detail.difference|cur}></td>
+                <th>&nbsp;</th>
+                <td>&nbsp;</td>
+            </tr>
+            </thead>
+        </table>
+   </div>
+   
+   <h4>盘点概况</h4>
+   <div class="division">
+   
+    <table width='100%' cellspacing="0" cellpadding="0" >
+            <tbody>
+            <tr>
+                <td align="left"><{$detail.inventory_overview}></td> 
+            </tr>
+            </tbody>
+   </table>
+   </div>
+</div>

@@ -1,0 +1,17 @@
+<app>
+    <name>ERP API集成</name>
+    <description>封装对外API接口</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0</version>
+    <license>shopex license</license>
+
+	<depends>
+		<app>ome</app>
+	</depends>
+</app>

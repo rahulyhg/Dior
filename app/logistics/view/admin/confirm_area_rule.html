@@ -1,0 +1,59 @@
+<div class="tableform">
+  <h4>下列区域为二级区域,以下三级区域将会自动建立规则 </h4>
+  <h4>标红色区域为已存在规则,如果确认，规则将会自动更新</h4>
+  
+  <div class="division">
+    <table  width="100%" cellspacing="0" cellpadding="0" border="1" class="delivery-info">
+      <tbody>
+        <tr>
+        <td align='center'>二级区域</td>
+        <td align='center'>三级区域</td>
+        </tr>
+     
+   
+   
+      <{foreach from=$region_list item=region_list}>
+     <tr><td  width="40%"><{$region_list.region_name}></td><td  align='left'>
+   
+    <{foreach from=$region_list.area item=area name=area}><{if $area.flag==1}><font color='red'><{/if}><{$area.region_name}><{if $smarty.foreach.area.last!='1'}>,<{/if}>&nbsp;&nbsp;<{if $area.flag==1}></font><{/if}> <{/foreach}></td></tr>
+     
+    
+   
+     <{/foreach}>
+    
+     </tbody>
+    </table>
+ </div>
+  <div class="table-action">
+<{button label="确认" class="btn-primary" id="batch_area_confirm" }>
+<{button label="取消" class="btn-primary" id="batch_area_cancel" }>
+  </div>
+</div>
+<script>
+$('batch_area_confirm').addEvent('click', function(e){
+var _this=this;
+        $('area_rule_form').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+    
+                        $('area_rule_form').getParent('.dialog').retrieve('instance').close();
+                        _this.getParent('.dialog').retrieve('instance').close();
+                        show_area_list();
+ 
+                    }
+                 }catch(e){}
+            }
+        });
+        $('area_rule_form').fireEvent('submit',e);
+    });
+$('batch_area_cancel').addEvent('click', function(){
+        this.getParent('.dialog').retrieve('instance').close();
+    });
+</script>

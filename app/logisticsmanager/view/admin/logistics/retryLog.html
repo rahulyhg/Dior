@@ -1,0 +1,145 @@
+<style>
+    .processBarBg {border:1px solid #999999; width:98%; margin:5px; height:25px;line-height:25px;padding:1px; background:#EEEEEE;}
+    .processBar {background:#3366cc; width:0px; padding-bottom:1px;overflow:hidden;}
+</style>
+<div class="tableform">
+    <div class="division">
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" align="center" >
+        <tbody>
+            <tr>
+                <td align="left">
+                    <div class="division" style="display:none;" id="information">
+                        本次处理 <span id="iTotal" style="color:#083E96"></span> 个异常订单，
+                        <span id="iSucc" style="color:green"></span> 个成功，
+                        <span id="iFail" style="color:red"></span> 个失败，请稍候……
+                    </div>
+
+                    <div id="processBarBg" class="processBarBg">
+                        <div id="processBar" class="processBar">
+                            &nbsp;
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td align="center">
+                    <{button label="开始同步" type="button" class="btn-primary" id="sync"}>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+/*一次JS调用处理5个订单*/
+var MaxProcessDataNum = 5;
+var dataGroup = <{$jsonLogs}>;
+var dataQueue = new Array();
+
+var doTotal = 0;
+var doSucc = 0;
+var doFail = 0;
+
+/**
+ * 生成操作队列
+ *
+ * @param void
+ * @author hzjsq (2011/3/25)
+ */
+function initOptQueue() {
+    var dataHash = '';
+    var dataNum = 0;
+
+    if (dataGroup == '') {
+        return;
+    }
+
+    var LeaveProcessDataNum = getTotal();
+    if (MaxProcessDataNum > LeaveProcessDataNum) {
+        MaxProcessDataNum = LeaveProcessDataNum;
+    }
+
+    for (var key=0;key<dataGroup.length;key++) {
+        if (dataHash == '')
+            dataHash = 'data||' + dataGroup[key];
+        else
+            dataHash = dataHash + ';' + dataGroup[key];
+        dataNum ++;
+        if (dataNum >= MaxProcessDataNum) {
+            dataQueue.push(dataHash);
+            dataNum =0;
+            dataHash = '';
+            LeaveProcessDataNum = LeaveProcessDataNum - MaxProcessDataNum;
+            if (MaxProcessDataNum > LeaveProcessDataNum) {
+                MaxProcessDataNum = LeaveProcessDataNum;
+            }
+        }
+    }
+    if (dataHash != '') {
+        dataQueue.push(dataHash);
+    }
+}
+
+/**
+ * 执行AJAX调用并开始获取订单
+ *
+ * @param void
+ * @return void
+ */
+function doRun() {
+    initOptQueue();
+    if (dataQueue.length == 0) {
+        return ;
+    }
+    //禁用开始按钮
+    doTotal = 0;
+    doSucc = 0;
+    doFail = 0;
+    displayProcessInfo();
+    $('information').style.display ='';
+    $('processBarBg').style.display ='';
+    $('sync').disabled = true;
+    $('sync').set('html', '<span><span>数据处理中，请稍候！</span></span>');
+    
+    doAjaxProcess(1);
+}
+
+/* 执行一次AJAX调用 */
+function doAjaxProcess(idx) {
+    if (idx > dataQueue.length || doTotal >= getTotal()) {
+        $('processBar').setStyle('width', '100%');
+        $('sync').set('html', '<span><span>处理已完成，本窗口将在3秒后自动刷新！</span></span>');
+        setTimeout("location.reload();",3000);
+    } else {
+        var params = dataQueue[idx-1];
+        new Request({url:'index.php?app=logisticsmanager&ctl=admin_logistics_log&act=ajaxRetry',method:'post',data:'ajaxParams='+params,
+            onComplete:function(result){
+                if(!result) return;
+                ret = JSON.decode(result);
+                doTotal = doTotal + ret['total'];
+                doSucc = doSucc + ret['succ']; 
+                doFail = doFail + ret['fail'];
+                displayProcessInfo();
+                $('processBar').setStyle('width', (doTotal*100/(getTotal())) + '%');
+                setTimeout(doAjaxProcess(idx+1),500);
+            }
+        }).send();
+    }
+}
+
+function getTotal() {
+    var total = <{$logCount}>;
+    return total;
+}
+
+/* 显示信息进度 */
+function displayProcessInfo() {
+    $('iTotal').set('html', getTotal());
+    $('iSucc').set('html', doSucc);
+    $('iFail').set('html', doFail);
+}
+
+$('sync').addEvent('click', function(){doRun();});
+</script>

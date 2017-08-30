@@ -1,0 +1,123 @@
+<table cellspacing="10" cellpadding="0" border="0" width="100%">
+  <tr>
+    <td >
+       
+        <{foreach from=$delivery_detail item=delivery}>
+         <div class="division">
+        <h4>发货单据列表</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0">
+          <colgroup></colgroup>
+            <thead>
+             <tr>
+                <th>建立日期</th>
+                <th>发货单号</th>
+                <th>物流单号</th>
+                <th>收件人</th>
+                <th>物流公司</th>
+                <th>发货仓库</th>
+               
+                <th>发货状态</th>
+
+              </tr>
+            </thead>
+            <tbody>        
+            <tr>
+	              <td><{$delivery.create_time|date_format:'%Y-%m-%d'}></td>
+	              <td><{$delivery.delivery_bn}></td>
+	              <td><{$delivery.logi_no}></td>
+	              <td><{$delivery.ship_name}></td>
+                  <td><{$delivery.logi_name}></td>
+                  <td><{$delivery.branch_name}></td>
+                  <td><{$delivery.status_text}></td>
+                  
+	              
+                 
+       
+              </tr>
+               </tbody>
+          
+          </table>
+</div>
+
+<div class="division">
+          <h4>发货明细</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>货号</th>
+                <th>名称</th>
+               <th>数量</th>
+         
+                </tr>
+            </thead>
+            <tbody>
+            <{foreach from=$delivery.items item=item}>
+            <tr>
+	              <td><{$item.bn}></td>
+	              <td><{$item.product_name}></td>
+	              <td><{$item.number}></td>
+	           
+              </tr>
+              <{/foreach}>
+               </tbody>
+          
+          </table>
+</div>
+<{if $delivery.logino}>
+<div class="division">
+          <h4>运单号</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>物流单号</th>
+               
+                </tr>
+            </thead>
+            <tbody>        
+          
+                  <{foreach from=$delivery.logino item=logino}>
+                  <tr>
+	              <td><{$logino.logi_no}></td></tr>
+                  
+                  <{/foreach}>
+               </tbody>
+          
+          </table>
+          </div>
+<{/foreach}>
+        
+      </td>
+      </tr>
+  
+</tbody></table>
+</div>
+ <div class="division">
+        <h4>退货单据列表</h4>
+          <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+          <colgroup></colgroup>
+            <thead>
+              <tr>
+                <th>建立日期</th>
+                <th>退货单号</th>
+                <th>物流单号</th>
+                <th>退货人</th>
+                <th>物流公司</th>
+              </tr>
+            </thead>
+            <tbody>
+            <{foreach from=$reship item=rsp}>
+              <tr>
+                <td><{$rsp.t_begin|date:"Y-m-d H:i"}></td>
+                <td><{$rsp.reship_bn}></td>
+                <td><{$rsp.logi_no}></td>
+                <td><{$rsp.ship_name}></td>
+                <td><{$rsp.delivery}></td>
+              </tr>
+            <{/foreach}>
+            </tbody>
+          </table>
+      </div>
+<{/if}>
+

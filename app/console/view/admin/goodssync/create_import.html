@@ -1,0 +1,43 @@
+<style type='text/css'>
+label font{ position:relative;top:-3px;padding-left:3px; }
+#payinfo{width:100%;display:none;}
+</style>
+<form id='upload' action="index.php?app=console&ctl=admin_goodssync&act=index&action=to_import" method="post" enctype="multipart/form-data">
+<input type="hidden" name="app" value="console" />
+<input type="hidden" name="model" value="foreign_sku" />
+<div class="division">
+<table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+
+<tr>
+    <input type="hidden" name="wms_id" value="<{$wms_id}>" />
+</tr>
+<tr>
+    <td style='width:100px;height:30px;text-align:right;'>分配WMS：</td>
+	<td style='text-align:left;'><{$wms_name}></td>
+</tr>
+<tr>
+    <td style='width:100px;height:30px;text-align:right;'>导入文件：</td>
+	<td style='text-align:left;'><input id="ImportCSV" name='import_file' type='file' value='' style='width:240px;'/></td>
+</tr>
+</table>
+</div>
+<div style='margin-top:10px;text-align:center;'><{button class="btn-primary" type="submit" id="create_export_submit" label="导入"}></div>
+<div style='margin-top:20px;text-align:center;color:#c00;display:none;'  id='create_export_submit_box'>正在上传文件,请不要关闭本窗口和页面.....</div>
+</form>
+<script>
+
+$('upload').addEvent('submit', function(e) {
+    $('create_export_submit').set('disabled',true).getElement('span span').set('html','正在导入');
+    document.getElementById('create_export_submit_box').style.display = 'block';
+});
+
+$('upload').store('target', {
+        onComplete: function(jsontext) {
+
+        $('upload').getParent('.dialog').retrieve('instance').close();
+        window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+
+            
+        }
+});
+</script>

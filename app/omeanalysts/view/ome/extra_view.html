@@ -1,0 +1,43 @@
+<{include file="ome/time_header.html" app="omeanalysts"}>
+
+<{if $detail_hidden < 1}>
+<!-- detail start -->
+<div class="large">
+    <{include file="ome/detail.html" app="omeanalysts"}>
+</div>
+<!-- detail end -->
+<{/if}>
+
+<{if $analysts_options.display}>
+  <div class="notice">
+  	<span>说明：</span> <br/>
+    <p style="padding-left:15px;"><{$analysts_options.description}></p>
+  </div>
+<{/if}>
+
+<{if $graph_hidden < 1}>
+<!-- graph start -->
+<table class="chart-view">
+	 <tr><td valign="top">
+        <{include file="analysis/graph.html" app="eccommon"}>
+    </td></tr>
+</table>
+<!-- graph end -->
+<{/if}>
+
+<{if $rank_html}>
+<!-- rank start -->
+<table class="chart-view">
+	 <tr>
+		<td valign="top">
+			<{$rank_html}>
+		</td>
+	 </tr>
+</table>
+<!-- rank end -->
+<{/if}>
+<{if $act}>
+<font color="red" size="3px">备注：明细列表上显示的货品，只包含查询时间范围内，有销售单的货品</font>
+<{/if}>
+
+

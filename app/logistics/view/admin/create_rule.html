@@ -1,0 +1,188 @@
+<style>
+.areabox{
+    padding:2px;
+
+}
+.spectype{
+padding:6px;
+width:40px;
+}
+
+.weight_rule li{
+float:left;
+padding:4px;
+text-align:left;
+}
+.weight_left{
+width:210px;
+
+}
+.weight_right{
+width:300px;
+}
+.weight_rule ul{
+width:600px;
+}
+</style>
+新增规则设置<br>
+<div class="tableform">
+<form method="POST" id='area_form' action='index.php?app=logistics&ctl=admin_rule&act=saveRule'>
+<div class="division">
+
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+	    <tr >
+<th ><span style='color:red'>*</span>规则名称:</th><td>
+<{input type="text" name='rule_name' id='rule_name' vtype="required"}><span id='chkrule_name' style='color:red'></span></td></tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+<tr >
+<th ><span style='color:red'>*</span>一级地区:</th>
+                    <td><{input type="text" id='first_city' name='first_city' readonly=true class="lnk" onclick='regionSelect(this)' size="60" }>
+                    <input type='hidden' id='p_region_id' name='p_region_id' value='<{$area.region_id}>'/>
+                    </td>
+</tr>
+</table>
+</div>
+<{include file='admin/rule_file.html'}>
+<div class="table-action">
+                <{button type="button" label="保存" id="create_rule_save" }>
+</div>
+<input type="hidden" name="rule_type" value="default">
+<input type="hidden" name="branch_id" value="<{$branch_id}>">
+<input type="hidden" id='relationflag' name="relationflag" value='0'>
+</form>
+</div>
+
+<script>
+$('rule_name').addEvent('change',function(e){
+   rule_name = this.value;
+   new Request({
+   url:'index.php?app=logistics&ctl=admin_rule&act=checkRuleName&rule_name='+rule_name+'&branch_id='+<{$branch_id}>,
+   onComplete:function(rs){
+	      if(rs){
+            rs=JSON.decode(rs);
+        
+            $('chkrule_name').set('html',rs.message)
+       }else{
+        $('chkrule_name').set('html','')
+       }
+    }
+   
+   
+   }).send();
+
+
+});
+function regionSelect(el){
+    var el=$(el);
+    Ex_Loader('modedialog',function(){
+    new ModeDialog('index.php?app=logistics&ctl=admin_area&act=showRegionTreeList&p[0]='+el.uid+'&p[1]='+<{$branch_id}>,{
+    width:800,height:600,params:{iptText:el,iptHidden:el.getParent().getElement('input[type=hidden]')}});
+    });
+}
+
+$('create_rule_save').addEvent('click',function(e){
+    if($('first_city').value==''){
+        return MessageBox.error('<{t}>请选择一级区域<{/t}>');
+    }
+    
+var set_type=$('area_form').getElements("input[name='set_type']:checked").get('value');
+if(set_type=='weight'){
+var above_set=0;
+if($$('.weight_left').length<=0){
+    return MessageBox.error('<{t}>请选择对应的重量区间!<{/t}>');
+}
+
+compareValueFlag = $$('.weight_left').every(function(etd){
+    min_weight = etd.getChildren('input[name^=min_weight]').get('value')/1;
+    max_weight = etd.getChildren('input[name^=max_weight]').get('value')/1;
+    
+    if(max_weight=='-1'){
+        above_set++;
+    }
+    if(((min_weight>max_weight) || (min_weight==max_weight)) && max_weight!='-1'){
+        
+        return false;
+     
+    }
+    return true;
+    });
+if( !compareValueFlag )return MessageBox.error('<{t}>重量最小值不可以大于最大值<{/t}>');
+if(above_set>=2) return MessageBox.error('<{t}>以上区间只能有一个<{/t}>');
+
+//区间判断重复
+var length=$$('.weight_left').length;
+
+for(i=0;i<length;i++){
+imin = $$('.weight_left')[i].getChildren('input[name^=min_weight]').get('value');
+imax = $$('.weight_left')[i].getChildren('input[name^=max_weight]').get('value');
+
+for(j=i+1;j<length;j++){
+
+min=$$('.weight_left')[j].getChildren('input[name^=min_weight]').get('value')/1;
+max=$$('.weight_left')[j].getChildren('input[name^=max_weight]').get('value')/1;
+if(imax=='-1'){
+    if(min>imin/1){
+        return MessageBox.error(min+'大于'+imin+',<{t}>大于以上区间重量最小值<{/t}>');
+    }
+}
+if(imax>min){
+    return MessageBox.error(imax+'大于'+min+'<{t}>重复区间存在<{/t}>');
+    }
+}
+}
+}
+
+
+//判断是否有排它规则存在
+   var relationRule='';
+    new Request({
+        url:'index.php?app=logistics&ctl=admin_area_rule&act=areaFilter&oper=ckarea&branch_id=<{$branch_id}>&p_region_id='+$('p_region_id').value,async:false,
+        onComplete:function(rs){
+        if(rs){
+         rs=JSON.decode(rs);
+
+         rs.each(function(i,index){
+            relationRule+='['+i.region_name+']';
+
+          
+            relationRule+='\n';
+         });
+         
+         }
+         
+        }
+    
+    }).send();
+    if(relationRule!=''){
+        var relationflag = confirm('系统检测到'+relationRule+'\n 有下级地区规则存在,是否带出?');
+        if(relationflag==false){
+            $('relationflag').set('value',1);
+        }
+    }
+    var form=this.getParent('form');
+    var _this=this;
+    $('area_form').store('target',{
+          onRequest:function(){
+                _this.disabled=true;
+            },
+            onComplete:function(jsontext){
+            try{
+                    var json = Json.evaluate(jsontext);
+                    if (typeof(json.error) != 'undefined'){
+                        _this.disabled=false;
+                    }else{
+
+                        _this.disabled=true;
+ 
+                        $('area_form').getParent('.dialog').retrieve('instance').close();
+                        _this.getParent('.dialog').retrieve('instance').close();
+ 
+                    }
+                }catch(e){}
+            }
+        });
+        $('area_form').fireEvent('submit',e);
+});
+</script>

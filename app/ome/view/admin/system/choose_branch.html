@@ -1,0 +1,28 @@
+<div class="tableform">
+  <h3>选择WMS</h3>
+  <div class="division">
+    <form method="post" action="index.php?app=ome&ctl=admin_branch&act=choosebranch" id="form-branch">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+          <tr>
+            <th>仓库对应WMS：</th>
+            <td colspan="2">
+               <ul style='width:600px;'>
+              <{foreach item=wms from=$wms_list}>
+                <li style='float:left; padding:10px;'>
+                <input type="radio" class='wms_type' name="wms_id" id="wms_id" <{if $wms_disabled}>disabled<{/if}> value="<{$wms.wms_id}>" <{if $branch.wms_id == $wms.wms_id}>checked<{/if}>  >
+                <span <{if $branch.wms_id == $wms.wms_id}>class="shop-name"<{/if}> title="<{$wms.wms_name}>"><{$wms.wms_name|cut}></span>
+                </li>
+              <{/foreach}>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-action"><{button label="提交" type="submit" name="submit" id="btn-branch"}> <{button label="提交" style="display:none;" type="button" name="button" id="btn-notice"}>&nbsp;&nbsp; <{button label="关闭" onclick="javascript:void(window.close());" class="btn-secondary" type="button"}></div>
+      <{if $branch.branch_id}>
+      <input type="hidden" name="branch_id" value="<{$branch.branch_id}>">
+      <{/if}>
+    </form>
+  </div>
+</div>

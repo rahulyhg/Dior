@@ -1,0 +1,45 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+
+<form name="form1" method="isoST" action="index.php?app=ome&ctl=admin_receipts_print&act=doDetail">
+<div class="tableform"> 
+
+<h4>入库单明细</h4>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<thead>
+<tr>
+	<th>货号</th>
+    <th>货品名称</th>
+    <th>规格</th>
+	<th>条码</th>
+	<th>入库数量</th>
+ <th>良品数量</th>
+ <th>不良品数量</th>
+</tr>
+</thead>
+<{foreach from=$iso_items item=item}>
+<tbody>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.product_name}></td>
+    <td><{$item.spec_info}></td>
+    <td><{$item.barcode}></td>
+    <td><{$item.nums}></td>
+    <td><{$item.normal_num}></td>
+    <td><{$item.defective_num}></td>
+</tr>
+</tbody>
+<{/foreach}>
+</table>
+</div>
+</div>
+</form>

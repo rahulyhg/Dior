@@ -1,0 +1,39 @@
+<{capture name="header"}>
+<{css src="ome.css" app="ome"}>
+<{/capture}>
+
+<div class="tableform">
+           <div class="division">
+
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+
+        <tbody>
+        <tr style="display:none;">
+          <th>是否质量问题：</th>
+          <td>
+		  <{if $problem.is_problem=='true'}> 是<{else}>否 <{/if}>
+
+              </td>
+        </tr>
+       <tr>
+          <th>类型：</th>
+          <td>
+		    售后问题类型
+		  <!-- <{if $problem.type=='problem_belong'}>问题归属 <{/if}> -->
+
+            </td>
+        </tr>
+        <tr>
+          <th>名称：</th>
+          <td><{$problem.problem_name}></td>
+        </tr>
+
+
+
+
+        </tbody>
+      </table>
+
+
+  </div>
+    </div>

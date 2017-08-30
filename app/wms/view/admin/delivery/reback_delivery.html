@@ -1,0 +1,158 @@
+<style>
+.tginput{
+    margin-top:10px;
+    margin-bottom:10px;
+    padding-left:19px;
+    background:none repeat scroll 0 0 #FAFAFA;
+    border:1px solid #cccccc;
+    color:#069CBC;
+    font-size:20px;
+    line-height:30px;
+    height:35px;
+    width: 400px;
+}
+.tgbutton{
+    margin-top: -10px;
+    margin-left: 25px;
+    font-size:1.5em;
+
+    height: 39px; 
+    width:100px;
+    cursor:pointer;
+    display:-moz-inline-stack;
+    line-height: 35px;
+    overflow: visible;
+    text-decoration: none;
+    vertical-align: middle;
+}
+.tableLeft{
+    text-align:right;
+}
+</style>
+
+<div class="location">
+    <div class="tabs-wrap">
+    <ul>
+        <li class="tab current " onclick="" id="1">
+            <span>撤销发货单</span>
+        </li>
+    </ul>
+</div>
+
+<div class="tableform">
+<div id="main" class="division">
+<form method="post" action="index.php?app=wms&ctl=admin_delivery&act=back">
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tbody>
+        <tr>
+            <td>
+                <select name="select_bn" style="width:200px;font-size:25px;height: 39px;">
+                    <option value="logi_no" <{if $select_type=='logi_no'}>selected<{/if}> >物流单号</option>
+                    <option value='delivery_bn' <{if $select_type=='delivery_bn'}>selected<{/if}> >发货单号</option>
+                </select>
+                <input type="text" id="delivery" vtype="required" name="bn_select" class='tginput' value="<{$bn_select}>"> <span style="color: red;">
+                <button type="submit" id="btn_search" class='tgbutton'><span><span>查询</span></span></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</form>
+<{if $items&&$detail}>
+<form>
+
+<h3 style="">发货单信息</h3>
+<div class="gray_form">
+<table border="0" cellspacing="0" cellpadding="0" class='delivery-info'>
+
+    <tbody>
+    <tr>
+        <th>发货单号：</th>
+        <td><{$detail.delivery_bn}></td>
+        <th>收货人：</th>
+        <td><{$detail.consignee.name}></td>
+        <th></th>
+        <td></td>
+        <th></th>
+        <td></td>
+    </tr>
+    <tr>
+        <th>配送方式：</th>
+        <td><{$detail.delivery}></td>
+        <th>收获地址：</th>
+        <td><{$detail.consignee.province}>-<{$detail.consignee.city}>-<{$detail.consignee.district}>-<{$detail.consignee.addr}></td>
+        <th></th>
+        <td></td>
+        <th></th>
+        <td></td>
+    </tr>
+    <tr>
+        <th>物流公司：</th>
+        <td><{$detail.logi_name}></td>
+        <th>邮编：</th>
+        <td><{$detail.consignee.zip}></td>
+        <th></th>
+        <td></td>
+        <th></th>
+        <td></td>
+    </tr>
+    <tr>
+        <th>物流单号：</th>
+        <td><{$detail.logi_no}></td>
+        <th>手机：</th>
+        <td><{$detail.consignee.mobile}></td>
+        <th></th>
+        <td></td>
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <th>重量：</th>
+        <td><{$detail.weight}></td>
+        <th>电话：</th>
+        <td><{$detail.consignee.telephone}></td>
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+    </tr>
+</tbody>
+</table>
+</div>
+<br/>
+    <input type="hidden" name="delivery_id" value="<{$detail.delivery_id}>" />
+    <input type="hidden" vtype="required" name="logi_no" value="<{$dly.logi_no}>"/>
+    <h3 style="">商品信息</h3>
+    <div class="gridlist">
+        <table border="0" cellspacing="0" cellpadding="0">
+            <thead>
+                <tr>
+                    <th style='text-align:left;padding-left:10px;'>货号</th>
+                    <th style='text-align:left;padding-left:10px;'>条形码</th>
+                    <th style='text-align:left;padding-left:10px;'>货品名称</th>
+                    <th style='text-align:left;padding-left:10px;'>货品数量</th>
+                    <th style='text-align:left;padding-left:10px;'>已校验数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <{foreach from=$items item=item}>
+                <tr>
+                    <td style='text-align:left;padding-left:10px;'><{$item.bn}></td>
+                    <td style='text-align:left;padding-left:10px;'><{$item.barcode}></td>
+                    <td style='text-align:left;padding-left:10px;'><{$item.product_name}></td>
+                    <td style='text-align:left;padding-left:10px;'><{$item.number}></td>
+                    <td style='text-align:left;padding-left:10px;'><{$item.verify_num}></td>
+                </tr>
+                <{/foreach}>
+            </tbody>
+        </table>
+    </div>
+    <br/>
+    <div align="center">
+        <button class="btn" type="button" id="backbtn" onclick="<{if $is_confirm}>if(confirm('此发货单已有单据打印，撤销发货单可能造成多次发货\n\n是否确定撤销？\n\n(打印和校验都是一种状态，如果发货单还没有打印，可以直接撤销。如果已打印，还需要通知库房撤销！)'))<{/if}> new Dialog('index.php?app=wms&ctl=admin_delivery&act=showmemo&p[0]=<{$detail.delivery_id}>',{title:'撤销发货单',<{if $detail.is_bind=='true'}>width:400,height:<{$height}><{else}>width:400,height:278<{/if}>})">
+            <span><span>撤销</span></span>
+        </button>
+    </div>
+</form>
+<{/if}>
+</div>
+</div>

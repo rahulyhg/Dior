@@ -1,0 +1,62 @@
+<div class="tableform">
+    <h4>标签:
+        <font color='red'>
+        <{foreach from=$return_product_tmall.tag_list.tag item=tag_list}>
+        <{$tag_list.tag_name}>
+        <{/foreach}>
+        </font>
+    </h4>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+    <tbody>
+        <tr>
+            <th>支付宝交易号</th>
+            <th>会员ID</th>
+            <th>卖家ID</th>
+            <th>当前状态超时时间</th>
+        </tr>
+        <tr>
+            <td><{$return_product_tmall.alipay_no}></td>
+            <td><{$return_product_tmall.buyer_nick}></td>
+            <td><{$return_product_tmall.seller_nick}></td>
+            <td><{$return_product_tmall.current_phase_timeout|date_format:'%Y-%m-%d'}></td>
+        </tr>
+    </tbody>
+    </table>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+        <tr>
+            <td>退货地址:<{$return_product_tmall.province}>
+            <{$return_product_tmall.city}><{$return_product_tmall.country}><{$return_product_tmall.addr}>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="tableform">
+    <h4>凭证查看
+    <input type="button" id='return_message' name='return_message' value='下载淘宝凭证'>
+    </h4>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
+        <tbody>
+            <{foreach from=$return_product_tmall.online_memo item=memo}>
+            <tr>
+                <td>
+    <{$memo.created}> &nbsp;&nbsp;<{$memo.content}><{if $memo.voucher_urls}><br><img src='<{$memo.voucher_urls}>' height='50' onclick="showimage('<{$memo.voucher_urls}>')" alt='点击查看大图' style="cursor:pointer;"><{/if}>
+    </td>
+            </tr>
+                <{/foreach}>
+        </tbody>
+    </table>
+</div>
+<script>
+if ($('return_message'))
+{
+	$('return_message').addEvent('click',function(e){
+		var url = 'index.php?app=ome&ctl=admin_return&act=refund_message&p[0]=<{$return_product_tmall.return_id}>&p[1]=return&shop_type=tmall&finder_id=<{$env.get.finder_id}>';
+        new Dialog(url,{title:'淘宝凭证',width:500,height:300});
+	
+	});
+}
+function showimage(imgpath){
+    var url = 'index.php?app=ome&ctl=admin_return&act=showImage&p[0]='+imgpath;
+    new Dialog(url,{title:'查看凭证大图',width:500,height:300});
+}
+</script>

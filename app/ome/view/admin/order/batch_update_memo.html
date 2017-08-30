@@ -1,0 +1,48 @@
+<form class="tableform" id="form-order" method='post' action='index.php?app=ome&ctl=admin_order&act=doBatchUpMemo'>
+
+<table width="100%" >
+    <tbody> 
+        <tr>
+	        <td><input type='hidden' name='order_id' value='<{$order_id}>'></input></td>
+	        <td>备注内容：</td>
+	        <td><textarea name="mark_text" cols="80" rows="5" width="100%" vtype="required"></textarea></td> 
+        </tr>
+    </tbody>
+</table>
+
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="btn-submit" onclick='dosubmit()'><span><span><{t}>提交<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+</form>
+
+<script>
+function dosubmit(){
+    $("form-order").fireEvent('submit',{stop:function(){}});
+}
+(function(){
+  var finder = finderGroup['<{$env.get.finder_id}>'];
+  $('form-order').store('target',{
+      onRequest:function(){
+         $('btn-submit').set('disabled', 'true');
+      },
+      onComplete:function(jsontext){
+         var json = Json.evaluate(jsontext);
+         if (typeof(json.error) != 'undefined'){
+           $('btn-submit').set('disabled', '');
+         }else{
+           $('btn-submit').set('disabled', 'true');
+             finderGroup['<{$env.get.finder_id}>'].refresh.delay(10,finderGroup['<{$env.get.finder_id}>']);
+             $('btn-submit').getParent('.dialog').retrieve('instance').close();
+         }
+      }
+  });
+})();
+</script>

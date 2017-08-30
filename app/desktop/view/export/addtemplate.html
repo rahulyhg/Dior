@@ -1,0 +1,24 @@
+<form id="exptempform" method="post" action="index.php?app=desktop&ctl=export&act=saveTemp">
+    <div>名称:<input type="text" id="extmp_name" name="extmp_name" vtype="required" /></div>
+    <input type="hidden" name="need_detail" value="<{$need_detail}>">
+    <input type="hidden" name="content" value="<{$content}>">
+    <input type="hidden" name="type" value="<{$type}>">
+</form>
+<div class='table-action'>
+    <{button label='确定' id='primary-btn'}>
+</div>
+<script type="text/javascript">
+    $('primary-btn').removeEvents('click').addEvent('click',function(e){
+        e.stop();
+        var data = $('exptempform').toQueryString();
+        var url = $('exptempform').get('action');
+        new Request ({
+            url:url,
+            data:data,
+            method:'post',
+            onComplete:function(){
+                $('primary-btn').getParent('.dialog').retrieve('instance').close();
+            }
+        }).send();
+    });
+</script>

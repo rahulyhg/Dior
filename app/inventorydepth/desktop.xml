@@ -1,0 +1,31 @@
+<desktop>
+	<permissions>
+            <permission id="inventorydepth_shop">店铺资源</permission>
+            <permission id="inventorydepth_adjustment_index">回写库存管理</permission>
+            <permission id="inventorydepth_regulation_stockindex">回写库存规则</permission>
+            <permission id="inventorydepth_regulation_apply_stockindex">回写规则应用</permission>
+            <permission id="inventorydepth_shop_frame_index">上下架管理</permission>
+            <permission id="inventorydepth_shop_frame_batch">批量上下架</permission>
+            <permission id="inventorydepth_regulation_frameIndex">上下架规则</permission>
+            <permission id="inventorydepth_regulation_apply_frameindex">上下架规则应用</permission>
+            <permission id="inventorydepth_shop_export">店铺商品导出</permission>
+    </permissions>
+
+     <workground name="资源管理" id="resource_center"  order="500">
+        <menugroup name="店铺商品管理">
+            <menu controller='shop' action='index' permission='inventorydepth_shop' display='true' order='100100'>前端店铺</menu>
+        </menugroup>
+        <menugroup name="在售库存管理">
+            <menu controller='shop' action='jump' params='p[0]:sku' permission='inventorydepth_adjustment_index' display='true' order='200100' target="dialog::{}">库存管理</menu>
+            <menu controller='regulation' action='stockIndex' permission='inventorydepth_regulation_stockindex' display='true' order='200200'>库存规则</menu>
+            <menu controller='regulation_apply' action='stockIndex' permission='inventorydepth_regulation_apply_stockindex' display='true' order='200300'>规则应用</menu>
+        </menugroup>
+        <menugroup name="上下架管理">
+            <menu controller='shop' action='jump' params='p[0]:item' permission='inventorydepth_shop_frame_index' display='true' order='300100' target="dialog::{}">上下架管理</menu>
+            <menu controller='shop' action='jump' params='p[0]:warning' permission='inventorydepth_shop_frame_batch' display='true' order='300200' target="dialog::{}">批量上下架</menu>
+            <menu permission='inventorydepth_shop_export' display='false' >店铺商品导出</menu>
+			<!--<menu controller='regulation' action='frameIndex' permission='inventorydepth_regulation_frameIndex' display='true' order='8000600'>上下架规则</menu>-->
+			<!--<menu controller='regulation_apply' action='frameIndex' permission='inventorydepth_shop' display='true' order='8000700'>规则应用</menu>-->
+        </menugroup>
+    </workground>
+</desktop>

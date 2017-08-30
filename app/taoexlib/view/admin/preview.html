@@ -1,0 +1,134 @@
+<div class="tableform">
+  <form action="#" onsubmit="return false" method="post" id="newMemForm">
+    <table border="0">
+      <tbody>
+	  	<tr>
+          <th width="30%">物流单号：</th>
+          <td width="70%"><input id="logi_no"  name="logi_no" type="text" value='<{$logi_no}>' vtype='required'/><{help}>务必填写数据库中存在的物流单号。<{/help}></td>
+        </tr>
+        <tr>
+          <th>发送内容：</th>
+          <td colspan="3">
+			<{input type="textarea" id="memo"  name="remark"  rows="13" cols="25" value=$messagecontent vtype='required' readonly="true"}>
+			</td>
+        </tr>
+		<tr>
+          <th width="30%">手机号码：</th>
+          <td width="70%"><input id="_mobile" name="mobile" type="text" value='<{$mobile}>' /></td>
+        </tr>
+      </tbody>
+    </table><div id="ajaxtip" style="text-align:center;color:#FF0000;height:20px;"></div>
+    <div class="table-action">
+	<{button label="发送" name="btn" id="btnMemSubmit"}> &nbsp; &nbsp; <{button label="返回" class="btn-secondary" isCloseDialogBtn="true"}><br><em class="c-blue">短信预览发送，将会消耗您一条短信资源！</em>
+    </div>
+    <input type="hidden" name="id" value="<{$id}>">
+  </form>
+</div>
+<script>
+  (function(){
+  	
+	var memo = $('memo').value;
+	var ajaxtip = $('ajaxtip');
+	$('btnMemSubmit').set('disabled', true); 
+  
+	function is_mobile(str){
+
+	    var partten = /^\d{8,15}$/;
+	    if(partten.test(str)){
+	        return true;
+	    }else{
+	        return false;
+	    }
+	}
+	
+	//判断物流单号的状态
+	$('logi_no').addEvent('blur',function(){
+		var logi_no = this.value;
+		var content = $('memo').value;
+		new Request({url:'index.php?app=taoexlib&ctl=admin_setting&act=checkReplace',
+					 method:'post',
+					 data:'logi_no='+logi_no+'&content='+content,
+        			 onSuccess:function(responseText){
+							json = JSON.decode(responseText);
+							if(json=='switchoff'){
+								ajaxtip.set('text','短信功能没有开启，不能发送预览短信！');
+								$('btnMemSubmit').set('disabled', true); 
+							}else if(json=='logi_no_empty'){
+								ajaxtip.set('text','物流单号请不要为空！');
+								$('btnMemSubmit').set('disabled', true); 
+							}else if(json=='logi_info_empty'){
+								ajaxtip.set('text','查无此物流单号信息！');
+								$('memo').value=memo;
+								$('btnMemSubmit').set('disabled', true); 
+							}else{
+								ajaxtip.set('text','');
+								$('memo').value=json;
+								$('btnMemSubmit').set('disabled', false); 
+							}
+        			 }
+      				}).send();	
+	});
+	
+    $('btnMemSubmit').addEvent('click',function(){
+    	var form = this.getParent('form');
+    	if(! validate(form)) return;
+
+	    //手机号码验证
+	    var mobile;
+	    mobile = $('_mobile').value.replace(' ','');
+	   
+	    if (!mobile){
+           alert('手机号码必需填写');
+           $('_mobile').focus();
+           return false;
+	    }
+	   
+	    if (mobile){         
+		   if ( is_mobile(mobile) === false){
+               alert('请输入正确的手机号码');
+               $('_mobile').focus();
+               return false;
+            }
+		  
+            if (mobile[0] == '0'){
+               alert('手机号码前请不要加0');
+               $('_mobile').focus();
+               return false;
+            }  
+        }
+		
+		new Request({url:'index.php?app=taoexlib&ctl=admin_setting&act=sendtest',
+					 method:'post',
+					 data:form.toQueryString(),
+        			 onRequest:function(){
+							ajaxtip.set('text','正在发送信息……');
+							$('btnMemSubmit').set('disabled', true); 
+        			 },
+					 onSuccess:function(responseText){
+					 		$('btnMemSubmit').set('disabled', false);
+							json = JSON.decode(responseText);
+							if(json=='BlackMobile'){
+								ajaxtip.set('text','该手机号码处于免打扰列表中，无法发送预览短信！');
+								return false;
+							}else if(json=='loginoerror'){
+								ajaxtip.set('text','物流单号为空');
+								return false;
+							}else if(json=='month_residual_zero'){
+								ajaxtip.set('text','当前没有可用的短信条数！');
+								return false;
+							}else if(json=='sendOk'){
+								ajaxtip.set('text','发送成功，请注意查收！');
+								return;
+							}else if(json=='sendFalse'){
+								ajaxtip.set('text','发送失败，请查看短信日志！');
+								return;
+							}else{
+								ajaxtip.set('text',json);
+								return;
+							}
+        			 }
+      				}).send();	
+	   
+    });
+  })()
+</script>

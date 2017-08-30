@@ -1,0 +1,78 @@
+<div class="tableform">
+    <div class="division">
+    <input type="hidden" id="log_id" name="log_id" value="<{$log_id}>" />
+    <input type="hidden" id="isSelectedAll" name="isSelectedAll" value="<{$isSelectedAll}>" />
+    <input type="hidden" id="retry_type" name="retry_type" value="<{$retry_type}>" />
+	<input type="hidden" id="log_type" name="log_type" value="<{$env.get.log_type}>" />
+    <input type="hidden" id="cursor" name="cursor" value="0" />
+	<input type="hidden" id="postData" name="postData" value=<{$postData}> />
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+          <tbody>
+          <td><div class="box loading fl">　　</div>正在重试...</td>
+        </tr>   
+          </tbody>
+        </table>
+    </div>
+    <div id="retry_info" style="overflow:auto;"></div>
+</div>
+
+<script>
+
+    var log_id = $("log_id").get('value'),status,simpleTimer;
+    var retry_type = $("retry_type").get('value');
+	var log_type = $("log_type").get('value');
+    var isSelectedAll = $("isSelectedAll").get('value');
+	var postData = $("postData").get('value');
+
+    retry(log_id,log_type,retry_type,isSelectedAll,postData);
+
+    function retry(log_id,log_type,retry_type,isSelectedAll,postData){
+
+        var jsonRequest = new Request.JSON({
+            url: "index.php?app=ome&ctl=admin_api_log&act=retry_do",
+            onComplete: function(retry, text){console.log(retry);
+				if (retry.status != 'skip')
+				{
+					if (retry.status == 'succ' || retry.status == 'complete') status = '....<font color=blue>重试成功</font>';
+					else status = '....<font color=red>重试失败</font>';
+					$('retry_info').set('html', retry.task_name + status + "<br/>" + $('retry_info').get('html') );
+				}
+                var ispatrn = isPatrn(log_id);
+                if (retry.status == 'fail') return;
+                if ((retry_type == 'single' && retry.status == 'succ') || retry.status == 'complete' || (retry.status == 'succ' && !ispatrn && isSelectedAll != '_ALL_') ){
+                    setTimeout("fresh_close();",2000);
+                    return;
+                }
+                if (retry_type == 'batch' && (ispatrn || isSelectedAll == '_ALL_')){
+                    cursor = $('cursor').value;
+                    cursor++;
+                    $('cursor').set('value', cursor);
+                    setTimeout("retry(log_id,log_type,retry_type,isSelectedAll,postData)", 500);
+                    return;
+                }
+            }
+        }).get({
+            'log_id': encodeURIComponent(log_id),
+            'retry_type': retry_type,
+			'log_type': log_type,
+            'isSelectedAll': isSelectedAll,
+			'postData':encodeURIComponent(postData),
+            'cursor': $('cursor').value
+        });
+    }
+
+    function fresh_close(){
+        $('log_id').getParent('.dialog').retrieve('instance').close();
+        parent.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,parent.finderGroup['<{$env.get.finder_id}>']);
+    }
+
+    function isPatrn(s)
+    {
+        var patrn = /\|/g;
+        if(patrn.exec(s)){
+            return true;
+        }
+        return false;
+    }
+
+</script>

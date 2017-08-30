@@ -1,0 +1,298 @@
+<script>
+
+$$('input[name^=pay_type]').addEvent('click', function(){
+    var order_id = $('order_id').value, shop_id = $('shop_id').value, pay_type = this.value;
+    W.page('index.php?app=ome&ctl=admin_finance&act=payment_by_pay_type&p[0]='+order_id+'&p[1]='+shop_id+'&p[2]='+pay_type,{update:$('payment'),onComplete:function(){
+        if($('payment').length <= 1){
+          $('payment').disabled = 'disabled';
+        }else{
+            $('payment').disabled = '';
+        }
+    }});
+});
+
+
+$('selectAccount').addEvent('change', function(e){
+  e=new Event(e);
+  var ipt=e.target;
+  var str = ipt.value;
+  var aItems = str.split('-');
+  $('payBank').value = aItems[0];
+  $('payAccount').value = aItems[1];
+});
+
+<{if $addon.from == 'remain_order_cancel'}>
+    $('dorefund').store('target',{
+        onRequest:function(e){
+            //提交按钮:disabled
+            $('ome_register_refund').set('disabled', 'true');
+            $('ome_register_refund').getElements('span')[1].set('text','正在处理');
+        },
+        onComplete:function(jsontext){
+           var json = Json.evaluate(jsontext);
+           var back_from = $('back_from').value;
+           var back_find_id = $('back_find_id').value;
+           var back_filter = $('back_filter').value;
+           $('refund_money').set('value', $('kuaidimoney').value);
+           if (typeof(json.error) == 'undefined'){
+               $('ome_register_refund').set('disabled', 'true');
+               $('ome_register_refund').getElements('span')[1].set('text','正在处理');
+               $('ome_remain_cancel_form').fireEvent('submit',{stop:function(){}});
+           }else{
+               $('ome_register_refund').set('disabled', '');
+               $('ome_register_refund').getElements('span')[1].set('text','申请退款');
+           }
+        }
+    });
+<{/if}>
+
+<{if $addon.from == 'order_edit'}>
+  $('dorefund').store('target',{
+      onRequest:function(e){
+          //提交按钮:disabled
+          $('ome_register_refund').set('disabled', 'true');
+          $('ome_register_refund').getElements('span')[1].set('text','正在处理');
+      },
+      onComplete:function(jsontext){
+         var json = Json.evaluate(jsontext);
+         if (typeof(json.error) == 'undefined'){
+             $('ome_register_refund').set('disabled', 'true');
+             $('ome_register_refund').getElements('span')[1].set('text','正在处理');
+             $('dorefund').getParent('.dialog').retrieve('instance').close();
+             doAction(2);
+             finish_edit_confirm();
+         }else{
+             $('ome_register_refund').set('disabled', '');
+             $('ome_register_refund').getElements('span')[1].set('text','申请退款');
+         }
+      }
+  });
+<{/if}>
+
+
+<{if $is_edit != 'false'}>
+
+<{if !$addon.from}>
+  $('dorefund').store('target',{
+    onRequest:function(e){
+          //提交按钮:disabled
+          $('ome_register_refund').set('disabled', 'true');
+      },
+      onComplete:function(jsontext){
+         var json = Json.evaluate(jsontext);
+         if (typeof(json.error) == 'undefined'){
+           $('dorefund').getParent('.dialog').retrieve('instance').close();
+           try{
+             parent.finderGroup['<{$finder_id}>'].refresh.delay(400,parent.finderGroup['<{$finder_id}>']);
+           }catch(e){}
+         }else{
+         //提交按钮:disabled
+         $('ome_register_refund').set('disabled', '');
+         }
+      }
+  });
+<{/if}>
+
+$('ome_register_refund').addEvent('click',function(e){
+  $('dorefund').fireEvent('submit',{stop:function(){}});
+});
+function submitchk(){
+ var a = document.getElementsByName("pay_type");
+ var b = document.getElementById("bncheckname");
+ var c='';
+ for(var i = 0 ;i<a.length;i++) {
+  if(a[i].checked) {
+  c+=a[i].value+',';
+  }
+ }
+ b.value=c;
+}
+
+
+/* 销售订单快速搜索之补全搜索*/
+  var options={
+    'getVar':'bn',
+    'fxOptions':false,
+    callJSON:function(){return window.autocompleter_json;},
+    injectChoice:function(json){
+      var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+      choice.store('_data',json);
+      choice.inputValue = json[this.options.getVar];
+      this.addChoiceEvents(choice).inject(this.choices);
+    },
+    onHide:function(){
+      if(!this.selected)return;
+      var json=this.selected.retrieve('_data');
+      json=$splat(json);
+      init(json);
+      MessageBox.success('加载商品成功!!');
+        },
+        onFocus:function(ipt){
+      ipt.value='';
+    }
+    };
+
+    if ($defined($E('#auto_supp input[type=text]')))
+    {
+        new Autocompleter.script($E('#auto_supp input[type=text]'),"index.php?app=ome&ctl=admin_return_refund_apply&act=getRefundOrder&source=<{$source}>", $merge(options,{
+        'getVar':'order_bn',
+        selectFirst:false,
+        injectChoice:function(json){
+          var order_id=json["order_id"]?"("+json["order_id"]+")":"";
+          var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar]+order_id)});
+                choice.store('_data',json);
+          choice.inputValue = json[this.options.getVar];
+          this.addChoiceEvents(choice).inject(this.choices);
+            },
+            onHide:function(){
+              if(!this.selected)return;
+              var json=this.selected.retrieve('_data');
+              $('order_id').set("value",json["order_id"]);
+              response_html(json["order_id"]);
+            },
+            onFocus:$empty
+      }));
+    }
+
+/* 销售订单快速搜索之通过dialog查找*/
+  $E(".btn_supplier").addEvent('click',function(e){
+    var url='?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=ome&ctl=admin_return_refund_apply&act=getRefundOrderFinder&singleselect=1&ship_status=1&status=active&source=<{$source}>");
+      Ex_Loader('modedialog',function() {
+      new finderDialog(url,{params:{url:'index.php?app=ome&ctl=admin_return_rchange&act=getOdersById&source=<{$source}>',name:'id',type:'radio'},handle:'supplier',width:1000,height:500,onCallback:function(e){
+        response_html($('order_id').getValue());
+      }});
+    });
+  });
+
+
+function response_html(val){
+    var request = new Request.HTML({
+       url : 'index.php?app=ome&ctl=admin_return_refund_apply&act=ajax_getOrderinfo&source=<{$source}>',
+       method : 'post',
+       data : 'order_id='+val,
+       evalScripts : true,
+       update : $('insert_html'),
+    }).send();
+} 
+<{/if}>
+
+</script>
+    <input type='hidden' name='shop_id' id='shop_id' value='<{$shop_id}>'>
+    <input type='hidden' name='return_id' value='<{$return_id}>'>
+    <input type='hidden' name='terminal_tag' value='<{$order.terminal_tag}>'>
+  <input type='hidden' name='order_bn' value='<{$order.order_bn}>'>
+  <input type='hidden' name='remain_cancel_flag' value='<{$remain_cancel_flag}>'>
+  <input type='hidden' name='diff_price' value='<{$diff_price}>'>
+  <input type='hidden' name='back_url' id='back_url' value='<{$env.get.back_url}>'>
+    <tr>
+    <th><{t}>销售订单号:<{/t}></th>
+    <td>
+      <span id="auto_supp" style="position:relative;">
+        <{if $is_edit == 'false'}>
+          <{$order.order_bn}>
+        <{else}>
+          <{img class="pointer btn_supplier" title="查看销售订单列表" app="desktop" src="bundle/zoom_btn.gif"}>
+          <input type="text" id="supplier" name="supplier" value="<{$order.order_bn}>" vtype="required" class="x-input" />
+        <{/if}>
+        <input type="hidden" name="order_id" id="order_id" value="<{$order.order_id}>" />
+      </span>      
+    </td>
+    <th><{t}>下单日期:<{/t}></th>
+    <td><{if $order.createtime eq ''}>-<{else}><{$order.createtime|cdate}><{/if}></td>    
+    </tr>
+  <tr>
+    <th><{t}>订单金额:<{/t}></th>
+    <td><{$order['total_amount']}></td>
+
+    <th><{t}>已付金额:<{/t}></th>
+    <td><{$order.payed}></td>
+    </tr>
+  <tr>
+    <th><{t}>退款类型: <{/t}></th>
+    <td><{input type="radio" name="pay_type" options=$typeList value=$pay_type vtype='requiredradio'}></td>
+    <th><{t}>退款支付方式:<{/t}></th>
+    <td>
+    <{if $payment}>
+    <{if $node_id}>
+    <select id='payment' name='payment'>
+        <{if $payment_id}>
+          <{foreach from=$order_paymentcfg key=key item=item}>
+            <option value="<{$item.id}>"><{$item.custom_name}></option>
+          <{/foreach}>
+        <{/if}>
+    </select>
+    <{else}>
+        <{input type="select" id="payment" name='payment' rows=$payment valueColumn="id" labelColumn="custom_name" value=$payment_id }>
+    <{/if}>
+    <{else}>
+    <select id='payment' name='payment'>
+    </select>
+    <em class="red">请先添加或同步前端店铺支付方式</em>
+    <{/if}>
+    </td>
+  </tr>
+    <tr>
+    <th><{t}>退款银行:<{/t}></th>
+    <td colspan="3"><{input type='text' id='payBank' name='bank' value=$payment_bank width="140"}> <{input id="selectAccount" type="select" name='select_account' options=$pay_account  value=''}></td>
+    </tr>
+    <tr>
+    <th><{t}>退款帐号:<{/t}></th>
+    <td><{input type='text' name='account' id='payAccount' value=$account width="140"}></td>
+    <th><{t}>收款帐号:<{/t}></th>
+    <td><{input type='text' name='pay_account' value=$payment_account width="80"}></td>
+  </tr>
+  <tr>
+       <th><{t}>剩余金额:<{/t}></th>
+    <td><{$order.payed}></td>
+
+    <th><{t}>退款金额:<{/t}></th>
+    <td colspan="3"><{input type='text' id='kuaidimoney' vtype="required&&unsigned" name='refund_money' value=$refund_money width="140"}><{input type='hidden' name='return_id' value=$return_id}></td>
+
+  </tr>
+  <tr>
+       <th><{t}>补偿费用:<{/t}></th>
+    <td><input type="text" name="bcmoney" value=></td>
+
+    <th></th>
+    <td colspan="3"></td>
+
+  </tr>
+  <tr <{if $remain_cancel_flag == 'true'}>style="display:none;"<{/if}>  >
+  <th><{t}>订单明细:<{/t}></th>
+    <td colspan="3">
+    <{if count($aItems) > 0}>
+   <div class="division">
+    <div  class="gridlist">
+      <input type='hidden' name='bncheckname' id='bncheckname'>
+      <table>
+        <thead>
+          <th><{t}>货号<{/t}></th>
+          <th><{t}>商品名称<{/t}></th>
+       <th><{t}>数量<{/t}></th>
+       <th><{t}>原价<{/t}></th>
+       <th><{t}>销售价<{/t}></th>
+        </tr>
+      </thead>
+      <tbody>
+        <{foreach from=$aItems item=aGoods name="item"}>
+        <tr <{if $aGoods.delete == 'true'}>style="background-color: rgb(216, 216, 216);"<{/if}>>
+          <td><{$aGoods.bn}></td>
+          <td class="textleft">
+          <{$aGoods.name}>
+          </td>
+          <td><{$aGoods.quantity}></td>
+          <td><{$aGoods.price|cur}></td>
+          <td><{$aGoods.sale_price/$aGoods.quantity|cur}></td>
+        </tr>
+        <{/foreach}>
+      </tbody>
+      </table>
+    </div>
+  </div>
+    <{/if}>
+    </td>
+    </tr>
+  <tr>
+  <th><{t}>申请备注:<{/t}></th>
+    <td colspan="3"><{input type="textarea" name="memo"   cols="78" rows="5"}></td>
+  </tr>

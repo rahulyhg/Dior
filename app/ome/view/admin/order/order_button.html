@@ -1,0 +1,283 @@
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="order_process" method="post">
+  <input type="hidden" name="order[order_id]" value="<{$order.order_id}>"/>
+  <!-- <input type="hidden" name="order[process_status]" id="process_status" value="<{$order.process_status}>" /> -->
+  <input type="hidden" name="order_action" id="order_action" value="" />
+  <div class="action-bar clearfix">
+  <{* // *}>
+  <{assign var="flag_aftermarket" value="1"}>
+  <{assign var="flag_refund" value="1"}>
+  <{assign var="flag_fail_time" value="1"}>
+  <{assign var="flag_cancel" value="1"}>
+  <{assign var="flag_edit" value="1"}>
+  <{assign var="flag_suspended" value="1"}>
+  <{assign var="flag_abnormal" value="1"}>
+  <{assign var="Cancel" value="1"}>
+  <{if $env.get.flt eq 'unmyown'}>
+    <{if $order.pay_status eq '0'}>
+      <{assign var="flag_aftermarket" value="0"}>
+      <{assign var="flag_refund" value="0"}>
+    <{elseif $order.pay_status eq '3' || $order.pay_status eq '4'}>
+      <{assign var="flag_aftermarket" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif $order.pay_status eq '6' || $order.pay_status eq '7' || $order.pay_status eq '8'}>
+      <{assign var="Cancel" value="0"}>
+      <{assign var="flag_edit" value="0"}>
+      <{assign var="flag_refund" value="0"}>
+      <{assign var="flag_aftermarket" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif ($order.pay_status eq '1' || $order.shipping.is_cod eq 'true') && ($order.process_status eq 'unconfirmed' || $order.process_status eq 'confirmed' || $order.process_status eq 'splitting') && ($order.ship_status eq '0')}>
+      <{assign var="flag_fail_time" value="0"}>
+      <{assign var="flag_aftermarket" value="0"}>
+    <{elseif ($order.pay_status eq '1' || $order.shipping.is_cod eq 'true') && $order.process_status eq 'splited' && $order.ship_status eq '2'}>
+      <{assign var="flag_aftermarket" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+      <{assign var="flag_edit" value="0"}>
+      <{assign var="Cancel" value="0"}>
+    <{/if}>
+  <{elseif $env.get.flt eq 'myown'}>
+    <{if ($order.pay_status eq '1' || $order.shipping.is_cod eq 'true') && $order.process_status eq 'splited' && $order.ship_status eq '0'}>
+      <{assign var="flag_aftermarket" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif ($order.pay_status eq '1' || $order.shipping.is_cod eq 'true') && $order.process_status eq 'splited' && $order.ship_status eq '2'}>
+      <{assign var="flag_edit" value="0"}>
+      <{assign var="flag_aftermarket" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif ($order.pay_status eq '1' || $order.shipping.is_cod eq 'true') && $order.process_status eq 'splited' && $order.ship_status eq '1'}>
+      <{assign var="flag_suspended" value="0"}>
+      <{assign var="flag_abnormal" value="0"}>
+      <{assign var="flag_edit" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif ($order.pay_status eq '1' || $order.shipping.is_cod eq 'true') && $order.process_status eq 'remain_cancel'}>
+      <{assign var="flag_suspended" value="0"}>
+      <{assign var="flag_abnormal" value="0"}>
+      <{assign var="flag_edit" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif $order.pay_status eq '5' && $order.process_status eq 'remain_cancel' && $order.ship_status eq '1'}>
+      <{assign var="flag_suspended" value="0"}>
+      <{assign var="flag_abnormal" value="0"}>
+      <{assign var="flag_edit" value="0"}>
+      <{assign var="flag_refund" value="0"}>
+      <{assign var="flag_fail_time" value="0"}>
+    <{elseif $order.pay_status eq '1' && $order.process_status eq 'splited' && ($order.ship_status eq '2' || $order.ship_status eq '1') && $order.process_status eq 'remain_cancel'}>
+      <{assign var="Cancel" value="0"}>
+    <{/if}>
+    <{if $order.ship_status eq '2' || $order.ship_status eq '1'}>
+      <{assign var="Cancel" value="0"}>
+    <{/if}>
+  <{/if}>
+  <{if $env.get.flt eq 'ourgroup'}>
+     <{assign var="Cancel" value="0"}>
+  <{/if}>
+  <{if $env.get.act eq 'index'}>
+        <{assign var="flag_aftermarket" value="0"}>
+        <{assign var="flag_fail_time" value="0"}>
+        <{assign var="flag_cancel" value="0"}>
+        <{assign var="flag_edit" value="0"}>
+        <{assign var="flag_suspended" value="0"}>
+        <{assign var="flag_abnormal" value="0"}>
+  <{/if}>
+  <{if $env.get.act eq 'active'}>
+        <{if $order.pay_status eq '6' || $order.pay_status eq '7' || $order.pay_status eq '8'}>
+            <{assign var="Cancel" value="0"}>
+            <{assign var="flag_edit" value="0"}>
+            <{assign var="flag_refund" value="0"}>
+         <{/if}>
+  <{/if}>
+  <{* // *}>
+
+    <div class="span-auto"><strong class="action-bar-info">订单操作：</strong></div>
+    <{if $act_confirm || $act_abnormal}>
+    <div class="flt">
+    <{if $Cancel eq '1'}>
+      <{if  $order.ship_status != 0 || $order.status != 'active' || $order.process_status == 'cancel'}>
+      <{button label="订单取消" disabled="disabled"}>&nbsp;
+      <{else}>
+      <{button label="订单取消" onclick="new Dialog('index.php?ctl=admin_order&act=do_cancel&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:700,height:300,title:'订单取消'})"}>&nbsp;
+      <{/if}>
+    <{/if}>
+    </div>
+
+    <{if $env.get.flt neq 'ourgroup'}>
+
+    <div class="flt">
+    <{if $flag_abnormal eq '1'}>
+      <{if  $order.status != 'active' || $order.process_status == 'cancel' || $order.abnormal == 'true' || $order.ship_status == 1}>
+      <{button label="订单异常" disabled="disabled"}>&nbsp;
+      <{elseif $order.process_status == 'splitting' || $order.ship_status == '2'}>
+      <{button label="订单异常" onclick="order_process_status()"}>&nbsp;
+      <{else}>
+      <{button label="订单异常" onclick="new Dialog('index.php?ctl=admin_order&act=do_abnormal&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}&flt={$env.get.flt}&origin_act={$env.get.act}',{width:700,title:'订单异常'})"}>&nbsp;
+      <{/if}>
+    <{/if}>
+    </div>
+    
+    <{if $is_edit_view == 'false'}>
+        <{assign var="flag_edit" value=0}>
+    <{/if}>
+    
+    <{if ($order.ship_status == 2 || $order.process_status == 'splitting') && $is_c2cshop != true}>
+    	<{assign var="flag_edit" value=0}>
+    <{/if}>
+    
+    <div class="flt">
+      <{if ($order.ship_status == 0 || $order.ship_status == 2 || ($order.process_status == 'splitting' && $order.ship_status == '3')) && $order.process_status != 'cancel'}>
+      <{if $order.pause == 'false'}>
+        <{if $flag_suspended eq '1'}>
+        <{button label="暂停" id="pause" onclick="order_pause()"}>&nbsp;
+        <{/if}>
+
+        <{if $flag_edit eq '1'}>
+        <{button label="编辑" disabled="disabled"}>&nbsp;
+        <{/if}>
+      <{else}>
+      <{button label="恢复" id="pause" onclick="order_renew()"}>&nbsp;
+        <{if $flag_edit eq '1'}>
+        <{button label="编辑" onclick="update('{$order.order_id}');"}>&nbsp;
+        <{/if}>
+      <{/if}>
+      <{else}>
+        <{if $flag_suspended eq '1'}>
+          <{button label="暂停"  disabled="disabled"}>&nbsp;
+        <{/if}>
+      <{/if}>
+
+    </div>
+
+    <!--<div class="flt">
+    <{if $flag_aftermarket eq 1}>
+      <{if ($order.ship_status != 1 && $order.ship_status != 3) || $order.status != 'active' || $order.process_status == 'cancel'}>
+      <{button label="售后申请" disabled="disabled"}>&nbsp;
+      <{else}>
+            <{button label="售后申请" onclick="new Dialog('index.php?ctl=admin_return&act=apply&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:700,title:'订单{$order.order_bn}的售后申请'})"}>
+      <{/if}>
+    <{/if}>
+    </div>-->
+
+    <{if $is_c2cshop && ($order.process_status == 'splitting' || $order.ship_status == '2')}>
+      <{assign var="refundapply_confirm" value="confirm('退款申请操作,系统会自动取消未发货的发货单？\\n\\n\\t该订单为{$shop_name}订单,由于目前暂不支持同步退款申请,所以请到对应的销售平台进行实际退款。\\n\\n\\t如继续操作所产生的退款申请单只会在本系统生成不会出现在{$shop_name}上。')"}>
+    <{elseif $is_c2cshop}>
+      <{assign var="refundapply_confirm" value="confirm('该订单为{$shop_name}订单,由于目前暂不支持同步退款申请,所以请到对应的销售平台进行实际退款。\\n\\n\\t如继续操作所产生的退款申请单只会在本系统生成不会出现在{$shop_name}上。')"}>
+    <{elseif $order.process_status == 'splitting' || $order.ship_status == '2'}>
+      <{assign var="refundapply_confirm" value="confirm('退款申请操作,系统会自动取消未发货的发货单？')"}>
+    <{else}>
+      <{assign var="refundapply_confirm" value="true"}>
+    <{/if}>
+
+    <div class="flt">
+    <{if $flag_refund eq 1 && $order.order_source neq 'taofenxiao' && ($order.process_status neq 'splitting' && $order.ship_status neq '3')}>
+      <{if  $isrefund == 'false' || ($order.pay_status != 1 &&$order.pay_status != 3 && $order.pay_status != 4) || $order.status != 'active' || $order.process_status == 'cancel'}>
+      <{button label="退款申请" disabled="disabled"}>&nbsp;
+      <{else}>
+      <{button label="退款申请" onclick="if({$refundapply_confirm}){
+  new Dialog('index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:800,height:550,title:'订单{$order.order_bn}的退款申请',onLoad:function(){ $('back_url').set('value','order_confirm'); }});
+}" }>&nbsp;
+      <{/if}>
+    <{/if}>
+    </div>
+
+    <div class="flt">
+    <{if $flag_fail_time eq 1}>
+    <{input type="date" name="order[order_limit_time]" maxlength=20 value=$order.order_limit_time}>&nbsp;
+      <{if $order.pay_status != 0 || $order.pay_status != 0 || $order.status != 'active' || $order.process_status == 'cancel'}>
+      <{button label="失效时间编辑" disabled="disabled"}>&nbsp;
+      <{else}>
+      <{button label="失效时间编辑" onclick="modify_time()"}>&nbsp;
+      <{/if}>
+    <{/if}>
+    </div>
+
+    <{/if}>
+    <{/if}>
+
+    <{if $act_finance}>
+    <div class="flt">
+	   <{if  $order.status != 'active' || $order.process_status == 'cancel' ||$order.pay_status==5 || $order.pay_status==1 || ($order.shipping.is_cod eq 'true' && $order.ship_status == 0)}>
+	   <{button label="支付…" disabled="disabled"}><{if $order.shipping.is_cod eq 'true' && $order.ship_status==0}><span class="red">货到付款未发货</span><{/if}>
+	   <{else}>
+	   <{button label="支付…" onclick="new Dialog('index.php?ctl=admin_finance&act=pay_confirm&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:680,height:450,title:'订单{$order.order_bn}支付'})"}><{if $order.shipping.is_cod eq 'true'}><span class="red">货到付款已发货</span><{/if}>
+	   <{/if}>
+    </div>
+    <{/if}>
+  </div>
+</form>
+
+<script>
+  function update(order_id){
+      var finder_id = '<{$env.get.finder_id}>';
+      var oldsource = '<{$env.get.act}>';
+      var base_url = '<{$base_url}>';
+      var remote_url = base_url+'/index.php?app=ome&ctl=admin_order&act=update_iframe&p[0]='+order_id+'&finder_id='+finder_id;
+
+      new Request({
+         url:'index.php?app=ome&ctl=admin_order&act=update_type',
+         method:'get',
+         onComplete:function (rs){
+            var rs = JSON.decode(rs);
+            if (rs.data.edit_type == 'local')
+            {
+                var p = window.open('about:blank');
+                p.location = 'index.php?app=ome&ctl=admin_order&act=view_edit&p[0]='+order_id+'&finder_id='+finder_id+'&oldsource='+oldsource;
+            }else{
+              <{if $order.process_status == 'splited'}>
+                if(!confirm('该订单还存在发货单，是否需要进行打回？')){
+                    return false;
+                }else{
+                    var p = window.open('about:blank');
+                    p.location =  remote_url;
+                }
+              <{else}>
+                var p = window.open('about:blank');
+                p.location =  remote_url;
+              <{/if}>
+            }            
+         }
+      }).send('p[0]='+order_id);
+  }  function modify_time(){
+    $('order_action').value = "order_limit_time";
+    $('order_process').fireEvent('submit',{stop:$empty});
+  }
+
+  function order_pause(){
+	var order_process_status = "<{$order.process_status}>";
+	var order_ship_status    = "<{$order.ship_status}>";
+	
+	if(order_process_status == 'splitting' || order_ship_status == '2')
+	{
+		if(!confirm('暂停订单操作，系统将会自动暂停未发货的发货单？'))
+		{
+			return false;
+		}
+	}
+	new Dialog('index.php?ctl=admin_order&act=pause_order&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$env.get.finder_id}>&flt=<{$env.get.flt}>&origin_act=<{$env.get.act}>', {width:400,height:200,title:'订单暂停'});
+  }
+
+  function order_renew(){
+	var order_process_status = "<{$order.process_status}>";
+	var order_ship_status    = "<{$order.ship_status}>";
+	
+	if(order_process_status == 'splitting' || order_ship_status == '2')
+	{
+		if(!confirm('恢复订单操作，系统会自动将暂停的发货单恢复正常？'))
+		{
+			return false;
+		}
+	}
+    $('order_action').value = "order_renew";
+    $('order_process').fireEvent('submit',{stop:$empty});
+  }
+  
+  function order_process_status()
+  {
+	var order_process_status = "<{$order.process_status}>";
+	var order_ship_status    = "<{$order.ship_status}>";
+	
+	if(order_process_status == 'splitting' || order_ship_status == '2')
+	{
+		if(!confirm('订单异常操作，系统会自动将未发货的发货单取消？'))
+		{
+			return false;
+		}
+	}
+	new Dialog('index.php?ctl=admin_order&act=do_abnormal&app=ome&p[0]=<{$order.order_id}>&finder_id=<{$env.get.finder_id}>&flt=<{$env.get.flt}>&origin_act=<{$env.get.act}>',{width:700,title:'订单异常'});
+  }
+</script>

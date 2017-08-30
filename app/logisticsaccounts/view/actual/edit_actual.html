@@ -1,0 +1,229 @@
+<table cellspacing="0" cellpadding="0" style="border-width:0 0 1px;" class="table-action">
+    <tbody>
+        <tr valign="middle">
+            <td> 
+                <{button label='上一条' class="btn btn-primary" id="btn_prev" }>
+                <{button label='下一条' class="btn btn-primary" id="btn_next" }>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div class="tableform">
+ <div class="division">
+<form id='actual_form' method='post' action='index.php?app=logisticsaccounts&ctl=admin_actual&act=do_save_actual'>
+       <table border="0" cellpadding="0" cellspacing="0" class="girdlist">
+	    <tr >
+                    <th width="55" align="left" ><h4 align="left">快递单号:<{$actual.logi_no}></h4></th>
+                    <th width="873" align="left" >&nbsp;</th>
+                    <th width="116" align="left" >&nbsp;</th>
+                    <th width="256" align="left" >&nbsp;</th>
+             </tr>
+             <tr >
+                    <th width="55" align="left" ><h4 align="left">出货信息</h4></th>
+                    <th width="873" align="left" >&nbsp;</th>
+                    <th width="116" align="left" >&nbsp;</th>
+                    <th width="256" align="left" >&nbsp;</th>
+             </tr>
+                <tr >
+                    <th ><t>出货仓库:</t></th>
+                  <td><{$actual.branch_name|default:'-'}></td>
+                  <th>快递公司:</th>
+                  <td><{$actual.logi_name|default:'-'}></td>
+                </tr>
+            
+                <tr >
+                    <th ><t>发货时间:</t></th>
+                    <td><{$actual.delivery_time|date_format:"%Y-%m-%d"}></td>
+                    <th><t>订单号：</t></th>
+                    <td><{$actual.order_bn|default:'-'}></td>
+                </tr>
+            <tr >
+                    <th align="left"><h4 align="left">收件人信息</h4></th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+            </tr>
+            <tr >
+                    <th><t>收件人：</t></th>
+                    <td ><{$actual.ship_name|default:'-'}></td>
+                    <th ><t>收货地区:</t></th>
+                    <td ><{$actual.ship_city|default:'-'}></td>
+            </tr>
+            <tr >
+                    <th><t>收件地址：</t></th>
+                    <td colspan="3" ><{$actual.ship_addr|default:'-'}></td>
+            </tr>
+                <tr >
+                    <th align="left"><h4 align="left">对账信息确认</h4></th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+                    <th align="left">&nbsp;</th>
+                </tr>
+                
+                <tr >
+                  <th><t>物流称重:</t></th>
+                  <td><{$actual.logi_weight|default:'-'}></td>
+                  <th><t>账单金额:</t>                    </th>
+                  <td><{$actual.delivery_cost_actual|cur}></td>
+                </tr>
+				<tr >
+                    <th><t>出库称重:</t></th>
+                    <td><{$actual.weight|default:'-'}></td>
+                    <th><t>预估运费:</t>                      </th>
+                    <td><{$actual.delivery_cost_expect|cur}></td>
+                </tr>
+                <tr >
+                  <th><t>记账费用:</t></th>
+                  <td>
+                  <input type="text" name="actual_amount" value="<{if $actual.actual_amount==0}><{$actual.delivery_cost_actual}><{else}><{$actual.actual_amount}><{/if}>"
+                  <{if $oper=='backconfirm'}> disabled<{/if}>
+                 >
+                
+                 </td>
+                  <th><t>记账状态：</t>                    </th>
+                  <td><{$actual.confirm_flag}></td>
+                </tr>
+				 <tr >
+                  <th><t>记账人:</t></th>
+                  <td><{$actual.actual_name}>
+                 </td>
+                  <th><t>记账时间：</t>                    </th>
+                  <td><{if $actual.actual_time!=''}>
+                  <{$actual.actual_time|date_format:"%Y-%m-%d"}>
+                  <{/if}>
+                  </td>
+                </tr>
+                <tr >
+                  <th><t>审核人:</t></th>
+                  <td><{$actual.confirm_name|default:'-'}>
+                 </td>
+                  <th><t>审核时间：</t>                    </th>
+                  <td><{if $actual.confirm_time!=''}>
+                  <{$actual.confirm_time|date_format:"%Y-%m-%d"}>
+                  <{else}>
+                  -
+                  <{/if}>
+                  </td>
+                </tr>
+                <tr >
+                  <th><t>备注:</t></th>
+                  <td><textarea name="memo"><{$actual.memo}></textarea></td>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                </tr>
+    </table>
+<input type="hidden" name="oper" value="<{$oper}>">
+    <input type='hidden' id='aid' name='aid' value='<{$actual.aid}>'>
+    <input type='hidden' id='aid' name='task_id' value='<{$actual.task_id}>'>
+<input type="hidden" name="action" value="<{$action}>">
+<div id="cc" class="noprint table-action">
+<{if $env.get.action=='confirm'}>
+<{if $env.get.oper=='backconfirm'}>
+<{button type="button" class="btn" id="actual-save-btn" label="反审核"}> 
+<{else}>
+<{button type="button" class="btn" id="actual-save-btn" label="审核"}> 
+<{/if}>
+<{else if $env.get.action=='accounted'}>
+<{if $env.get.oper=='doedit'}>
+<{button type="button" class="btn" id="actual-save-btn" label="编辑"}> 
+<{else}>
+<{button type="button" class="btn" id="actual-save-btn" label="记账"}> 
+<{/if}>
+<{else}>
+<{button type="button" class="btn" id="actual-save-btn" label="编辑"}> 
+<{/if}>
+
+</div>
+            
+</form>           
+  </div>
+</div>
+<script>
+    var curr_id = '<{$actual.aid}>';
+    var filter = [];
+    var prev_id = '';
+    var next_id = '';
+    var oper = '<{$env.get.oper}>';
+    var action = '<{$env.get.action}>';
+    var dataNode = document.getElementById('finder-list-<{$env.get.finder_id}>').getElements('tr').get('item-id');
+   
+    var title = '';
+    if(action=='confirm'){
+        if(oper=='backconfirm'){
+            title = '反审核';
+        }else{
+            title = '审核';
+        }
+        
+    }else{
+        if(oper=='doedit'){
+            title = '编辑';
+        }else{
+            title = '记账';
+        }
+    }
+    
+    var data = dataNode.filter(function(d){return filter.indexOf(d) == -1;});
+  
+    var index = data.indexOf(curr_id);
+    if(index >= 0){
+        if(index > 0) prev_id = data[index - 1];
+        if(index + 1 <= data.length) next_id = data[index + 1];
+    }
+    
+    var url='index.php?app=logisticsaccounts&ctl=admin_actual&act=edit&oper=<{$env.get.oper}>&action=<{$env.get.action}>&finder_id=<{$env.get.finder_id}>';
+    $('btn_prev').addEvent('click',function(e){
+        if(prev_id) {
+        
+            this.getParent('.dialog').retrieve('instance').close();
+            new Dialog(url+'&p[0]='+prev_id,{title:title,width:600,height:500})
+        } else {
+            alert('没有上一条了');
+            this.getParent('.dialog').retrieve('instance').close();
+        }
+    });
+    $('btn_next').addEvent('click',function(e){
+        if(next_id) {
+            this.getParent('.dialog').retrieve('instance').close();
+            new Dialog(url+'&p[0]='+next_id,{title:title,width:600,height:550})
+
+        } else {
+            alert('没有下一条或已经到了页尾');
+            this.getParent('.dialog').retrieve('instance').close();
+        }
+    }); 
+</script>
+<script>
+(function(){
+    
+    
+$('actual-save-btn').addEvent('click',function(e){
+
+    var _this=this;
+    var form=this.getParent('form');
+    var querystring = $('actual_form').toQueryString();
+    new Request({url:'index.php?app=logisticsaccounts&ctl=admin_actual&act=do_save_actual&'+querystring,
+    
+    onComplete:function(rs){
+
+     rs=JSON.decode(rs);
+     if (typeof(rs.error) != 'undefined'){
+
+              return MessageBox.error(rs.error);
+    }else{
+
+    _this.getParent('.dialog').retrieve('instance').close();
+    
+    window.finderGroup['<{$env.get.finder_id}>'].refresh(true);
+
+    
+    }
+    }}).send(); 
+});
+
+
+
+})();
+
+
+</script>

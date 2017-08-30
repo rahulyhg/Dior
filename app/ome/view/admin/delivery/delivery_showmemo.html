@@ -1,0 +1,109 @@
+<form name="form1" id="form-memo" method="POST" >
+    <div class="division">
+        <div class='notice'>
+            说明：<br/>
+            1.撤销当前发货单后,订单的确认状态将随之改变<br>
+            <{if !empty($ids)}>2.选择全部或者只留一个子发货单，本张大发货单将消失，并撤销所有已选择的子发货单<{/if}>
+        </div>
+         <{foreach from=$dly item=dly}>
+        <h4><{if !empty($dly.ids)}>大<{/if}><{t}>发货单单号：<{/t}><span style='color:#069CBC'><{$dly.delivery_bn}></span></h4><hr>
+
+           <{if $dly.idd}>
+            <input type='hidden' name='returnids' value='<{$returnids}>'>
+            <input type='hidden' id='flag' name='flag' value='OK'>
+            <h4 style='margin-bottom:6px;'><{t}>子发货单信息：<{/t}><{help}>每个订单都会生成一个发货单，如果符合合单规则，会再成一张发货单，该发货单被称作“大发货单”，每个订单生成的发货单被称为“子发货单”<{/help}></h4>
+            <table border="0" cellspacing="0" cellpadding="0" class="gridlist" >
+                <thead>
+                    <tr>
+                        <th>选择</th>
+                        <th>子发货单单号</th>
+                        <th>对应订单号</th>
+                    </tr>
+                </thead>
+                <{foreach from=$dly.idd item=order}>
+                <tr>
+                    <td align="left"><input type="checkbox" class="id[]" name="id[]" value="<{$order.delivery_id}>"/></td>
+                    <td align="left"><{$order.delivery_bn}></td>
+                    <td align="left"><{$order.order_bn}></td>
+                </tr>
+                <{/foreach}>
+            </table>
+            <hr>
+       <{/if}>
+           <input type='hidden' name='delivery_id[]' value='<{$dly.delivery_id}>'>
+  <{/foreach}>
+        <h4 style='margin-bottom:6px;'>撤销发货单备注：</h4>
+        <table width="100%">
+            <tr>
+                <td>
+                    <textarea name="memo" id="memo"  cols="60" rows="5" value='' vtype="required"></textarea><br>
+                    <span></span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</form>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+    <table width="100%" cellspacing="0" cellpadding="0">
+        <tbody>
+            <tr>
+                <td>
+                    <button class="btn btn-primary" id="sub_delivery" onclick='dosubmit()'>
+                        <span><span><{t}>确定<{/t}></span></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<{/area}>
+
+<script>
+    function dosubmit(){
+        if ($('memo').value=='')
+        {
+            alert('备注不可为空!');
+            return false;
+        }
+        if ($('flag') && $('flag').value=='OK')
+        {
+            var sel=new Array();
+            $$('input[type=checkbox').each(function(item){
+                if (item.checked==true)
+                {
+                    sel.push(item.get('value'));
+                }
+            });
+            if (sel.length<=0)
+            {
+                alert('请至少选择一个发货单!');
+                return false;
+            }
+        }
+        $('sub_delivery').set('disabled',true);
+        new Request({url:'index.php?app=ome&ctl=admin_delivery&act=doReback',
+            data:$('form-memo').toQueryString(),
+            onComplete:function(rs){
+                var rs =JSON.decode(rs);
+                alert(rs.msg);
+                if($('form-memo').getParent('.dialog')){
+                    $('form-memo').getParent('.dialog').retrieve('instance').close();
+                }
+                if (rs.rsp=='succ')
+                {
+                    window.location.href='index.php?app=ome&ctl=admin_delivery&act=reback'
+                }
+             
+            }
+        
+    }).send();
+    }
+</script>
+
+
+
+
+
+

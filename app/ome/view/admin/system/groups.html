@@ -1,0 +1,72 @@
+<h4 class="head-title"><{if $group}>编辑订单确认组<{else}>添加订单确认组<{/if}></h4>
+<div class="tableform">
+<div class="division">
+<form method="post" action="index.php?app=ome&ctl=admin_group&act=save_group" id="form-group">    
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+        <tr>
+        <th>名称：</th>
+          <td><input type="text" name="groups[name]" value="<{$group.name}>" vtype="required"/></td>
+        </tr>
+		<tr>
+        <th>选择管理员：</th>
+          <td>
+		  <{foreach from=$operators item=operator}>
+		  <input name="groups[op_id][]" type="checkbox" value="<{$operator.user_id}>" <{$operator.checked}>/><{$operator.name}>
+		  <{/foreach}>
+		  <td>
+        </tr>
+		<tr>
+        <th>说明：</th>
+          <td><textarea name="groups[description]" rows="5" cols="50"><{$group.description}></textarea></td>
+        </tr>
+        </tbody>
+      </table>
+      <{if $group}>
+	  <input type="hidden" name="groups[group_id]" value="<{$group.group_id}>">
+	  <{/if}>
+</form>   
+  </div>
+</div>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="submit_btn" ><span><span><{t}>确定<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+(function(){
+    var _form = $('form-group');//表单ID 
+    var btn   = $('submit_btn');//按钮ID
+    
+    var finder = finderGroup['<{$env.get.finder_id}>'];
+    _form.store('target',{
+        onComplete:function(){
+        },
+        onSuccess:function(response){
+            var hash_res_obj = JSON.decode(response);
+            if (hash_res_obj.success != undefined && hash_res_obj.success != ""){
+                try{
+                    var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+                }catch(e){}
+
+                if(_dialogIns){
+                     finder.refresh();
+                    _dialogIns.close();
+                }
+            }
+        }
+    });
+
+    btn.addEvent('click',function(){
+      _form.fireEvent('submit',{stop:$empty});
+    });
+})();
+</script>
+
+

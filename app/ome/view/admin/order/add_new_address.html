@@ -1,0 +1,169 @@
+<div class="tableform">
+  <form action="index.php?app=ome&ctl=admin_order&act=getConsingee" method="post" id="newAddrForm">
+    <table border="0">
+      <tbody>
+        <tr>
+          <th style=" white-space:nowrap;">收货人姓名：</th>
+          <td>
+            <input id="name" name="name" type="text" vtype="required" size="15" /><em class="red">*</em></td>
+          <th>固定电话：</th>
+          <td><input id="telephone" name="telephone" type="text" size="15" /></td>
+        </tr>
+        <tr>
+          <th style=" white-space:nowrap;">邮政编码：</th>
+          <td><input id="zip" name="zip" type="text" size="6" /></td>
+          <th>手机号码：</th>
+          <td><input id="mobile" name="mobile" type="text" size="15" /></td>
+        </tr>
+        <tr>
+          <th>收货地区：</th>
+          <td colspan="3"><{input type='region' app='eccommon' name="area_" vtype="area" value=$region }> <em class="red">*</em></td>
+        </tr>
+        <tr>
+          <th>收货地址：</th>
+          <td colspan="3"><input id="addr" name="addr" type="text"  vtype="required" size="32" /><em class="red">*</em></td>
+        </tr>
+        <tr>
+          <th>电子邮件：</th>
+          <td><input id="email" name="email" type="text" vtype="email" size="32" /></td>
+          <th></th>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-action">
+      <{button label="确定" class="btn-primary" id="btn_submit_addr"}> &nbsp; &nbsp;
+      <{button label="取消" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+  </form>
+</div>
+<script>
+  (function(){
+
+   function is_phone(str){
+
+        var partten = /^[\d-]+$/;
+        if(partten.test(str)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function is_mobile(str){
+
+        var partten = /^\d{8,15}$/;
+        if(partten.test(str)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function getDeliveryTemp(j){
+      return '<li><input type="radio" name="logi_id" value="'+j.corp_id+'" /> <label>'+j.name +'</label></li>';
+    }
+    function validateTip(element,msg){
+      element=$(element);
+      var tip;
+      if($('validateTip')) tip=$('validateTip');
+      else tip=new Element('span#validateTip.error.caution.notice-inline',{html:msg}).injectAfter(element).hide();
+      if(element.value==""){
+        tip.show();
+        setTimeout(function(){tip.hide()},4000);
+        return false;
+      }
+      else{
+        tip.hide();
+        return true;
+      }
+    }
+
+    $('btn_submit_addr').addEvent('click',function(){
+      if(!validate($('newAddrForm')))return;
+      if(!validateTip($E('input[name=area_]'),'本项必选！'))return;
+
+      //固定电话与手机必填一项
+      var gd_tel,mobile;
+      gd_tel = $('telephone').value.replace(" ","");
+      mobile = $('mobile').value.replace(' ','');
+      if (!gd_tel && !mobile){
+         alert('固定电话与手机号码必需填写一项');
+         $('telephone').focus();
+         return false;
+      }
+      if (gd_tel){
+          if (is_phone(gd_tel) === false){
+              alert('请填写正确的固定电话');
+              $('telephone').focus();
+              return false;
+          }
+      }
+      if (mobile){
+         if ( is_mobile(mobile) === false){
+              alert('请输入正确的手机号码');
+              $('mobile').focus();
+              return false;
+         }
+         if (mobile[0] == '0'){
+              alert('手机号码前请不要加0');
+              $('mobile').focus();
+              return false;
+         }
+      }
+
+      var temp='<q><input type="radio" name="address_id" value="'+$E('input[name=area_]').value+'" /> '+$E('input[name=addr]').value+'</q> <b>'+$E('input[name=name]').value+'</b> <i>'+$E('input[name=zip]').value+'</i> <em>'+$E('input[name=mobile]').value+'</em> &nbsp; &nbsp; &nbsp;  <span>'+$E('input[name=telephone]').value+'</span> &nbsp; &nbsp; &nbsp;  <strong>'+$E('input[name=email]').value+'</strong> &nbsp; &nbsp;<{button label="更改" type="button" id="btn_edit_address"}>';
+      //new Request({url:$('newAddrForm').action,
+        //onSuccess:function(json){
+          var newli;
+          if ($('newAddressData')) newli = $('newAddressData').set('html',temp);
+          else newli=new Element("li#newAddressData",{html:temp}).inject('addrlist');
+          $('btn_add_address').hide();
+
+          newli.getElement('input[name=address_id]').addEvent('click',function(){
+            var _this=this;
+            $('btn_add_address').hide();
+            new Request({url:'index.php?app=ome&ctl=admin_order&act=getCorpArea',method:'post',data:'region='+_this.value,
+              onSuccess:function(json){
+                var fdoc=document.createDocumentFragment();
+                json = JSON.decode(json);
+                var Delist=''
+                json.each(function(j){
+                  Delist += getDeliveryTemp(j);
+                });
+                $('deliverylist').setHTML(Delist);
+
+                $('deliverylist').getElements('input[name=logi_id]').addEvent('click',function(){
+                  $E('td[name=delivery]').set('text',this.getParent('li').getElement('label').get('text'));
+                });
+
+                $('consignee_addr').value=_this.getParent('li').getElement('q').get('text').trim();
+                $('consignee_name').value=_this.getParent('li').getElement('b').get('text').trim();
+                $('consignee_zip').value=_this.getParent('li').getElement('i').get('text').trim();
+                $('consignee_mobile').value=_this.getParent('li').getElement('em').get('text').trim();
+                $('consignee_telephone').value=_this.getParent('li').getElement('span').get('text').trim();
+                $('consignee_email').value=_this.getParent('li').getElement('strong').get('text').trim();
+              }
+            }).send();
+          });
+
+          $('btn_edit_address').addEvent('click',function(){
+            new Dialog('index.php?app=ome&ctl=admin_order&act=addNewAddress&area='+$('newAddressData').getElement('input[name=address_id]').value,{title:'添加配货地址',width:750,height:300,
+              onLoad:function(){
+            	$E('input[name=area_]').value =$('newAddressData').getElement('input[name=address_id]').value;
+                $E('input[name=addr]').value  =$('newAddressData').getElement('q').get('text').trim();
+                $E('input[name=name]').value  =$('newAddressData').getElement('b').get('text').trim();
+                $E('input[name=zip]').value   =$('newAddressData').getElement('i').get('text').trim();
+                $E('input[name=mobile]').value=$('newAddressData').getElement('em').get('text').trim();
+                $E('input[name=telephone]').value=$('newAddressData').getElement('span').get('text').trim();
+                $E('input[name=email]').value=$('newAddressData').getElement('strong').get('text').trim();
+              }
+            });
+          });
+
+          $('newAddrForm').getParent('.dialog').retrieve('instance').close();
+          //}
+        //}).send($('newAddrForm'));
+    });
+  })()
+</script>

@@ -1,0 +1,17 @@
+<services>
+	<service id="system_setting">   
+		<class orderby="1">tgstockcost_system_setting</class>
+	</service>
+
+	<service id="iostock_cost">
+		<class>tgstockcost_instance_router</class>
+	</service>
+
+	<service id="data_clear">  
+		<class>tgstockcost_data</class>
+	</service>
+
+	<service id="desktop_finder.stockcost_mdl_costselect">
+		<class>tgstockcost_finder_costselect</class>
+	</service>
+</services>

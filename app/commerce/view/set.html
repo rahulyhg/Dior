@@ -1,0 +1,121 @@
+<html>
+ <head>
+  <title>私有矩阵配置</title>
+ </head>
+
+ <body>
+
+
+	<form action='index.php?app=commerce&ctl=admin_index&act=save' method='post'>
+		        <div class='tableform'>
+        <h2>私有矩阵参数配置</h2>
+
+	         <table width="100%" cellspacing="0" cellpadding="0" border="0">
+	             <tbody>
+                    <tr>
+						<th>是否开启私有矩阵：</th>
+						<td>
+                       
+							<input type="radio" class="prismset" name="set" value="on"   <{if $set_data.set=='on'}>checked<{/if}>>开启
+							<input type="radio" class="prismset" name="set" value="off" <{if $set_data.set=='' || $set_data.set=='off'}>checked<{/if}>>关闭
+						
+                        </td>
+					</tr>
+					
+				</tbody>
+			</table>
+       
+            <table class="commer_on">
+            <tr>
+						<th>绑定地址：</th>
+						<td>
+							<input type="text" id="bind_url" name="bind_url" value="<{$set_data.bind_url}>"  size=140><font color="red">*</font>
+							
+						</td>
+					</tr>
+                    <tr>
+						<th>license地址:</th>
+						<td>
+                        <input type="text" id="license_url" name="license_url" value="<{$set_data.license_url}>" size=140 ><font color="red">*</font>
+							
+							
+						</td>
+					</tr>
+                    <tr>
+						<th>callback地址:</th>
+						<td>
+                        <input type="text" id="callback_url" name="callback_url" value="<{$set_data.callback_url}>" size=140 >   <font color="red">*</font>
+							
+							
+						</td>
+					</tr>
+                     <tr>
+						<th>自有体系统编辑订单URL:</th>
+						<td>
+                        <input type="text" id="callback_url" name="editframe_url" value="<{$set_data.editframe_url}>" size=140 >   <font color="red">*</font>
+							
+							
+						</td>
+					</tr>
+              <tr><td colspan='2'><h4>prism绑定相关</h4></td></tr>
+             
+             
+                    <tr>
+						<th>请求URL：</th>
+						<td>
+                       
+							<input type="text" name="base_url" value="<{$set_data.base_url}>" > <font color="red">*</font>
+						
+                        </td>
+					</tr>
+					<tr>
+						<th>KEY：</th>
+						<td>
+                       
+							<input type="text" name="app_key" value="<{$set_data.app_key}>"> <font color="red">*</font>
+						
+                        </td>
+					</tr>
+                    <tr>
+						<th>SECRET：</th>
+						<td>
+                       
+							<input type="text" name="app_secret" value="<{$set_data.app_secret}>"><font color="red">*</font>
+						
+                        </td>
+					</tr>
+				</tbody>
+			</table>
+    
+			<input  type="hidden" name="node_id" value="<{$set_data.node_id}>">
+			 
+		</div>
+
+ <div class="table-action">
+<{button label="提交" type="submit" name="submit" }>
+</div>
+	</form>
+    <h3>注意事项:</h3>
+<div>
+<ul  style="color:red;">切换矩阵类型后会重新获取店铺节点和证书 </ul>
+<ul  style="color:red;">请至前端店铺处查看是否获取成功,如果未获取成功,可以点击"获取证书"按钮获取</ul>
+</div>
+ </body>
+</html>
+
+<script>
+$$('.prismset').addEvent('click',function(e){
+
+alert('切换私有矩阵请先确定当前关系都已解除绑定!');
+commer_show(this.value);
+});
+commer_show('<{$set_data.set}>');
+function commer_show(set){
+    if (set=='on')
+    {
+      $$('.commer_on').setStyle('display','');;
+    }else{
+      $$('.commer_on').setStyle('display','none');
+    }
+}
+</script>

@@ -1,0 +1,57 @@
+<style>
+.division { background: #fff; border: 1px solid #dbdbdb; margin: 5px; padding: 5px 7px; zoom: 1; overflow: hidden; }
+
+.division .tableforms { background: #fff; padding: 10px 15px; margin: 5px 0; }
+
+</style>
+
+<div class="division">
+<div class="tableforms">
+<table width="100%" border='0' align="left" cellpadding="1" cellspacing="3" >
+ <tbody>
+<tr><td width="6%" align="left" bgcolor="#FFFFFF">规则名称:</th>
+<td width="94%" align="left" bgcolor="#FFFFFF"><{$rule.rule_name}></td>
+</tr>
+<tr><td align="left" bgcolor="#FFFFFF">一级地区:</th>
+<td align="left" bgcolor="#FFFFFF"><{$rule.first_city}></td>
+</tr>
+
+<tr><td align="left" bgcolor="#FFFFFF">规则类型:</th>
+<td align="left" bgcolor="#FFFFFF">
+<{if $rule.set_type=='weight'}> 重量区间<{/if}>
+<{if $rule.set_type=='noweight'}>任意重量<{/if}></td>
+</tr>
+
+
+<tr valign="top"><td align="left" bgcolor="#FFFFFF">规则详情:</td>
+<td align="left" bgcolor="#FFFFFF">
+<{if $rule.set_type=='weight'}>
+
+<{foreach from=$rule.item_list item=item_list}>
+
+<div style="padding:3px;" id="<{$item_list.item_id}>">
+    重量区间:<{$item_list.min_weight}>g
+    <{if $item_list.max_weight=='-1'}>以上<{else}>至<{$item_list.max_weight}>g<{/if}> 首选物流公司:<{$item_list.corp_name}>
+    <{if $item_list.second_corp_name}>, 次选物流公司:<{$item_list.second_corp_name}><{/if}>
+</div>
+
+
+<{/foreach}>
+
+
+<{/if}>
+<{if $rule.set_type=='noweight'}>
+
+
+首选物流公司:
+<{$rule.item_list.0.corp_name}>
+<{if $rule.item_list.0.second_corp_name}>, 次选物流公司:<{$rule.item_list.0.second_corp_name}><{/if}>
+
+
+<{/if}>
+</td></tr>
+ </tbody>
+</table>
+
+</div>
+</div>

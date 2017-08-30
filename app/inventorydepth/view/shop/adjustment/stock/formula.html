@@ -1,0 +1,186 @@
+<div class="borderGray" style="margin:5px 0; padding:5px 10px;border:1px solid #eee; background:#f6f6f6">
+  <div class="btn-list-area">
+    <span class="font14px mr15">使用计算公式：</span>
+    <{button type="button" class="mr15" label="使用现有公式" id="use_formula"}>
+    <{button type="button" class="mr15" label="新建公式" id="new_formula"}>
+    <span style="float:right" id="expansion" descimgsrc='<{$res_full_url}>/icons/icon_desc_gray.gif' ascimgsrc='<{$res_full_url}>/icons/icon_asc_gray.gif' >
+      <{img app=inventorydepth src='icons/icon_desc_gray.gif' class='desc' style="cursor:pointer;"}>
+    </span>
+
+  </div>
+  <div id="formula_new" class="clearfix" style="display:none;">
+    <span class="font14px fl mr15">　　　发布库存 = </span><div class="fl gray_form">
+      <span class="action-group">
+        <button type="button" class="cal-btn var-btn">使用变量</button>
+        <ul class="var">
+            <{foreach from=$benchobj item=val}>
+          <li><{$val}></li>
+            <{/foreach}>
+        </ul>
+      </span>
+      <span class="action-group">
+        <button type="button" class="cal-btn oper-btn"><{$calculation|array_values|implode:' '}></button>
+        <ul class="oper">
+         	<{foreach from=$calculation item=val}>
+          <li><{$val}></li>
+            <{/foreach}>
+        </ul>
+      </span>
+      <span class="action-group"><button type="button" class="cal-btn pare-btn">(...)</button>
+        <ul class="pare">
+          <li class="lpare">(</li>
+          <li class="rpare">)</li>
+        </ul>
+      </span>
+      <span class="action-group"><button type="button" class="cal-btn num-btn">1 2 3</button>
+        <ul class="num">
+          <li>1</li>
+          <li>2</li>
+          <li>3</li>
+          <li>4</li>
+          <li>5</li>
+          <li>6</li>
+          <li>7</li>
+          <li>8</li>
+          <li>9</li>
+          <li class="zero">0</li>
+          <li class="point">.</li>
+        </ul>
+      </span> <button type="button"class="cal-btn del-btn">← 删除</button><br/>
+
+      <textarea readonly rows="5" class="disabled" placeholder="选择变量，数字和各种运算符号。" id="result" name="result"></textarea>
+      <div class="action" style="position:relative">
+        <{button type="button" id="btn_save" label="保存公式"}>
+        <div class="save-formula" id="save_formula" style="display:none;">
+          <div class="close">×</div>
+          <b class="arr">▼</b>
+          <b class="arr2">▼</b>
+          <div class="content">
+            公式名称:<input type="text" placeholder="请输入公式名称" name="heading" value="公式1" vtype="required" /><br/>
+            &nbsp;　　　　<{button type="button" id="confirm_form" label="确定"}>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clear" style="padding:10px 0 0 110px;"><{button type="submit" label="执行公式" id="btn_execute"}></div>
+  </div>
+</div>
+<script>
+$('use_formula').addEvent('click',function(){
+    $('formula_new').hide();
+    this.addClass('act').getSiblings().removeClass('act');
+    new Dialog('index.php?app=inventorydepth&ctl=shop_adjustment&act=listFormula',{width:230,height:250,title:'选择计算公式',onClose:function(){if(!$('formula_new').isDisplay())this.removeClass('act');}.bind(this)});
+});
+$('new_formula').addEvent('click',function(){
+    this.addClass('act').getSiblings().removeClass('act');
+    $('formula_new').show();
+    
+    var imgTarget = $('expansion').getElement('img');
+    imgTarget.className = 'asc';
+    imgTarget.set('src',$('expansion').get('ascimgsrc'));
+});
+$('btn_save').addEvent('click',function(){
+    var value = $('result').value;
+    var reg = /^-?[\d{(][{}\u4e00-\u9fa5()+\-*\/.\d]*[\d})]$/;
+    if(value=='') return alert('请填写公式。');
+    else if(!reg.test(value)) return alert('公式格式错误，请重新输入！');
+    $('save_formula').show('display');
+});
+$('save_formula').getElement('.close').addEvent('click',function(){
+    $('save_formula').hide();
+});
+$('confirm_form').addEvent('click',function(){
+    if(!validate($('save_formula'))) return;
+    new Request({url:'index.php?app=inventorydepth&ctl=shop_adjustment&act=saveFormula',onComplete:function(resp){
+        resp = JSON.decode(resp);
+        if (resp.error)
+        {
+            MessageBox.error(resp.error); return;
+        }
+        MessageBox.success('保存成功!');
+        $('save_formula').hide();
+      }
+    }).post($('formula_new'));
+});
+$('btn_execute').addEvent('click',function(){
+	var data = $('finder-form-<{$name}>').retrieve('rowselected','');
+    if(!data.length) {
+        return MessageBox.error('请选择要操作的数据项.');
+    }
+	var datalist = [];
+	var filter='';
+	if (data.contains('_ALL_')){
+		filter = '&' + $('finder-filter-<{$name}>').value;
+	}else {
+		data.each(function(d,i){
+			datalist.push('&id[]='+d);
+		});
+	}
+
+    if(confirm('是否执行？')){
+      new Request({url:'index.php?app=inventorydepth&ctl=shop_adjustment&act=execFormula',onComplete:function(rs){
+		  var result = JSON.decode(rs);
+		  if(result.error){
+        if (_m = result.error.match(/javascript:([\s\S]+)/)) {
+            $globalEval(_m[1]);
+            return;
+        }
+        
+        MessageBox.error(result.error);
+      } else {
+        $('formula_new').hide();
+        $$('.btn-list-area button').removeClass('act');
+        finderGroup['<{$name}>'].refresh();
+		  }
+      }}).post($('formula_new').toQueryString()+datalist.join('')+filter);
+    }
+});
+$$('.action-group').addEvents({
+    'mouseenter':function(e){
+        e.target.hasClass('cal-btn') && this.getElement('ul').setStyle('display','block');
+    },
+    'mouseleave':function(){
+        this.getElement('ul').hide();
+    },
+    'click':function(e){
+        e = $(e.target);
+        if(e.hasClass('disabled') || e.get('tag') !== 'li') return;
+        var val = e.get('text');
+        var value = $('result').value;
+        var len = value.length;
+        if(e.getParent('.var')) val = '{' +val+ '}';
+
+        if(!e.getParent('.num')){
+            this.getElement('ul').hide();
+        }
+        $('result').value = value + val;
+    }
+});
+$$('.del-btn').addEvent('click',function(e){
+    var len = $('result').value.length - 1;
+    var value = $('result').value;
+    if (value.lastIndexOf('}')==len){
+        len = value.lastIndexOf('{');
+    }
+    $('result').value = value.substr(0,len);
+});
+
+
+$('expansion').addEvent('click',function(e){
+    var imgTarget = this.getElement('img');
+    var classname = imgTarget.className;
+    /*展开*/
+    if (classname == 'desc') {
+      imgTarget.className = 'asc';
+      imgTarget.set('src',this.get('ascimgsrc'));
+      $('formula_new').show();
+    }else{
+    /*关闭*/
+      imgTarget.className = 'desc';
+      imgTarget.set('src',this.get('descimgsrc'));
+      $('formula_new').hide();
+    }
+
+});
+
+</script>

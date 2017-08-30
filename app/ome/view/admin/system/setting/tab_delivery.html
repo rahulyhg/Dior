@@ -1,0 +1,169 @@
+<style type="text/css">
+.tab_delivery th{width:170px;}
+</style>
+
+<div class="division tab_delivery">
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>发货校验商品名称显示方式：</th>
+                <td><select name="set[ome.delivery.check_show_type]" id="delivery_check_show_type">
+                    <option value="stock" <{if $setData.ome_delivery_check_show_type=='stock'}>selected="selected"<{/if}>>后台名称</option>
+                    <option value="front" <{if $setData.ome_delivery_check_show_type=='front'}>selected="selected"<{/if}>>前台名称</option>
+                </select></td>
+            </tr>
+            <tr>
+                <th>打印是否检验批次号：</th>
+                 <td><select name="set[ome.delivery.check_ident]">
+                    <option value="on" <{if $setData.ome_delivery_check_ident=='on'}>selected="selected"<{/if}>>开启</option>
+                    <option value="off" <{if $setData.ome_delivery_check_ident=='off'}>selected="selected"<{/if}>>关闭</option>
+                </select></td>   
+            </tr>
+            <tr>
+                <th>分组校验时间间隔设置(分钟)：</th>
+                <td><input type="text" size="10"  id="groupCalibration" name="set[ome.groupCalibration.intervalTime]"  value="<{$setData.ome_groupCalibration_intervalTime}>" vtype="required"/><span style='margin-left:5px;'>执行分组校验时，检测上一次分组校验的执行时间，设置间隔时间，防止短时间执行该操作发生错误！(时间间隔最短2分钟)</span></td>
+            </tr>
+            
+            <tr>
+                <th>分组发货时间间隔设置(分钟)：</th>
+                <td><input type="text" size="10"  id="groupDelivery" name="set[ome.groupDelivery.intervalTime]"  value="<{$setData.ome_groupDelivery_intervalTime}>" vtype="required"/><span style='margin-left:5px;'>执行分组发货时，检测上一次分组发货的执行时间，设置间隔时间，防止短时间执行该操作发生错误！(时间间隔最短2分钟)</span></td>
+            </tr>
+            <tr>
+                <th>包裹重量范围：</th>
+                <td>
+                    <input type="text" name="set[ome.delivery.minWeight]" size=10 value="<{$setData.ome_delivery_minWeight}>" vtype="required&&unsignedint"/>克 < 包裹重量 < 
+                    <input type="text" name="set[ome.delivery.maxWeight]" size=10 value="<{$setData.ome_delivery_maxWeight}>" vtype="required&&unsignedint"/>克
+                </td>
+            </tr>
+            <tr id="delivery_check_num">
+                <th>发货校验商品数量设置：</th>
+                <td><input type="text" name="set[ome.delivery.check]"  value="<{$setData.ome_delivery_check}>" size="5" vtype="required&&unsignedint"/><span style='margin-left:5px;'>同一货品数量大于设置数量时可以通过录入数量来批量检验</span></td>
+            </tr>
+            <tr>
+                <th>逐单发货是否称重：</th>
+                <td>
+                    <input class='set_delivery_weight' type="radio" name="set[ome.delivery.weight]" value="on" <{if $setData.ome_delivery_weight == 'on'}> checked<{/if}>>开启
+                    <input class='set_delivery_weight' type="radio" name="set[ome.delivery.weight]" value="off" <{if $setData.ome_delivery_weight == 'off'}> checked<{/if}>>关闭
+                    <span style='margin-left:5px;'>开启逐单发货称重功能</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class='check_delevery' >
+    <table>
+        <tbody>
+            <tr>
+                <th>整单校验后是否直接发货：</th>
+                <td>
+                    <input type="radio" name="set[ome.delivery.check_delivery]" value="off" <{if $setData.ome_delivery_check_delivery == 'off'}> checked<{/if}>>关闭
+                    <input type="radio" name="set[ome.delivery.check_delivery]" value="on"  <{if $setData.ome_delivery_check_delivery == 'on'}> checked<{/if}>>开启
+                 </td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <!---发货称重报警 begin-->
+    <div class='weight_on'>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+                <tr>
+	                <th>称重扫描配置：</th>
+	                <td>
+	                    <input class='set_delivery_weight' type="radio" name="set[ome.delivery.logi]" value="0" <{if $setData.ome_delivery_logi != '1'}> checked<{/if}>>先扫描快递单号后称重
+	                    <input class='set_delivery_weight' type="radio" name="set[ome.delivery.logi]" value="1" <{if $setData.ome_delivery_logi == '1'}> checked<{/if}>>先称重后扫描快递单号
+	                </td>
+	            </tr>
+                <tr>
+                    <th>逐单发货称重报警：</th>
+                    <td>
+                        <input type="radio" name="set[ome.delivery.weightwarn]" value="on" <{if $setData.ome_delivery_weightwarn == 'on'}> checked<{/if}>>开启
+                        <input type="radio" name="set[ome.delivery.weightwarn]" value="off" <{if $setData.ome_delivery_weightwarn == 'off'}> checked<{/if}> <{if $setData.ome_delivery_weightwarn == ''}> checked<{/if}>>关闭
+                        
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class='weightwarn_on'>
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+                <tr>
+                    <th>逐单发货称重报警设置：</th>
+                    <td>
+                       包裹称重重量比系统中货品净重多出<input type="text" name="set[ome.delivery.max_weightwarn]" size="6" value="<{$setData.ome_delivery_max_weightwarn|default:0}>" vtype="required&&unsignedint">&nbsp;&nbsp;<span id='warnunit1' style="width:20px;"><{if $setData.ome_delivery_maxpercent=='1'}>%<{else}>g<{/if}></span><input type="hidden" id="maxpercent" name="set[ome.delivery.maxpercent]" value="<{$setData.ome_delivery_maxpercent|default:0}>">&nbsp;&nbsp;以上,进行报警<input type="checkbox" class='weightpercent' value="1" <{if $setData.ome_delivery_maxpercent=='1'}>checked<{/if}>>按百分比计算
+                        
+                    </td>
+                </tr>
+              
+                <tr>
+                    <th></th>
+                    <td>
+                       包裹称重重量比系统中货品净重少了<input type="text" name="set[ome.delivery.min_weightwarn]" size="6" value="<{$setData.ome_delivery_min_weightwarn|default:0}>" vtype="required&&unsignedint">&nbsp;&nbsp;<span id='warnunit2' ><{if $setData.ome_delivery_minpercent=='1'}>%<{else}>g<{/if}></span><input type="hidden" id="minpercent" name="set[ome.delivery.minpercent]" value="<{$setData.ome_delivery_minpercent|default:0}>">&nbsp;&nbsp;以上,进行报警<input type="checkbox" class='weightpercent' value="2" <{if $setData.ome_delivery_minpercent=='1'}>checked<{/if}>>按百分比计算<font  color="red">(多物流单包裹不适用此范围报警)</font>
+                        
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>仓库对问题包裹的处理权限：</th>
+                    <td>
+                       <input type="radio" name="set[ome.delivery.problem_package]" value="1" <{if $setData.ome_delivery_problem_package == '1'}> checked<{/if}>>可选择仍然发货或退回检查<{help}>包裹重量不变的情况下,仓库可以选择对问题包裹进行发货操作或退回检查<{/help}><font color='red'>可制作并扫入“确认”和“取消”之条形码来控制</font><br><input type="radio" name="set[ome.delivery.problem_package]" value="0" <{if $setData.ome_delivery_problem_package == '0'}> checked<{/if}> <{if $setData.ome_delivery_problem_package == ''}> checked<{/if}>>只能退回检查<{help}>包裹重量不变的情况下，需要修改商品重量或报警设置，才能对问题包裹进行发货<{/help}><font color='red'>可按键盘任意键或扫入任意条码来控制</font>
+                        
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+            <tr>
+                <th>条形码唯一码合并：</th>
+                <td>
+                    <input type="radio"  name="set[ome.product.serial.merge]" value="false" <{if $setData.ome_product_serial_merge == 'false'}> checked<{/if}>>关闭
+                    <input type="radio"  name="set[ome.product.serial.merge]" value="true" <{if $setData.ome_product_serial_merge == 'true'}> checked<{/if}>>开启
+                    <span style='margin-left:5px;'>开启条形码唯一码合并</span>
+                    <span id="serial_separate">
+                        设置分隔符：<input type="text" name="set[ome.product.serial.separate]" size=6 value="<{$setData.ome_product_serial_separate}>" vtype="required" />
+                        <span class="red">请用一个特殊字符作为分隔符</span>
+                    </span>
+                </td>
+            </tr>
+              <tr>
+                <th>唯一码发货回传</th>
+                <td>
+                    <input type="radio" name="set[ome.product.serial.delivery]" value="false" <{if $setData.ome_product_serial_delivery == 'false'}> checked<{/if}>>关闭
+                    <input type="radio" name="set[ome.product.serial.delivery]" value="true" <{if $setData.ome_product_serial_delivery == 'true'}> checked<{/if}>>开启
+                </td>
+            </tr>
+            <tr>
+                <th>打印配置：</th>
+                <td>
+                    <input type="radio" name="set[ome.delivery.cfg.radio]" value="1" <{if $setData.ome_delivery_cfg_radio != '2'}> checked<{/if}>>经典打印
+                    <input type="radio" name="set[ome.delivery.cfg.radio]" value="2" <{if $setData.ome_delivery_cfg_radio == '2'}> checked<{/if}>>按品类打印
+                    <span style='margin-left:5px;'>此选项控制发货配置</span>
+                </td>
+            </tr>                
+            <tr>
+                <th>执行发货方式：</th>
+                <td><input type="radio" name="set[ome.delivery.method]" value="on" <{if $setData.ome_delivery_method == 'on'}> checked<{/if}>>启用
+                    <input type="radio" name="set[ome.delivery.method]" value="off" <{if $setData.ome_delivery_method == 'off'}> checked<{/if}>>不启用 <span style='margin-left:5px;'>启用【在线下单】方式执行发货操作 (如果不启用，默认使用【自己联系物流】方式执行发货操作) 该方式只针对淘宝</span></td>
+            </tr>
+            <tr>
+                <th>显示校验数量：</th>
+                <td>
+                    <{input type="bool" name="set[ome.delivery.checknum.show]" value=$setData.ome_delivery_checknum_show|default:'true'}>
+                    <span style='margin-left:5px;'>只适用于逐个校验和整单校验</span>
+                </td>
+            </tr>
+            <tr>
+                <th>显示发货数量：</th>
+                <td>
+                    <{input type="bool" name="set[ome.delivery.consignnum.show]" value=$setData.ome_delivery_consignnum_show|default:'true'}>
+                    <span style='margin-left:5px;'>只适用于整单发货</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

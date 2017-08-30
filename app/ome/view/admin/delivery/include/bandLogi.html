@@ -1,0 +1,59 @@
+<form name="form1" id="form1" method="POST" action="index.php?app=ome&ctl=admin_receipts_print&act=<{ if $delibery_bill_flag }>insertAfterExpress<{ else}>insertExpress&finder_id=<{$env.get.finder_id}><{ /if }>" target="upload" style="display:none;">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #ddd">
+        <tr class="order-tr">
+            <td colspan="4">
+                <b>关联快递单</b>&nbsp;&nbsp;<input type="checkbox" name="c1" id="cc"/><span id="sp_1">关闭上下关联</span> 
+                <{if $logiVersionFlag=='1'}>
+                <span style="padding:5px;" id="logi_version">
+                <{foreach from=$logicfg item=logicfg key=key}>
+                <input type="radio" class="logi_version" name="logi_version" value='<{$key}>'><{$logicfg}>
+                <{/foreach}>
+               </span>
+                <{/if}>
+                <span style="float:right;color: blue;cursor: pointer;font-weight: 700;font-size: 14px; text-decoration: underline;" onclick="gotoRePrint();">如打印过程中出现缺纸、卡纸等情况，请点击这儿查看完整解决方案。</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3" height="10px"></td>
+        </tr>
+        <tr style="font-size:13px;font-weight: 500;margin-top: 10px;">
+            <td>发货单号</td>
+            <td>收货人姓名</td>
+            <{ if !$delibery_bill_flag }><td>批次号</td><{ /if }>
+            <td><div style="float:left;">快递单号</div><div style="margin-left:35px;float:left;color:red; display:none;" id="errorBnTip">您输入的快递单号可能不是<{$logi_name}>的</div></td>
+        </tr>
+        <{foreach from=$idd key=key item=item}>
+        <tr><td class="d_td" width="120" height="23">
+                <{$item.delivery_bn}>：
+            </td>
+            <td class="d_td" width="80"><{$items[$item.delivery_id].consignee.name}></td>
+            <{ if !$delibery_bill_flag }><td class="d_td" width="100"><{$idents[$item.delivery_id]}></td><{ /if }>
+            <td class="d_td"><input type="text" class="logi_no_input" vtype="number&&required" name="<{ if $delibery_bill_flag }>id[<{$log_id[$key]}>]<{else}>id[<{$item.delivery_id}>]<{/if}>" id="txt<{++$key}>" value="<{$logid[$item.delivery_id]}>" consignee_name="<{$items[$item.delivery_id].consignee.name}>" ident="<{$idents[$item.delivery_id]}>" logi_no="<{$logid[$item.delivery_id]}>"/>&nbsp;&nbsp;&nbsp;&nbsp;<{if count($idd) != 1}><{if $key == 1}><{img style="display:none" id="bbaa{$key}" src="bundle/icon_desc.gif" onclick="next_express({$key})" title="向下关联" app="desktop"}><span style="margin-left:5px;font-size: 13px;font-weight: 500;">请核对快递面单上的单号和姓名</span><{elseif $key == count($idd)}><{img style="display:none" id="bbaa{$key}" src="bundle/icon_asc.gif" onclick="prev_express({$key})" title="向上关联" app="desktop"}><span style="margin-left:5px;font-size: 13px;font-weight: 500;">请核对快递面单上的单号和姓名</span><{else}><{img style="display:none" id="bbaa{$key}" src="icons/icon_updown.gif" onclick="updown_express({$key})" title="上下关联" app="ome"}><{/if}><{if $key !==1 && $key !== count($idd)}> &nbsp; <{img src="bundle/icon_asc.gif" id="bbaa{$key}" style="display:none" title="向上关联" onclick="prev_express({$key})" app="desktop"}> &nbsp; <{img src="bundle/icon_desc.gif" style="display:none" id="bbaa{$key}" title="向下关联" onclick="next_express({$key})" app="desktop"}><{/if}><{/if}></td>
+        </tr>
+        <{/foreach}> 
+        <tr> 
+            <td class="d_th"><{button label="关联快递单" class="btn-primary" type="button" id="bind-btn"}>&nbsp;</td>
+            <td>&nbsp;</td>   
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+    <input type="hidden" name="print_logi_id" value="<{$print_logi_id}>">
+</form>
+<input type="hidden" name='printname' id='printname' value="<{$vid}>">
+
+<script>
+if($$('.logi_version')){
+    $$('.logi_version').each(function(i,index){
+        if(i.value=='<{$print_logi_version}>'){
+            i.checked=true;
+        }
+    
+    });
+    $$('.logi_version').addEvent('click',function(e){
+        alert('切换版本，请对已关联单号重新关联！');
+    
+    
+    });
+}
+</script>

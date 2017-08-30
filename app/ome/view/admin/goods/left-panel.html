@@ -1,0 +1,67 @@
+<{if $roles.ome_ctl_admin_goods || $roles.is_super}>
+<div class="side-bx side-quick-links">
+	<ul>
+	    <{if $roles.is_super || (in_array('ome:admin_goods_editor:add',$roles.ome_ctl_admin_goods))}>
+		<li><a href='index.php?app=ome&ctl=admin_goods_editor&act=add' target='_blank'>添加商品</a></li>
+		<{/if}>
+		<{if $roles.is_super || (in_array('ome:admin_goods:index',$roles.ome_ctl_admin_goods))}>
+		<li><a href='index.php?app=ome&ctl=admin_goods'>查看所有商品</a></li>
+		<{/if}>
+	</ul>
+</div>
+<{if $roles.is_super || (in_array('ome:admin_goods:index',$roles.ome_ctl_admin_goods))}>
+<div class="side-bx" >
+	<div class="side-bx-title">
+		<h3><a class="icon-manage-handle" href="index.php?app=ome&ctl=admin_goods&act=tags&wg=goods&type=goods
+" title="管理商品标签">管理商品标签</a>按商品标签检索</h3>
+	</div>
+	<div class="side-bx-bd">
+		<ul>
+		<{include file="common/tag_menu.html" type="goods" app="desktop"}>
+		</ul>
+	</div>
+</div>
+<{/if}>
+<{if $roles.is_super || (in_array('ome:admin_goods_cat:index',$roles.ome_ctl_admin_goods))}>
+<div class="side-bx" style="display:none;">
+	<div class="side-bx-title">
+		<h3><a class="icon-manage-handle" href="index.php?app=ome&ctl=admin_goods_cat" title="管理商品类别">管理商品类别</a>按商品类别检索</h3>
+	</div>
+	<div class="side-bx-bd">
+		<{$goods_cat_html}>
+	</div>
+</div>
+<{/if}>
+<{if $roles.is_super || (in_array('ome:admin_goods_type:index',$roles.ome_ctl_admin_goods) || in_array('ome:admin_specification:index',$roles.ome_ctl_admin_goods) || in_array('ome:admin_brand:index',$roles.ome_ctl_admin_goods))}>
+<div class="side-bx">
+	<div class="side-bx-title">
+		<h3>相关配置</h3>
+	</div>
+	<div class="side-bx-bd">
+		<ul>
+		    <{if $roles.is_super || (in_array('ome:admin_goods_type:index',$roles.ome_ctl_admin_goods))}>
+			<li><a href='index.php?app=ome&ctl=admin_goods_type&act=index'>商品类型</a></li>
+			<{/if}>
+			<{if $roles.is_super || (in_array('ome:admin_specification:index',$roles.ome_ctl_admin_goods))}>
+			<li><a href='index.php?app=ome&ctl=admin_specification&act=index'>商品规格</a></li>
+			<{/if}>
+			<{if $roles.is_super || (in_array('ome:admin_brand:index',$roles.ome_ctl_admin_goods))}>
+			<li><a href='index.php?app=ome&ctl=admin_brand&act=index'>商品品牌</a></li>
+			<{/if}>
+		</ul>
+	</div>
+</div>
+<{/if}>
+<{if $roles.is_super || (in_array('ome:admin_goods:import',$roles.ome_ctl_admin_goods))}>
+<div class="side-bx last">
+	<div class="side-bx-title">
+		<h3>商品批量处理</h3>
+	</div>
+	<div class="side-bx-bd">
+		<ul>
+			<li><a href='index.php?app=ome&ctl=admin_goods&act=import'>批量上传</a></li>
+		</ul>
+	</div>
+</div>
+<{/if}>
+<{/if}>

@@ -1,0 +1,137 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/autocompleter.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<form name="form1" method="POST" action="index.php?app=console&ctl=admin_returned_purchase&act=doConfirmreturned">
+<div class="tableform">
+<h4>采购退货单详情</h4>
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<tbody>
+<tr>
+    <th style='text-align:right;'>退货单名称:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.name}></td>
+    <th style='text-align:right;'>物流费用(垫付):</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.delivery_cost}></td>
+    <th style='text-align:right;'>采购员:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.operator}></td>
+    <th style='text-align:right;'>供应商:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.supplier_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+    <th style='text-align:right;'>退货单编号:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.rp_bn}></td>
+    <th style='text-align:right;'>退货日期:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.returned_time|date_format:"%Y-%m-%d %H:%M:%S"}></td>
+    <th style='text-align:right;'>物流单号:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.logi_no}></td>
+    <th style='text-align:right;'>仓库:</th>
+    <td style='text-align:left;padding-left:5px;'><{$rp.branch_name}></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+    <th style='text-align:right;'>退货金额:
+    <{help}><{t}>退货金额=商品总额(<{$rp.product_cost|cur}>)+物流费用(<{$rp.delivery_cost|cur}>)
+    <b><font color="orange">注：物流费用为一次性物流成本</font></b><{/t}><{/help}>
+    </th>
+    <td colspan="7" style='text-align:left;padding-left:5px;'><{$rp.amount|cur}>
+    </td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<{if $rp.memo}>
+   <tr>
+      <th><{t}>备注：<{/t}></th>
+      <td>
+        <{foreach from=$rp.memo item=items}>
+        <div id="memo_show">
+        <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+        </div>
+        <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+
+</tbody>
+</table>
+
+</div>
+<h4>采购退货单明细</h4>
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<col style="width:10%;"></col>
+<col style="width:30%;"></col>
+<col style="width:10%;"></col>
+<col style="width:10%;"></col>
+<col style="width:6%;"></col>
+<col style="width:10%;"></col>
+<thead>
+<tr>
+	<th style='text-align:left;padding-left:5px;'>货号</th>
+    <th style='text-align:left;padding-left:5px;'>货品名称</th>
+    <th style='text-align:left;padding-left:5px;'>规格</th>
+	<th style='text-align:left;padding-left:5px;'>条码</th>
+	<th style='text-align:left;padding-left:5px;'>退货数量</th>
+    <th style='text-align:left;padding-left:5px;'>价格</th>
+</tr>
+</thead>
+<{foreach from=$rp.returned_purchase_items item=item}>
+<tbody>
+<tr>
+    <td style='text-align:left;padding-left:5px;'><{$item.bn}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.name}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.spec_info}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.barcode}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.num}></td>
+    <td style='text-align:left;padding-left:5px;'><{$item.price|cur}></td>
+</tr>
+</tbody>
+<{/foreach}>
+</table>
+</div>
+<input type="hidden" name="rp_id" value="<{$rp.rp_id}>">
+<div id="cc" class="noprint table-action"><{button type="button" id="purchase-save-btn" label="确 认"}> &nbsp;
+          <{button type="button" class="btn-secondary" id="return-btn" label="关 闭" onclick="javascript:void(window.close());"}></div>
+</div>
+</form>
+
+<script>
+$('purchase-save-btn').addEvent('click',function(e){
+alert('e');
+        var _this=this;
+        var form=this.getParent('form');
+        //if(pag){
+            alert('d');
+            form.store('target',{
+                onRequest:function(){
+                    _this.disabled=true;
+                },
+                onComplete:function(jsontext){
+                    try{
+                    alert('c');
+                        var json = JSON.decode(jsontext);
+                        if (typeof(json.error)!='undefined'){
+                            _this.disabled=false;
+                        }else{
+                            _this.disabled=true;
+                            if(opener.finderGroup['<{$env.get.finder_id}>']) opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+                            setTimeout('window.close()',200);
+                        }
+                    }catch(e){}
+                }
+            });
+        //}
+        form.fireEvent('submit',e);
+    });
+</script>

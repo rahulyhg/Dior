@@ -1,0 +1,49 @@
+<style>
+    .delivery-tab{margin:0;padding:0;overflow:hidden;}
+    .delivery-tab li{float:left; height:24px;line-height:24px;margin-right:5px;font-size: 12px;overflow:hidden;}
+    .delivery-tab .hover{background-position:0 0;font-weight:bold;}
+</style>
+
+<div class="tableform">
+     <div class="note">
+            <font color='red'>以下淘宝网店的session将要过期，请<a href='index.php?app=ome&ctl=admin_shop&act=view_bindrelation'  target="_blank">&nbsp;<b>点击此处</b>&nbsp;</a>。分别进行登录
+                
+        </font>
+     </div>
+
+    <table class="gridlist" style="*width:97%;">
+        <thead>
+          <tr>
+            <th>店铺名称</th>
+            <th>店铺类型</th>
+            <th>店铺节点</th>
+            <th>开始时间</th>
+            <th>过期时间</th>
+            <th>过期信息</th>
+          </tr>
+        </thead>
+        <tbody id="memNode">
+            <{foreach from=$shopInfo item=item}>
+                <tr>
+                    <td><{$item.name}></td>
+                    <td><{$item.shop_type}></td>
+                    <td><{$item.node_id}></td>
+                    <td><{$item.addon.session_start_time}></td>
+                    <td><{$item.addon.session_expire_time}></td>
+                    <td><{$item.expireday}></td>
+                </tr>
+            <{/foreach}>
+        </tbody>
+    </table>
+    <div class="table-action">
+        <{button label="关闭" type="botton" name="btn-close" id="btn-close" style="padding-left:35px;"}>
+    </div>
+</div>
+
+<script>
+	
+	$('btn-close').addEvent('click', function(){
+		$('btn-close').getParent('.dialog').retrieve('instance').close();
+	});
+	
+</script>

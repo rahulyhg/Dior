@@ -1,0 +1,59 @@
+<form action="index.php?app=ome&ctl=<{$env.get.ctl}>&act=do_dispatch" method="post" id="disForm">
+<input name="single" value="<{$single}>" type="hidden">
+<table class="tableform">
+    <tbody>
+    <tr>
+        <th>订单确认小组：</th>
+        <td>
+            <{input type="select" name='new_group_id' rows=$groups valueColumn="group_id" labelColumn="name" onchange="getOp(this.value,'')"}>
+            <{if $isSelectedAll}>
+            <input name="isSelectedAll" value="<{$isSelectedAll}>" type="hidden">
+            <{/if}>
+        </td>
+    </tr>
+    <tr>
+        <th>订单操作员：</th>
+        <td><select id='new_op_id' name='new_op_id'></select></td>
+    </tr>
+    <tr>
+        <th></th>
+        <td><{foreach from=$orderIds key=key item=item}>
+            <input type="hidden" name='order_id[]' value=<{$key}> />
+        <{/foreach}><span style="color:#FF0000;">注：可合并处理订单将会同时被分派</span></td>
+    </tr>
+
+    </tbody>
+</table>
+</form>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="btnSubmit" ><span><span><{t}>确定<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+var flag = true;
+ $('btnSubmit').addEvent('click',function(e){
+	 if(flag){
+		flag = false;
+        if('<{$env.get.single}>'){
+            finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+        }
+		$('disForm').fireEvent('submit',{stop:$empty});
+	}
+ });
+
+
+function getOp(group_id,selected_op_id){
+	if(group_id){
+	    W.page('index.php?app=ome&ctl=admin_group&act=get_op&p[0]='+group_id+'&p[1]='+selected_op_id+'&p[2]=true',{update:$('new_op_id')});
+	}else{
+	    $('new_op_id').empty();
+	}
+}
+</script>

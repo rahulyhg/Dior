@@ -1,0 +1,69 @@
+<{capture name="header"}>
+<style media="print">
+div{font-size:14pt; }
+</style>
+<style media="screen">
+div{font-size:12px ;}
+</style>
+<style>
+
+</style>
+<{/capture}>
+
+<h3>调拨单信息</h3>
+<div class="division">
+<h5>调拨仓库</h5>
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+  <tbody>
+  <tr>
+    <th>调出仓库：</th>
+    <td><{$from_branch_name}></td>
+    <th>调入仓库：</th>
+    <td><{$to_branch_name}></td>
+  </tr>
+  </tbody>
+</table>
+
+<h5 style="margin-top:10px;">调拨商品</h5>
+<table class="gridlist" id="appropriation_table"  style="margin:4px 0;">
+  <thead>
+    <tr>
+    <th>货号</th>
+    <th style="width:240px;">货品名称</th>
+    <th>货品规格</th>
+    <th>条形码</th>
+    <th>调出仓数量</th>
+    <th>调入仓数量</th>
+    <th>调拨数量</th>
+    </tr>
+  </thead>
+  <tbody id="dataNode">
+    <{if $items}>
+      <{foreach from=$items item=item}>
+      <tr>
+        <td><{$item.bn}></td>
+        <td><{$item.product_name}></td>
+        <td><{$item.spec_info|default:'-'}></td>
+        <td><{$item.barcode}></td>
+        <td><{$item.frome_branch_store}></td>
+        <td><{$item.to_branch_store}></td>
+        <td><{$item.num}></td>
+      </tr>
+      <{/foreach}>
+    <{else}>
+      <tr><td colspan="9" style="padding:0;"><div class="note" style="margin:0;"> 暂无货品信息 </div></td></tr>
+    <{/if}>
+  </tbody>
+</table>
+
+</div>  
+
+
+
+
+<div style="clear:both"></div>
+</div>
+</div>
+
+ 
+

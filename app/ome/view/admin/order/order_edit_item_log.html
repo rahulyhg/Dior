@@ -1,0 +1,76 @@
+<div id="present">
+  <div class="gridlist" >
+    <table class="nosplit" width="100%" cellspacing="0" cellpadding="0" border="0" >
+      <thead>
+        <tr>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>购买数量</th>
+        <th>商品价格</th>
+        <th>类型</th>
+        </tr>
+     </thead>
+     <tbody id="itemlist">
+    <{foreach from=$operation_detail.order_objects item=obj}>
+            <{if $obj.obj_type == 'pkg'}>
+                 <{foreach from=$obj.order_items item=item}>
+                    <{if $item.delete == 'true'}>
+                        <{assign var='pkg_del' value="true"}>
+                    <{else}>
+                        <{assign var='pkg_del' value="false"}>
+                    <{/if}>
+                <{/foreach}>
+                  <tr class="bindtitle" pkg-type="pkg" <{if $pkg_del=='true'}>style="background-color: #D8D8D8;" pkg-del='b'<{else}> pkg-del="a"<{/if}>>
+                  <td class="goods_bn"><{$obj.bn}></td>
+                  <td class="goods_name"><{$obj.name}></td>
+                  <td class="goods_addon">捆绑商品</td>
+                  <td class="goods_num"><{$obj.quantity}></td>
+                  <td class="goods_num"><{$obj.price}></td>
+                  <td>捆绑商品</td>
+                </tr>
+                <{foreach from=$obj.order_items item=item}>
+                    <tr  <{if $item.delete == 'true'}>style="background-color: #D8D8D8;" pkg-del="b"<{else}> pkg-del="a"<{/if}>>
+                      <td class="item_bn"><{$item.bn}></td>
+                      <td class="item_name"><{$item.name}></td>
+                      <td class="item_addon"><{if $item.addon}><{$item.addon}><{else}>-<{/if}></td>
+                      <td class="item_num"><{$item.quantity}></td>
+                      <td class="item_price"><{$item.price}></td>
+                      <td></td>
+                    </tr>
+                <{/foreach}>
+            <{/if}>
+            <{if $obj.obj_type == 'goods'}>
+                    <{foreach from=$obj.order_items item=item}>
+                          <tr <{if $item.delete == 'true'}>class="disabled" g-del="b"<{else}>g-del="a"<{/if}>>
+                            <td class="item_bn <{$item.item_type}>class">
+                              <span class="number"><{$item.bn}></span>
+                            </td>
+                            <td class="item_name"><{$item.name}></td>
+                            <td class="item_addon"><{if $item.addon}><{$item.addon}><{else}>-<{/if}></td>
+                            <td class="item_num"><{$item.quantity}></td>
+                            <td class="item_price"><{$item.price}></td>
+                            <td>商品</td>
+                          </tr>
+                  <{/foreach}>
+            <{/if}>
+            <{if $obj.obj_type == 'gift'}>
+                <{foreach from=$obj.order_items item=item}>
+                      <tr <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"<{else}>g-del="a"<{/if}>>
+                        <td class="item_bn">
+                          <span class="number"><{$item.bn}></span>
+                       </td>
+                        <td class="item_name"><{$item.name}></td>
+                        <td class="item_addon"><{if $item.addon}><{$item.addon}><{else}>-<{/if}></td>
+                        <td class="item_num"><{$item.quantity}></td>
+                        <td class="item_price"><{$item.price}></td>
+                        <td><{if item.delete=='true'}>删除<{else}> 正常<{/if}></td>
+                      </tr>
+                <{/foreach}>
+            <{/if}>
+    <{/foreach}>
+      </tbody>
+     </table>
+     <div style="text-align: right; line-height:30px;"><b>商品总金额:<{$operation_detail.cost_item}></span>元</b></div>
+  </div> 
+</div>

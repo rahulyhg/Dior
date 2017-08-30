@@ -1,0 +1,130 @@
+
+<{capture name="header"}>
+  <link href="../app/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div class="tableform">
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+	<th >店铺名称：</th>
+	<td ><{$sales.shopname}></td>
+	<th>销售单号：</th>
+	<td ><{$sales.sale_bn}></td>
+	<th>订单号：</th>
+	<td ><{$sales.order_bn}></td>
+	<th >	发货单号：</th>
+	<td ><{$sales.delivery_bn}></td>
+
+
+</tr>
+<tr>
+	<th >销售数量：</th>
+	<td ><{$sales.nums}></td>	
+	 <th >销售时间：</th>
+     <td>
+	   <{$sales.sale_time}>
+     </td>
+	<th >支付方式：</th>
+    <td ><{$sales.payment|default:'-'}></td>
+    <th >会员名：</th>
+    <td ><{$sales.uname}></td>
+</tr>
+<tr>
+	<th >商品总额：</th>
+    <td ><{$sales.total_amount|cur}></td>
+	<th >配送费用：</th>
+	<td ><{$sales.cost_freight|cur}></td>
+	<th >优惠金额：</th>
+	<td ><{$sales.discount|cur}></td>
+    <th >附加费：</th>
+    <td ><{$sales.additional_costs|cur}></td>
+
+</tr>
+<tr>
+    <th >销售金额：</th>
+    <td ><{$sales.sale_amount|cur}></td>
+    <th >预存款：</th>
+    <td ><{$sales.deposit|cur}></td>
+	<th >操作员：</th>
+	<td ><{$sales.operator}></td>
+	
+   
+</tr>
+<tr>
+    <th >物流公司：</th>
+    <td ><{$sales.logi_name}></td>
+    <th >物流运单号：</th>
+    <td ><{$sales.logi_no}></td>
+</tr>
+</table>
+</div>
+
+<h4>收货人信息：</h4>
+
+<div class="goods-spec-cell" id='goods-spec-product'>
+<table cellspacing="0" cellpadding="0" border="0" class="gridlist">
+     <thead>
+     <tr>
+				<th orderkey="bn"><{t}>收货人姓名<{/t}></th>
+                <th orderkey="store"><{t}>收货人地区<{/t}></th>
+                <th orderkey="store"><{t}>收货人地址<{/t}></th>
+                <th orderkey="weight"><{t}>收货人邮编<{/t}></th>
+                <th orderkey="store"><{t}>收货人固定电话<{/t}></th>
+                <th orderkey="unit"><{t}>收货人Email<{/t}></th>
+				<th orderkey="unit"><{t}>收货人手机<{/t}></th>
+	 </tr>
+	</thead>
+	<tbody>
+	<tr>
+	  <td><{$deliveryinfo.ship_name}></td>
+	  <td><{$deliveryinfo.ship_province}>-<{$deliveryinfo.ship_city}>-<{$deliveryinfo.ship_district}></td>
+	  <td><{$deliveryinfo.ship_addr}></td>
+	  <td><{$deliveryinfo.ship_zip}></td>
+	  <td><{$deliveryinfo.ship_tel}></td>
+	  <td><{$deliveryinfo.ship_email}></td>
+	  <td><{$deliveryinfo.ship_mobile}></td>
+	</tr>
+
+	</tbody>
+</table>
+</div>
+
+
+<h4>销售明细：</h4>
+
+<div class="goods-spec-cell" id='goods-spec-product'>
+    <table cellspacing="0" cellpadding="0" border="0" class="gridlist">
+     <thead>
+     <tr>
+				<th orderkey="bn"><{t}>货号<{/t}></th>
+                <th orderkey="store"><{t}>货品名称<{/t}></th>
+                <th orderkey="store"><{t}>商品规格<{/t}></th>
+                <th orderkey="weight"><{t}>吊牌价<{/t}></th>
+                <th orderkey="unit"><{t}>数量<{/t}></th>
+                <th orderkey="store"><{t}>货品优惠<{/t}></th>
+                <th orderkey="weight"><{t}>销售总价<{/t}></th>
+                <th orderkey="store"><{t}>平摊优惠<{/t}></th>
+				<th orderkey="unit"><{t}>销售金额<{/t}></th>
+	 </tr></thead><tbody>
+ <{foreach from=$dataitems item=dataitem}>
+	<tr>
+	  <td><{$dataitem.bn}></td>
+	  <td><{$dataitem.name}></td>
+	   <td><{$dataitem.spec_name|default:'-'}></td>
+	  <td><{$dataitem.price|cur}></td>
+      <td><{$dataitem.nums}></td>
+      <td><{$dataitem.pmt_price|cur}></td>
+      <td><{$dataitem.sale_price|cur}></td>
+      <td><{$dataitem.apportion_pmt|cur}></td>
+	  <td><{$dataitem.sales_amount|cur}></td>
+	</tr>
+<{/foreach}>
+
+</tbody>
+</table>
+</div>
+
+
+</div>
+</div>

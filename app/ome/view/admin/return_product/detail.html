@@ -1,0 +1,597 @@
+<div class="tableform">
+  <div class="message"><strong>售后标题：</strong><{$product.title}></div>
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tbody>
+      <tr>
+        <th style="width:10%;"><{t}>订单编号：<{/t}></th>
+        <td><span class="font16px fontbold fontcolorBlack"><{$order.order_bn}></span></td>
+      </tr>
+      <tr>
+        <th><{t}>订单状态：<{/t}></th>
+        <td><span id="x-return_item_status" class="font14px fontcolorOrange fontbold"><{$product.status_value}></span></td>
+      </tr>
+      <tr>
+        <th><{t}>提出申请的时间：<{/t}></th>
+        <td><span class="fontcolorOrange"><{$product.add_time|cdate:FDATE_STIME}></span></td>
+      </tr>
+      <tr>
+        <th><{t}>售后答复：<{/t}></th>
+        <td><span class="fontcolorOrange"><{$product.memo}></span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <br />
+  <h4>申请售后服务的商品</h4>
+  <{if $product.status>3}>
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+      <thead>
+        <tr>
+          <th>货号</th>
+          <th>商品名称</th>
+          <th>申请数量</th>
+          <th>剩余数量</th>
+          <th>所属仓库</th>
+        </tr>
+      </thead>
+      <tbody>
+      <{foreach from=$product.items  item=items}>
+      <input type="hidden" name="effective[<{$items.bn}>]" value="<{$items.effective}>">
+      <tr >
+        <td ><{$items.bn}></td>
+        <td><{$items.name|visibility:$items.product_id}></td>
+        <td><{$items.num}></td>
+        <td><{$items.effective}></td>
+        <td><{$items.branch_name}></td>
+      </tr>
+      </tbody>
+
+      <{/foreach}>
+    </table>
+  </div>
+  <{else}>
+  <div id='return_info' class="division">
+    <form action="index.php?app=ome&ctl=admin_return&act=save&finder_id=<{$env.get.finder_id}>" method="post" id="apply_return">
+      <input type="hidden" id="status" name="status" value=''>
+      <input type="hidden" id="return_id" name="return_id" value="<{$product.return_id}>">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+        <thead>
+          <tr>
+            <th>货号</th>
+            <th>商品名称</th>
+            <th>申请数量</th>
+            <{if $product.delivery_id}>
+               <th>数量</th>
+            <{/if}>
+            <th>剩余数量</th>
+            <{if $product.delivery_id}>
+               <th>仓库</th>
+            <{else}>
+              <{if $branch_mode!='single'}>
+                 <th><{t}>仓库<{/t}></th>
+              <{/if}>
+            <{/if}> 
+            <!--NEW_COLUMN_DETAIL_RETURN_INFO_TH-->
+        </tr>
+        </thead>
+        <{foreach from=$product.items item=items key=key}>
+        <input type="hidden" name="effective[<{$items.bn}>]" value="<{$items.effective}>">
+        <tbody>
+          <tr>
+            <td><{$items.bn}>
+              <input type="hidden" id="item_id" name="item_id[]" value='<{$items.item_id}>'></td>
+            <td><{$items.name|visibility:$items.product_id}></td>
+            <td><{$items.num}></td>
+            <{if $product.delivery_id}>
+               <td><{$items.num}></td>
+            <{/if}>
+            <td><{$items.effective}></td>
+            <{if $product.delivery_id}>
+               <td><{$items.branch_name}></td>
+            <{else}>
+              <{if $branch_mode=='single'}>
+              <input type="hidden" value="<{$items.branch.0.branch_id}>" />
+              <input type="hidden" value="<{$items.bn}>" />
+              <input name="branch_id<{$items.item_id}>" type="hidden" value="<{$items.branch.0.branch_id}>"/>
+              <span id="canpay<{$items.bn}>"></span> <{else}>
+              <td><{foreach from=$items.branch item=branch key=keys}>
+                <input name="branch_id<{$items.item_id}>" type="hidden" value="<{$branch.branch_id}>" class="x-pdt-chk-<{$branch.branch_id}>"/>
+                <{$branch.branch_name}>
+                <{/foreach}> <span id="canpay<{$items.bn}>"></span></td>
+              <{/if}>
+            <{/if}>
+            <!--NEW_COLUMN_DETAIL_RETURN_INFO_TD_<{$items.bn}>-->
+          </tr>
+        </tbody>
+        <{/foreach}>
+      </table>
+      <{if !$product.delivery_id}>
+      <h4>选择收货人信息</h4>
+      <div class="division">
+        <table width="100%" border="0"  class="gridlist">
+          <thead>
+            <tr>
+              <th>选择</th>
+              <th>发货单号</th>
+              <th>收货人姓名</th>
+              <th>收货人地区</th>
+              <th>收货人地址</th>
+            </tr>
+          </thead>
+          <tbody class='dly-body' id="dly-body-detail">
+          </tbody>
+        </table>
+      </div>
+      <{/if}>
+    </form>
+  </div>
+  <{/if}>
+  
+  <{if $product.attachment!=''}> <br />
+  <div class="division">
+    <h4>售后附件下载</h4>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" >
+      <tr>
+        <td>
+        <{if $attachment_type!='remote'}>
+        <a class="margin10" href="javascript:file_download()">请点击下载该附件</a>
+        <{else}>
+        <a class="margin10" href="<{$product.attachment}>" target="_blank">请点击下载该附件</a>
+        <{/if}>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <{/if}>
+
+  <{if $product.delivery_id}>
+  <!-- 选择收货人开始 -->
+  <{if $product.content!=''}> <br />
+  <h4>详细说明</h4>
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td><{$product.content}><{if $product.process_data.shipcompany || $product.process_data.logino}><br/>物流公司:<{$product.process_data.shipcompany}>,物流单号:<{$product.process_data.logino}><{/if}></td>
+      </tr>
+    </table>
+  </div>
+  <{/if}> <br />
+  <h4>会员信息</h4>
+  <div class="division">
+    <table width="100%" border="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>用户名</th>
+          <th>会员固定电话</th>
+          <th>会员邮编</th>
+          <th>Email</th>
+          <th>会员手机</th>
+        </tr>
+      </thead>
+      <tr>
+        <td><{$product.member.account.uname}></td>
+        <td><{$product.member.contact.tel}></td>
+        <td><{$product.member.contact.zip}></td>
+        <td><{$product.member.contact.email}></td>
+        <td><{$product.member.contact.mobile}></td>
+      </tr>
+    </table>
+  </div>
+  <h4>收货人信息</h4>
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>收货人姓名</th>
+          <th>收货人地区</th>
+          <th>收货人地址</th>
+          <th>收货人邮编</th>
+          <th>收货人固定电话</th>
+          <th>收货人Email</th>
+          <th>收货人手机</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><{$product.delivery.consignee.name}></td>
+          <td><{$product.delivery.consignee.area|region}></td>
+          <td><{$product.delivery.consignee.addr}></td>
+          <td><{$product.delivery.consignee.zip}></td>
+          <td><{$product.delivery.consignee.tel}></td>
+          <td><{$product.delivery.consignee.email}></td>
+          <td><{$product.delivery.consignee.mobile}></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <br />
+  <h4>操作日志</h4>
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>操作时间</th>
+          <th>操作员</th>
+          <th>操作类型</th>
+          <th>操作内容</th>
+        </tr>
+      </thead>
+      <tbody>
+      <{foreach from=$product.log item=log}>
+      <tr>
+        <td><{$log.operate_time|cdate:FDATE_STIME}></td>
+        <td><{$log.op_name}></td>
+        <td ><{$log.operation}></td>
+        <td><{$log.memo}></td>
+      </tr>
+      <{/foreach}>
+      </tbody>
+
+    </table>
+  </div>
+  <br />
+  <div id='about_info' style='display:<{if $product.status == 8 || $product.status == 7 || $product.status == 4 || $product.status == 5}>block<{else}>none<{/if}>;' class="division">
+    <h4>仓库收货信息</h4>
+    <table width="100%" border="0"  class="gridlist">
+      <thead>
+        <tr>
+          <th>仓库</th>
+          <th>快递公司</th>
+          <th>快递单号</th>
+          <th>快递费用</th>
+          <th>是否到付</th>
+          <th>收货备注</th>
+        </tr>
+      </thead>
+      <tbody>
+
+      <tr>
+        <td><{$product.process_data.branch_name}></td>
+        <td><{$product.process_data.shipcompany}></td>
+        <td><{$product.process_data.shiplogino}></td>
+        <td><{$product.process_data.shipmoney}></td>
+        <td><{if $product.process_data.daofu==''}>否<{else}>是<{/if}></td>
+        <td><{$product.process_data.memo}></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <br />
+  <{if count($product.check_data)>0}>
+  <h4>已处理的申请商品</h4>
+  <form action="index.php?app=ome&ctl=admin_return&act=save&finder_id=<{$env.get.finder_id}>" method="post" id="check_return">
+    <input type="hidden" id="status" name="status" value=''>
+    <input type="hidden" id="return_id" name="return_id" value="<{$product.return_id}>">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="gridlist">
+      <thead>
+        <tr>
+          <th>货号</th>
+          <th>商品名称</th>
+          <th>数量</th>
+          <th>售后问题类型</th>
+          <th>商品入库类型</th>
+          <th>质检描述</th>
+        </tr>
+      </thead>
+      <{foreach from=$product.check_data item=check key=key}>
+      <input type="hidden" name="branch_id[]" value="<{$check.branch_id}>">
+      <input type="hidden" name="product_id[]" value="<{$check.product_id}>">
+      <input type="hidden" name="bn[]" value="<{$check.bn}>">
+      <input type="hidden" name="item_id[]" value="<{$check.item_id}>">
+      <input type="hidden" name="name[]" value="<{$check.name}>">
+      <input type="hidden" name="effective[]" value="<{$check.effective}>">
+      <tbody>
+        <tr>
+          <td><{$check.bn}></td>
+          <td><{$check.name|visibility:$items.product_id}></td>
+          <td>1</td>
+          <td><{$check.problem_type}></td>
+          <td><{$check.StoreType}></td>
+          <td><{$check.memo}></td>
+        </tr>
+      <{/foreach}>
+    </table>
+  </form>
+  <{/if}>
+  <!-- 选择收货人结束 -->
+  <{/if}>
+</div>
+<div class="tableAction">
+  <table cellspacing="0" cellpadding="0" align="center" border="0" style="width:auto;">
+    <tbody>
+      <tr>
+        <td>
+          <b class="<{if $product.status == 1}>submitBtn<{else}>submitBtnoff<{/if}>">
+          <{if $product.status >= 2}>
+          <{button id="x-return_status_{$product.return_id}_2" label="审核中" name="butsubmit" onclick="set_status(2)" disabled="disabled"}>
+          <{else}>
+          <{button id="x-return_status_{$product.return_id}_2" label="审核中" name="butsubmit" onclick="set_status(2)" }>
+          <{/if}>
+          </b>
+        </td>
+        <td><b class="<{if $product.status == 2}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $product.status != 2}>
+            <{button id="x-return_status_{$product.return_id}_3" label="接受申请" name="butsubmit" onclick="set_status(3)" disabled="disabled"}>
+            <{else}>
+            <{button id="x-return_status_{$product.return_id}_3" label="接受申请" name="butsubmit" onclick="set_status(3)"}>
+            <{/if}>
+          </b></td>
+        <td><b class="<{if $product.status == 3}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $product.status != 3}>
+            <{button id="x-return_status_{$product.return_id}_4" label="完成" name="butsubmit" onclick="set_status(4)" disabled="disabled"}>
+            <{else}>
+            <{button id="x-return_status_{$product.return_id}_4" label="完成" name="butsubmit" onclick="set_status(4)"}><{/if}>
+        </b></td>
+        <td <{if $product.refundmoney >0 || $product.money <=0 || ($product.money-$product.refundmoney) <=0}>style="display:none;"<{/if}>>
+          <b class="<{if $product.refundmoney >0 || $product.money <=0 || ($product.money-$product.refundmoney) <=0}>submitBtnoff<{else}>submitBtn<{/if}>">
+            <{if $product.refundmoney >0 || $order.pay_status==5 || $product.money <=0 || ($product.money-$product.refundmoney) <=0}>
+                <{button id="x-return_status_{$product.return_id}_10" label="申请退款" name="butsubmit" disabled="disabled"}>
+            <{else}>
+                <{button id="x-return_status_{$product.return_id}_10" label="申请退款" name="butsubmit" onclick="new Dialog('index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]={$product.order_id}&finder_id={$env.get.finder_id}&p[1]={$product.return_id}&back_url={$env.get.ctl}|{$env.get.act}',{width:800,title:'订单{$order.order_bn}的退款申请'})"}>
+            <{/if}>
+          </b></td>
+        <{/if}>
+        <{if $product.status eq 1 || $product.status eq 2}>
+        <td><b class="<{if $product.status == 2}>submitBtn<{else}>submitBtnoff<{/if}>">
+            <{if $product.status >= 2}>
+            <{button id="x-return_status_{$product.return_id}_5" label="拒绝" name="butsubmit" onclick="set_status(5)" disabled="disabled"}>
+            <{else}>
+            <{button id="x-return_status_{$product.return_id}_5" label="拒绝" name="butsubmit" onclick="set_status(5)"}><{/if}>
+          </b>
+        </td>
+        <{/if}>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<script>
+
+    function set_status(status){
+
+      $('status').value = status;
+      var _form=$('apply_return'),_formActionURL=_form.get('action'); 
+      var return_orders = '<{$is_return_order}>';
+
+      if((status==2 ||status==3) && return_orders){
+
+         if(!confirm('提示: 该销售单号已申请过一张售后单')){
+            return false;
+         }
+
+      }
+      
+      if(status==8){
+        $('check_return').fireEvent('submit',{stop:$empty});
+      }else if( status==3 ){
+        var finder_iid = '<{$env.get.finder_id}>';
+        new Dialog('index.php?ctl=admin_return&act=choose_type&app=ome&finder_iid='+finder_iid+'&p[0]='+<{$product.return_id}>+'&p[1]=3',{width:800,title:'选择转换类型'})
+      }else{
+        _form.store('target',{
+            onComplete:function(){              
+                window.finderGroup['<{$env.get.finder_id}>'].refresh();
+            }
+        });        
+        _form.set('action',_formActionURL+'&p[0]='+status).fireEvent('submit',{stop:$empty});
+
+      }
+      
+    }
+
+
+    function show_delivery(branch_id,bn){
+    
+      showAddress(branch_id,bn);
+    }
+
+    function showAddress(branch_id,bn){
+      new Request.JSON({url:'index.php?app=ome&ctl=admin_return&act=check',
+        method:'post',
+        data:{
+            'bn' : bn,
+            'branch_id' : branch_id,
+            'order_id' : <{$order.order_id}>
+        },
+        onSuccess:function(data){
+        
+          var ifadd='yes';
+          $ES('input[name^=delivery_id]').each(function(item,index){
+            if(item.value==data.delivery_id){
+              ifadd='no';
+            }
+          });
+
+          var info = "<td><input type='radio' checked='checked' id='delivery_id' name='delivery_id' value='"+data.delivery_id+"'></td><td>"+data.delivery_bn+"</td><td>"+data.ship_name+"</td><td>"+data.ship_area+"</td><td>"+data.ship_addr+"</td>";
+          //$('canpay'+data.bn).set('html','可退数量'+data.refund);
+
+          $('canpay'+bn).set('html','');
+
+          var newtr=new Element('tr');
+
+          if(ifadd=="yes"){
+          
+            $('dly-body-detail').adopt(newtr);
+            newtr.set('html',info);
+            $('num'+bn).value=data.refund;
+            $('effective'+bn).value=data.refund;
+          }
+
+        }
+      }).send();
+    }
+
+    function choise_reship_person()
+    {
+      var branch='false';
+      $ES('input[name^=branch_id]').each(function(item,index){
+        if(item.checked){
+          branch='true';
+        }
+      });
+      if (branch=='false'){
+        alert('请选择仓库');
+        return false;
+      }
+      if ($('delivery_id')){
+        var delivery_id = $('delivery_id').get('value');
+      }
+      if (!delivery_id){
+        alert('请选择收货人地址');
+        return false;
+      }
+      //new Event(event)
+      $('choise_reship').fireEvent('submit',{stop:$empty});
+    }
+
+    function calculate(){
+      var zhengclass = 'zheng';
+      zhengclass ='.'+zhengclass;
+      var fuclass = 'fu';
+      fuclass ='.'+fuclass;
+      var sum= 0;
+      var tsum=0;
+      var bsum=0;
+      $ES(zhengclass).each(function(e){
+        sum -= -e.get('value');
+        tsum -= -e.get('value');
+
+      });
+
+      $ES(fuclass).each(function(e){
+        sum -= e.get('value');
+        bsum -= -e.get('value');
+      });
+      if(sum>=0){
+        $('x-return_status_<{$product.return_id}>_4').disabled = false;
+        var el_b = $('x-return_status_<{$product.return_id}>_4').getParent('b');
+        el_b.removeClass('submitBtnoff');
+        el_b.addClass('submitBtn');
+
+        $('bu').style.display = 'none';
+        }else{
+        $('x-return_status_<{$product.return_id}>_4').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_4').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+        $('bu').style.display = 'block';
+      }
+      sum=sum.toFixed(3);
+      $('totalmoney').set('text',sum);
+      $('money').value = sum;
+      tsum=tsum.toFixed(3);
+      $('tmoney').set('text',tsum);
+      $('tmoney').value = tsum;
+
+      bsum=bsum.toFixed(3);
+      $('bmoney').set('text',bsum);
+      $('bmoney').value = bsum;
+    }
+    function init_button(status,return_id){
+      var el = $('x-return_status_<{$product.return_id}>_'+status);
+      if( el )
+      {
+        el.disabled = true;
+        var el_b = el.getParents('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+      }
+
+      if(status == 1 )
+      {
+        $('x-return_status_<{$product.return_id}>_2').disabled = false;
+        var el_b = $('x-return_status_<{$product.return_id}>_2').getParent('b');
+        el_b.removeClass('submitBtnoff');
+        el_b.addClass('submitBtn');
+      }
+      else if( status == 2 ){
+        $('x-return_status_<{$product.return_id}>_3').disabled = false;
+        var el_b = $('x-return_status_<{$product.return_id}>_3').getParent('b');
+        el_b.removeClass('submitBtnoff');
+        el_b.addClass('submitBtn');
+
+        $('x-return_status_<{$product.return_id}>_5').disabled = false;
+        var el_b = $('x-return_status_<{$product.return_id}>_5').getParent('b');
+        el_b.removeClass('submitBtnoff');
+        el_b.addClass('submitBtn');
+        }else if( status == 3 ){
+
+        $('x-return_status_<{$product.return_id}>_5').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_5').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+      }
+      else if( status == 5 )
+      {
+        $('x-return_status_<{$product.return_id}>_2').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_2').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+
+        $('x-return_status_<{$product.return_id}>_3').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_3').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+
+      }
+      else if( status == 6)
+      {
+        $('x-return_status_<{$product.return_id}>_2').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_2').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+
+        $('x-return_status_<{$product.return_id}>_3').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_3').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+
+      }
+      else if(status == 7)
+      {
+        $('x-return_status_<{$product.return_id}>_2').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_2').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+
+        $('x-return_status_<{$product.return_id}>_3').disabled = true;
+        var el_b = $('x-return_status_<{$product.return_id}>_3').getParent('b');
+        el_b.removeClass('submitBtn');
+        el_b.addClass('submitBtnoff');
+      }
+
+    }
+
+    init_button(<{$product.status}>,<{$product.return_id}>);
+
+    function file_download(){
+      var ifm=new IFrame({src:'index.php?app=ome&ctl=admin_return&act=file_download2&p[0]=<{$product.return_id}>'});
+      ifm.injectAfter(document.body);
+    }
+
+    function visibility(e){
+        var visiTips = new Tips({
+                onShow:function(tip,el){
+                    el.addClass('active');
+                    tip.setStyle('display','block');
+                },
+                text: function(element){
+                    if(element.get('visibility')=='false'){
+                        return '隐藏商品';
+                    }else{
+                        return '';
+                    }
+                }
+            });
+
+            var e  = new Event(e), el = e.target;
+            if (el.get('visibility')=='false')
+            {
+                visiTips.attach(el);
+                el.addEvent('mouseleave',function(){
+                    el.removeClass('active');
+                });
+                el.fireEvent('mouseenter',e);
+            }
+    }
+  </script>

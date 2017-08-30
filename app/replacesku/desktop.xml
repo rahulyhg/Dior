@@ -1,0 +1,14 @@
+<desktop>
+   <workground name="订单" id="order_center" order="100">
+  
+    <menugroup name="订单查看">
+    <menu controller='admin_order' action='index'  params='auto_status:1' permission='taotransform' display='true' order='1000400'>
+	待转换订单</menu>
+     
+    </menugroup>
+    </workground>
+  
+  <permissions>
+    <permission id="taotransform" display='true'>待转换订单</permission>
+  </permissions>
+</desktop>

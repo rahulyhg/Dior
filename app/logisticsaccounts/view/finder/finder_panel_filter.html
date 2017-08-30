@@ -1,0 +1,70 @@
+<div id='<{$panel_id}>-filter-list-<{$finder_id}>' class="filter-list" style="float:left;">
+	    <{foreach from=$columns key=c item=v}>
+	    	<{if $panel_id==$v.panel_id}>
+	        <div k="<{$c}>" style="<{if $v.filtertype && $v.filterdefault}><{else}>display:none;<{/if}>float:left;border: 1px solid #EBEFF4;margin:2px 16px 2px 0;padding: 4px;height:26px;">
+		   		<div style="float:left;"><{$v.label}><{$v.addon}>：</div>
+	            <div style="float:left;"><{$v.inputer}></div>
+	        </div>
+	        <{/if}>
+	    <{/foreach}>
+	    
+  		</div style="float:left;"> 
+	    <div style="float:left;margin:5px 16px 2px 0;padding: 4px;height:26px;padding:0;">
+         <{button class="btn-primary" id="{$panel_id}-filter-submit-{$finder_id}" label=$___desktop="确定"|t:'desktop'}>
+        
+        </div>
+ <script>
+ 
+void function(){
+	/** 清空所有radio的值 **/
+	$$('#<{$panel_id}>-filter-list-<{$finder_id}> input[type=radio]').each(function(item,index){
+		$(item).checked = false;
+	});
+	
+	 var tmp_str = "√";
+	
+	 var filerHTML =  $('<{$panel_id}>-filter-list-<{$finder_id}>').innerHTML;
+	 
+	 var filter_<{$finder_id}> = new Filter('<{$panel_id}>-filter-list-<{$finder_id}>','<{$finder_id}>',{
+		onChange:function(){    
+						
+	    }
+	});
+	         
+	$('<{$panel_id}>-filter-submit-<{$finder_id}>').addEvent('click',function(){
+	           
+		filter_<{$finder_id}>.update();
+	            
+	});
+ }();
+
+
+         
+Ex_Loader("picker",function(){
+	$$('#<{$panel_id}>-filter-list-<{$finder_id}> input[type=text]').addEvent('keyup',function(e){
+                        
+	    if(e.code==13){
+	    	$('<{$panel_id}>-filter-submit-<{$finder_id}>').fireEvent('click');
+	    }
+	});
+                    
+	$$('#<{$panel_id}>-filter-list-<{$finder_id}> input[vtype=date]').setStyles({'display':'block','margin':1});
+             
+}); 
+		
+
+
+
+
+
+
+var op_id = $E('select[name^=op_id]','#<{$panel_id}>-filter-list-<{$finder_id}>');
+
+parent_forms = new Element('option',{value:'all',html:'全部'});
+parent_forms.injectInside(op_id);
+var op_ids = $ES('select[name^=op_id]','#<{$panel_id}>-filter-list-<{$finder_id}>')
+op_ids.each(function(i){
+
+
+});
+</script>

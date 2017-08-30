@@ -1,0 +1,199 @@
+<div id="gift_list" <{if empty($conf.objs)}> style="display:none" <{/if}>>
+  <input type="hidden" name="objtype[]" value="gift"/>
+  <h5 style="text-align:center;">赠品</h5>
+  
+<{if empty($delivery_list)}>
+  <table class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+    <thead>
+      <tr>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>购买数量</th>
+        <th>商品价格</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <{foreach from=$conf.objs item=obj}>
+      <{foreach from=$obj.order_items item=item}>
+      <tr id="tr_<{$item.item_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"<{else}>g-del="a"<{/if}> g-type="<{$item.item_type}>" g-pid="<{$item.product_id}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>" g-bn="<{$item.bn}>" g-pname="<{$item.name}>">
+        <td class="item_bn">
+          <span class="number"><{$item.bn}></span>
+          <input type="hidden" value="<{$item.bn}>" name="bn_list[]" /></td>
+        <td class="item_name"><{$item.name}></td>
+        <td class="item_addon"><{$item.addon}></td>
+        <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="gift[obj][<{$obj.obj_id}>][]" />
+          <input atype="num" aid="<{$item.item_id}>" name="gift[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
+        <td class="item_price"><input name="gift[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" id="pr_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
+        <td class="item_op" objid="<{$obj.obj_id}>">
+          <{if $item.delete == 'false'}>
+          <{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
+        <{else}>
+        <{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
+      <{/if}>
+      </tr>
+      <{/foreach}>
+    <{/foreach}>
+  </tbody>
+</table>
+
+<{else}>
+  <table class="gridlist" width="100%" cellspacing="0" cellpadding="0" border="0" >
+    <thead>
+      <tr>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>购买数量</th>
+        <th>可编辑数量</th>
+        <th>商品价格</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <{foreach from=$conf.objs item=obj}>
+      <{foreach from=$obj.order_items item=item}>
+      <tr id="tr_<{$item.item_id}>" oid="<{$obj.obj_id}>" <{if $item.delete == 'true'}>style="background-color: #DBDBDB;" g-del="b"<{else}>g-del="a"<{/if}> g-type="<{$item.item_type}>" g-pid="<{$item.product_id}>" g-shop-pid="<{$item.shop_product_id}>" aid="<{$item.item_id}>" g-bn="<{$item.bn}>" g-pname="<{$item.name}>">
+        <td class="item_bn">
+          <span class="number"><{$item.bn}></span>
+          <input type="hidden" value="<{$item.bn}>" name="bn_list[]" /></td>
+        <td class="item_name"><{$item.name}></td>
+        <td class="item_addon"><{$item.addon}></td>
+        
+        <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="gift[obj][<{$obj.obj_id}>][]" />
+          <input atype="num" aid="<{$item.item_id}>" name="gift[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="gift_num_<{$item.item_id}>"  <{if $item.delete == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$item.quantity}>" id="old_gift_nums_<{$item.item_id}>" /></td>
+        
+        <td class="gift_buy_nums">
+        <{if $item.left_nums <= 0}>
+        <input aid="<{$item.item_id}>" name="gift[gift_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="gift_buy_nums_<{$item.item_id}>" disabled="true" />
+        <{else}>
+        <input atype="gift_num" aid="<{$item.item_id}>" name="gift[gift_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="gift_buy_nums_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotal_gift(this);" />
+        <{/if}>
+        <{if $item.make_nums}><br />(<font color="#f00;">已发货：<{$item.make_nums}></font>)<input type="hidden" value="<{$item.make_nums}>" id="split_gift_send_<{$item.item_id}>" /><{/if}>
+        </td>
+        
+        <td class="item_price"><input name="gift[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" id="pr_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="total();"<{/if}> /></td>
+        <td class="item_op" objid="<{$obj.obj_id}>">
+        <{if empty($item.make_nums)}>
+            <{if $item.delete == 'false'}>
+            	<{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
+            <{else}>
+            	<{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
+            <{/if}>
+        <{else}>
+        	<span style="color:red;"><{if $item.left_nums <= 0}>已拆分完<{else}>部分拆分<{/if}></span>
+        <{/if}>
+      </tr>
+      <{/foreach}>
+    <{/foreach}>
+  </tbody>
+</table>
+<{/if}>
+</div>
+<script>
+  function total_gift(){
+    var total = 0;
+    $('gift_list').getElements("input[type=text]").each(function (e){
+        if (!e.disabled){
+            if (/^\d+(\.\d+)?$/.test(e.value)){
+                if (e.get('atype') == 'num'){
+                    if (parseInt(e.value) <= 0){
+                        var _ca = e.getNext();
+                        if (!_ca) new Element('span',{'class':"error caution notice-inline",html:"请录入不小于0的数"}).injectAfter(e);
+                    }else {
+                        var _ca = e.getNext();
+                        if (e.value > 0){
+                            if (_ca) _ca.remove();
+                        }
+                    }
+                    id = e.get('aid');
+                    total += parseFloat(e.value).toFixed(3)*parseFloat($('pr_'+id).value).toFixed(3);
+                }else if (e.get('atype') == 'newnum'){
+                    if (parseInt(e.value) <= 0){
+                        var _ca = e.getNext();
+                        if (!_ca) new Element('span',{'class':"error caution notice-inline",html:"请录入不小于0的数"}).injectAfter(e);
+                    }else {
+                        var _ca = e.getNext();
+                        if (e.value > 0){
+                            if (_ca) _ca.remove();
+                        }
+                    }
+                    id = e.get('aid');
+                    total += parseFloat(e.value).toFixed(3)*parseFloat($('newpr_'+id).value).toFixed(3);
+                }
+            }
+            else{
+              var _ca = e.getNext();
+              if (!_ca) new Element('span',{'class':"error caution notice-inline",html:"请录入不小于0的数"}).injectAfter(e);
+            }
+        }
+      });
+      return [total,total];
+  }
+  function del_gift(id){
+    if($('tr_'+id).get('g-del') == 'a'){
+        $("num_"+id).disabled=true;
+        $("pr_"+id).disabled=true;
+        $("tr_"+id).setStyle('background-color','#D8D8D8').set('g-del','b');
+        $("d_"+id).getElement('span').getElement('span').set('text','恢复');
+    }
+    else {
+        $("num_"+id).disabled=false;
+        $("pr_"+id).disabled=false;
+        $("tr_"+id).setStyle('background-color','').set('g-del','a');
+        $("d_"+id).getElement('span').getElement('span').set('text','删除');
+    }
+    total();
+  }
+
+  //[拆单]部分拆分编辑购买数量
+  function split_changetotal_gift(e){
+	var id = e.get('aid'),l=0,_ca = e.getNext('.error');
+    if(e.disable) return;
+	
+	var split_gift_buy_nums		= 0;
+	var split_gift_send_nums	= 0;
+	var split_gift_edit_nums	= 0;
+	if($('old_gift_nums_'+id))
+	{
+		split_gift_buy_nums		= parseInt($('old_gift_nums_'+id).value);
+	}
+	if($('split_gift_send_'+id))
+	{
+		split_gift_send_nums	= parseInt($('split_gift_send_'+id).value);
+	}
+	
+	if (/^\d+(\.\d+)?$/.test(e.value)){
+        if(e.get('atype') == 'gift_num'){
+            if (parseInt(e.value) < 0){
+                if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+            }
+			else if(parseInt(e.value) == 0 && split_gift_send_nums == 0)
+			{
+				if (!_ca){
+                    new Element('span',{'class':'error caution notice-inline',html:'请录入不小于0的数'}).injectAfter(e);
+                    e.set('value', '0');
+                }
+                return;
+			}
+			else{
+                if (_ca) _ca.remove();
+            }
+			
+			split_gift_edit_nums	= split_gift_send_nums + parseInt(e.value);
+			$('gift_num_'+id).value		= split_gift_edit_nums;
+           //$('gifttotal_'+id).value = parseFloat($('num_'+id).value * $('pr_'+id).value).toFixed(3);
+        }
+    }else{
+        if (!_ca){
+            new Element('span',{'class':"error caution notice-inline",html:"请录入数值"}).injectAfter(e);
+            e.set('value', '0');
+        }
+    }
+  }
+</script>

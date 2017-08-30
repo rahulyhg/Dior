@@ -1,0 +1,33 @@
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="from-cancel" method="post" >
+  <div class="tableform">
+    <div class="division">
+      <table cellpadding="0" cellspacing="0">
+        <{if ($order.payed == 0)}>
+        <tr><td>取消理由：</td></tr>
+        <tr><td><textarea name="memo" cols="80" rows="5" width="100%" vtype="required"></textarea></td></tr>
+        <{area inject=".mainFoot"}>
+        <div class="table-action">
+          <{button label="保存" type="button" id="btn-submit" class="btn-primary"}>
+        </div>
+        <{/area}>
+        <{/if}>
+        <{if ($order.payed>0)}>
+        <tr><td colspan="2"><span style="color:red;font-weight:bold;font-size:16px;">请注意，此订单已经付款<{$order.payed}>元！请先申请退款！</span></td></tr>
+        <{area inject=".mainFoot"}>
+        <div class="table-action">
+          <{button label="关闭" type="button" id="btn-close" class="btn-primary"}>
+        </div>
+        <{/area}>
+        <{/if}>
+      </table>
+    </div>
+  </div>
+</form>
+<script>
+    $('btn-submit') && $('btn-submit').addEvent('click', function(){
+        $('from-cancel').fireEvent('submit',{stop:function(){}});
+    });
+    $('btn-close') && $('btn-close').addEvent('click', function(){
+        this.getParent('.dialog').retrieve('instance').close();
+    });
+</script>

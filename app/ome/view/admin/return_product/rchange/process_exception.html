@@ -1,0 +1,48 @@
+<div class='tableform'>
+    <{if $reason}>
+        <ul>
+            <{foreach from=$reason item=item key=key}>
+                <li><{$item.op_name}>说：<{$item.reason}>&nbsp;&nbsp<{$item.createtime|cdate:FDATE_STIME}></li>
+            <{/foreach}>
+        </ul>
+    <{/if}>
+    <form action='index.php?ctl=admin_return_rchange&act=doException&app=ome' method='post' id='reship-exception-form'>
+        <input type='hidden' name='reship_id' value="<{$reship_id}>">
+        <h4>质检异常理由</h4>
+        <div class='division'>
+            <{input type="textarea" class="x-input" name="reason" cols="100" rows="5" vtype="required"}>
+        </div>
+        <div class='table-action'>
+            <{button label='确认' type='button'  id='reship-exception-btn'}>
+        </div>
+    </form>
+</div>
+<script>
+$('reship-exception-btn').addEvent('click',function(){
+    var form = $('reship-exception-form');
+    var finder_id = "<{$env.get.finder_id}>";
+    if(!validate(form)) return;
+    new Request({
+        url:form.action,
+        method:'post',
+        data:form,
+        onComplete:function(resp){
+            resp = JSON.decode(resp);
+            if (resp.error)
+            {
+                MessageBox.error(resp.error);return false;
+            }
+
+            if(finder_id){
+                finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+            }
+            $('reship-exception-form').getParent('.dialog').retrieve('instance').close();
+
+            if (!finder_id)
+            {
+                window.location.href = 'index.php?app=ome&ctl=admin_return_sv&act=index';
+            }
+        }
+    }).send();
+});
+</script>

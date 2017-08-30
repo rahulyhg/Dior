@@ -1,0 +1,153 @@
+<div class="tableform"> 
+
+<form id="confirmform" action="index.php?app=taoguaninventory&ctl=admin_inventory&act=save_inventory_confirm" method="post">
+<div class="division" >
+<h3><{if !$view}>损益确认<{else}>盘点表明细<{/if}></h3>
+<table width='100%' cellspacing="0" cellpadding="0" >
+  <tr>
+      <td>盘点名称：<{$detail.inventory_name}></td>
+      <td></td>
+  </tr>
+  
+  <tr>
+      <td>盘点单编号：<{$detail.inventory_bn}></td>
+      <td>盘点日期：<{$detail.inventory_date|date_format:"%Y-%m-%d"}></td>
+  </tr>
+  <tr>
+      <td>盘点仓库：<{$detail.branch_name}></td>
+      <td>盘点类别：<{if $detail.inventory_type=='1'}>自定义<{else if $detail.inventory_type=='2'}>全盘
+      <{else if $detail.inventory_type=='3'}>部分 <{else if $detail.inventory_type=='4'}>期初
+      <{/if}></td>
+  </tr>
+  <tr>
+      <td>差异金额：<{$detail.difference|cur}></td>
+      <td>盘点人：<{$detail.inventory_checker}></td>
+  </tr>
+</table>
+
+        <table width='100%' cellspacing="0" cellpadding="0" class="gridlist">
+            <thead>
+            <tr>
+                <th>货品名称</th>
+                <th>货号</th>
+                <th>规格</th>
+                <th>单位</th>
+                <th>货位</th>
+                <th>帐面数量</th>
+                <th>实际数量</th>
+                <th>盈(+)亏(-)记录</th>
+                <th style='display:none'>单价</th>
+                <th>品质情况</th>
+                <th>错误日志</th>
+            </tr>
+            </thead>
+            <{foreach from=$items item=items key=keys}>
+            <tbody id="productNode">
+            <tr class="toggler atStart" key="<{$items.id}>">
+                <td><{$items.name}><{$items.id}></td>
+                <td><{$items.bn}></td>
+                <td><{$items.spec_info}></td>
+                <td><{$items.unit}></td>
+                <td><input type="text" id="pos_name"></td>
+                <td><{$items.accounts_num}></td>
+                <td><{$items.actual_num}></td>
+                <td><{$items.shortage_over}></td>
+                <td style='display:none'><{$items.price|cur}></td>
+                <td><{$items.memo}></td>
+                <td><{$items.error_log|default:'-'}></td>
+            </tr>
+            </tbody>
+            <{/foreach}>
+            <tbody style="display:none;">
+            <tr >
+               <td><b>小计：</b></td>
+               <td>-</td>
+               <td>-</td>
+               <td>-</td>
+               <!-- <td>-</td> -->
+               <td><{$subtotal.accounts_num}></td>
+               <td><{$subtotal.actual_num}></td>
+               <td><{$subtotal.shortage_over}></td>
+               <td>-</td>
+               <td>-</td>
+            </tr>
+            </tbody>
+            <tbody style="display:;">
+            <tr >
+               <td><b>总计：</b></td>
+               <td>-</td>
+               <td>-</td>
+               <td>-</td>
+               <!-- <td>-</td> -->
+               <td><{$total.accounts_num}></td>
+               <td><{$total.actual_num}></td>
+               <td><{$total.shortage_over}></td>
+               <td>-</td>
+               <td>-</td>
+            </tr>
+            </tbody>
+        </table>
+        
+        <table width='100%' cellspacing="0" cellpadding="0" >
+		  <tr><td colspan="4" align="center"><b></b></td></tr>
+		  <tr>
+		      <td>复核人：<{$detail.second_checker}></td>
+		      <td>财务负责人：<{$detail.finance_dept}></td>
+              <td>仓库负责人：<{$detail.warehousing_dept}></td>
+		  </tr>
+		</table>
+		
+   </div>
+
+<div class="gridlist-footer">
+<{$pager}>&nbsp;&nbsp;共<{$count}>条，每页显示<{$pagelimit}>条 
+</div>
+
+<div class="table-action">
+   <input type="hidden" name="doSubmit" value="true" />
+   <input type="hidden" name="inventory_id" value="<{$inventory_id}>" />
+  
+   <{if $detail.import_status=='0'}>
+   盘点正在导入队列，请稍候... 
+   <{button type="button" class="btn btn-primary" onclick="javascript:history.go(-1);" label="返回" }>  
+   
+   <{else}>
+   
+    <{if $detail.confirm_status=='1'}>
+         <{button type="submit" id="confirm_btn" class="btn btn-primary" label="确认" }>
+    <{/if}>
+   <{button type="button" class="btn btn-primary" onclick="javascript:history.go(-1);" label="取消" }>
+   <{else}>
+   <{button type="button" class="btn btn-primary" onclick="javascript:history.go(-1);" label="返回" }>
+  
+   
+   <{/if}>
+</div>
+</form>
+
+</div>
+ 
+<script>
+
+$$('#productNode tr').each(function(i,item){
+$('pos_name').value='hello';
+var key=i.get('key');
+alert(key);
+})
+$('confirmform').store('target',{
+    onRequest:function(){
+       $('confirm_btn').set('disabled', 'true');
+       $('confirm_btn').getElements('span')[1].set('text','确认中');
+    },
+    onComplete:function(jsontext){
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('confirm_btn').set('disabled', '');
+           $('confirm_btn').getElements('span')[1].set('text','确认');
+       }else{
+           $('confirm_btn').set('disabled', 'true');
+           $('confirm_btn').getElements('span')[1].set('text','确认中');
+       }
+    }
+});
+</script>

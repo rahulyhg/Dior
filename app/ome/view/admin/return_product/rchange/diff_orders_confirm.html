@@ -1,0 +1,145 @@
+<{if !$errormsg}>
+
+<h4>订单信息【<{$order.order_bn}>】</h4>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tbody>
+        <tr>
+            <td>
+                <div class='tableform'>
+                    <table cellspacing="0" cellpadding="0" border="0" class="orderdetails_basic">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <h4>商品价格</h4>
+                                    <div class='division'>
+                                        <table cellspacing="0" cellpadding="0"  border="0">
+                                            <tbody>
+                                                <tr><th>商品总额：</th><td><{$order.cost_item|cur}></td></tr>
+                                                <tr><th>配送费用：</th><td><{$order.cost_freight|cur}></td></tr>
+                                                <{if $order.cost_protect>0}>
+                                                <tr><th>保价费用<{$order.cost_protect}>：</th><td><{$order.cost_protect|cur}></td></tr>
+                                                <{/if}>
+                                                <{if $order.cost_tax>0}>
+                                                <tr><th>税金：</th><td><{$order.cost_tax|cur}></td></tr>
+                                                <{/if}>
+                                                <{if $order.cost_payment>0}>
+                                                <tr><th>支付费率：</th><td><{$order.cost_payment|cur}></td></tr>
+                                                <{/if}>
+                                                <{if $order.discount>0}>
+                                                <tr><th>折扣：</th><td><{$order.discount|cur}></td></tr>
+                                                <{/if}>
+                                                <{if $order.pmt_goods>0}>
+                                                <tr><th>商品促销优惠：</th><td><{$order.pmt_goods|cur}></td></tr>
+                                                <{/if}>
+                                                <{if $order.pmt_order>0}>
+                                                <tr><th>订单促销优惠：</th><td><{$order.pmt_order|cur}></td></tr>
+                                                <{/if}>
+                                                <tr><th>订单总额：</th><td><{$order.total_amount|cur}></td></tr>
+                                                <tr><th>已支付金额：</th><td><{$order.payed|cur}></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                                <td>
+                                    <h4>订单其他信息</h4>
+                                    <div class='division'>
+                                        <table cellspacing="0" cellpadding="0"  border="0">
+                                            <tbody>
+                                                <tr><th>配送方式：</th><td><{$order.shipping}></td><tr>
+                                                <tr><th>配送保价：</th><td><{if $order.is_protect=='true'}>是 <{else}>否<{/if}></td><tr>
+                                                <tr><th>商品重量：</th><td><{$order.weight|default:0}>g</td><tr>
+                                                <tr><th>支付方式：</th><td><{$order.payment}></td><tr>
+                                                <tr><th>是否开票：</th><td><{if $order.is_tax == 'true'}><{t}>是<{/t}><{else}><{t}>否<{/t}><{/if}></td><tr>
+                                                <{if $order.tax_no}>
+                                                <tr><th>订单发票号：</th><td><{$order.tax_no}></td><tr>
+                                                <{/if}>
+                                                <{if $order.tax_company}>
+                                                <tr><th>发票抬头：</th><td><{$order.tax_company}></td><tr>
+                                                <{/if}>
+                                                <{if $order.score_g>0}>
+                                                <tr><th></th><td><{$order.score_g}></td><tr>
+                                                <{/if}>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                                <td>
+                                    <h4>购买人信息</h4>
+                                    <div class='division'>
+                                        <table cellspacing="0" cellpadding="0"  border="0">
+                                            <tbody>
+                                                <tr><th>用户名：</th><td><{$order.member.uname}></td></tr>
+                                                <tr><th>姓名：</th><td><{$order.member.name}></td></tr>
+                                                <tr><th>电话：</th><td><{$order.member.tel}></td></tr>
+                                                <tr><th>手机：</th><td><{$order.member.mobile}></td></tr>
+                                                <tr><th>地区：</th><td><{$order.member.area|region}></td></tr>
+                                                <tr><th>Email：</th><td><{$order.member.email}></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                                <td>
+                                    <h4>收货人信息</h4>
+                                    <div class='division'>
+                                        <table cellspacing="0" cellpadding="0"  border="0">
+                                            <tbody>
+                                                <tr><th>要求到货时间：</th><td><{$order.ship_time}></td></tr>
+                                                <tr><th>姓名：</th><td><{$order.ship_name}></td></tr>
+                                                <tr><th>电话：</th><td><{$order.ship_tel}></td></tr>
+                                                <tr><th>手机：</th><td><{$order.ship_mobile}></td></tr>
+                                                <tr><th>地区：</th><td><{$order.ship_area|region}></td></tr>
+                                                <tr><th>地址：</th><td><{$order.ship_addr}></td></tr>
+                                                <tr><th>邮编：</th><td><{$order.ship_zip}></td></tr>
+                                                <tr><th></th><td></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<h4>订单明细</h4>
+<table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+    <thead>
+        <th>货号</th>
+        <th>商品名称</th>
+        <th>价格</th>
+        <th>购买量</th>
+        <th>已发货量</th>
+    </thead>
+    <tbody>
+        <{foreach from=$order.items item=item key=key}>
+            <td><{$item.bn}></td>
+            <td><{$item.name}></td>
+            <td><{$item.price}></td>
+            <td><{$item.nums}></td>
+            <td><{$item.sendnum}></td>
+        <{/foreach}>
+    </tbody>
+</table>
+<{else}>
+<div class='error'><h2><{$errormsg}></h2></div>
+<{/if}>
+<div class='table-action'>
+    <{if !$errormsg}><{button label='确定' onclick='diffOrderConfirm(this);'}><{/if}>
+    <{button label='返回' onclick="gotopage({$env.post.page});" }>
+</div>
+
+<script>
+function diffOrderConfirm(el){
+    $('diff_order_bn').set('value',"<{$order.order_bn}>");
+    $('diff_money').set('value','<{$order.total_amount}>');
+    $('difforderbn').set('html',"<{$order.order_bn}>");
+    $('diffmoney').set('html','<{$order.total_amount}>');
+    $('diff-order-bn-td').show();
+    $('diff-order-btn').hide();
+    calculate();
+    $ES('.change-money-info').show();
+    el.getParent('.dialog').retrieve('instance').close();
+}
+</script>

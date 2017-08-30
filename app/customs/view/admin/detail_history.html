@@ -1,0 +1,31 @@
+<{capture name="header"}>
+	<{css app="ome" src="ome.css"}>
+<{/capture}>
+
+<div class="division">
+    <h4>申报操作日志</h4>
+    <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+        <thead>
+        <tr>
+            <th>操作时间</th>
+            <th>操作人</th>
+            <th>行为</th>
+            <th>操作内容</th>
+        </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$history item=his}>
+        <tr>
+            <td><{$his.operate_time}></td>
+            <td><{$his.op_name}></td>
+            <td><{$his.operation}></td>
+            <{if $his.flag == 'true'}>
+                <td><{$his.memo}> <a target='_blank' href='index.php?app=ome&ctl=admin_order&act=show_operation&order_id=<{$order_id}>&log_id=<{$his.log_id}>'>查看快照</a></td>
+            <{else}>
+                <td><{$his.memo}></td>
+            <{/if}>
+        </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>

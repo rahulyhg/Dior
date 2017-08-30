@@ -1,0 +1,109 @@
+<{capture name="header"}>
+<{css app='omeauto' src="style.css"}>
+<{/capture}>
+<style>
+    #content_tbl .role_content ul li {width:140px; overflow: hidden; float: left; margin-bottom: 0px; font-size: 12px;}
+    #content_tbl .role_content ul li span {cursor: pointer;}
+    #content_tbl .role_content ul li input {cursor: pointer;}
+    #content_tbl .title  {height: 20px; margin-bottom: 0px; font-size: 12px; font-weight: 700;}
+    #content_tbl .role_content  {margin-top: 6px; height : auto ; padding: 8px;}
+    #content_tbl .title span  {height: 20px; margin-bottom: 5px; margin-left: 20px; color: #999999;}
+    #content_li li {width:90px; overflow: hidden; float: left; margin-bottom: 10px; font-size: 12px; line-height: 20px;}
+    .current-set {color: red; font-weight: 700;  cursor: pointer;}
+    .current-disabled , .current-disabled span {color: #DDDDDD; font-weight: 700;  cursor:auto;}
+</style>
+<form action="index.php?app=omeauto&ctl=autobranch&act=save" method="post">
+    <div class="tableform">
+        <div class="division">
+            <table width="100%" cellspacing="0" cellpadding="0" id="content_tbl">
+                <tbody>
+                    <tr>
+                        <th>订单分组：</th>
+                        <td colspan="3">
+                            <div class="title">选择已设定分组<span>(勾选的订单分组将会使用本仓库发货)</span></div>
+                            <div class="role_content" id="content_li">
+                                <ul>
+                                    <{foreach from=$orderType item=item}>
+                                    <li><input type="checkbox" name="area_conf[]" value="<{$item.tid}>" id="autoOrder_<{$item.tid}>" <{if $item.tid|in_array:$data.area_conf}>checked<{else}><{if $item.bid}>disabled<{/if}><{/if}>/><label for="autoOrder_<{$item.tid}>">&nbsp;&nbsp;<span title="<{$item.title}>"><{$item.name}></span></label></li>
+                                    <{/foreach}>
+                                    <li><input type="checkbox" name="area_conf[]" value="-1" id="autoOrder_-1" <{if $data.defaulted=='true'}>checked disabled<{else}>disabled<{/if}>> 默认所有未分组订单</li> 
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <{if $data.branch_id}><input type="hidden" name="branch_id" value="<{$data.branch_id}>"/><{/if}> 
+        </div>
+    </div>
+    <div class="table-action">
+        <{button class="btn-primary" label="保存" type="button" id="saveCurrent"}>
+        <{button class="btn-primary" label="取消" type="button" id="cancelBtn"}>
+    </div>
+</form>
+<script>
+    (function(){
+
+        $('saveCurrent').getParents('form').removeEvents('submit').addEvent('submit', function(e) {
+            e.stop();
+            
+            new Request ({
+                url:this.action,
+                onRequest:function(e){
+                    //提交按钮:disabled
+                    $('saveCurrent').set('disabled', 'true');
+                    $('saveCurrent').getElements('span')[1].set('text','正在保存');
+                },
+                onComplete:function(result){
+      
+                    if (result != 'SUCC'){
+                        //提交按钮:enabled
+                        $('saveCurrent').set('disabled', '');
+                        $('saveCurrent').getElements('span')[1].set('text','保存');
+                    }else{
+                        //提交按钮:disabled  
+                        finderGroup["<{$env.get.finder_id}>"].refresh.delay(400,finderGroup["<{$env.get.finder_id}>"]);
+                        $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+                        //setTimeout("window.close()",500);
+                    }
+                }
+            })[this.method](this);
+        });
+        
+        //保存按钮
+        $('saveCurrent').addEvent('click', function() {
+           
+            //检查对应订单类型
+            var aHasOrder = false;
+            $$('#content_li input[type=checkbox]').each(function(item){
+                if (item.checked) {
+                    aHasOrder = true;
+                }
+            });
+                       
+            $('saveCurrent').getParents('form').fireEvent('submit', { 
+                stop: function(){ 
+                }
+            });
+        });
+    
+        //关闭按钮
+        $('cancelBtn').addEvent('click', function(){
+            $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+        });
+        
+        //选择订单标红
+        $$('#content_li input[type=checkbox]').addEvent('click',function(item){  
+            this.blur();
+            this.getParent()[this.checked?'addClass':'removeClass']('current-set');     
+        });
+        $$('#content_li input[type=checkbox]').each(function(item){
+            if (item.get('disabled')) {
+                item.getParent()['addClass']('current-disabled');  
+            } else {
+                item.blur();
+                item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+            }
+        });
+    })();
+</script>

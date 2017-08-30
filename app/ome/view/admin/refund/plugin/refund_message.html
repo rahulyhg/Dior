@@ -1,0 +1,38 @@
+<table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist" id='download_memo'>
+    <tr>
+        <td>下载中,请稍候</td>
+    </tr>
+
+</table>
+<input type='hidden' name='apply_id' value='<{$apply_id}>'>
+<div class="table-action">
+  <{button label="关闭" class="btn-primary" type='button' onclick="this.getParent('.dialog').retrieve('instance').close();"}> 
+</div>
+
+<script>
+window.addEvent('domready', function() {
+    new Request({
+       url : 'index.php?app=ome&ctl=admin_return&act=download_message&p[0]=<{$apply_id}>&p[1]=<{$type}>',
+       method : 'post',
+       data : {'shop_type':'<{$shop_type}>'},
+       onComplete : function(rs){
+            var rs = JSON.decode(rs);
+
+            if(rs.rsp == 'succ'){
+              
+              finderGroup["<{$finder_id}>"].refresh.delay(400,finderGroup["<{$finder_id}>"]);
+              $('download_memo').getParent('.dialog').retrieve('instance').close();
+            }else{
+              alert(rs.msg);
+              
+              finderGroup["<{$finder_id}>"].refresh.delay(400,finderGroup["<{$finder_id}>"]);
+              $('download_memo').getParent('.dialog').retrieve('instance').close();
+            }
+       }
+    }).send();
+
+});
+
+
+</script>
+

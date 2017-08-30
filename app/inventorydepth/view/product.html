@@ -1,0 +1,64 @@
+<form method="post" id='shopForm' action="index.php?app=inventorydepth&ctl=product&act=do_ration">
+<input type="hidden" name="post" value='<{$product}>'/>
+<div class="tableform">
+<div class="division">
+<table border="0" cellpadding="0" cellspacing="0" class="gridlist sepc_value_table <{$spec.spec_type|default:'text'}>-spec-value-table">
+<thead>
+<tr>
+<th><input type="checkbox" id="chkAll"></th>
+<th>店铺名称</th>
+<th>店铺类型</th>
+</tr>
+</thead>
+<tbody>
+<{foreach from=$shop item=items key=key}>
+<tr>
+<td><input type="checkbox" name="shopIds[]" value="<{$items.shop_id}>"></td>
+<td><{$items.name}></td>
+<td><{$items.shop_type}></td>
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="table-action">
+    <{button label=$___idm="确定"|t:'idm' type="submit" id="btn_submit"}>
+</div>
+</form>
+<script>
+    $('chkAll').addEvent('click',function(e){
+        $$('[name^=shopIds[]').set('checked',this.checked);
+    });
+
+    $('shopForm').store('target',{
+        onRequest:function(){
+            $('btn_submit').set('disabled','disabled');
+        },
+        onComplete:function(rs){
+            var result = Json.evaluate(rs);
+            if (typeof(result.error) != 'undefined'){
+                $('btn_submit').set('disabled','');
+                return;
+            }else {
+
+				new Dialog(new Element("div.dispatch_form",{html:'正在加载...'}),{
+					title:'分配商品',
+                    width:350,
+                    height:200,
+					modal:true,
+					resizeable:false,
+					onClose:function(){
+						$$('[name^=shopIds[]').set('checked','');
+						$('btn_submit').set('disabled','');
+					}
+					});
+				
+			    $$('.dispatch_form').load('index.php?app=inventorydepth&ctl=product&act=dispatch_confirm');
+            }
+        }
+    });
+
+    
+</script>

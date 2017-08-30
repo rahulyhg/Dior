@@ -1,0 +1,131 @@
+<form class="tableform" id="form-orderpay" method='post' action='index.php?app=ome&ctl=admin_finance&act=do_batchPayed&p[0]=<{$order_id}>&finder_id=<{$env.get.finder_id}>'>
+<input type='hidden' name='order_id' id='order_id' value='<{$order_id}>'>
+<input type='hidden' name='shop_id' id='shop_id' value='<{$shop_id}>'>
+<input type='hidden' name='inContent' value='true'>
+
+
+<table width="100%" >
+    <tbody>
+        <tr>
+            <th><{t}>订单总数：共 <{$all_order_count}> 笔<{/t}></th>
+            <td></td>
+            <th><{t}>订单总金额：<{/t}></th>
+            <td><b><{$all_total_amont|cur}></b></td>
+        </tr>
+        <tr>
+			<th><{t}>客户支付货币：<{/t}></th>
+            <td><{$cur_name}></td>
+            <th><{t}>已支付金额：<{/t}></th>
+            <td><{$all_payed|cur}></td>
+        </tr>
+    </tbody>
+  </table>
+  <table width="100%" >
+    <tbody> 
+        <tr>
+            <th><{t}>收款银行：<{/t}></th>
+            <td colspan="3">
+              <{input type='text' id='payBank' name='bank' value='' width="100"}> <{input id="selectAccount" type="select" name='select_account' options=$pay_account value=''}>
+            </td>
+        </tr>
+        <tr>
+            <th><{t}>收款帐号：<{/t}></th>
+            <td colspan="3"><{input type='text' id='payAccount' name='account' value='' width="200"}></td>
+        </tr>
+        <tr>
+            <th><{t}>第三方交易号：<{/t}></th>
+            <td colspan="3"><{input type='text' id='trade_no' name='trade_no' value='' width="200" }></td>
+        </tr>
+        <tr>
+            <th><em style='color:red;'>*</em><{t}>收款金额：<{/t}></th>
+            <td colspan="3"><{input type='number&&required' name='money' value=$pay_money  width="100" readonly=true }></td>
+        </tr>
+        <tr>
+              <th><{t}>支付帐号：<{/t}></th>
+              <td colspan="3">
+                  <{input type='text' name='pay_account' width="100" value=$member.name }>
+              </td>
+        </tr>
+        <tr>
+            <th><em style='color:red;'>*</em><{t}>付款类型：<{/t}></th>
+            <td colspan="3">
+              <{foreach from=$typeList key=key item=item}>
+                  <input type="radio" name="pay_type"  value=<{$key}> vtype='requiredradio'><lable><{$item}></lable>&nbsp;
+              <{/foreach}>
+            </td>
+        </tr>
+        <tr>
+          <th><{t}>支付方式：<{/t}></th>
+          <td colspan="3">
+              <select id='payment' name='payment'>
+              </select>
+              <em class="red">请先添加或同步前端店铺支付方式</em>
+          </td>
+        </tr>
+         <tr>
+           <th><{t}>支付单备注：<{/t}></th>
+           <td colspan="3"><textarea name="memo"  cols="80" rows="3" value='<{$detail.memo}>'></textarea></td>
+         </tr>
+    </tbody>
+</table>
+
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="btn-submit" onclick='dosubmit()'><span><span><{t}>提交<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+</form>
+
+<script>
+function dosubmit(){
+    $("form-orderpay").fireEvent('submit',{stop:function(){}});
+}
+(function(){
+
+  $$('input[name^=pay_type]').addEvent('click', function(){
+    var order_id = $('order_id').value, shop_id = $('shop_id').value, pay_type = this.value;
+    W.page('index.php?app=ome&ctl=admin_finance&act=payment_by_pay_type&p[0]='+order_id+'&p[1]='+shop_id+'&p[2]='+pay_type,{update:$('payment'),onComplete:function(){
+          if($('payment').length <= 1){
+              $('payment').disabled = 'disabled';
+          }else{
+            $('payment').disabled = '';
+          }
+      }});
+  });
+
+
+
+  var finder = finderGroup['<{$env.get.finder_id}>'];
+  $('form-orderpay').store('target',{
+      onRequest:function(){
+         $('btn-submit').set('disabled', 'true');
+      },
+      onComplete:function(jsontext){
+         var json = Json.evaluate(jsontext);
+         if (typeof(json.error) != 'undefined'){
+           $('btn-submit').set('disabled', '');
+         }else{
+           $('btn-submit').set('disabled', 'true');
+             finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+             $('btn-submit').getParent('.dialog').retrieve('instance').close();
+         }
+      }
+  });
+
+  $('selectAccount').addEvent('change', function(e){
+    e=new Event(e);
+    var ipt=e.target;
+    var str = ipt.value;
+    var aItems = str.split('-');
+    $('payBank').value = aItems[0];
+    $('payAccount').value = aItems[1];
+  });
+
+})();
+</script>

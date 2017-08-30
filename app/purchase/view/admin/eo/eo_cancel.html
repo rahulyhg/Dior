@@ -1,0 +1,203 @@
+
+<form method="post" id="eo_cancel" action="index.php?app=purchase&ctl=admin_eo&act=save_eo_cancel">
+<div class="tableform"> 
+<div class="division">
+<h4>采购退货单</h4>
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<thead>
+      <tr>
+        <th>供应商:</th>
+        <td><{$eo.supplier_name}></td>
+        <th>入库单编号:</th>
+        <td><{$eo.detail.eo_bn}></td>
+      </tr>
+      <tr>
+        <th>退货仓库:</th>
+        <td><{$eo.branch_name}></td>
+        <th>退款总额:</th>
+        <td><{$return_amount|cur}></td>
+      </tr>
+</thead>
+</table>
+
+<div class="tableform">
+<h4>可退货商品明细</h4>
+<div class="division">
+          按
+	<select id="purchase_type">
+	
+		 <option value="bn">货号</option>
+	</select>
+	<input type="text"   id="purchase_search"/>
+	<{button type="button" id="purchase_search_btn" label="回车键快速定位" }>  
+	
+	<!-- <{button type="button" label="切换到条码出库" onclick="javascript:window.location='index.php?app=purchase&ctl=admin_eo&act=Barcode_stock&p[0]={$po_id}';" }>  -->
+<div class="ome-stock" style="clear:both">
+
+<table border="0" cellspacing="0" cellpadding="0" class="gridlist">
+<thead>
+      <tr>
+        <th>是否退货</th>
+        <th>商品名称</th>
+        <th>规格</th>
+        <th>货号</th>
+        <th>单位</th>
+        <th>入库数量</th>
+        <th>已退数量</th>
+        <th>退货数量</th>
+        <th>退货价格</th>
+        <th>货位</th>
+        <th>备注</th>
+      </tr>
+      </thead>
+      <tbody id="ome-stock-data">
+	  <{foreach from=$eo.items item=items}>
+      <tr bn="<{$items.bn}>" product_name="<{$items.product_name}>">
+        <td>
+        <{if $items.entry_num==$items.out_num }>
+        -
+        <{else}>
+        <input type="checkbox" name="ckid[]" id="checkbox<{$items.item_id}>" value="<{$items.item_id}>" /></td>
+        <{/if}>
+        <td><{$items.product_name}></td>
+        <td><{$items.spec_info}></td>
+        <td><{$items.bn}></td>
+        <td><{$items.unit}></td>
+        <td><{$items.entry_num}></td>
+        <td><{$items.out_num}></td>
+        <td>
+        <{if $items.entry_num==$items.out_num }>
+        -
+        <{else}>
+        <input type="text" name="out_num[<{$items.item_id}>]" onKeyup="checkBox(this.value,'checkbox<{$items.item_id}>');" onBlur="if(this.value><{$items.entry_num}>-<{$items.out_num}>) this.value=<{$items.entry_num}>-<{$items.out_num}>;else if(this.value<0) this.value=0;" value="0" size="6" />
+        <{/if}>
+        </td>
+        <td>
+        <{if $items.entry_num==$items.out_num }>
+        -
+        <{else}>
+        <input type="text" name="price[<{$items.item_id}>]" size="6" value="<{$items.price}>"/>
+        <{/if}>
+        </td>
+        <td><{$items.store_position}></td>
+        <td>
+        <{if $items.entry_num==$items.out_num }>
+        -
+        <{else}>
+        <input type="text" name="item_memo[<{$items.item_id}>]" value="<{$items.memo}>">
+        <{/if}>
+        </td>
+      </tr>
+	  <{/foreach}>
+    </tbody>
+</table>
+</div>
+</div>
+
+
+</div>
+
+<div class="division">
+<table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2">
+       经办人: <input type="text" name="operator" vtype="required" size="8" value="<{$operator}>"/>
+    &nbsp;&nbsp;&nbsp;&nbsp;  物流费用（垫付）: <input type="text" name="delivery_cost" size="6" />  
+     &nbsp;&nbsp;&nbsp;&nbsp; 物流单号: <input size="20" type="text" name="logi_no" size="6" />
+      
+  </tr>
+  <tr>
+            <td>退货单备注: </td>
+            <td>
+            <textarea name="memo" rows="4" cols="80"></textarea>
+            </td>
+  </tr>  
+</table>
+</div>
+
+<div class="division">
+<{button class="btn btn-primary" type="button" id="cancel_btn" label="生成退货单" }>
+<input type="hidden" name="eo_id" value="<{$eo.detail.eo_id}>">
+</div>
+
+</div>
+</form>
+<script>
+
+$('purchase_search').focus();
+
+$ES('[name^=out_num[],[name^=price[],[name^=item_memo[]').addEvent('keyup',function(e){
+    if(e.code!==13)return;
+    $('purchase_search').focus();
+});
+
+function checkBox(thisval, checkId){
+    if (thisval>0){
+       $(checkId).set('checked', 'checked');
+    }else{
+       $(checkId).set('checked', '');
+    }
+}
+
+$('purchase_search').addEvent('keyup',function(e){
+	if(e.code!==13)return;	
+	var type=$('purchase_type').value,value=this.value,el;
+	$ES('#ome-stock-data tr').each(function(tr){			
+		if(tr.get(type)==value){el=tr;}	
+	});	
+	if (value==''){
+        alert('请输入需定位的货号');
+        $('purchase_search').focus();
+        return;
+    }
+	if(!el)return MessageBox.error('没找到相应数据');
+	if(preel=this.retrieve('height_el'))preel.removeClass('error');
+	
+	el.addClass('error').getElement('input[type^=text]').focus();
+	this.store('height_el',el);
+}); 
+
+$('purchase_search_btn').addEvent('click',function(){
+    var type=$('purchase_type').value,el;
+    var value=$('purchase_search').get('value');
+    if (value==''){
+        alert('请输入需定位的货号');
+        $('purchase_search').focus();
+        return;
+    }
+    $ES('#ome-stock-data tr').each(function(tr){            
+        if(tr.get(type)==value){el=tr;} 
+    }); 
+    if(!el)return MessageBox.error('没找到相应数据');
+    if(preel=this.retrieve('height_el'))preel.removeClass('error');
+    el.addClass('error').getElement('input[type^=text]').focus();
+    this.store('height_el',el);
+});
+
+$('cancel_btn').addEvent('click', function(e){
+	$('eo_cancel').fireEvent('submit',e);
+});
+
+$('eo_cancel').store('target',{
+    onRequest:function(e){
+       //提交按钮:disabled
+       $('cancel_btn').set('disabled', 'true');
+       $('cancel_btn').getElements('span')[1].set('text','正在退货');
+    },
+    onComplete:function(jsontext){
+       //jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           //提交按钮:enabled
+           $('cancel_btn').set('disabled', '');
+           $('cancel_btn').getElements('span')[1].set('text','生成退货单');
+       }else{
+           //提交按钮:disabled
+           $('cancel_btn').set('disabled', 'true');
+           $('cancel_btn').getElements('span')[1].set('text','正在退货');
+           opener.finderGroup['<{$env.get.find_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.find_id}>']);
+           window.close();
+       }
+    }
+});
+</script>

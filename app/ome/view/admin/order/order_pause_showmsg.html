@@ -1,0 +1,31 @@
+<div class="tableform" style="margin:0px;">
+ <table border="0">
+      <tbody>
+      <tr>
+      		<td>
+                <span style="font-weight:bold">订单暂停失败，原因是：</span><br>
+                <{$message}>
+			</td>
+        </tr>        
+      </tbody>
+    </table>
+	<br />
+    <div class="table-action">
+      <table width="100%" cellspacing="0" cellpadding="0">
+        <tbody>
+          <tr>
+            <td><button class="btn btn-primary" id="close_message"><span><span><{t}>关闭<{/t}></span></span></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+<input type="hidden" name="order_id" value="<{$order_id}>">
+<script>
+(function(){
+    $('close_message').addEvent('click',function(e){
+		window.finderGroup[$(document.body).getElement('input[name^=_finder[finder_id]]').value].refresh();
+		$('close_message').getParent('.dialog').retrieve('instance').close();
+    });
+})();
+</script>

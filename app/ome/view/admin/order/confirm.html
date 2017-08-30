@@ -1,0 +1,815 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{/capture}>
+<{capture name='headbar'}>
+<table cellspacing="0" cellpadding="0" style="border-width:0 0 1px;" class="table-action">
+    <tbody>
+        <tr valign="middle">
+            <td> 
+                <{button label='上一条' class="btn btn-primary" id="btn_prev" }>
+                <{button label='下一条' class="btn btn-primary" id="btn_next" }>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<{/capture}>
+<style>
+    .finder-detail{
+        background:#eee;
+        padding:5px;
+        margin:5px 0;
+        border:1px solid #bbb;
+    }
+    .finder-detail td{
+        background:#fff;
+
+    }
+    .gridlist tr.waring, .gridlist td.waring {
+        background:none repeat scroll 0 0 #9999ff;
+        color:#333333;
+    }
+    .gridlist tr.masterorder, .gridlist tr.masterorder td, .gridlist td.masterorder {
+        color: #000000;
+        font-weight: 700;
+        font-size : 12px;
+        background:#f0f6fe
+    }
+    .gridlist tr.memberorder, .gridlist tr.memberorder td, .gridlist td.memberorder tr.addressorder, .gridlist tr.addressorder td, .gridlist td.addressorder {
+        background: none repeat scroll 0 0 #e2effe;
+        color: #000000;
+        font-weight: 400;
+        font-size : 12px;
+    }
+
+</style>
+<form class="tableform" style="background:#fff; border:0 none;" method="post" action="index.php?app=ome&ctl=admin_order&act=finish_combine" id="order_split">
+    <input type="hidden" name="order_id" id="order_id" value="<{$order_id}>"/>
+    <input type="hidden" name="do_action" id="do_action" value=""/>
+    <input type="text" style="display:none" />
+    <div id="nosplitarea">
+        <div>
+            <table cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td>
+                        
+                            <span style="font-weight:700;font-size:14px;">可合并订单</span>   &nbsp;&nbsp;
+                            <span style="border:1px solid #607fbc;background-color:#829fd8;color:#ffffff;cursor:pointer;margin: 5px 5px 3px; padding: 8px;font-weight:700;font-size:12px;"   id='addressOrderTitle'>与主单收货地址一致</span>
+                            <span style="border:1px solid #d2d6dc; margin: 5px 5px 3px; padding: 8px;background-color:#f2f7f9;color:#000000;cursor:pointer;font-weight:700;font-size:12px;" id='memberOrderTitle'>与主单同店铺同用户订单</span>
+                       
+                    </td>
+                    <td align="right">
+                        <span style="font-weight:700;">来源店铺：</span><{$shopInfo.name}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <{foreach from=$orderStatus item=os}>
+                        <a style="width:18px;padding:2px;height:16px;background-color:;color:#ffffff;" rel="<{$os.msg}>" onmouseover="bindFinderColTip(event);" title="<{$os.msg}>" class="">
+                            &nbsp;<{$os.flag}>&nbsp;
+                        </a>
+                        <{/foreach}>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="finder-detail">
+            <{include file="admin/order/confirm/combine_confirm.html"}>
+        </div>
+
+        <h3 style="border-bottom:none;" >配送信息 <a href="javascript:void(0);" id="other_delivery">使用其它配送信息</a></h3>    
+        <div class="finder-detail">    
+            <!--{include file="admin/order/confirm/combine_confirm_member.html"}-->
+            <table class="gridlist" >
+                <tbody>
+                    <tr>
+                        <td id="delivery_info"> <{include file="admin/order/confirm/delivery_info.html"}></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 style="border-bottom:none;">购物清单信息<{if $repeat_product}><span style="color:#ff0000;">（订单中包含重复商品货号时[例货号：<{$repeat_product}> ] 系统不支持拆单！ <a href="javascript:void(null)" onclick="window.location='index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]=<{$order_id}>&filter=<{$filter}>&find_id=<{$finder_id}>&is_repeat=1'">点击继续拆单，</a>请确保库存充足否则有可能超卖！<input type="hidden" name="is_repeat_product" value="true"/>）</span><{elseif $order_is_cod=='true'}><input type="hidden" name="is_repeat_product" value="true"/><{/if}></h3>
+        <div class="finder-detail">
+            <{include file="admin/order/confirm/product_confirm.html"}>
+        </div>
+        
+        <div id="issplit" class="issplit" style="display:none;">
+            <table cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                    <td class="fontcolorRed fontbold font14px"  >已拆分-</td>
+                    <td width="230" style="text-align: center; font-weight: normal;" >
+                        快递公司选择：
+                        <div class="corp_list"></div>
+                    </td>
+                </tr>
+            </table>
+            <table cellspacing="0" class="gridlist" cellpadding="2" border="0" >
+                <thead>
+                    <tr>
+                        <th>货号</th>
+                        <th>商品名称</th>
+                        <th>数量</th>
+                        <th>仓库</th>
+                        <th style="width:100px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="issplitarea"></div>
+    <h3>购买人信息</h3>
+    <div class="finder-detail" style="margin-top:10px;">
+        <div class="clearfix">
+            <div class="fr" style="margin:6px 10px 0 0;"></div>
+        </div>
+
+        <div class="division" style="background:#fff; height:28px; overflow:hidden;" id="buyer_area">
+        <{if $member}>
+            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tbody>
+                    <tr>
+                        <th>会员用户名：</th>
+                        <td><{if $order['shop_type'] == 'taobao'}><a href='http://amos.im.alisoft.com/msg.aw?v=2&amp;uid=<{$member.shop_member_id}>&amp;site=cntaobao&amp;s=1&amp;charset=utf-8' target='_blank'><img border="0" src="http://amos.im.alisoft.com/online.aw?v=2&amp;uid=<{$member.account.uname}>&amp;site=cntaobao&amp;s=2&amp;charset=utf-8" title="点击这给 <{$member.account.uname}>发送消息"></a><{$member.account.uname}><{else}><{$member.account.uname}><{/if}></td>
+                        <th>姓名：</th>
+                        <td><{$member.contact.name}></td>
+                        <th>联系电话：</th>
+                        <td><{if $member.contact.phone.telephone && $member.contact.phone.mobile}><{$member.contact.phone.telephone}> / <{$member.contact.phone.mobile}><{elseif $member.contact.phone.telephone}><{$member.contact.phone.telephone}><{else}><{$member.contact.phone.mobile}><{/if}></td>
+                    </tr>
+                    <tr>
+                        <th>Email地址：</th>
+                        <td><{$member.contact.email}></td>
+                        <th>地区：</th>
+                        <td><{$member.contact.area|region}></td>
+                        <th>地址：</th>
+                        <td><{$member.contact.addr}></td>
+                    </tr>
+                    <tr>
+                        <th>邮政编码：</th>
+                        <td><{$member.contact.zipcode}></td>
+                        <th colspan="4">&nbsp;</th>
+                    </tr>
+                </tbody>
+            </table>
+            <{else}>
+<h3>暂无相关用户信息</h3>
+            <{/if}>
+            <div align="right">
+                <a href="javascript:void(0);" id="fold_buyer"><{img src='bundle/upload.gif' app='desktop'}></a>
+            </div>
+        </div>
+    </div>
+    
+    <span id="has_gifts" style="display:none;">
+    <h3><font color="red">注意事项</font></h3>
+    <div class="finder-detail" style="margin-top:10px;">
+        <input type="checkbox" name="has_pro_gifts" id="has_pro_gifts" value=1 onclick="setButtonStatus();">&nbsp;<span style="color:red;font-size:14px;font-weight:bold;">选中订单有优惠赠品，请确认已经处理</span>
+    </div>
+    </span>
+
+</form>
+<{capture name='footbar'}>
+<table cellspacing="0" cellpadding="0" class="table-action">
+    <tbody>
+        <tr valign="middle">
+            <td><{button label="确认并生成发货单" type="button" class="btn-primary" id="btn_con" onclick="doDetailAction(3,0);"}></td>
+        </tr>
+    </tbody>
+</table>
+<{/capture}>
+
+<script>
+    var curr_id = '<{$order_id}>';
+    var filter = [];
+    var prev_id = '';
+    var next_id = '';
+    var finderList = opener.window.document.getElementById('finder-list-<{$finder_id}>');
+    if(!finderList){
+        alert('待处理订单列表已被关闭！');
+        setTimeout('window.close()',120);
+    }
+    var dataNode = finderList.getElements('tr').get('item-id');
+    var data = dataNode.filter(function(d){return filter.indexOf(d) == -1;});
+    var index = data.indexOf(curr_id);
+    if(index >= 0){
+        if(index > 0) prev_id = data[index - 1];
+        if(index + 1 <= data.length) next_id = data[index + 1];
+    }
+    
+    $('btn_prev').addEvent('click',function(e){
+        if(prev_id) {
+            window.location='index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]='+prev_id+'&filter=<{$filter}>&find_id=<{$finder_id}>';
+        } else {
+            alert('没有上一条了');
+        }
+    });
+    $('btn_next').addEvent('click',function(e){
+        if(next_id) {
+            window.location='index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]='+next_id+'&filter=<{$filter}>&find_id=<{$finder_id}>';
+        } else {
+            alert('没有下一条或已经到了页尾');
+        }
+    }); 
+</script>
+
+<script>
+
+    function getCorps(branch_id, area,weight,select_corp_id) {
+        var defDly = '<{$defaultExpress.yes}>';
+        var shop_type = '<{$order.shop_type}>';
+        var shop_id = '<{$order.shop_id}>';
+        var cod = '<{$order.shipping.is_cod}>';
+
+        if(!branch_id) {
+            $('logi_id').set('html','<option>----</option>');
+            return;
+        }
+        var default_corp_id = '';
+        var default_shopcorp_id = '';
+        new Request({
+            url:'index.php?app=ome&ctl=admin_order&act=getCorps',
+            method:'post',
+            data:'branch_id='+branch_id + '&area=' + area+'&weight='+weight+'&shop_type='+shop_type+'&shop_id='+shop_id ,async:false,
+            onComplete: function(json) {
+                if(!json)
+                    return;
+                json = JSON.decode(json);
+                var s = '';
+                json.each( function(j,i) {
+                    if(j.flag_select=='1'){
+                        default_corp_id = j.corp_id;
+
+                    }
+                    //判断是否货到付款
+                    if (shop_type=='360buy' && cod=='true' && j.type=='JDCOD')
+                    {
+                        default_shopcorp_id = j.corp_id;
+                    }
+                    s += '<option id="' + j.type + '" value="'+j.corp_id+'">'+j.name+'</option>';
+                });
+             
+                $('logi_id').set('html',s);
+                if (default_shopcorp_id)
+                {
+                    default_corp_id = default_shopcorp_id;
+                }
+                if(default_corp_id){
+                    
+                    $('logi_id').getElement('option[value='+default_corp_id+']').selected=true;
+                }
+                //$('logi_id').options[0].selected = true;
+                if(defDly){
+
+                    selectedExpress();
+                }
+                if(select_corp_id){
+
+                    $('logi_id').getElement('option[value='+select_corp_id+']').selected=true;
+                }
+            }
+        }).send();
+    }
+    function get_arrived(area,addr,corp_id){
+        new Request({
+             url:'index.php?app=ome&ctl=admin_dly_corp&act=get_arrived',
+             method:'post',
+             data:'area='+area+'&addr='+addr+'&corp_id='+corp_id,
+             onComplete:function (rs){
+             if (rs==0) // 0 - 不可达 1 - 可达 2 - 不确定 3 - 未配置
+             {
+               $('arrived_info').set('html','不到');
+             }else if(rs=='1'){
+                $('arrived_info').set('html','可达');
+             }else if(rs == '2'){
+                 $('arrived_info').set('html','不确定');
+             }else if(rs == '3') {
+                $('arrived_info').set('html','未配置');
+             
+             } else if(rs == '5'){
+                $('arrived_info').set('html','不支持查询');
+             }
+               
+                      
+             }
+          }).send();
+
+    }
+    function selectedExpress() {
+        var opts = $('logi_id').options;        
+        var len = opts.length;
+        var defDly = '<{$defaultExpress.yes}>';
+        var noArr = new Array();
+
+            <{foreach from=$defaultExpress['no'] item=no}>
+            noArr[noArr.length] = '<{$no}>';
+            <{/foreach}>
+
+            for(var i=0; i<len; i++){
+            if(defDly == ''){
+                if(isDefault(noArr)){
+                    if(inArray(opts[i].id, noArr) == false){
+
+                        opts[i].selected = true;
+                        return;
+                    }
+                }
+            
+                //opts[0].selected = true;
+                return;
+            }
+        
+            if(opts[i].id == defDly){
+
+                opts[i].selected = true;
+            }
+        }
+    }
+
+    function isDefault(noArr){
+        return inArray(defValue = $('logi_id').options[0].id, noArr);
+    }
+
+    function inArray(value, arr){
+        for(var i=0; i<arr.length; i++){
+            if(value == arr[i]){
+                return true;
+            }
+        }
+    
+        return false;
+    }
+
+    (function() {
+        var splited = <{$is_splited}>?<{$is_splited}>:'';
+        var branch_id = 0;
+        var arrive_conf = <{$arrive_conf}>;
+        var  logi_id = $('logi_id'),
+        issplitarea = $('issplitarea'),
+        select_branch = $$('.select_branch'),
+        order_split = $('order_split'),
+        order_id = $E('[name=order_id]',$('order_split')).value;
+        $$('.show_consign').addEvent('click', function() {
+            this.getParent('.division').getElement('.consign_area').setStyle('display','block');
+            this.set('html','');
+        });
+        $$('.fold_consign').addEvent('click', function() {
+            this.getParent('.consign_area').setStyle('display','none');
+            this.getParent('.division').getElement('.show_consign').set('html','更多>>');
+        });
+        getCorps('<{$selected_branch_id}>', '<{$order.consignee.area}>','<{$weight}>','');
+        if (arrive_conf=='1')
+       {
+           get_arrived('<{$order.consignee.area}>','<{$order.consignee.addr}>',logi_id.value);
+       }
+        select_branch.each( function(item,i) {
+            var p = item.getParent('th');
+            var index = item.getParent('tr').getElements('th').indexOf(item.getParent('th'));
+
+            item.addEvents({
+                'click': function(e) {
+                    this.getParent('tr').getElements('th.selected').removeClass('selected');
+                    p.addClass('selected');
+                    $E('.row-tips') && $E('.row-tips').destroy();
+                    var branch_id = $('dataNode').getParent().getElement('th.selected') ? $('dataNode').getParent().getElement('th.selected').get('data-storeid') : '';
+                    var area = $E('[name="consignee[area]"]',$('delivery_info')).value;
+                    getCorps(branch_id,area,'<{$weight}>','');
+                },
+                'mouseenter': function(e) {
+                    if(p.hasClass('selected'))
+                        return;
+                    var tips = new Element('div.row-tips', {
+                        html:'<div class="tips">选择它来发货</div>'
+                    }).inject(document.body).fade(1);
+
+                    tips.setStyles({
+                        'width':p.getSize().x+1,
+                        'top':p.getPosition().y-24,
+                        'left':p.getPosition().x
+                    });
+                    p.getPrevious().setStyle('border-right-color','#84a2ad');
+                    p.setStyle('border-color','#84a2ad');
+                },
+
+                'mouseleave': function() {
+                    $E('.row-tips') && $E('.row-tips').destroy();
+                    p.getPrevious().setStyle('border-right-color','#C8D6DC');
+                    p.setStyle('border-color', '#C8D6DC');
+                }
+            });
+        });
+        if ($('logi_id'))
+        {
+            $('logi_id').addEvent('change',function(e){
+            get_arrived('<{$order.consignee.area}>','<{$order.consignee.addr}>',this.value);
+            
+            
+            });
+        }
+        $('other_delivery').addEvent('click', function(e) {
+
+            new Request.HTML({
+
+                url:'index.php?app=ome&ctl=admin_order&act=do_confirm_delivery_info_edit&p[0]='+order_id,
+                method:'get',
+                update:$('delivery_info'),
+                onComplete: function() {
+                    this.set('html','');
+                }.bind(this)
+
+            }).send();
+        });
+
+        order_split.removeEvents('submit').addEvent('submit', function(e) {
+            e.stop();
+            new Request.JSON({
+                url:this.action,
+                onRequest: function () {
+
+                    if ($('btn_consign')) {
+                        $('btn_consign').set('disabled', 'true');
+                        $('btn_consign').getElements('span')[1].set('text','拆分中');
+                    } else if ($('btn_con')) {
+                        $('btn_con').set('disabled', 'true');
+                        $('btn_con').getElements('span')[1].set('text','正在处理请求中');
+                    }
+                },
+
+                onSuccess: function(jsontext) {
+
+                    var json = jsontext;
+                    if (typeof(json.error) == 'undefined') {
+                        if (json.success=='成功：订单暂停成功' || json.success=='成功：订单恢复成功' || json.success=='成功：订单确认成功' || json.success=='成功：订单拆分成功') {
+                            window.location = window.location.href;
+                            try {
+                                opener.finderGroup['<{$finder_id}>'].refresh.delay(100,opener.finderGroup['<{$finder_id}>']);
+                            } catch(e) {
+                            }
+                        } else {
+                           
+                            if(json.success=='成功：订单处理成功') {
+                                var curr_id = '<{$order_id}>';
+                                var orders = getCombineOrders();
+                                var filter = new Array();
+                                for (i=0; i<orders.length; i++) {
+                                    if (orders[i].value != curr_id) {
+                                        filter.push(orders[i].value);
+                                    }
+                                }
+                                var next_id = '';
+                                var finderList = opener.window.document.getElementById('finder-list-<{$finder_id}>');
+                                if(!finderList){
+                                    alert('没有下一条或已经到了页尾！');
+                                    setTimeout('window.close()',120);
+                                }
+                                var dataNode = finderList.getElements('tr').get('item-id');
+                                var data = dataNode.filter(function(d){return $defined(d) && filter.indexOf(d) == -1;});
+                                var index = data.indexOf(curr_id);
+
+                                if(index >= 0){
+                                    if(index + 1 <= data.length-1) {
+                                        next_id = data[index + 1];
+                                    } else {
+                                        if (index >0 ) {
+                                            next_id = data[index - 1];    
+                                        }
+                                    }
+                                }
+                                try {
+                                    opener.finderGroup['<{$finder_id}>'].refresh.delay(100,opener.finderGroup['<{$finder_id}>']);
+                                } catch(e) {
+                                }
+                                if(next_id) {
+                                    window.location='index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]='+next_id+'&filter=<{$filter}>&find_id=<{$finder_id}>';
+                                } else {
+                                    alert('没有下一条或已经到了页尾');
+                                    setTimeout('window.close()',120);
+                                }
+                            } else {
+                                try {
+                                    opener.finderGroup['<{$finder_id}>'].refresh.delay(100,opener.finderGroup['<{$finder_id}>']);
+                                } catch(e) {
+                                }
+                                setTimeout('window.close()',120);
+                            }
+                        }
+                    } else {
+                        MessageBox.error(json.error);
+                        $('btn_con').set('disabled', '');
+                        $('btn_con').getElements('span')[1].set('text','确认并生成发货单');
+                        try {
+                            opener.finderGroup['<{$finder_id}>'].refresh.delay(100,opener.finderGroup['<{$finder_id}>']);
+                        } catch(e) {
+                        }
+                    }
+                }
+            })[this.method](this);
+        });
+    })();
+
+</script>
+
+<script>
+
+    var gOrders = <{$jsOrders}>;
+    var orderItems = new Array();
+
+    for (id in gOrders) {
+        if (gOrders[id]['pause'] == 'true' || gOrders[id]['derviveryId']>0) {
+            new Element('div.error', {
+                html:'部分订单已生成发货单，进入配货流程或已被置为暂停状态，请仔细检查后操作。',
+                style:'margin-top:10px;font-size:14px;font-weight:bold; line-height:28px; text-align:center;'
+            }).inject($E('.content-main'),'top');
+            break;
+        }
+
+        if (gOrders[id]['refund_status']> 0 ) {
+            new Element('div.error', {
+                html:'部分订单正处于退款流程中，请仔细确认该订单是否可操作，以避免错发货的情况。',
+                style:'margin-top:10px;font-size:14px;font-weight:bold; line-height:28px; text-align:center;'
+            }).inject($E('.content-main'),'top');
+            break;
+        }
+    }
+
+    function getCombineOrders() {
+        var orderRow = $$('#orderNode input, #present .seemingly-orders input').filter( function(item, i) {
+            return item.checked;
+        });
+        return orderRow;
+    }
+
+    function itemHtmlData(){
+        var html = '';
+
+        for (var product in orderItems) {
+            if (orderItems[product]['delete'] == 'false') {
+                html = html + '<tr data-g_pid="'+orderItems[product]['product_id']+'" data-g_shop_pid="'+orderItems[product]['shop_product_id']+'"  data-item_id="'+orderItems[product]['item_id']+'">';
+                html = html + '<td class="number">' + orderItems[product]['bn'] + '</td>';
+                html = html + '<td class="goodsname">' + orderItems[product]['name'] + '</td>';
+                html = html + '<td class="addon">' + orderItems[product]['addon'] + '</td>';
+                html = html + '<td class="price">' + orderItems[product]['price'].toFixed(2) + '</td>';
+                html = html + '<td class="buycounts">' + orderItems[product]['quantity'] + '</td>';
+                    <{foreach from=$branch_list item=branch}>
+                    var branch_store = orderItems[product]['branch_store'][<{$branch.branch_id}>]?orderItems[product]['branch_store'][<{$branch.branch_id}>]:0;
+                html = html + '<td class="branch ColColorGreen">' + branch_store + '</td>';
+                if(orderItems[product]['branch_store'][<{$branch.branch_id}>] < orderItems[product]['quantity']){
+                    /*html = html + '<input type="hidden" name="branch_id" id="branch_id" value="<{$branch.branch_id}>"/>';*/
+                }
+                    <{/foreach}>
+                    html = html + '</tr>';
+            }
+        }
+        return html;
+    }
+
+    function createGoodsItemHtml(product) {
+        if (product['delete'] == 'false') {
+            if(!orderItems[product['bn']]){
+                orderItems[product['bn']] = new Array();
+                orderItems[product['bn']]['delete'] = 'false';
+                orderItems[product['bn']]['bn'] = product['bn'];
+                orderItems[product['bn']]['name'] = product['name'];
+                orderItems[product['bn']]['addon'] = product['addon'];
+                orderItems[product['bn']]['price'] = parseFloat(product['price']);
+                orderItems[product['bn']]['amount'] = parseFloat(product['amount']);
+                orderItems[product['bn']]['quantity'] = parseFloat(product['quantity']);
+                orderItems[product['bn']]['left_nums'] = parseFloat(product['left_nums']);
+                orderItems[product['bn']]['branch_store'] = product['branch_store'];
+            }else{
+                orderItems[product['bn']]['amount'] = parseFloat(orderItems[product['bn']]['amount']) + parseFloat(product['amount']);
+                orderItems[product['bn']]['quantity'] = parseFloat(orderItems[product['bn']]['quantity']) + parseFloat(product['quantity']);
+                orderItems[product['bn']]['left_nums'] = parseFloat(orderItems[product['bn']]['left_nums']) + parseFloat(product['left_nums']);
+            }
+        }
+    }
+
+    function createGoodsHtml(goods) {
+        for (objId in goods) {
+            for (itemId in goods[objId]['order_items']) {
+                createGoodsItemHtml(goods[objId]['order_items'][itemId]);
+            }
+        }
+    }
+
+    function getProducts(orderId) {
+        for (id in gOrders) {
+            if (orderId == id) {
+                var products = gOrders[id]['items'];
+                for (ptype in products) {
+                    createGoodsHtml(gOrders[id]['items'][ptype]);
+                    if (ptype == 'goods') {
+                    } else if (ptype == 'gift') {
+                    } else if (ptype == 'pkg') {
+                    }
+                }
+            }
+        }
+    }
+   
+    function reWriteProductWeight() {
+        var orders = getCombineOrders();
+        var orderWeight = <{$orderWeight}>;
+        var weight = 0;
+        for (i=0; i<orders.length; i++) {
+            order_id = orders[i].value;
+            if(orderWeight[order_id]==0){
+                weight=0;
+                break;
+            }else{
+            weight+=orderWeight[order_id];
+            }
+        }
+        if(weight==0){
+            weight_html='<font color=red>商品未设置重量<br>默认使用首重</font>';
+        }else{
+            weight_html=(weight/1000).toFixed(3)+'KG';
+        }
+        $('order_weight').set('html',weight_html);
+        return weight;
+
+    }
+    function reWriteProductNode () {
+        //计算所有产品信息
+        var orders = getCombineOrders();
+        
+        var html = '';
+        var orderIds = new Array();
+        var select_corp_id='';
+        if($('logi_id')){
+            select_corp_id = $('logi_id').value;
+        }
+    
+        orderItems = new Array();
+        
+        for (i=0; i<orders.length; i++) {
+            getProducts(orders[i].value);
+            orderIds[i] = orders[i].value;
+        }
+        weight = reWriteProductWeight();
+        html = itemHtmlData();
+
+        new Request({
+            url:'index.php?app=ome&ctl=admin_order&act=ajaxGetDefaultBranch',
+            method:'post',
+            data:'orders='+JSON.encode(orderIds),
+            onComplete: function(json) {
+                if(!json){
+                    return;
+                }else{
+                    json = JSON.decode(json);
+                    if(json.branch_id==0){
+                        var branch = '没有推荐发货仓库，请手动确认';
+                    }else{
+                        var branch = '推荐用仓库："' + json.name + '"发货';
+                    }
+                    $('recommend_branch').set('html', branch);
+                }
+            }
+        }).send();
+
+        $('dataNode').set('html', html);
+        getCorps('<{$selected_branch_id}>', '<{$order.consignee.area}>',weight,select_corp_id);
+        if ($('btn_delivery_submit') && memberOrders > 0 ) {            
+            resetAddress();        
+        }
+        
+    }
+
+    function displayDetail(e) {
+        var orderId = e.id.replace('extendBtn', '');
+        var displayObj = $('detail'+orderId);
+
+        if (displayObj.style.display == 'none') {
+            e.set('html', '-');
+            displayObj.style.display = '';
+        } else {
+            e.set('html', '+');
+            displayObj.style.display = 'none';
+        }
+    }
+    
+    function displayGiftNote() {
+        $('has_gifts').setStyle('display','none');
+        $('btn_con').set('disabled', '');
+        $ES("input[name^='orderIds[]']").each(function(item){
+            if(item.checked && item.get('has_gift') == '1' ){
+                $('has_gifts').setStyle('display','');
+                $('btn_con').set('disabled', 'true');
+            }
+        });
+    }
+    
+    function setButtonStatus(){
+        if($('has_pro_gifts').checked){
+            $('btn_con').set('disabled', '');
+        }else{
+            $('btn_con').set('disabled', 'true');
+        }
+    }
+    
+    function checkProcess() {
+        var el = $$('#orderNode input');
+        var result = false;
+        var hasrefund = false;
+
+        for(i=0;i<el.length; i++) {
+            if (el[i].name =='orderIds[]') {
+                if (el[i].checked) {
+                    if (gOrders[el[i].value]['refund_status']> 0 ) {
+                        hasrefund = true;
+                    }
+                    result=true;
+                }
+            }
+        }
+
+        var branch_id = $('dataNode').getParent().getElement('th.selected') ? $('dataNode').getParent().getElement('th.selected').get('data-storeid') : '';
+        if (!branch_id) return MessageBox.error('请先选择仓库！');
+
+        if ($defined($E('#issplitarea input[type=hidden][name=branch_id]')))
+        {
+            $E('#issplitarea input[type=hidden][name=branch_id]').set('value',branch_id);
+        } else {
+            new Element('input[type=hidden][name=branch_id]', {
+                value: branch_id
+            }).inject($('issplitarea'), 'top');
+        }
+
+        for (var item in orderItems) {
+            if (orderItems[item]['delete'] == 'false') {
+                if(orderItems[item]['branch_store'][branch_id] < orderItems[item]['quantity']){
+                    return MessageBox.error(orderItems[item]['bn']+'库存不足，不能发货！');
+                    break;
+                }
+            }
+        }
+
+        if (!result) {
+            return MessageBox.error('你没有勾选任何可操作的订单');
+        }
+
+        if (hasrefund) {
+            return confirm("在要确认的订单中有退款标记的订单，建议您仔细检查后再执行此操作，以避免出现发错货或多发货的现像\n你还确定要确认并生发货单吗?");
+        }
+        return result;
+    }
+
+    function doDetailAction(act, orderId) {
+        if (act==1 || act==3) {
+            if($('btn_delivery_submit')) {
+                return MessageBox.error('您的配送信息正处于编辑状态！');
+            }        
+
+            if ($('logi_id').value == '') {
+                return MessageBox.error('没有选择快递公司,如你还没有进行过快递公司的设置，请设置后再试！');    
+            }
+        }
+        //查看是否有可合并发货单
+        var combine_delivery='';
+        if (act == 1 || act == 2 || act == 3) {
+            if (!checkProcess()) {
+                return false;
+            }
+           //检查是否有单据可以合并
+            new Request({
+            url:'index.php?app=ome&ctl=admin_order&act=fetchCombineDelivery',async:false,
+            method:'post',
+            data:{order_id:'<{$order_id}>'},
+            onComplete: function(json) {
+                if(json){
+                    json=JSON.decode(json);
+                    
+                    for(var i=0;i<json.length;i++){
+                        combine_delivery+=+json[i]+',';
+                    }
+                    
+                }
+            }
+        
+            }).send();
+        }
+
+        $('do_action').value = act;
+        $('order_id').value = orderId;
+        //
+        
+        if(combine_delivery.length>0){
+            var url = 'index.php?app=ome&ctl=admin_order&act=combineOrderNotify&order_id=<{$order_id}>';
+            new Dialog(url,{title:'确认',width:500,height:200});
+        }else{
+            $('order_split').fireEvent('submit', {
+                stop: function() {
+                }
+            });
+        }
+    }
+
+    reWriteProductNode();
+    
+    window.addEvent('domready', function(){
+        $ES("input[name^='orderIds[]']").each(function(item){
+            if(item.checked && item.get('has_gift') == '1' ){
+                $('has_gifts').setStyle('display','');
+                $('btn_con').set('disabled', 'true');
+            }
+        });
+    });
+</script>

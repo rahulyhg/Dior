@@ -1,0 +1,42 @@
+<style>
+    .delivery-tab{margin:0;padding:0;overflow:hidden;}
+    .delivery-tab li{float:left; height:24px;line-height:24px;margin-right:5px;font-size: 12px;overflow:hidden;}
+    .delivery-tab .hover{background-position:0 0;font-weight:bold;}
+</style>
+
+<div class="tableform">
+    <div class="note">
+    	<{if $days===0}>
+    	提醒：<font color='red'>您的服务今天是最后一天，请及时续费！</font>
+    	<{elseif $days<0}>
+    	提醒：<font color='red'>您的服务已过期，有可能随时被停止而影响您的工作，请及时续费！</font>
+    	<{elseif $days<30}>
+   		 提醒：您的服务还有 <font color='red' size="14"><span id='orderCount'><{$days}></span></font> 天即将到期！请及时续约，谢谢！
+   		<{/if}>
+    	<{if $ensureDay >= 0}>
+            <br /><br />
+            <{if ensureDay === 0}>
+                                        提醒：<font color='red'>您的保障部署服务今天是最后一天，请及时续费！</font>
+            <{else}>
+                                        提醒：您的<font color='red'><b>保障部署</b></font>服务还有 <font color='red' size="14"><span id='orderCount'><{$ensureDay}></span></font> 天即将到期！请及时续约，谢谢！
+            <{/if}>
+    	<{/if}>
+    		<BR><BR>续费请联系以下客服：
+            <script>
+            var header_qq='&nbsp&nbsp&nbsp&nbsp&nbsp<img  style="CURSOR: pointer" onclick="javascript:window.open(\'http://b.qq.com/webc.htm?new=0&sid=800094789&eid=2188z8p8p8p808Q8y8z80&o=www.shopex.cn&q=7&ref=\'+document.location,\'_blank\', \'height=544, width=644,toolbar=no,scrollbars=no,menubar=no,status=no\')"  border="0" SRC="http://im.bizapp.qq.com:8000/zx_qq.gif">';
+            $('service_money').set('html',header_qq);
+            </script>
+            <span id="service_money"></span>    </div>
+    
+    <div class="table-action">
+        <{button label="关闭" type="botton" name="btn-close" id="btn-close" style="padding-left:35px;"}>
+    </div>
+</div>
+
+<script>
+	
+	$('btn-close').addEvent('click', function(){
+		$('btn-close').getParent('.dialog').retrieve('instance').close();
+	});
+	
+</script>

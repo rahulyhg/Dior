@@ -1,0 +1,20 @@
+<app>
+    <name>库存深度管理</name>
+    <main_app exclusion="true">false</main_app>
+    <description>Inventory depth management 库存深度管理</description>
+
+    <author>
+        <name>淘管开发团队</name>
+        <email>taog@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0.0</version>
+    <license>shopex license</license>
+    <parent_model_class>dbeav_model</parent_model_class>
+     
+	<depends>
+        <app>desktop</app>
+        <app>ome</app>
+	</depends>
+</app>

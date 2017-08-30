@@ -1,0 +1,155 @@
+<link rel="stylesheet" type="text/css" href="<{$env.app.res_url}>/style.css" media="screen" />
+<form action="index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=add&finder_id=<{$env.get.finder_id}>" method="post" id="setting_frm" name="setting_frm">
+    <div id="gEditor-Body">
+      <div class="spage-main-box">
+          <div class="edit_title"><h3>业务类型管理</h3></div>
+          <div class="tableform">
+          <div id="x-g-basic" class="goods-detail">
+              <div>
+                <table border="0" cellpadding="0" cellspacing="0">
+                <tbody>
+                	<{foreach from=$item.title item=value key=key}>
+                    
+                    <{if $value == '保税备货'}>
+                    <tr>
+                        <th align="right" >&nbsp;</th>
+                        <td width="150" align="center"><input name="item[title][]" id="title[]" value="<{$value}>" size="30" disabled="disabled" /></td>
+                        <td><span style="color:#666;">系统保留</span></td>
+                    </tr>
+                    <{else}>
+                    <tr>
+                        <th align="right" >&nbsp;</th>
+                        <td width="150" align="center"><input name="item[title][]" id="title[]" value="<{$value}>" size="30" /></td>
+                        <td><a href="javascript:void(0);" onclick="del_title(this, '<{$key}>')">删除</a>
+                        </td>
+                    </tr>
+                    <{/if}>
+                    
+                    
+                    <{/foreach}>                
+                  </tbody>
+                </table>
+                
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <th >&nbsp;</th>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <th align="right"><strong>新增业务类型：</strong></th>
+                    <td width="280"><{input type="text" size="32" maxlength="32" name="title" id="add_title" required='required' value=""}></td>
+                    <td><{button label="添加新记录" type="button" id="btn_submit" name="btn_submit" }></td>
+                  </tr>
+                </table>
+              </div>
+          </div>
+          </div>
+      </div>
+    </div>
+</form>
+<script language="javascript">
+function remove_title()
+{
+	var url		= "index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=del&key=<{$key}>";
+	if(confirm('确定要删除么？'))
+	{
+		window.location.href = url;
+	}
+	else
+	{
+		return false;	
+	}
+}
+function del_title(obj, item_id){
+    if(confirm('确定要删除么？'))
+	{
+        new Request({url:'index.php?app=<{$env.get.app}>&ctl=<{$env.get.ctl}>&act=remove',method:'post',data:'key='+item_id,
+            onSuccess:function(json){
+                rs = JSON.decode(json);
+                if(rs.res == 'fail')
+				{
+                    return MessageBox.error(rs.msg);
+                }
+				else if(rs.res == 'succ')
+				{
+					obj.getParent('tr').remove();
+					parent.location.reload();
+                }
+            }
+        }).send();
+    }else{
+        return;
+    }
+}
+
+function submit_frm()
+{
+	var title			= document.getElementById("add_title").value;
+	if(!title)
+	{
+		alert("请填写新增发票的内容");
+		document.getElementById("title").focus();
+		return false;
+	}
+	return true;
+}
+
+(function()
+{
+	var _form	= $('setting_frm');
+	var btn		= $('btn_submit');
+	var finder	= finderGroup['<{$env.get.finder_id}>'];
+	var finder_id	= '<{$env.get.finder_id}>';
+	
+	_form.store('target',{
+		onSuccess:function(response){
+			var hash_res_obj = JSON.decode(response);
+		
+			if (hash_res_obj.success != undefined && hash_res_obj.success != "")
+			{
+				try{
+					var _dialogIns = btn.getParent('.dialog').retrieve('instance');
+				}catch(e){}
+				
+				if(_dialogIns)
+				{
+					_dialogIns.close();
+					
+					if(finder_id)
+					{
+						window.finderGroup['<{$env.get.finder_id}>'].refresh();
+					}
+					else
+					{
+						parent.location.reload();
+					}
+				}
+			}
+		}
+	});
+	
+    $('btn_submit').addEvent('click',function()
+	{
+		var flag		= submit_frm();
+		if(flag)
+		{
+			_form.fireEvent('submit',{stop:$empty});
+		}
+    });
+	
+	$ES("input[type=text]").each(function(el,i)
+	{
+        el.addEvent('keydown',function(e)
+		{
+			if(e.code==13){
+				var flag		= submit_frm();
+				if(flag)
+				{
+					_form.fireEvent('submit',{stop:$empty});	
+				}
+			}
+        });
+    });	
+})();
+</script>

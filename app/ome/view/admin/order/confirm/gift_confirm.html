@@ -1,0 +1,87 @@
+        <{assign var="inv1" value="false"}>
+        <{foreach from=$objs item=obj name="gift_for1"}>
+        <{foreach from=$obj.order_items item=item name="gift_for2"}>
+        <{if $item.delete=='false'}>
+        <tr class="gift<{if $item.left_nums == 0}> disabled<{if $smarty.foreach.gift_for1.first && $smarty.foreach.gift_for2.first}> tr_line<{/if}><{else}><{if $smarty.foreach.gift_for1.first && $smarty.foreach.gift_for2.first}> tr_line<{/if}><{/if}>" data-g_pid="<{$item.product_id}>" data-g_shop_pid="<{$item.shop_product_id}>" data-item_id="<{$item.item_id}>" data-obj_id="<{$obj.obj_id}>" data-item_type="<{$item.item_type}>">
+            <td class="number <{if $item.item_type == 'gift' || $item.item_type == 'adjunct'}><{$item.item_type}><{/if}>"><{$item.bn}></td>
+            <td class="goodsname"><{$item.name}></td>
+            <td class="addon"><{$object_alias[$obj_type]|default:'赠品'}></td>
+            <td class="price"><{$item.price}></td>
+            <{if $order_delivery_list}>
+            <td class="buycounts"><{$item.quantity}></td>
+            <td class="amounts"><{$item.amount}></td>
+            <td class="splited"><{if ($item.quantity - $item.left_nums)>0}><{$item.quantity - $item.left_nums}><{else}>-<{/if}></td>
+            <td class="sendnum"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
+            <{else}>
+            <td class="amounts"><{$item.amount}></td>
+            <td class="buycounts"><{$item.quantity}></td>
+            <{/if}>
+            <td class="sendcounts"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
+            <td style="color:#f60;"><{$item.return_num}></td>
+            <!--<{foreach from=$branch_list item=branch name=bl}>
+            <{if isset($item.branch_store[$branch.branch_id])}>
+            <{assign var="inv1" value="true"}>
+            <td <{if $item.left_nums != 0}>class="branch <{if $item.branch_store[$branch.branch_id] >= $branch.stock_threshold}>ColColorGreen<{elseif $item.branch_store[$branch.branch_id] > 0 && $item.branch_store[$branch.branch_id] < $branch.stock_threshold}>ColColorRed<{else}>ColColorGray<{/if}><{/if}>" data-storeid="<{$branch.branch_id}>"><{$item.branch_store[$branch.branch_id]}></td></td>
+            <{else}>
+            <td <{if $item.left_nums != 0}>class="ColColorGray"<{/if}>>-<{assign var="inv" value="true"}></td>
+            <{/if}>
+            <{/foreach}>
+            <{if empty($branch_list)}>
+            <td>-</td>
+            <{/if}>-->
+          </tr>
+          <{/if}>
+          <{/foreach}>
+          <{/foreach}>
+
+<script>
+function gift_getSendcount(index) {
+    $$('tr.gift:not(.disabled)').each(function(p, i) {
+        var c = p.getElements('td')[index].get('text').trim().toInt() || 0,
+        v = p.getElement('.gift_input'),
+        b = p.getElement('td.sendnum') ? p.getElement('td.sendnum').get('text').trim().toInt() : p.getElement('td.buycounts').get('text').trim().toInt() || 0;
+        if (!c) v.value = 0;
+        else if (c < v.value || c > v.value && c < b) v.value = Math.max(c, 0);
+        else if (c > v.value && c > b) v.value = b;
+    });
+}
+
+function gift_doprocess(){
+    var datarow = $$('tr.gift:not(.disabled)').filter(function(item) {
+        return item.getElement('.gift_input') && item.getElement('.gift_input').value.toInt() !== 0;
+    });
+
+    if (!datarow.length) return [];
+    var products = [];
+    datarow.each(function(p, i) {
+        var sendcount = p.getElement('.gift_input').value,
+        storehouse = p.getElements('td')[index],
+        store = storehouse ? storehouse.get('text').toInt() : 0;
+
+        products.push({
+            itemid: p.get('data-item_id'),
+            product_id: p.get('data-g_pid'),
+            shop_product_id: p.get('data-g_shop_pid'),
+            bn: p.getElement('.number').get('text').trim(),
+            product_name: p.getElement('.goodsname').get('text').trim(),
+            number: sendcount
+        });
+    });
+
+    return products;
+}
+
+$$('input.gift_input').addEvents({
+    'change': function() {
+        if (isNaN(this.value) || this.value == '') {
+            new Element('span.error', {html: '请输入数字'}).injectAfter(this);
+            this.value = '0';
+            return this.focus();
+        }
+        var store = this.getParent('tr').getElements('td')[index];
+
+        store = Math.max(0, store ? store.get('text').trim().toInt() : 0);
+        this.value = this.value.toInt().limit(this.get('min'), Math.min(this.get('max'), store));
+    }
+});
+</script>

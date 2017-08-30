@@ -1,0 +1,129 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{/capture}>
+<div class="division">
+  <form id="stock_form" action="index.php?app=ome&ctl=admin_stock&act=create_pos" method="post">
+    <table class="gridlist" width="100%" border="0">
+      <thead>
+        <tr>
+          <th align="right">仓库</th>
+          <td>
+          
+          <{if $is_super}>
+                <{if count($branch_list)=='1'}>
+                    <{$branch_list.0.name}>
+                    <input type="hidden" name="branch_id" id="branch_id" value="<{$branch_list.0.branch_id}>" />
+                <{elseif count($branch_list)>'5' }>
+                    <{input type="select" name="branch_id" id="branch_id" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                <{else}>
+                    <{foreach from=$branch_list item=items key=keys}>
+                    <input type="radio" name="branch_id" <{if $keys==0}>checked="checked"<{/if}> vtype="requiredradio" value="<{$items.branch_id}>" />
+                    <{$items.name}>
+                    <{/foreach}> <span style="color:red">*</span>
+                <{/if}>
+            <{else}>
+                <{if !$branch_list_byuser}>
+                    <font color="red">* 当前没有操作仓库的权限，请联系管理员分配。 *</font>
+                    <script>
+                       $$("input","button","select").set('disabled','disabled');
+                    </script>
+                <{else}>
+                    <{if count($branch_list_byuser)==1}>
+                        <{$branch_list.0.name}>
+                        <input type="hidden" name="branch_id" id="branch_id" value="<{$branch_list.0.branch_id}>" />
+                    <{elseif count($branch_list_byuser)>5}>
+                        <{input type="select" name="branch_id" id="branch_id" vtype="required" rows=$branch_list valueColumn="branch_id" labelColumn="name" value=""}> <span style="color:red">*</span>
+                    <{else}>
+                        <{foreach from=$branch_list_byuser item=items key=keys}>
+                        <input type="radio" name="branch_id" <{if $keys==0}>checked="checked"<{/if}> vtype="requiredradio" value="<{$items.branch_id}>" />
+                        <{$items.name}>
+                        <{/foreach}> <span style="color:red">*</span>
+                    <{/if}>
+                <{/if}>
+            <{/if}>
+          
+          </td>
+        </tr>
+        <tr>
+          <th align="right">货位</th>
+          <td>
+              <span id="pfba2" style="position:relative;">
+                <{img title="查看货位列表" class="pointer btn_supplier" app="desktop" src="bundle/zoom_btn.gif"}>
+                <input name="pos_name" type="text" id="pos_name" vtype="required" autocomplete="off" />
+                <input name="pos_id" type="hidden" id="pos_id" />
+              </span>
+              </td>
+        </tr>
+        <tr>
+          <td colspan="2" align="center"><{button label="关联" id="gl_btn" type="submit" name="submit"}></td>
+        </tr>
+        </thead>
+        
+    </table>
+    <input type="hidden" name="product_id" id="product_id" value="<{$product_id}>" />
+  </form>
+</div>
+<script>
+(function(){
+	new Autocompleter.script($E('#pos_name'),"index.php?app=ome&ctl=admin_stock&act=getPosByBranchProduct", {
+		'getVar':'store_position',
+		'fxOptions':false,
+		callJSON:function(){return window.autocompleter_json;},
+		injectChoice:function(json){
+			var choice = new Element('li', {'html': this.markQueryValue(json[this.options.getVar])});
+			choice.inputValue = json[this.options.getVar];
+			this.addChoiceEvents(choice).inject(this.choices);
+			$('pos_id').set("value",json["pos_id"]);
+		},
+		onLoad:function(){
+			var branch_id = $('branch_id').getValue();
+            if (branch_id==''){
+                MessageBox.error('请选择仓库');
+                return false;
+            }
+			this.options.getData={'branch_id':$('branch_id').getValue(),'product_id':$('product_id').getValue()};
+		}
+	});
+
+   
+    $E(".btn_supplier").addEvent('click',function(e){
+        var branch_id=($$('input[name=branch_id]:checked') || $('branch_id')).getValue(),
+            product_id=$('product_id').getValue();
+		var url='?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=ome&ctl=admin_stock&act=view&p[0]="+branch_id+"&p[1]="+product_id+"&singleselect=1");
+		new finderDialog(url,{params:{url:'index.php?app=ome&ctl=admin_stock&act=getPosNameById',name:'id',type:'radio'},handle:'pos_name',width:1000,height:500});
+	});
+})();
+	
+function save_pos(){
+	$('do_action').value = 'save_branch';
+	$('branch_process').fireEvent('submit',{stop:$empty});
+ }
+function reset_pos(){
+	$('do_action').value = 'reset_branch';
+	$('branch_process').fireEvent('submit',{stop:$empty});
+ } 
+
+function getOp(branch_id){
+	if(branch_id){
+		W.page('index.php?app=ome&ctl=admin_stock&act=get_op&p[0]='+branch_id+'&p[1]=true',{update:$('pos_id')});
+	}else{
+		$('pos_id').empty();
+	}
+}
+
+$('stock_form').store('target',{
+    onComplete:function(jsontext){
+       //jsontext = jsontext.replace(/[\r\n]+/img, ' ');
+       var json = Json.evaluate(jsontext);
+       if (typeof(json.error) != 'undefined'){
+           $('gl_btn').set('disabled', '');
+           //$('confirm_btn').getElements('span')[1].set('text','开始入库');
+       }else{
+           $('gl_btn').set('disabled', 'true');
+           $('gl_btn').getParent('.dialog').retrieve('instance').close();
+       }
+       
+    }
+    });
+</script>

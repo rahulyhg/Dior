@@ -1,0 +1,76 @@
+<div class="division">
+<h4>商品信息</h4>
+<table width="100%" border="0" class="gridlist">
+<thead>
+  <tr>
+    <th><t>货号</t></th>
+    <th><t>商品名称</t></th>
+    <th><t>库存</t></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><{$pro_detail.bn}></td>
+    <td><{$pro_detail.name}></td>
+    <td><{$pro_detail.store|default:"0"}></td>
+  </tr>
+  </tbody>
+</table>
+
+<h4>仓库信息</h4>
+<form name="form1" id="stock_form" action="index.php?<{$env.server.QUERY_STRING}>" method="post">
+<table width="100%" border="0" class="gridlist">
+<thead>
+  <tr>
+    <th>仓库名称</th>
+    <th>库存量</th>
+    <th>冻结库存</th>
+    <th>在途库存</th>
+    <th style="display:none">相关货位</th>
+    <th>安全库存</th>
+    <th>安全库存锁定</th>
+  </tr>
+  </thead>
+  <tbody>
+  <{foreach from=$pro_detail.branch_product key=key item=product}>
+  <tr>
+    <td><{$product.branch_name}></td>
+    <td><{$product.store}></td>
+    <td><{$product.store_freeze}></td>
+    <td><{$product.arrive_store}></td>
+    <td style="display:none"><{$product.store_position|default:'-'}></td>
+    <td>
+        <input type="hidden" name="branch_id[]" value="<{$product.branch_id}>" />
+        <input type="hidden" name="product_id[]" value="<{$product.product_id}>" />
+        <input type="text" class="x-input" name="safe_store[]" size=8 value="<{$product.safe_store}>" autocomplete="off" />
+        </td>
+        <td>
+            <input type="checkbox" name="is_locked[<{$key}>]" value="1" id="is_locked" <{if $product.is_locked==1}>checked<{/if}> />          
+        </td>
+  </tr>
+  <{/foreach}>
+  </tbody>
+</table>
+
+<div class="table-action"><{button type="submit" label=$___b2c="保存"|t:'b2c' id="btn_do_submit"}> <span class="status"></span></div>
+<{$result}>
+</form>
+<!--<h4>货位信息</h4>
+<table width="100%" border="0" class="gridlist">
+<thead>
+  <tr>
+    <th>仓库</th>
+	<th>货位</th>
+    <th>库存量</th>
+     </tr>
+  </thead>
+    <tbody><{foreach from=$pro_detail.items item=items}>
+  <tr>
+    <td><{$items.name|default:"-"}></td>
+	<td><{$items.store_position|default:"-"}></td>
+    <td><{$items.store|default:"0"}></td>
+    </tr>
+<{/foreach}>
+</tbody>
+</table>-->
+</div>

@@ -1,0 +1,59 @@
+
+<table class="gridlist">
+	<thead>
+		<tr>
+			<th>序号</th>
+			<th>商品名称</th>
+			<th>规格</th>
+			<th>货号</th>
+			<th>条码</th>
+			<th>单位</th>
+			<th>采购数量</th>
+			<th>已入库数量</th>
+			<th>入库数量</th>
+			<th>库位</th>
+			<th>新品</th>
+			<th>备注</th>
+		</tr>
+	</thead>
+	<tbody>
+		<{foreach from=$Po_items item=items}>
+		<tr
+			<{if $items.status==2}>bgcolor="#FF0000"<{/if}>>
+			<tr><td ><input name="ids[]" type="checkbox" value="<{$items.item_id}>" <{if $items.entry_num!=0}>checked="checked"<{/if}> />
+    </td>
+    <td ><{$items.name}></td>
+    <td><{$items.spec_info}></td>
+    <td><{$items.bn}></td>
+    <td><{$items.barcode}></td>
+    <td><{$items.unit}></td>
+    <td><{$items.num}></td>
+    <td><{$items.in_num}></td>
+    <td><{if $items.entry_num!=0}>
+	<input type="text" name="entry_num[<{$items.item_id}>]" value="<{$items.entry_num}>"/><{/if}></td>
+    <td>
+	<span class="ome-stock-pos"></span>
+	<span class="ome-stock-pos-input" dropmenu="x-drop-menu-<{$items.item_id}>" style="">
+		<input type="text" class="ome-stock-store-input" <{if !$items.is_new=="false"}>disabled="disabled" autocomplete="off"<{/if}> value="<{$items.pos_list.0.store_position}>"  size="10" >
+		<input type="hidden" name="pos_id[<{$items.item_id}>]" autocomplete="off"  value="<{$items.pos_list.0.pos_id}>">
+	</span>
+	<div class="x-drop-menu" id="x-drop-menu-<{$items.item_id}>" style="width:150px;">
+			<ul class="group ome-stock-find" style="height:120px; margin-bottom:7px; overflow-y:auto;">
+			<{foreach from=$items.pos_list item=pos_list}>
+			 <li class="item" key="<{$pos_list.pos_id}>"><{$pos_list.store_position}></li>
+			 <{/foreach}>
+			</ul>
+		<{button class="addStore" label="新增"}>
+		 <input type="text" class="store-value" style='width:80px;' />
+		 <input type="hidden" class="product_id" value="<{$items.product_id}>" />
+	</div>	</td>
+    <td>
+	<{if $items.is_new=="true"}>是<{else}>否<{/if}>    </td>
+    <td>&nbsp;</td>
+  </tr>
+<input type="hidden" name="is_new[<{$items.item_id}>]" value="<{$items.is_new}>">
+<{/foreach}>  
+
+                    
+</tbody>
+</table>

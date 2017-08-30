@@ -1,0 +1,30 @@
+<form>
+<input type="hidden" name="delivery_id" value="<{$detail.delivery_id}>" />
+<input type="hidden" vtype="required" name="logi_no" value="<{$dly.logi_no}>"/>
+<h3 style="border-bottom:none">商品信息</h3>
+<div class="gridlist">
+<table border="0" cellspacing="0" cellpadding="0">
+<thead>
+<tr>
+    <th >货号:</th>
+    <th >条形码:</th>
+    <th >货品名称:</th>
+    <th >货品数量:</th>
+    <th >已校验数:</th>
+</tr>
+</thead>
+<tbody>
+<{foreach from=$items item=item}>
+<tr>
+    <td><{$item.bn}></td>
+    <td><{$item.barcode}></td>
+    <td><{$item.product_name}></td>
+    <td><{$item.number}></td>
+    <td><{$item.verify_num}></td>
+</tr>
+<{/foreach}>
+</tbody>
+</table>
+</div>
+<div align="center"><button class="btn" type="button" id="backbtn" onclick="<{if $is_confirm}>if(confirm('此发货单已有单据打印，撤销发货单可能造成多次发货\n\n是否确定撤销？'))<{/if}> new Dialog('index.php?app=ome&ctl=admin_delivery&act=showmemo&p[0]=<{$detail.delivery_id}>',{title:'撤销发货单备注',width:700,height:400})"><span><span>撤销此发货单</span></span></button></div>
+</form>

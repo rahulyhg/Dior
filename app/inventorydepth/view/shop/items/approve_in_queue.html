@@ -1,0 +1,32 @@
+<style>
+.info{
+font-weight:bold;
+font-size:30px;
+}
+</style>
+<div class='division info'>
+批量发布会先进队列，稍后执行，确认吗？
+</div>
+<{area inject='.mainFoot'}>
+<div class='table-action'>
+  <{button label='确定' type='button' id='submitbtn'}>
+  <{button label='取消' type='button' isCloseDialogBtn='true'}>
+</div>
+<{/area}>
+<script type="text/javascript">
+  $('submitbtn').addEvent('click',function(){
+    new Request.JSON({
+      url:'index.php?app=inventorydepth&ctl=shop_items&act=batchApprove&p[0]=<{$approve_status}>',
+      method:'post',
+      onComplete:function(resp){
+        if (resp.error) {
+          MessageBox.error(resp.error);
+          return false;
+        }
+
+        MessageBox.success('成功插入队列！');
+        $E('.info').getParent('.dialog').retrieve('instance').close();
+      }
+    }).send('<{$post}>');
+  });
+</script>

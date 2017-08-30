@@ -1,0 +1,13 @@
+<div class="tableform">
+<div class="division">
+  <h5>下载出入库CSV模板文件</h5>
+    <{t}>请选择导出的类型：<{/t}> &nbsp;&nbsp;
+      <select name='_ioType' id='ioType'>
+        <option selected="selected" value=''>请选择...</option>
+        <{foreach from=$iotype item=item key=key}>
+        <option value='<{$item}>'><{$key}></option>
+        <{/foreach}>
+      </select>
+    <{button class="btn-primary" label="下载" type="button" onClick="if(document.getElementById('ioType').value != '') location.href=document.getElementById('ioType').value;"}>
+</div>
+</div>

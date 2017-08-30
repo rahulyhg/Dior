@@ -1,0 +1,50 @@
+<{capture name="header"}>
+    <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">       
+<{/capture}>
+
+<{if $order.sync == 'fail' && $order.sync_fail_type != 'none'}>
+<div class="division">
+    最后回写错误原因：<span style="color:red;">
+    <{if $order.sync_fail_type == 'shipped'}>
+        前端已发货
+    <{elseif $order.sync_fail_type == 'unbind'}>
+        店铺未绑定
+    <{elseif $order.sync_fail_type == 'params'}>
+        回写参数错误
+    <{/if}></span>
+</div>
+<{/if}>
+
+<div class="division">
+    <h4>发货操作记录<span style='color:red;'>(此日志只保存30天)</span></h4>
+    <table cellspacing="0" class="gridlist" cellpadding="0" border="0" width="100%">
+        <thead>
+        <tr>
+            <th>日志编号</th>
+            <th>操作人</th>
+            <th>发起时间</th>
+            <th>完成时间</th>
+            <th>物流公司</th>
+            <th>物流编码</th>
+            <th>物流单号</th>
+            <th>完成状态</th>
+            <th>返回信息</th>
+        </tr>
+        </thead>
+        <tbody>
+        <{foreach from=$shipmentLogs item=log}>
+        <tr>
+            <td><{$log.log_id}></td>
+            <td><{$log.ownerId}></td>
+            <td><{$log.receiveTime}></td>
+            <td><{$log.updateTime}></td>
+            <td><{$log.deliveryCropName}></td>
+            <td><{$log.deliveryCropCode}></td>
+            <td><{$log.deliveryCode}></td>
+            <td><{$log.status}></td>
+            <td><{$log.message}></td>
+        </tr>
+        <{/foreach}>
+        </tbody>
+    </table>
+</div>

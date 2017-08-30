@@ -1,0 +1,29 @@
+<form action="index.php?app=ome&ctl=admin_return_address&act=getAddress&finder_id=<{$finder_id}>" method="post" id="form1">
+<h4>选择店铺:</h4>
+<{foreach from=$shop item=shop}>
+<input type='radio' name='shop_id' value='<{$shop.shop_id}>'><{$shop.name}>
+<{/foreach}>
+<div class="table-action">
+      <{button label="确定" class="btn-primary" type='submit'}> &nbsp; &nbsp;
+      <{button label="关闭" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+<input type='hidden' id='finder_id' name='finder_id' value='<{$finder_id}>'>
+</form>
+<script>
+$('form1').store('target',{
+
+    onComplete:function(rsp){
+        
+        rsp = JSON.decode(rsp);
+        var finder_id = $('finder_id').value;
+        if (rsp.error)
+        {
+            return false;
+        }
+        if($('form1').getParent('.dialog')){
+            $('form1').getParent('.dialog').retrieve('instance').close();
+            window.finderGroup[finder_id].refresh.delay(400,finderGroup[finder_id]);
+        }
+        }
+        });
+</script>

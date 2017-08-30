@@ -1,0 +1,164 @@
+<{capture name="header"}>
+    <{css src='style.css' app='inventorydepth'}>
+<{/capture}>
+<h3><{$title}></h3>
+<form class="division" action="index.php?app=inventorydepth&ctl=regulation&act=save" method="post" id="regulation-form" >
+<input type="hidden" name="regulation_id" value="<{$data.regulation_id|default:''}>"/>
+<input type="hidden" name="type" value="<{$data.type|default:2}>"/>
+<{if $regulation_shop_level}>
+<input type='hidden' name='regulation_shop_level' value="<{$regulation_shop_level}>" />
+<input type='hidden' name='regulation_shop_id' value="<{$regulation_shop_id}>" />
+<input type='hidden' name='regulation_shop_bn' value="<{$regulation_shop_bn}>" />
+<{/if}>
+
+  <div class="division">
+    <p>规则基本信息</p>
+    <table class="layout-list">
+      <tr>
+        <td align="right" style="width:100px;"><span class="red">*</span> 规则编号:</td>
+        <td><input vtype='required' class='x-input' type="text" name="bn" value="<{$data.bn}>" <{if $data.bn}>readonly='readonly'<{/if}> ></td>
+      </tr>
+      <tr>
+        <td align="right"><span class="red">*</span> 规则名称:</td>
+        <td><{input type="text" name="heading" value=$data.heading vtype='required'}></td>
+      </tr>
+
+      <tr>
+        <td align="right"><span class="red">*</span> 规则类型:</td>
+        <td class="rules" style="border:0;">
+            <{if $data.condition=='stock'}>更新店铺库存<{else}>更新商品上下架状态<{/if}>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="right">启用状态:</td>
+        <td><{if $data.using == 'true'}>启用<{else}>未启用<{/if}></td>
+      </tr>
+    </table>
+
+    <p>规则内容</p>
+
+    <div style="margin:4px 20px 0 60px;" class="rules-content">
+        <div class="borderGray" style="padding:5px 10px;margin-bottom:5px;border:1px solid #eee; background:#f6f6f6">
+            <div class='clearfix' id='filter-content'>
+                <{if $data.condition == 'stock'}>
+                    <{include file="regulation/stock_content_filters.html"}>
+                <{else}>
+                    <{include file="regulation/frame_content_filters.html"}>
+                <{/if}>
+            </div>
+            
+            <{if $data.condition == 'stock'}>
+                <{include file="regulation/stock_part.html"}>
+            <{else}>
+                <{include file="regulation/frame_part.html"}>
+            <{/if}>
+        </div>
+    </div>
+
+</div>
+
+    <table class="layout-list">
+        <tr>
+        <td align="right" valign="top" style="width:49px">规则描述</td>
+        <td><textarea id="description" cols="80" rows="4" readonly="readonly" style="width:98%" name="description"><{$data.description}></textarea><br>规则描述是由用户选择具体的规则自动翻译出来的</td>
+        </tr>
+        <tr>
+        <td align="right" valign="top">备注:</td>
+        <td><textarea name="remark" cols="80" rows="4" style="width:98%"><{$data.remark}></textarea></td>
+        </tr>
+    </table>
+</form>
+
+<{capture name='footbar'}>
+    <div class="table-action">
+    <{button type="button" label="确认" id='single-submit-btn'}>
+    <{button type="button" label="取消" id='close-btn' onclick='window.close();'}>
+    </div>
+<script>
+$('single-submit-btn').removeEvent('click').addEvent('click',function(e){
+    e.stop();
+    var form = $('regulation-form');
+    if (!validate(form)) return;
+    W.page(form.get('action'),{
+        data:form,
+        onComplete:function(resp){
+            resp = JSON.decode(resp);
+            if(resp.error){
+                MessageBox.error(resp.error);
+                return ;
+            }
+            opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+            setTimeout('window.close()',200);
+        }
+    });
+});
+</script>
+<{/capture}>
+
+<{if $regulation_readonly && $regulation_readonly == 'false'}>
+<{area inject='.mainFoot'}>
+    <div class="table-action">
+    <{button type="button" label="确认" id='dialog-submit-btn'}>
+    <{button type="button" label="取消" id='close-btn' onclick="this.getParent('.dialog').retrieve('instance').close();"}>
+    </div>
+<script>
+$('dialog-submit-btn').removeEvent('click').addEvent('click',function(e){
+    e.stop();
+    var form = $('regulation-form');
+    if (!validate(form)) return;
+    form.adopt(new Element('input',{'type':'hidden','name':'using','value':'true'}));
+    form.adopt(new Element('input',{'type':'hidden','name':'type','value':'1'}));
+    W.page(form.get('action'),{
+        data:form,
+        onComplete:function(resp){
+            resp = JSON.decode(resp);
+            if(resp.error){
+                MessageBox.error(resp.error);
+                return ;
+            }
+            form.getParent('.dialog').retrieve('instance').close();
+            finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,finderGroup['<{$env.get.finder_id}>']);
+        }
+    });
+});
+</script>
+<{/area}>
+<{/if}>
+<script>
+/*
+$$('.rules input[name="condition"]').addEvent('change',function(){
+    var id = 'rules_'+this.value;
+    if(this.checked){
+        var arr = ['rules_stock','rules_frame'];
+        arr.each(function(item){
+            if (id == item) {
+                $(item).getElements('input,select,textarea').set('disabled',false);
+                $(item).show();
+            }else{
+                $(item).getElements('input,select,textarea').set('disabled',true);
+                $(item).hide();
+            }       
+        });
+
+        init_translation();
+    }
+});
+*/
+
+//$$('.rules input[name="condition"]').fireEvent('change');
+/*
+$$('.trigger select').addEvent('change',function(e){
+    var val =this.getElement('option:selected').get('value');
+    init_translation();
+});
+*/
+
+
+
+
+function init_translation(){
+	new Request.HTML({url:'index.php?app=inventorydepth&ctl=regulation&act=ajax_checkLogic',update:$('description')}).post($('regulation-form').toQueryString());
+}
+
+</script>

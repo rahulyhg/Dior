@@ -1,0 +1,19 @@
+<app>
+    <name>OME 报表统计</name>
+    <description>OME 报表统计功能</description>
+
+    <author>
+        <name>shopex开发团队</name>
+        <email>dev@shopex.cn</email>
+        <url>http://www.shopex.cn</url>
+    </author>
+
+    <version>1.0</version>
+    <license>shopex license</license>
+    <parent_model_class>dbeav_model</parent_model_class>
+    <optional app="dev">开发者工具</optional>
+    <depends>
+        <app>eccommon</app>
+        <app>ome</app>
+    </depends>
+</app>
