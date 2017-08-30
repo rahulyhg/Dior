@@ -1,0 +1,124 @@
+<h3>AX对接配置</h3>
+<div class="tabs-wrap">
+  <ul>
+    <li class="tab"><a href="index.php?app=omeftp&ctl=admin_ftpsetting&act=index"><span><{t}>FTP配置<{/t}></span></a></li>
+	<li class="tab current"><a href="index.php?app=omeftp&ctl=admin_ftpsetting&act=axindex"><span><{t}>AX配置<{/t}></span></a></li>
+  </ul>
+</div>
+  <form method="post" action="index.php?app=omeftp&ctl=admin_ftpsetting&act=ax_save" id="whitelist">
+    <input type="hidden" name="policy" value='ftp' >
+    <div style="text-align:right;padding:3px 30px"></div>
+
+  <table class="tableform" style="width:99%;">
+    <tbody>
+      <tr>
+        <th><{t}>AX_header：<{/t}></th>
+        <td><{input type="text" name='ax_header' value=$ax_header size="40"}>      
+          <span class="notice-inline">AX文件第一行数据</span>
+        </td>
+      </tr>
+	  <tr>
+        <th><{t}>AX_H：<{/t}></th>
+        <td><{input type="text" name='ax_h' value=$ax_setting.ax_h size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_sales_country_code：<{/t}></th>
+        <td><{input type="text" name='ax_h_sales_country_code' value=$ax_setting.ax_h_sales_country_code size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_salas_division：<{/t}></th>
+        <td><{input type="text" name='ax_h_salas_division' value=$ax_setting.ax_h_salas_division size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_sales_organization：<{/t}></th>
+        <td><{input type="text" name='ax_h_sales_organization' value=$ax_setting.ax_h_sales_organization size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_plant：<{/t}></th>
+        <td><{input type="text" name='ax_h_plant' value=$ax_setting.ax_h_plant size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_customer_account：<{/t}></th>
+        <td><{input type="text" name='ax_h_customer_account' value=$ax_setting.ax_h_customer_account size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_invoice_ccount：<{/t}></th>
+        <td><{input type="text" name='ax_h_invoice_ccount' value=$ax_setting.ax_h_invoice_ccount size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_sales_order_status：<{/t}></th>
+        <td><{input type="text" name='ax_h_sales_order_status' value=$ax_setting.ax_h_sales_order_status size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_H_currency：<{/t}></th>
+        <td><{input type="text" name='ax_h_currency' value=$ax_setting.ax_h_currency size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	   <tr>
+        <th><{t}>AX_D_mode_of_delivery：<{/t}></th>
+        <td><{input type="text" name='ax_d_mode_of_delivery' value=$ax_setting.ax_d_mode_of_delivery size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	 
+	 <tr>
+        <th><{t}>品牌礼品卡货号：<{/t}></th>
+        <td><{input type="text" name='ax_gift_bn' value=$ax_setting.ax_gift_bn size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+
+	  <tr>
+        <th><{t}>礼品卡货号：<{/t}></th>
+        <td><{input type="text" name='ax_sample_bn' value=$ax_setting.ax_sample_bn size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+
+	 <tr>
+        <th><{t}>AX文件前缀：<{/t}></th>
+        <td><{input type="text" name='ax_file_prefix' value=$ax_setting.ax_file_prefix size="40"}>      
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+	<tr>
+        <th><{t}>品牌：<{/t}></th>
+        <td>
+			<select name='ax_file_brand'>
+				<option value="PCD" <{if $ax_setting.ax_file_brand=='PCD'}>selected<{/if}> >迪奥</option>
+				<option value="GUE" <{if $ax_setting.ax_file_brand=='GUE'}>selected<{/if}>>娇兰</option>
+			</select>
+          <span class="notice-inline"></span>
+        </td>
+      </tr>
+     <!-- <tr>
+        <th><{t}>AX_test：<{/t}></th>
+        <td><{input type="textarea" name='ax_test'  style="width:600px;height:250px;"}>
+        </td>
+      </tr>-->
+    </tbody>
+  </table>
+  <div class="table-action">
+    <{button label=$___omeftp="保存配置"|t:'omeftp' onclick="new Event(event).stop();W.page('index.php?app=omeftp&ctl=admin_ftpsetting&act=test_up&'+$('whitelist').toQueryString());"}>
+   <!--<{button type="submit"  label=$___importexport="保存"|t:'site'}>--> 
+  </div>
+  </form>
+
+

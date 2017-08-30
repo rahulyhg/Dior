@@ -24,13 +24,11 @@
         <td class="item_name"><{$item.name}></td>
         <td class="item_addon"><{$item.addon}></td>
         <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="gift[obj][<{$obj.obj_id}>][]" />
-          <input atype="num" aid="<{$item.item_id}>" name="gift[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
-        <td class="item_price"><input name="gift[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" id="pr_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
+          <input atype="num" aid="<{$item.item_id}>" name="gift[num][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
+        <td class="item_price"><input name="gift[price][<{$item.item_id}>]" type="text" readonly="readonly" size="8" value="<{$item.price}>" vtype="required&&unsigned" id="pr_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
         <td class="item_op" objid="<{$obj.obj_id}>">
           <{if $item.delete == 'false'}>
-          <{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
-        <{else}>
-        <{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
+        无
       <{/if}>
       </tr>
       <{/foreach}>
@@ -62,25 +60,21 @@
         <td class="item_addon"><{$item.addon}></td>
         
         <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="gift[obj][<{$obj.obj_id}>][]" />
-          <input atype="num" aid="<{$item.item_id}>" name="gift[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="gift_num_<{$item.item_id}>"  <{if $item.delete == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$item.quantity}>" id="old_gift_nums_<{$item.item_id}>" /></td>
+          <input atype="num" aid="<{$item.item_id}>" name="gift[num][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="gift_num_<{$item.item_id}>"  <{if $item.delete == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$item.quantity}>" id="old_gift_nums_<{$item.item_id}>" /></td>
         
         <td class="gift_buy_nums">
         <{if $item.left_nums <= 0}>
-        <input aid="<{$item.item_id}>" name="gift[gift_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="gift_buy_nums_<{$item.item_id}>" disabled="true" />
+        <input aid="<{$item.item_id}>" name="gift[gift_buy_nums][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.left_nums}>" id="gift_buy_nums_<{$item.item_id}>" disabled="true" />
         <{else}>
-        <input atype="gift_num" aid="<{$item.item_id}>" name="gift[gift_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="gift_buy_nums_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotal_gift(this);" />
+        <input atype="gift_num" aid="<{$item.item_id}>" name="gift[gift_buy_nums][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.left_nums}>" id="gift_buy_nums_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotal_gift(this);" />
         <{/if}>
         <{if $item.make_nums}><br />(<font color="#f00;">已发货：<{$item.make_nums}></font>)<input type="hidden" value="<{$item.make_nums}>" id="split_gift_send_<{$item.item_id}>" /><{/if}>
         </td>
         
-        <td class="item_price"><input name="gift[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" id="pr_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="total();"<{/if}> /></td>
+        <td class="item_price"><input name="gift[price][<{$item.item_id}>]" type="text" readonly="readonly" size="8" value="<{$item.price}>" vtype="required&&unsigned" id="pr_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="total();"<{/if}> /></td>
         <td class="item_op" objid="<{$obj.obj_id}>">
         <{if empty($item.make_nums)}>
-            <{if $item.delete == 'false'}>
-            	<{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
-            <{else}>
-            	<{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_gift('{$item.item_id}')" }></td>
-            <{/if}>
+           无
         <{else}>
         	<span style="color:red;"><{if $item.left_nums <= 0}>已拆分完<{else}>部分拆分<{/if}></span>
         <{/if}>

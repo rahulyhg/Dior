@@ -81,6 +81,7 @@ class ome_event_receive_delivery extends ome_event_response{
             return $this->send_error('发货单状态为已取消不更新发货状态!', $msg_code, $data);
         }
         if ($delivery_data['status'] == 'succ' ) {
+		//	echo 'ii';exit;
             return $this->send_succ('发货单已发货!', $msg_code, $data);
         }
 
@@ -437,6 +438,8 @@ class ome_event_receive_delivery extends ome_event_response{
         if($soldIoLib->create(array('delivery_id'=>$deliveryInfo['delivery_id']), $data, $msg)){
             $soldSalesLib->create(array('delivery_id'=>$deliveryInfo['delivery_id'],'iostock'=>$data), $msg);
         }
+
+		
 
         // 事务提交
         kernel::database()->exec('commit');

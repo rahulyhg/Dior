@@ -688,7 +688,7 @@ class omeauto_auto_combine {
         //基础过滤条件[ExBOY 修改拆单 'ship_status'=>array(0, 2)]
         $filter = array('ship_status'=>array(0, 2),'process_status'=>array('unconfirmed', 'confirmed','splitting'),'status'=>'active','order_bn|noequal'=>'0','is_cod'=>$orderData['is_cod']);
         
-        if ($orderData['shop_type'] == 'shopex_b2b') {
+       /* if ($orderData['shop_type'] == 'shopex_b2b') {
         //分销单,对支持跨店合的参数无视,直接内置规则处理
             if ($combine_member_id) {
             //需判断同一用户，因分销没有实际客户信息，以无用户信息方式处理
@@ -714,7 +714,9 @@ class omeauto_auto_combine {
 
                 }
             }
-        }else if($orderData['shop_type'] == 'dangdang' && $orderData['is_cod']== 'true'){//当当，且是货到付款不合并
+        }*/if(true){
+			$filter['order_id'] = $order['order_id'];
+		}else if($orderData['shop_type'] == 'dangdang' && $orderData['is_cod']== 'true'){//当当，且是货到付款不合并
             $filter['order_id'] = $order['order_id'];
         }else if(($orderData['shop_type'] == 'amazon') && $orderData['self_delivery']== 'false'){
         //如果店铺类型是亚马逊，且不是自发货的不合并
@@ -770,7 +772,7 @@ class omeauto_auto_combine {
 
         //获取相关订单
        $row = app::get(self::__ORDER_APP)->model('orders')->getList('*', $filter);
-
+//echo "<pre>";print_r($row);exit;
         if (!empty($order['member_id'])) {
 
             if ($order['shop_type'] == 'shopex_b2b'){
@@ -787,11 +789,11 @@ class omeauto_auto_combine {
 
                 $tmp = app::get(self::__ORDER_APP)->model('orders')->getList('*',$tmp_filter );
 
-                $row = array_merge($row, $tmp);
+                //$row = array_merge($row, $tmp);
                 unset($tmp);
             }
         }
-
+//echo "<pre>";print_r($ids);exit;
         foreach ((array) $row as $o) {
             if (!in_array($o['order_id'], $ids)) {
                 if ($o['order_combine_idx'] == $orderIdx && $o['order_combine_hash'] == $orderHash) {
@@ -873,7 +875,7 @@ class omeauto_auto_combine {
      * @return Boolean
      * @param $splitting_product 拆分的商品列表 ExBOY
      */
-    public function mkDelivery($orderIds, $consignee, $corpId, $splitting_product = array()) {
+    public function mkDelivery($orderIds, $consignee, $corpId, $splitting_product = array(),$sync=false) {
 
         $is_part_split  = false;//[拆单]是否包含部分拆分订单 ExBOY
         $rows = app::get(self::__ORDER_APP)->model('orders')->getList('*', array('order_id' => $orderIds));
@@ -959,7 +961,7 @@ class omeauto_auto_combine {
                 $group->setBranchId($consignee['branch_id']);
                 unset($consignee['branch_id']);
                 $group->setDlyCorp($corp);
-                return $group->mkDelivery($consignee);
+                return $group->mkDelivery($consignee,$sync);
             }
         } else {
         

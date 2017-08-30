@@ -165,12 +165,26 @@ class ome_refund_apply
             $oOrderItems = &app::get('ome')->model('order_items');
             $oLoger = &app::get('ome')->model('operation_log');
             $oShop = &app::get('ome')->model ( 'shop' );
+			$order_id=$data['order_id'];
+			$arrOrderBn=$objOrder->db->select("SELECT o.pay_bn,p.trade_no,o.order_bn FROM sdb_ome_orders o LEFT JOIN sdb_ome_payments p ON o.order_id=p.order_id WHERE o.order_id='$order_id'");			
             $bcmoney = $mathLib->getOperationNumber($data['bcmoney']);//补偿费用
             $countPrice=0;
             $countPrice=$data['refund_money'];
             $totalPrice=0;
             $totalPrice=$countPrice+$bcmoney;
-            $refund_apply_bn = $refundapp->gen_id();
+			if($arrOrderBn['0']['pay_bn']=='cod'){
+			    //$refund_apply_bn = $refundapp->gen_id();
+				$refund_apply_bn = $arrOrderBn['0']['trade_no'];
+			}else{
+				if(empty($arrOrderBn['0']['trade_no'])){
+					$msg['result'] = false;
+					$msg['msg'] = '不存在的交易流水号';
+					return $msg;
+				}
+				$refund_apply_bn = $arrOrderBn['0']['trade_no'];
+			}
+			$refund_apply_bn=$refundapp->checkRefundApplyBn($refund_apply_bn);
+           //echo "<pre>";print_r($refund_apply_bn);exit();
             if ($data['source'] &&  in_array($data['source'],array('archive'))) {
                 $objOrder = &app::get('archive')->model('orders');
                 $source = $data['source'];
@@ -178,6 +192,9 @@ class ome_refund_apply
                 $objOrder = &app::get('ome')->model('orders');
             }
             $orderdata = $objOrder->order_detail($data['order_id']);
+			if($data['payment']=="3"){
+				$data['payment']=4;
+			}
             $data=array(
                  'return_id'=>$data['return_id'],
                  'refund_apply_bn'=>$refund_apply_bn,
@@ -190,11 +207,15 @@ class ome_refund_apply
                  'money'=>$totalPrice,
                 'bcmoney'=>$bcmoney,
                  'apply_op_id'=>kernel::single('desktop_user')->get_id(),
-                 'payment'=>is_numeric($data['payment'])?$data['payment']:null,
+                 'payment'=>is_numeric($data['payment'])?$data['payment']:4,
                  'memo'=>$data['memo'],
                  'verify_op_id' =>kernel::single('desktop_user')->get_id(),
                  'addon' => serialize(array('return_id'=>$data['return_id'])),
                  'refund_refer' => $refund_refer,
+				 'BeneficiaryName'=>$data['BeneficiaryName'],//收款人姓名
+				 'BeneficiaryBankName'=>$data['BeneficiaryBankName'],//收款人账号
+				 'isk'=>$data['isk'],
+				 'iss'=>$data['iss'],
             );
             if ($source && in_array($source,array('archive'))) {
                 $data['source'] = 'archive';
@@ -217,11 +238,28 @@ class ome_refund_apply
             }
             
             $data['create_time'] = time();
-            
+            // echo "<pre>";print_r($data);exit();
             if($refundapp->save($data))
             {   //将订单更改为退款申请中
-
-                 kernel::single('ome_order_func')->update_order_pay_status($data['order_id']);
+				$z_order_bn=$arrOrderBn['0']['order_bn'];
+				
+				//$sql="SELECT d.delivery_id FROM sdb_ome_orders o LEFT JOIN sdb_ome_delivery_order od ON od.order_id=o.order_id LEFT JOIN sdb_ome_delivery d ON d.delivery_id=od.delivery_id WHERE o.order_id='$order_id' AND d.status='succ'";
+				//$arrIsDelivery=$objOrder->db->select($sql);
+				//if(!empty($arrIsDelivery[0]['delivery_id'])){
+					$z_refund_id=$data['apply_id'];
+					
+					
+				//}
+				
+				if($data['payment']=="4"){
+					kernel::single('omemagento_service_order')->update_status($z_order_bn,'refund_required');
+					
+				}else{
+					kernel::single('omemagento_service_order')->update_status($z_order_bn,'refunding');
+				}
+				app::get('ome')->model('refund_apply')->sendRefundToM($z_refund_id,$z_order_bn,$totalPrice);
+                
+			    kernel::single('ome_order_func')->update_order_pay_status($data['order_id']);
                  /*if ($data['return_id'])
                  {
                      //插入return_refund_apply

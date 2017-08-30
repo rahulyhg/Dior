@@ -1,0 +1,30 @@
+<form method="post" action="index.php?app=wms&ctl=admin_return_rchange&act=do_upload_qa" id="form-process">  
+<div class="tableform">
+  <div class="division">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<input type="hidden" name="reship_id" value="<{$reship_id}>">
+      <tbody>
+      <tr>
+        <th style="width:10%;"><{t}>质检备注：<{/t}></th>
+        <td style="align:center;" colspan="3"><{input type="textarea" required name="qa_memo" style="width:450px;height:100px;" value=$info.qa_memo}></td>
+      </tr>
+      <tr>
+        <th><{t}>质检凭证：<{/t}></th>
+        <td><{input type="image" name="image1" value=$info.image1 width="120" height="120"}> </td><td><{input type="image" value=$info.image2 name="image2" width="120" height="120"}> </td><td><{input type="image" value=$info.image3 name="image3"  width="120" height="120"}></td>
+      </tr>
+
+	  <tr>
+        <th><{t}><{/t}></th>
+        <td><span class="fontcolorOrange"></span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-action">
+        <{button label="确定" class="btn-primary"  id="btn-process-succ" type="submit"}>
+    </div>
+</div>
+</form>
+<script>
+
+</script>

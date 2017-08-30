@@ -67,6 +67,10 @@ class wms_ctl_admin_stock extends desktop_controller{
                 'href'=>'index.php?app=wms&ctl=admin_stock&act=batch_safe_store',
                 'target' => "dialog::{width:700,height:400,title:'批量设置安全库存'}",
             ),
+			array(
+                'label' => '库存同步',
+                'submit'=>'index.php?app=wms&ctl=admin_stock&act=sync_store',
+            ),
 
         );
         $this->finder('wms_mdl_products',array(
@@ -291,6 +295,20 @@ class wms_ctl_admin_stock extends desktop_controller{
         }
         return $safe_store;
     }
+
+	public function sync_store(){
+		$this->begin('index.php?app=wms&ctl=admin_stock&act=index');
+
+		$productIds = $_POST['product_id'];
+		$mdl_product = app::get('ome')->model('products');
+		$pinfo = $mdl_product->getList('*',array('product_id'=>$productIds));
+		$obj = kernel::single('omemagento_service_product');
+		foreach($pinfo as $row){
+			$obj->update_store($row['bn'],($row['store']-$row['store_freeze']));
+		}
+		$this->end(true,'已同步！');
+
+	}
 
 }
 ?>

@@ -29,11 +29,7 @@
           <td class="goods_price"><input type="text" id="giftpackagepr_<{$obj.goods_id}>" aid="<{$obj.goods_id}>" value="<{$obj.price}>" name="giftpackage[price][<{$obj.obj_id}>]" size="8" <{if $giftpackage_del == 'true'}>disabled="true"<{/if}> onchange="total();" /></td>
           <td class="goods_op">
           <{if empty($item.make_nums)}>
-              <{if $giftpackage_del == 'true'}>
-                <{button type="button" label="恢复" id="bt_{$obj.goods_id}" onclick="del_giftpackage('{$obj.goods_id}')" }>
-              <{else}>
-                <{button type="button" label="删除" id="bt_{$obj.goods_id}" onclick="del_giftpackage('{$obj.goods_id}')" }>
-              <{/if}>
+             无
           <{else}>
           	  <span style="color:red;"><{if $obj.left_nums <= 0}>已拆分完<{else}>部分拆分<{/if}></span>
           <{/if}>

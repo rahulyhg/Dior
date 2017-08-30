@@ -1,0 +1,14 @@
+<desktop>
+    <permissions>
+		<permission id="gift_card_log">日志</permission>
+		<permission id="gift_card_setting">配置</permission>
+    </permissions>
+	
+    <workground name="系统" id="setting_tools" order="800">
+		<menugroup name="GiftCard">
+		    <menu controller='admin_setting' action='index' permission='gift_card_setting' display='true' order='3000000'>配置</menu>
+            <menu controller='admin_logs' action='index' permission='gift_card_log' display='true' order='3000100'>日志</menu>
+        </menugroup>
+		
+    </workground>
+</desktop>

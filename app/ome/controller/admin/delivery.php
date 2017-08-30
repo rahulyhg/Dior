@@ -128,6 +128,12 @@ class ome_ctl_admin_delivery extends desktop_controller{
         $Objdly  = &app::get('ome')->model('delivery');
         $delivery_id = $_POST['delivery_id'];
         $flag = $_POST['flag'];
+		
+		if(is_array($delivery_id)){
+			$ome_delivery_id = $delivery_id[0];
+		}
+		kernel::single('omeftp_service_back')->delivery($ome_delivery_id,$memo);
+		
         if ($delivery_id) {
             if ($flag == 'OK') {//合单时拆分
                 foreach ($delivery_id as $deliveryid ) {
@@ -146,7 +152,37 @@ class ome_ctl_admin_delivery extends desktop_controller{
                 }
             }
         }
-        
+		$objDelOrder = app::get('ome')->model('delivery_order');
+		$objOrder = app::get('ome')->model('orders');
+		$objShop = app::get('ome')->model('shop');
+
+		$order_id = $objDelOrder->getList('*',array('delivery_id'=>$delivery_id));
+		$order_id = $order_id[0]['order_id'];
+		$orderInfo = $objOrder->dump($order_id);
+		if($orderInfo['shipping']['is_cod']=='true'){
+			define('FRST_TRIGGER_OBJECT_TYPE','订单：订单人工取消');
+            define('FRST_TRIGGER_ACTION_TYPE','ome_ctl_admin_order：do_cancel');
+            $memo = "订单被取消 发货拦截";
+            $mod = 'async';
+			$sync_rs = $objOrder->cancel($order_id,$memo,true,$mod);
+			$megentoInstance = kernel::service('service.magento_order');
+			$megentoInstance->update_status($orderInfo['order_bn'],'canceled');
+		}else{
+			$objpayemntCfg = app::get('ome')->model('payment_cfg');
+			$payment_id = $objpayemntCfg->getList('id',array('pay_bn'=>$orderInfo['pay_bn']));
+			$shop_id = $objShop->getList('shop_id');
+			$data = array(
+					'order_id'=>$order_id,
+					'shop_id'=>$shop[0]['shop_id'],
+					'order_bn'=>$orderInfo['order_bn'],
+					'pay_type'=>'online',
+					'refund_money' => $orderInfo['payed'],
+					'payment'=>$payment_id[0]['id'],
+				);
+			$return = kernel::single('ome_refund_apply')->refund_apply_add($data);
+			kernel::single('ome_order_func')->update_order_pay_status($_POST['order_id']);
+
+		}
         
         echo json_encode($rs);
     }

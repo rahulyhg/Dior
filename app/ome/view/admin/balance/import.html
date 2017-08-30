@@ -1,0 +1,50 @@
+<style type="text/css">
+.gridlist tr th{width: 100px;height: 30px;text-align: right;}
+</style>
+<form action='index.php?app=ome&ctl=admin_statement&act=do_import&finder_id=<{$finder_id}>' method='post' target="uploadframe" enctype="multipart/form-data" id="import_form" class="tableform">
+	<h4><{t}>上传文件,请上传CSV格式文件！<{/t}>
+	</h4>
+	<div class="division" >
+    <table border="0" cellspacing="0" class="gridlist" cellpadding="0">
+        <{foreach from=$import_input item=item key=key}>
+        <tr>
+            <th><{$item.label}>：</th>
+            <td><{$item.input}></td>
+        </tr>
+        <{/foreach}>
+        <tr>
+            <th>导入文件：</th>
+            <td>
+            	<input type='file' name='import_file' id='ImportCSV'/>
+            </td>
+        </tr>
+    </table>
+    <{toinput from=$data}>
+	</div>
+	<div class="table-action">
+		<{button label=$___desktop="导入"|t:'desktop' id="ImportBtn"  type="submit" }>
+	</div>
+</form>
+<script>
+(function(){
+	var state;
+	$('ImportBtn').addEvent('click',function(e){
+		if(state||!$('ImportCSV').value.length)return false;
+		state=true;
+		this.style.cursor='not-allowed';
+
+		
+	});
+	$('import_form').store('target',{
+		onSuccess:function(response){
+			
+			alert('dd');
+		}
+	});
+	$('ImportCSV').addEvent('change',function(e){
+		state=false;
+		$('ImportBtn').style.cursor='pointer';
+	});
+
+})();
+</script>

@@ -1,6 +1,7 @@
 <?php
 class ome_finder_orders{
     var $detail_basic = '基本信息';
+	var $detail_card = '礼品卡';
     var $detail_goods = '订单明细';
     var $detail_pmt = '优惠方案';
     var $detail_bill = '收退款记录';
@@ -28,8 +29,10 @@ class ome_finder_orders{
             unset($this->column_mark_text);
         }
     }
-
-    function detail_basic($order_id){
+	
+	
+    
+	function detail_basic($order_id){
         $render = app::get('ome')->render();
         $oOrders = &app::get('ome')->model('orders');
         $oOperation_log = &app::get('ome')->model('operation_log');
@@ -189,10 +192,18 @@ class ome_finder_orders{
             $render->pagedata['operate'] = true;
             $render->pagedata['act_confirm'] = true;
         }
-
+		if($render->pagedata['order']['is_w_card']=='true'){
+			$render->pagedata['order']['is_w']=1;
+		}
+		if($render->pagedata['order']['is_card']=='true'){
+			$render->pagedata['order']['is_c']=1;
+		}
+  
         return $render->fetch('admin/order/detail_basic.html');
     }
 
+	
+	
     function detail_goods($order_id){
         $render = app::get('ome')->render();
         $oOrder = &app::get('ome')->model('orders');
@@ -200,6 +211,37 @@ class ome_finder_orders{
         $item_list = $oOrder->getItemList($order_id,true);
         $item_list = ome_order_func::add_getItemList_colum($item_list);
         ome_order_func::order_sdf_extend($item_list);
+		// echo "<pre>";print_r($item_list);exit();
+		if(!empty($item_list['pkg'])){
+			$pkg=array();
+			$arrPkg=$item_list['pkg'];
+			$i=0;
+			foreach($arrPkg as $k=>$v){
+				$pkg_id=$v['pkg_id'];
+				$pkg[$pkg_id]['pkg_name']=$v['pkg_name'];
+				$pkg[$pkg_id]['pkg_bn']=$v['pkg_bn'];
+				$pkg[$pkg_id]['pkg_price']=$v['pkg_price'];
+				$pkg[$pkg_id]['pkg_num']=$v['pkg_num'];
+				foreach($v['order_items'] as $item){
+					$pkg[$pkg_id]['order_items'][$i]['name']=$item['name'];
+					$pkg[$pkg_id]['order_items'][$i]['bn']=$item['bn'];
+					$pkg[$pkg_id]['order_items'][$i]['addon']=$item['addon'];
+					$pkg[$pkg_id]['order_items'][$i]['unit']=$item['unit'];
+					$pkg[$pkg_id]['order_items'][$i]['price']=$item['price'];
+					$pkg[$pkg_id]['order_items'][$i]['true_price']=$item['true_price'];
+					$pkg[$pkg_id]['order_items'][$i]['ax_pmt_price']=$item['ax_pmt_price'];
+					$pkg[$pkg_id]['order_items'][$i]['sale_price']=$item['sale_price'];
+					$pkg[$pkg_id]['order_items'][$i]['quantity']=$item['quantity'];
+					$pkg[$pkg_id]['order_items'][$i]['pmt_price']=$item['pmt_price'];
+					$pkg[$pkg_id]['order_items'][$i]['sendnum']=$item['sendnum'];
+					$pkg[$pkg_id]['order_items'][$i]['return_num']=$item['return_num'];
+					$i++;
+				}
+			}
+			unset($item_list['pkg']);
+			$item_list['pkg']=$pkg;
+		}
+		
         $orders = $oOrder->getRow(array('order_id'=>$order_id),'shop_type,order_source');
         $is_consign = false;
         #淘宝代销订单增加代销价
@@ -219,11 +261,26 @@ class ome_finder_orders{
 
         $render->pagedata['is_consign'] = ($is_consign > 0)?true:false;
         $render->pagedata['configlist'] = $configlist;
-        $render->pagedata['item_list'] = $item_list;
+        $render->pagedata['item_list'] = $item_list;//echo "<pre>";print_r($item_list);exit();
         $render->pagedata['object_alias'] = $oOrder->getOrderObjectAlias($order_id);
         return $render->fetch('admin/order/detail_goods.html');
     }
-
+	
+	function detail_card($order_id){
+		$render = app::get('ome')->render();
+		$oOrders = &app::get('ome')->model('orders');
+		$arrCard = $oOrders->getList('*',array('order_id'=>$order_id));
+		
+		if($arrCard['0']['is_card']){
+			$render->pagedata['arrCard'] = $arrCard['0'];
+		}else{
+			$render->pagedata['arrCard']=1;
+		}
+		
+		return $render->fetch('admin/order/detail_card.html');
+		//echo "<pre>";print_r($arrCard);exit();
+	}
+	
     function detail_pmt($order_id){
         $render = app::get('ome')->render();
         $oOrder_pmt = &app::get('ome')->model('order_pmt');
@@ -600,7 +657,7 @@ class ome_finder_orders{
         $render->pagedata['return'] = $return;
         return $render->fetch('admin/order/detail_aftersale.html');
     }*/
-    var $addon_cols = "print_status,refund_status,confirm,dt_begin,status,process_status,tax_no,ship_status,op_id,group_id,mark_text,auto_status,custom_mark,mark_type,tax_company,createtime,paytime,sync,pay_status,is_cod,source";
+    var $addon_cols = "print_status,member_id,refund_status,confirm,dt_begin,status,process_status,tax_no,ship_status,op_id,group_id,mark_text,auto_status,custom_mark,mark_type,tax_company,createtime,paytime,sync,pay_status,is_cod,source";
     var $column_confirm='操作';
     var $column_confirm_width = "120";
 
@@ -907,7 +964,23 @@ EOF;
         $ret .= $this->_getViewPanel('快递单', $expreColor);
         return $ret;
     }
+	
+	var $column_users_type = "客户类型";
+    var $column_users_type_width = "65";
 
+    function column_users_type($row) {
+		$objMember = app::get('ome')->model('members');
+		$member_id=$row['_0_member_id'];
+		$arrMember=$objMember->db->select("SELECT m_memeber_num FROM sdb_ome_members WHERE member_id='$member_id'");
+		$m_memeber_num=$arrMember['0']['m_memeber_num'];//getList('member_id,m_member_num',array('member_id'=>$member_id));
+		if(empty($m_memeber_num)||$m_memeber_num==""){
+			return '访客';
+		}else{
+			return '会员';
+		}
+		//echo "<pre>";print_r($arrMember);exit();	
+	}
+	
     public function _getViewPanel($caption, $color) {
         if ($color == '#eeeeee')
             $caption .= '未打印';

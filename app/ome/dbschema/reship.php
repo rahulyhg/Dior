@@ -282,6 +282,15 @@ $db['reship']=array (
       'filtertype' => 'normal',
       'in_list' => true,
     ),
+	'custom_mark' =>
+    array (
+      'type' => 'longtext',
+      'label' => '客服留言',
+      'comment' => '客服留言',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'in_list' => true,
+    ),
     'tmoney' =>
     array (
       'type' => 'money',
@@ -414,6 +423,15 @@ $db['reship']=array (
       'editable' => false,
 
     ),
+	'return_reason' =>
+    array (
+      'type' => 'varchar(32)',
+      'label' => '退货原因',
+      'is_title' => true,
+      'width' => 125,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+    ),
     'out_iso_bn' =>
     array (
       'type' => 'varchar(32)',
@@ -438,6 +456,32 @@ $db['reship']=array (
       'label' => '单据审核时间',
       'in_list' => true,
     ),
+	'qa_memo'=>array(
+		'type' => 'longtext',
+		'label' => '质检备注',
+		'comment' => '质检备注',
+		'editable' => false,
+		'filtertype' => 'normal',
+		'in_list' => true,
+	),
+	'image1'=>array(
+		'type' => 'varchar(50)',
+		'label' => '质检凭证',
+		'comment' => '质检凭证',
+		'editable' => false,
+	),
+	'image2'=>array(
+		'type' => 'varchar(50)',
+		'label' => '质检凭证',
+		'comment' => '质检凭证',
+		'editable' => false,
+	),
+	'image3'=>array(
+		'type' => 'varchar(50)',
+		'label' => '质检凭证',
+		'comment' => '质检凭证',
+		'editable' => false,
+	),
   ),
   'comment' => '退换货单表',
   'index' =>

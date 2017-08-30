@@ -52,6 +52,52 @@ class wms_finder_products{
         $num = $productObj->countBranchProduct($product_id,'arrive_store');
         return (int)$num;
     }
+
+
+	var $column_store='可用库存';
+    var $column_store_width='60';
+    var $column_store_order = COLUMN_IN_TAIL;//排在列尾
+    function column_store($row){
+        $product_id = $row[$this->col_prefix.'product_id'];
+        
+		$objProduct = app::get('ome')->model('branch_product');
+		$store_info = $objProduct->getList('*',array('product_id'=>$row['product_id']));
+		//echo "<pre>";print_r($store_info);exit;
+		$store = 0;
+		foreach($store_info as $val){
+			$store+=$val['store_freeze'];
+		}
+		
+		
+		return $row['store']-$store;
+    }
+
+	var $column_unconfirm_store='未审单库存';
+    var $column_unconfirm_store_width='60';
+    var $column_unconfirm_store_order = COLUMN_IN_TAIL;//排在列尾
+    function column_unconfirm_store($row){
+        $product_id = $row[$this->col_prefix.'product_id'];
+        
+		$sql = "SELECT sum(sdb_ome_order_items.nums) as nums from sdb_ome_order_items LEFT JOIN sdb_ome_orders  ON sdb_ome_orders.order_id=sdb_ome_order_items.order_id WHERE product_id='".$row['product_id']."' and process_status IN ('confirmed','unconfirmed')";
+
+		$nums = app::get('ome')->model('orders')->db->select($sql);
+		return $nums[0]['nums'];
+    }
+
+	var $column_frezz_store='冻结库存';
+    var $column_frezz_store_width='60';
+    var $column_frezz_store_order = COLUMN_IN_TAIL;//排在列尾
+    function column_frezz_store($row){
+        $product_id = $row[$this->col_prefix.'product_id'];
+		$objProduct = app::get('ome')->model('branch_product');
+		$store_info = $objProduct->getList('*',array('product_id'=>$row['product_id']));
+		//echo "<pre>";print_r($store_info);exit;
+		$store = 0;
+		foreach($store_info as $val){
+			$store+=$val['store_freeze'];
+		}
+		return $store;
+    }
 }
 
 ?>

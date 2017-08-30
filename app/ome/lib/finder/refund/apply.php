@@ -6,6 +6,18 @@ class ome_finder_refund_apply{
             
         }
     }
+	
+	var $column_edit_cod = '订单操作';
+    function column_edit_cod($row){
+		$finder_id = $_GET['_finder']['finder_id'];
+		if($_GET['view']=='10'){
+			if($row['status']=="0"||$row['status']=="1"||$row['status']=="2"||$row['status']=="3"||$row['status']=="6"){
+			    return "<a href='javascript:void(0);' onclick=\"new Dialog('index.php?app=ome&ctl=admin_refund_apply&act=editCod&p[0]={$row[apply_id]}&finder_id={$finder_id}',{width:500,height:400,title:'编辑退款单'}); \">编辑</a>";
+		    }
+		}
+       
+    }
+	
     var $detail_basic = "退款申请详情";
     var $detail_mark_text = '卖家备注';
     var $detail_return_problem = '售后问题类型';

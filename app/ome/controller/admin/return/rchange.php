@@ -187,6 +187,11 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 
         $this->begin();
         $post = kernel::single('base_component_request')->get_params(true);
+		
+		if($post['shop_type']=="minishop"){
+			$this->end(false,'小程序订单不允许退货!');
+		}
+		
         $Oreship = $this->app->model('reship');
         $reshipinfo = $Oreship->dump($post['reship_id'],'is_check');
         $post['is_check'] = $reshipinfo['is_check'];
@@ -222,6 +227,13 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
         }
 
         $reship = $Oreship->getList('reship_id',array('reship_bn'=>$reship_bn),0,1);
+		
+		//发给ax
+		$objDeliveryOrder = app::get('ome')->model('delivery_order');
+		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$post['order_id']));
+		//echo "<pre>";print_r($delivery_id);exit;
+		$delivery_id = array_reverse($delivery_id);
+		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id']);
 
         $params['reship_id'] = $reship[0]['reship_id'];
 
@@ -1188,6 +1200,12 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
                         break;
                     }
                 }else{
+					if(ereg("^[0-9]*[1-9][0-9]*$",$post['return']['num'][$pbn])!=1){
+						 $error = array(
+                            'error' => "申请数量请填写正整数！",
+                        );
+						 break;
+					}
                     if ($post['return']['num'][$pbn] > $post['return']['effective'][$pbn]) {
                         $error = array(
                             'error' => "货品【{$pbn}】的申请数量大于可退入数量!",

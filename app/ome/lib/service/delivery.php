@@ -20,7 +20,7 @@ class ome_service_delivery{
      * @access public
      * @param int $delivery_id 发货单ID
      */
-    public function delivery($delivery_id){
+    public function delivery($delivery_id,$sync=false){
         $deliveryModel = $this->app->model('delivery');
         $delivery = $deliveryModel->dump($delivery_id);
 

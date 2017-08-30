@@ -47,8 +47,8 @@
         <td><{$item.buyer_payment}></td>
         <{/if}>
         <td><{$item.price|cur}></td>
-        <td><{$item.sale_price/$item.quantity|cur}></td>
-        <td><{$item.pmt_price/$item.quantity|cur}></td>
+        <td><{$item.true_price|cur}></td>
+        <td><{$item.ax_pmt_price/$item.quantity|cur}></td>
         <td><{$item.quantity}></td>        <td><{$item.sendnum}></td>
         <td><{$item.return_num}></td>
       </tr>

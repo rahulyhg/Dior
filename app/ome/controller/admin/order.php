@@ -25,7 +25,7 @@ class ome_ctl_admin_order extends desktop_controller{
         }elseif ($this->order_type == 'active') {
             $sub_menu = $this->_view_active();
         }else{
-           //$sub_menu = $this->_viewsAll(); //去掉历史订单上面的tab
+           $sub_menu = $this->_viewsAll(); //去掉历史订单上面的tab
         }
         return $sub_menu;
     }
@@ -33,27 +33,12 @@ class ome_ctl_admin_order extends desktop_controller{
     function _viewsAll(){
         $mdl_order = $this->app->model('orders');
         $base_filter = array('disabled'=>'false','is_fail'=>'false');
+
+		$start_time = strtotime(date('Y-m-d',time()));
+		$end_time = $start_time+60*60*24;
         $sub_menu = array(
             0 => array('label'=>app::get('base')->_('全部'),'filter'=>array('disabled'=>'false','is_fail'=>'false', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
-            1 => array('label'=>app::get('base')->_('货到付款'),'filter'=>array('is_cod'=>'true','status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
-            2 => array('label'=>app::get('base')->_('待支付'),'filter'=>array('pay_status' => array('0','3'),'status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
-            3 => array('label'=>app::get('base')->_('已支付'),'filter'=>array('pay_status' => 1,'status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
-            4 => array(
-                'label'=>app::get('base')->_('待处理'),
-                'filter'=>array(
-                    'abnormal'=>'false',
-                    'order_confirm_filter'=>'group_id > 0',
-                    'process_status'=>array('unconfirmed','confirmed','splitting'),
-                    'status'=>'active'),
-                'optional'=>false),
-            5 => array(
-                'label'=>app::get('base')->_('已处理'),
-                'filter'=>array('abnormal'=>'false','order_confirm_filter'=>'group_id > 0','process_status'=>array('splited','remain_cancel'),'status' => 'active'),
-                'optional'=>false),
-            6 => array('label'=>app::get('base')->_('待发货'),'filter'=>array('ship_status' =>array('0','2'),'status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
-            7 => array('label'=>app::get('base')->_('已发货'),'filter'=>array('ship_status' =>'1','status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
-            8 => array('label'=>app::get('base')->_('取消'),'filter'=>array('process_status' => 'cancel'),'optional'=>false),
-            9 => array('label'=>app::get('base')->_('暂停'),'filter'=>array('pause' => 'true','status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
+            1 => array('label'=>app::get('base')->_('无应答'),'filter'=>array('is_cod' => 'true','status' => 'active','process_status|noequal'=>'is_retrial','createtime|between'=>array($start_time,$end_time),'mark_text|has'=>'客户无应答'),'optional'=>false),
         );
         $i=0;
         foreach($sub_menu as $k=>$v){
@@ -73,6 +58,13 @@ class ome_ctl_admin_order extends desktop_controller{
     function _view_active(){
         $mdl_order = $this->app->model('orders');
         $base_filter = array('disabled'=>'false','is_fail'=>'false','archive'=>0, 'process_status|noequal'=>'is_declare');//跨境申报 ExBOY
+
+		$start_time = strtotime(date('Y-m-d',time()));
+		$end_time = $start_time+60*60*24;
+		//echo "<pre>";print_r($start_time);
+		///echo "<pre>";print_r($end_time);
+		//echo "<pre>";print_r(date('Y-m-d H:i:s',$start_time));
+		//echo "<pre>";print_r(date('Y-m-d H:i:s',$end_time));exit;
         $sub_menu = array(
             0 => array('label'=>app::get('base')->_('全部'),'filter'=>$base_filter,'optional'=>false),
             1 => array('label'=>app::get('base')->_('货到付款'),'filter'=>array('is_cod'=>'true','status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
@@ -94,6 +86,7 @@ class ome_ctl_admin_order extends desktop_controller{
             7 => array('label'=>app::get('base')->_('已发货'),'filter'=>array('ship_status' =>'1','status' => 'active', 'process_status|noequal'=>'is_retrial'),'optional'=>false),
             8 => array('label'=>app::get('base')->_('取消'),'filter'=>array('process_status' => 'cancel'),'optional'=>false),
             9 => array('label'=>app::get('base')->_('暂停'),'filter'=>array('pause' => 'true'),'optional'=>false),
+			10 => array('label'=>app::get('base')->_('无应答'),'filter'=>array('is_cod' => 'true','status' => 'active','process_status|noequal'=>'is_retrial','createtime|between'=>array($start_time,$end_time),'mark_text|has'=>'客户无应答'),'optional'=>false),
         );
         $i=0;
         foreach($sub_menu as $k=>$v){
@@ -107,6 +100,7 @@ class ome_ctl_admin_order extends desktop_controller{
             $sub_menu[$k]['addon'] = $mdl_order->viewcount($v['filter']);
             $sub_menu[$k]['href'] = 'index.php?app=ome&ctl='.$_GET['ctl'].'&act='.$_GET['act'].'&view='.$i++;
         }
+		//echo "<pre>";print_r($sub_menu);exit;
         return $sub_menu;
     }
 
@@ -159,6 +153,7 @@ class ome_ctl_admin_order extends desktop_controller{
         $base_filter = array(
             'assigned' => 'notassigned',
             'abnormal'=>'false',
+
             'is_fail'=>'false',
             'ship_status'=>array('0', '2'),//部分发货也显示  ExBOY
             'process_status|noequal'=>'cancel',
@@ -195,7 +190,8 @@ class ome_ctl_admin_order extends desktop_controller{
      * 缓存区订单标签
      */
     function _view_buffer() {
-
+		$start_time = strtotime(date('Y-m-d',time()));
+		$end_time = $start_time+60*60*24;
         $mdl_order = $this->app->model('orders');
         $base_filter = array(
             'assigned' => 'buffer',//ExBOY加入SQL判断
@@ -212,6 +208,7 @@ class ome_ctl_admin_order extends desktop_controller{
             1 => array('label'=>app::get('base')->_('货到付款'),'filter'=>array('is_cod'=>'true'),'optional'=>false),
             2 => array('label'=>app::get('base')->_('待支付'),'filter'=>array('pay_status' => array('0','3')),'optional'=>false),
             3 => array('label'=>app::get('base')->_('已支付'),'filter'=>array('pay_status' => 1),'optional'=>false),
+			4 => array('label'=>app::get('base')->_('无应答'),'filter'=>array('is_cod'=>'true','createtime|between'=>array($start_time,$end_time),'mark_text|has'=>'客户无应答'),'optional'=>false),
         );
         $i=0;
         foreach($sub_menu as $k=>$v){
@@ -443,7 +440,7 @@ class ome_ctl_admin_order extends desktop_controller{
             'use_buildin_filter'=>true,
             'use_view_tab'=>true,
             'finder_aliasname' => 'order_view'.$op_id,
-            'finder_cols' => 'order_bn,shop_id,total_amount,column_print_status,process_status,is_cod,pay_status,ship_status,payment,shipping,logi_id,logi_no,createtime,paytime,mark_type',
+            'finder_cols' => 'order_bn,shop_id,total_amount,column_print_status,column_users_type,process_status,is_cod,pay_status,ship_status,payment,shipping,logi_id,logi_no,createtime,paytime,mark_type',
             'base_filter' => $base_filter,
        );
 
@@ -490,7 +487,7 @@ class ome_ctl_admin_order extends desktop_controller{
             'use_buildin_filter'=>true,
             'use_view_tab'=>true,
             'finder_aliasname' => 'order_view'.$op_id,
-            'finder_cols' => 'order_bn,shop_id,total_amount,column_print_status,process_status,is_cod,pay_status,ship_status,payment,shipping,logi_id,logi_no,createtime,paytime,mark_type',
+            'finder_cols' => 'order_bn,shop_id,total_amount,column_print_status,column_users_type,process_status,is_cod,pay_status,ship_status,payment,shipping,logi_id,logi_no,createtime,paytime,mark_type',
             'base_filter' => $base_filter,
        );
 
@@ -568,6 +565,10 @@ class ome_ctl_admin_order extends desktop_controller{
                          'submit' => 'index.php?app=ome&ctl=admin_order&act=order_recover&action=recover',
                          'target' => 'dialog::{width:400,height:200,title:\'回收到未分派\'}'
                          ),
+					  array(
+                        'label' => '退回暂存区',
+                        'submit' => 'index.php?ctl=admin_order&app=ome&act=order_buffer&flag=dispatch',
+                        'confirm' => '您确认将选择的待处理订单退回到“订单暂存区”吗？退回到“订单暂存区”后，需要您通过“未分派订单”栏目的“获取订单”功能重新获取！',)
                 );
                 $this->title = '已分派的订单';
                 $finder_aliasname = "order_dispatch_assigned";
@@ -775,7 +776,18 @@ class ome_ctl_admin_order extends desktop_controller{
             $this->base_filter['abnormal'] = "false";
             $this->base_filter['is_fail'] = 'false';
 //            $this->base_filter['order_confirm_filter'] = "(is_cod='true' OR pay_status in ('1','4','5'))";
-
+			/*$this->action = array(
+                    array(
+                        'label' => 'COD路由推送',
+                        'href' => 'index.php?app=ome&ctl=admin_order&act=doSendToWms',
+                        'target' => "dialog::{width:500,height:300,title:'订单推送'}",
+                    ),
+					array(
+                        'label' => 'COD模拟发货',
+                        'href' => 'index.php?app=ome&ctl=admin_order&act=doSendFaHuo',
+                        'target' => "dialog::{width:500,height:300,title:'模拟发货'}",
+                    ),
+                );*/
             if(!isset($_GET['view'])){
                 $this->base_filter['process_status'] = array('splited','remain_cancel','cancel');
             }
@@ -799,7 +811,7 @@ class ome_ctl_admin_order extends desktop_controller{
                'use_buildin_filter'=>true,
                'orderBy' => 'createtime desc',
                 'finder_aliasname' => 'order_confirm_myown'.$op_id,
-                'finder_cols' => '_func_0,order_bn,shop_id,member_id,column_print_status,ship_name,ship_area,total_amount,op_id,group_id,process_status,is_cod,pay_status,ship_status,logi_id,logi_no,createtime,paytime,dispatch_time',
+                'finder_cols' => '_func_0,order_bn,shop_id,member_id,column_users_type,column_print_status,ship_name,ship_area,total_amount,op_id,group_id,process_status,is_cod,pay_status,ship_status,logi_id,logi_no,createtime,paytime,dispatch_time',
             ));
         }elseif($_GET['flt'] == 'ourgroup'){
             $this->order_type = 'ourgroup';
@@ -854,6 +866,58 @@ class ome_ctl_admin_order extends desktop_controller{
         }
     }
 
+	public function doSendToWms(){
+		 $this->display("admin/order/doSendToWms.html");
+	}
+	
+	public function doSendFaHuo(){
+		 $this->display("admin/order/doSendToFaHuo.html");
+	}
+	
+	public function saveSendFaHuo(){
+		$url='http://erp-preprod.guerlain.d1m.cn/index.php/api';
+		$order_bn=$_POST['strOrders'];
+		$d_bn=app::get('ome')->model('orders')->db->select("SELECT d.delivery_bn FROM sdb_ome_orders O LEFT JOIN sdb_ome_delivery_order DO ON DO.order_id=O.order_id LEFT JOIN sdb_ome_delivery d ON d.delivery_id=DO.delivery_id WHERE O.order_bn='$order_bn'");
+		 $task=time();
+		$d_bn=$d_bn['0']['delivery_bn'];
+		$logi_no=rand(1,9).rand(1,9).rand(1,9).rand(1,9).rand(1,9).rand(1,9);
+		//echo "<pre>";print_r($d_bn);exit();
+		$string='delivery_bn='.$d_bn.'&logi_no='.$logi_no.'&logi_id=EMS&status=delivery&weight=22&method=wms.delivery.status_update&node_id=selfwms&task='.$task;
+		
+		$ch = curl_init();//初始化一个cURL会话
+
+          
+            curl_setopt($ch, CURLOPT_URL,$url);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+           curl_setopt($ch, CURLOPT_POST, 1);
+            // 把post的变量加上
+           curl_setopt($ch, CURLOPT_POSTFIELDS, $string);
+
+            //抓取URL并把它传递给浏览器
+            $output = curl_exec($ch);//kernel::log($output);
+			//$r=preg_replace("#\\\u(
+			//echo "<pre>";print_r(json_decode($output));exit();
+		echo '成功';exit();
+	}
+	
+	public function saveSendToWms(){
+		$strOrders=$_POST['strOrders'];
+	
+		
+	   $url = 'index.php?app=ome&ctl=admin_order&act=confirm&flt=myown';
+	   //echo "<pre>";print_r(count($arrOrders));exit();
+       $this->begin($url);
+	   //$this->end(false,app::get('base')->_('请填入订单字符串'));exit();
+	   if($strOrders==""){
+	   	 	$this->end(false,app::get('base')->_('请填入订单字符串'));exit();
+	   }
+	  $obj=kernel::single('erpapi_oms_order')->RoutePush($strOrders);
+	  $this->end(true,app::get('base')->_('保存成功'));
+		
+	}
+	
     public function setDlyCorp(){
         $ids = $_POST['order_id'];
         if(empty($ids)){
@@ -1286,6 +1350,7 @@ class ome_ctl_admin_order extends desktop_controller{
             }
 
             $sync_rs = $oOrder->cancel($order_id,$memo,true,$mod);
+
             if($sync_rs['rsp'] == 'success')
             {
                 //取消订单发票记录 ExBOY 2014.04.08
@@ -1294,7 +1359,10 @@ class ome_ctl_admin_order extends desktop_controller{
                     $Invoice       = &app::get('invoice')->model('order');
                     $Invoice->delete_order($order_id);
                 }
-                
+                if(app::get('omemagento')->is_installed()){
+					$megentoInstance = kernel::service('service.magento_order');
+					$megentoInstance->update_status($orderdata['order_bn'],'canceled');
+				}
                 echo "<script>alert('订单取消成功');</script>";
             }else{
                 echo "<script>alert('订单取消失败,原因是:".$sync_rs['msg']."');</script>";
@@ -1514,7 +1582,20 @@ class ome_ctl_admin_order extends desktop_controller{
         $this->pagedata['item_list'] = $item_list;
         $this->pagedata['object_alias'] = $object_alias;
 
+
         $this->pagedata['member'] = $member;
+		if(!$order['invoice_area']){
+			$order['invoice_area'] = $order['consignee']['area'];
+		}
+		if(!$order['invoice_addr']){
+			$order['invoice_addr'] = $order['consignee']['addr'];
+		}
+		if(!$order['invoice_zip']){
+			$order['invoice_zip'] = $order['consignee']['zip'];
+		}
+		if(!$order['invoice_contact']){
+			$order['invoice_contact'] = $order['consignee']['mobile'];
+		}
         $this->pagedata['order'] = $order;
 
         $this->pagedata['curorder'] = $order;
@@ -1944,7 +2025,7 @@ class ome_ctl_admin_order extends desktop_controller{
                     define('FRST_TRIGGER_ACTION_TYPE','ome_ctl_admin_order：finish_combine');
                     
                     #[拆单]拆分的$splitting_product商品列表 ExBOY
-                    $result = $combineObj->mkDelivery($orders, $consignee, $logiId, $splitting_product);
+                    $result = $combineObj->mkDelivery($orders, $consignee, $logiId, $splitting_product,true);
                     if (!$result) $this->end(false, '有订单状态发生变化无法完成此操作');
                     
                     #变更退货地址至订单里
@@ -2023,8 +2104,12 @@ class ome_ctl_admin_order extends desktop_controller{
     /**
      * 对待处理订单退回到暂存区
      */
-    function order_buffer(){
-        $this->begin("index.php?app=ome&ctl=admin_order&act=confirm&flt=unmyown");
+    function order_buffer($flag){
+		if($flag){
+			$this->begin("index.php?app=ome&ctl=admin_order&act=confirm&flt=unmyown");
+		}else{
+			$this->begin("index.php?app=ome&ctl=admin_order&act=dispatch&flt=assigned");
+		}
         $filter = $data = array();
         $data['group_id'] = null;
         $data['op_id'] = null;
@@ -2686,6 +2771,7 @@ class ome_ctl_admin_order extends desktop_controller{
             $flag = true;
         }else{
             $flag = false;
+
         }
 
         //订单代销人会员信息
@@ -3133,6 +3219,23 @@ class ome_ctl_admin_order extends desktop_controller{
             $is_order_change    = false;//是否需要修改
             $is_goods_modify    = false;//是否编辑过商品
             $is_consigner_change = false;
+			$is_tax_change  = false;//zjr
+			
+			$order['tax']['tax_no']=$order['tax_no'];
+			$order['tax']['tax_title']=$order['tax_title'];
+			$order['tax']['invoice_name']=$order['invoice_name'];
+			$order['tax']['invoice_area']=$order['invoice_area'];
+			$order['tax']['invoice_contact']=$order['invoice_contact'];
+			$order['tax']['invoice_addr']=$order['invoice_addr'];
+			$order['tax']['invoice_zip']=$order['invoice_zip'];
+			$z_tax= array_diff_assoc($post['tax'],$order['tax']);
+			 if (!empty($z_tax)){
+                $is_tax_change = true;
+            }
+
+			if($post['taxpayer_identity_number']!=$order['taxpayer_identity_number']){
+				$oOrder->update(array('taxpayer_identity_number'=>$post['taxpayer_identity_number']),array('order_id'=>$order_id));
+			}
 
             //收货人信息
             $consignee = array_diff_assoc($post['order']['consignee'],$order['consignee']);
@@ -3188,7 +3291,7 @@ class ome_ctl_admin_order extends desktop_controller{
                 $is_order_change = true;
             }
 
-            if ($is_order_change == true || $is_address_change == true || $is_consigner_change == true ||$is_cost_shipping_chaning==true){
+            if ($is_tax_change==true||$is_order_change == true || $is_address_change == true || $is_consigner_change == true ||$is_cost_shipping_chaning==true){
                 //打回已存在的发货单(只打回未发货的发货单 ExBOY)
                 $oOrder->rebackDeliveryByOrderId($order_id, true);
                 
@@ -3276,7 +3379,10 @@ class ome_ctl_admin_order extends desktop_controller{
                     $new_order['abnormal']          = 'true';
                     $new_order['pause']             = 'true';//订单暂停
                 }
-                
+				if(!empty($z_tax)){
+					$new_order=array_merge($new_order,$z_tax);
+				}
+               // echo "<pre>";print_r($new_order);print_r($z_tax);exit();
                 //更新order
                 $oOrder->save($new_order);
                 
@@ -3463,7 +3569,7 @@ class ome_ctl_admin_order extends desktop_controller{
             if ($deliveryIdArr) {
                 $this->end(false,'请先暂停订单后，撤销发货单');
             }*/
-
+  
             if ($objtype && is_array($objtype)){
                 //是否有数据提交
                 $rs = kernel::single("ome_order_edit")->is_null($objtype,$post);
@@ -3477,7 +3583,19 @@ class ome_ctl_admin_order extends desktop_controller{
             }else {
                 $this->end(false, "订单不能没有商品");
             }
-            $this->end(true, '验证完成');
+			//zjr
+			$jsonData['orders']['newOrders']['consignee']=$post['order']['consignee'];
+			$jsonData['orders']['newOrders']['tax']=$post['tax'];
+			$jsonData['orders']['oldOrders']['consignee']=$order['consignee'];
+			$jsonData['orders']['oldOrders']['tax']['tax_title']=$order['tax_title'];
+			$jsonData['orders']['oldOrders']['tax']['tax_no']=$order['tax_no'];
+			$jsonData['orders']['oldOrders']['tax']['invoice_name']=$order['invoice_name'];
+			$jsonData['orders']['oldOrders']['tax']['invoice_area']=$order['invoice_area'];
+			$jsonData['orders']['oldOrders']['tax']['invoice_contact']=$order['invoice_contact'];
+			$jsonData['orders']['oldOrders']['tax']['invoice_addr']=$order['invoice_addr'];
+			$jsonData['orders']['oldOrders']['tax']['invoice_zip']=$order['invoice_zip'];
+			//echo "<pre>";print_r($jsonData);exit();
+            $this->end(true,'验证完成',null,$jsonData);
         }
     }
 
@@ -3630,6 +3748,22 @@ class ome_ctl_admin_order extends desktop_controller{
                 $this->pagedata['price_monitor'] = $price_monitor;
             }
             
+			$viewOrders=array();
+			$arrOders=json_decode($_GET['orders'],true);
+			$arrOders=$arrOders['orders'];
+			foreach($arrOders['newOrders'] as $t=>$type){
+				foreach($type as $v=>$value){
+					if($arrOders['oldOrders'][$t][$v]!=$value){
+						$viewOrders['orders']['newOrders'][$t][$v]['f']=$value;
+					}else{
+						$viewOrders['orders']['newOrders'][$t][$v]['t']=$value;
+					}
+				}
+			}
+			$this->pagedata['newOrdersConsignee'] = $viewOrders['orders']['newOrders']['consignee'];
+			$this->pagedata['newOrdersTax'] = $viewOrders['orders']['newOrders']['tax'];
+			$this->pagedata['oldOrders'] = $arrOders['oldOrders'];
+			//echo "<pre>";print_r($arrOders);print_r($viewOrders);exit();
             #差额[现订单金额-原订单金额] ExBOY
             $diff_money        = round(intval($newtotal - $total), 3);
             $this->pagedata['diff_money']  = $diff_money;
@@ -3976,6 +4110,7 @@ class ome_ctl_admin_order extends desktop_controller{
             $post['discount'] = 0;
 
         if ($dObj->existExpressNo($logi_no))
+
             $this->end(false, '快递单号重复');
 
         $consignee = $post['consignee'];
@@ -4981,4 +5116,22 @@ class ome_ctl_admin_order extends desktop_controller{
          kernel::single('ome_service_delivery')->delivery(3);
          //kernel::single('ome_service_delivery')->update_logistics_info(3);
      }
+
+	 function sync_ax(){
+		 $this->begin();
+		 $order_ids = $_POST['order_id'];
+		 $objOrder = app::get('ome')->model('orders');
+		 $objOrderDelivery = app::get('ome')->model('delivery_order');
+		 foreach($order_ids as $order_id){
+			 $orders  = $objOrder->dump($order_id);
+			 //echo "<pre>";print_r($orders);exit;
+			 if($orders['process_status']=='splited'){
+				 $delevery_id = $objOrderDelivery->getList('*',array('order_id'=>$order_id));
+				// echo "<pre>";print_r($order_id);
+				// echo "<pre>";print_r($delevery_id);exit;
+				 kernel::single('omeftp_service_deliveryh')->delivery($delevery_id[0]['delivery_id']);
+			 }
+		 }
+		 $this->end(true,'操作成功');
+	 }
 }

@@ -1,4 +1,4 @@
-<div id="nosplitarea" >
+<div id="nosplitarea">
 <div class="finder-detail">
         <div class="division" id="order_price_info">
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -12,10 +12,7 @@
               </tr>
               
               <{if !$price_monitor}>
-              <tr>
-                <td height="5">&nbsp;</td>
-                <td>&nbsp;</td>
-              </tr>
+              
               <{/if}>
               
               <tr>
@@ -23,7 +20,11 @@
               </tr>
               <tr>
                 <td height="32" align="right">订单已支付金额：</td>
-                <td>&nbsp;&nbsp;<b class="font14px color_1"><{$payed|cur}></b></td>
+                <td>&nbsp;&nbsp;<b class="font14px color_1"><{$payed|cur}></b>
+				 <{if $is_change <= 0}>
+				 	&nbsp;&nbsp;&nbsp;&nbsp;订单无差额，编辑后的订单需要重新确认!
+				  <{/if}>
+				</td>
               </tr>
               
               <{if $is_change > 0}>
@@ -37,10 +38,7 @@
                   </tr>
                   <{/if}>
               <{else}>
-              <tr>
-                <td height="28" align="right"></td>
-                <td valign="top">&nbsp;&nbsp;订单无差额，编辑后的订单需要重新确认!</td>
-              </tr>
+              
               <{/if}>
 
              <{if $price_monitor}>
@@ -59,18 +57,124 @@
                   <{/if}>
               
               <{else}>
-              <tr>
-                <td height="5">&nbsp;</td>
-                <td>&nbsp;</td>
-              </tr>
+              
               <{/if}>
               
             </table>
       </div>
-      
+      <div class="division" id="orders">
+	  	<table width="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td >
+					<table width="100%" border="0" cellspacing="0" cellpadding="0" id='torders'>
+						 	<tr>
+								<td colspan="2"><span style="padding:0 0 0 30px;font-size:14px;">原收货信息</span></td>
+							</tr>
+							<tr>
+								<td align="right">姓名:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.name}></td>
+							</tr>
+							<tr>
+								<td align="right">收货地区:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.area|region}></td>
+							</tr>
+							<tr>
+								<td align="right">手机:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.mobile}></td>
+							</tr>
+							<tr>
+								<td align="right">电话:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.telephone}></td>
+							</tr>
+							<tr>
+								<td align="right">邮编:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.zip}></td>
+							</tr>
+							<tr>
+								<td align="right">地址:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.addr}></td>
+							</tr>
+							<tr>
+								<td align="right">邮箱:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.consignee.email}></td>
+							</tr>
+						 	<tr><td><br /></td></tr>
+							<tr>
+								<td colspan="2"><span style="padding:0 0 0 30px;font-size:14px;">原发票信息</span></td>
+							</tr>
+							<tr>
+								<td align="right">发票抬头:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.tax.tax_title}></td>
+							</tr>
+							<tr>
+								<td align="right">发票姓名:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.tax.invoice_name}></td>
+							</tr>
+							<tr>
+								<td align="right">发票地区:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.tax.invoice_area|region}></td>
+							</tr>
+							<tr>
+								<td align="right">发票电话:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.tax.invoice_contact}></td>
+							</tr>
+							<tr>
+								<td align="right">发票邮编:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.tax.invoice_zip}></td>
+							</tr>
+							<tr>
+								<td align="right">发票地址:</td><td>&nbsp;&nbsp;&nbsp;<{$oldOrders.tax.invoice_addr}></td>
+							</tr>
+					</table>
+				</td>
+				 
+                <td align="left"><div style="height:300px;border-left:solid 1px #CCCCCC; position:absolute; margin:-150px 0 0 -30px;"></div></td>
+              
+				<td>
+					<table width="100%" border="0" cellspacing="0" cellpadding="0" id='torders'>
+							<tr>
+								<td colspan="2"><span style="padding:0 0 0 30px;font-size:14px;">新收货信息</span></td>
+							</tr>
+							<tr>
+								<td align="right">姓名:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.name.t}><{$newOrdersConsignee.name.t}><{else}><span id='bian'><{$newOrdersConsignee.name.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">收货地区:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.area.t}><{$newOrdersConsignee.area.t|region}><{else}><span id='bian'><{$newOrdersConsignee.area.f|region}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">手机:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.mobile.t}><{$newOrdersConsignee.mobile.t}><{else}><span id='bian'><{$newOrdersConsignee.mobile.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">电话:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.telephone.t}><{$newOrdersConsignee.telephone.t}><{else}><span id='bian'><{$newOrdersConsignee.telephone.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">邮编:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.zip.t}><{$newOrdersConsignee.zip.t}><{else}><span id='bian'><{$newOrdersConsignee.zip.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">地址:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.addr.t}><{$newOrdersConsignee.addr.t}><{else}><span id='bian'><{$newOrdersConsignee.addr.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">邮箱:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersConsignee.email.t}><{$newOrdersConsignee.email.t}><{else}><span id='bian'><{$newOrdersConsignee.email.f}></span><{/if}></td>
+							</tr>
+							
+							<tr><td><br /></td></tr>
+							<tr>
+								<td colspan="2"><span style="padding:0 0 0 30px; font-size:14px;">新发票信息</span></td>
+							</tr>
+							<tr>
+								<td align="right">发票抬头:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersTax.tax_title.t}><{$newOrdersTax.tax_title.t}><{else}><span id='bian'><{$newOrdersTax.tax_title.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">发票姓名:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersTax.invoice_name.t}><{$newOrdersTax.invoice_name.t}><{else}><span id='bian'><{$newOrdersTax.invoice_name.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">发票地区:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersTax.invoice_area.t}><{$newOrdersTax.invoice_area.t|region}><{else}><span id='bian'><{$newOrdersTax.invoice_area.f|region}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">发票电话:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersTax.invoice_contact.t}><{$newOrdersTax.invoice_contact.t}><{else}><span id='bian'><{$newOrdersTax.invoice_contact.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">发票邮编:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersTax.invoice_zip.t}><{$newOrdersTax.invoice_zip.t}><{else}><span id='bian'><{$newOrdersTax.invoice_zip.f}></span><{/if}></td>
+							</tr>
+							<tr>
+								<td align="right">发票地址:</td><td>&nbsp;&nbsp;&nbsp;<{if $newOrdersTax.invoice_addr.t}><{$newOrdersTax.invoice_addr.t}><{else}><span id='bian'><{$newOrdersTax.invoice_addr.f}></span><{/if}></td>
+							</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	  </div>
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
-              <td height="25" style="padding-left:25px;"><{if $is_retrial=='true'}>您修改的订单将进入复审，确定要修改此订单吗？<{/if}></td>
+             <{if $is_retrial=='true'}> <td height="25" style="padding-left:25px;">您修改的订单将进入复审，确定要修改此订单吗？</td><{/if}>
             </tr>
             <tr>
               <td height="10"></td>
@@ -94,7 +198,9 @@
   </div>
 </div>
 <style type="text/css">
-#order_price_info { background-color:#FFFFCC; }
+#torders{ line-height:20px;}
+#bian{font-size:14px; font-weight:bold; color:red;}
+#order_price_info,#orders { background-color:#FFFFCC; }
 .line_2px { width:90%; height:1px; font-size:0px; background-color:#c9c9c9; }
 .font14px { font-family:"微软雅黑", Arial, Helvetica, sans-serif; }
 .color_1 { color:#666; }

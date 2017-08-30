@@ -1,0 +1,9 @@
+<services>
+	 <service id="service.delivery">
+        <class>omeftp_service_delivery</class>
+    </service>
+
+	 <service id="desktop_finder.omeftp_mdl_ftplog">
+        <class>omeftp_finder_ftplog</class>
+    </service>
+</services>

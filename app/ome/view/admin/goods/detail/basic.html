@@ -61,6 +61,10 @@ $('gEditor').retrieve('setTabs',function(){
 					<th><{t}>商品编号：<{/t}></th>
 					<td><{input type="text" name="goods[bn]" value=$goods.bn }></td>
 				</tr>
+				<tr>
+					<th><{t}>礼劵ID<{/t}></th>
+					<td><{input type="text" name="goods[card_id]" value=$goods.card_id }></td>
+				</tr>
                 <{if $goods.spec }>
 				<tr>
 					<th><{t}>条码：<{/t}></th>
@@ -81,6 +85,13 @@ $('gEditor').retrieve('setTabs',function(){
 					<td><{input type="text" size="10" value=$goods.unit name="goods[unit]" maxlength="25" }></td>
 				</tr>
 				<{/if}>
+				<tr>
+					<th><{t}>是否是预售商品：<{/t}></th>
+                    <td>
+                        <input type="radio" value="true" name="goods[is_prepare]" <{if $goods.is_prepare == 'true' }> checked="checked"<{/if}>>是
+                        <input type="radio" value="false" name="goods[is_prepare]" <{if $goods.is_prepare != 'true' }> checked="checked"<{/if}>>否
+                    </td>
+				</tr>
 				<tr>
 					<th><{t}>存在唯一码：<{/t}></th>
                     <td>

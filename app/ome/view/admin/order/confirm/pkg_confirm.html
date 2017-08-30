@@ -1,39 +1,20 @@
         <{assign var="inv1" value="false"}>
         <{foreach from=$objs item=obj name="pkg_for1"}>
-          <tr class="bindtitle<{if $smarty.foreach.pkg_for1.first}> tr_line<{/if}>" data-obj_id="<{$obj.obj_id}>">
-			<td><{$obj.bn}></td>
-            <td><strong><{$obj.name}></strong></td>
-            <td><{*$object_alias[$obj_type]|default:'捆绑商品'*}><{t}>捆绑商品<{/t}></td>
-            <td><{$obj.price}></td>
-            <{if $order_delivery_list}>
-            <td class="buycounts"><{$obj.quantity}></td>
-            <td class="amounts"><{$obj.amount}></td>
-            <td class="splited"><{$obj.quantity - $obj.left_nums}></td>
-            <td class="sendnum"><{$obj.left_nums}></td>
-            <{else}>
-            <td class="amounts"><{$obj.amount}></td>
-            <td class="buycounts"><{$obj.quantity}></td>
-            <{/if}>
-            <td class="sendcounts"><{if $obj.left_nums === 0}>-<{else}><{$obj.left_nums}><{/if}></td>
-            <td>&nbsp;</td>
-            <!--<{foreach from=$branch_list item=branch}>
-            <td></td>
-            <{/foreach}>-->
-          </tr>
+          
           <{foreach from=$obj.order_items item=item}>
           <{if $item.delete=='false'}>
           <tr class="bindgoods<{if $item.left_nums == 0}> disabled<{/if}>" data-g_pid="<{$item.product_id}>" data-g_shop_pid="<{$item.shop_product_id}>" data-item_id="<{$item.item_id}>" data-obj_id="<{$obj.obj_id}>" data-item_type="<{$item.item_type}>">
             <td><span class="number"><{$item.bn}></span></td>
             <td><span class="goodsname"><{$item.name}></span></td>
-            <td class="addon"><{$item.addon}></td>
-            <td>-</td>
+            <td class="addon">捆绑商品</td>
+            <td><{$item.price}></td>
             <{if $order_delivery_list}>
             <td class="buycounts" data-js="<{$item.quantity/$obj.quantity}>"><{$item.quantity}></td>
-            <td class="amounts">-</td>
+            <td class="amounts"><{$item.amount}></td>
             <td class="splited"><{if ($item.quantity - $item.left_nums)>0}><{$item.quantity - $item.left_nums}><{else}>-<{/if}></td>
             <td class="sendnum"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>
             <{else}>
-            <td class="amounts">-</td>
+            <td class="amounts"><{$item.amount}></td>
             <td class="buycounts" data-js="<{$item.quantity/$obj.quantity}>"><{$item.quantity}></td>
             <{/if}>
             <td class="sendcounts"><{if $item.left_nums == 0}>-<{else}><{$item.left_nums}><{/if}></td>

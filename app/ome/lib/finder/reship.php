@@ -123,9 +123,57 @@ class ome_finder_reship{
         return $render->fetch('admin/reship/detail_returnsv.html');
     }
 
+	var $detail_message = "留言信息";
+	function detail_message($reship_id){
+		$render = &app::get('ome')->render();
+		$reShip = &app::get('ome')->model('reship');
+		if($_POST){
+			 $reship_id = $_POST['reship']['reship_id'];
+            //取出原备注信息
+            $oldmemo = $reShip->dump(array('reship_id'=>$reship_id), 'custom_mark');
+            $oldmemo= unserialize($oldmemo['custom_mark']);
+            $op_name = kernel::single('desktop_user')->get_name();
+            if ($oldmemo)
+            foreach($oldmemo as $k=>$v){
+                $memo[] = $v;
+            }
+            $newmemo =  htmlspecialchars($_POST['reship']['custom_mark']);
+            $newmemo = array('op_name'=>$op_name, 'op_time'=>date('Y-m-d H:i:s',time()), 'op_content'=>$newmemo);
+            $memo[] = $newmemo;
+            $_POST['reship']['custom_mark'] = serialize($memo);
+            $plainData = $_POST['reship'];
+		//	echo "<pre>";print_r($plainData);exit;
+            $reShip->save($plainData);
+		}
+		$reship_detail = $reShip->dump($reship_id);
+        $render->pagedata['base_dir'] = kernel::base_url();
+
+        $reship_detail['custom_mark'] = unserialize($reship_detail['custom_mark']);
+		
+        if ($reship_detail['custom_mark'])
+        foreach ($reship_detail['custom_mark'] as $k=>$v){
+            if (!strstr($v['op_time'], "-")){
+                $v['op_time'] = date('Y-m-d H:i:s',$v['op_time']);
+                $reship_detail['custom_mark'][$k]['op_time'] = $v['op_time'];
+            }
+        }
+		//echo "<pre>";print_r($reship_detail['custom_mark']);exit;
+        $render->pagedata['reship']  = $reship_detail;
+		return $render->fetch('admin/reship/detail_message.html');
+	}
+
+	var $detail_qa = "质检凭证";
+	function detail_qa($reship_id){
+		$render = &app::get('ome')->render();
+        $Oreship = &app::get('ome')->model('reship');
+		$info = $Oreship->dump($reship_id,'qa_memo,image2,image1,image3');
+		$render->pagedata['info'] = $info;
+		return $render->fetch('admin/reship/detail_qa.html');
+	}
+
 
     var $column_edit = "操作";
-    var $column_edit_width = "200";
+    var $column_edit_width = "210";
     function column_edit($row){
         $oReship = &app::get('ome')->model('reship');
         $reship_items= $oReship->dump($row['reship_id'],'reship_bn');
@@ -150,6 +198,15 @@ class ome_finder_reship{
         $doback = '  <a target="dialog::{width:280,height:100,title:\'退换货单号:'.$reship_items['reship_bn'].'\'}" href="index.php?app=ome&ctl=admin_return_rchange&act=do_back&p[0]='.$row['reship_id'].'&finder_id='.$_GET['_finder']['finder_id'].'">退回</a>';
 
         $quality_check = '  <a target="dialog::{width:1200,height:546,title:\'质检退换货单:'.$reship_items['reship_bn'].'\'}" href="index.php?app=ome&ctl=admin_return_sv&act=edit&p[0]='.$row['reship_id'].'&finder_id='.$_GET['_finder']['finder_id'].'">收货/质检</a>';
+
+		$up_QA = '<a target="dialog::{width:600,height:400,title:\'上传质检凭证\'}" href="index.php?app=wms&ctl=admin_return_rchange&act=uplode_qa&p[0]='.$row['reship_id'].'&finder_id='.$_GET['_finder']['finder_id'].'">上传质检凭证</a>';
+
+		$info = $oReship->dump($row['reship_id'],'qa_memo,image2,image1,image3');
+		if($info['image1']){
+			$ch_QA = '<a target="dialog::{width:600,height:400,title:\'查看\'}" href="index.php?app=wms&ctl=admin_return_rchange&act=check_qa&p[0]='.$row['reship_id'].'&finder_id='.$_GET['_finder']['finder_id'].'">查看质检凭证</a>';
+		}else{
+			$ch_QA = '';
+		}
 
        $permissions = array(
             'check'         => 'aftersale_rchange_check',
@@ -177,7 +234,16 @@ class ome_finder_reship{
             break;
             case '1':
               if($_GET['flt'] == 'process_list'){
-                $cols = $quality_check;
+				$has_permission = kernel::single('desktop_user')->has_permission('aftersale_reship_uplode_image');
+				if($has_permission){
+					$cols = $quality_check.' '.$up_QA;
+				}
+
+				$has_permission_check = kernel::single('desktop_user')->has_permission('aftersale_reship_check_image');
+				if($has_permission_check){
+					$cols = $cols.' '.$ch_QA;
+				}
+				
               }else{
                 $cols = '';
               }
@@ -188,7 +254,15 @@ class ome_finder_reship{
             case '3':
 			case '13':
               if($_GET['flt'] == 'process_list'){
-                $cols = $quality_check;
+                $has_permission = kernel::single('desktop_user')->has_permission('aftersale_reship_uplode_image');
+				if($has_permission){
+					$cols = $quality_check.' '.$up_QA;
+				}
+
+				$has_permission_check = kernel::single('desktop_user')->has_permission('aftersale_reship_check_image');
+				if($has_permission_check){
+					$cols = $cols.' '.$ch_QA;
+				}
               }else{
                 $cols = '';
               }

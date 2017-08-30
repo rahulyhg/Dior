@@ -68,16 +68,22 @@ class kernel{
          
             if($part=='/api'){
                 cachemgr::init();
-                if(isset($_POST['method']) && substr($_POST['method'],0,4) == 'wms.'){
+               if(isset($_POST['method']) && substr($_POST['method'],0,4) == 'wms.'){
                     #wms请求处理
                     //return kernel::single('rpc_service')->process($pathinfo);
                     return kernel::single('erpapi_rpc_service')->process($pathinfo);
-                }else{
+                }else if(substr($_POST['method'],0,4) == 'oms.'){
+					return kernel::single('erpapi_rpc_api')->process($pathinfo);
+				}else{
                     return kernel::single('base_rpc_service')->process($pathinfo);
                 }
             }elseif($part=='/callback'){
                 cachemgr::init();
                 return kernel::single('rpc_service')->callback($pathinfo);
+            }elseif($part=='/messageListener'){
+                return kernel::single('giftcard_jing_api')->process($pathinfo);
+            }elseif($part=='/magentoapi'){
+                return kernel::single('giftcard_magento_api')->process($pathinfo);
             }elseif($part=='/openapi'){
                 cachemgr::init();
                 return kernel::single('base_rpc_service')->process($pathinfo);

@@ -1,0 +1,51 @@
+<{capture name="header"}>
+  <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+<div class="tableform">
+<table class="orderdetails_basic" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>单据号：<{/t}></th><td><{$detail.original_bn}></td></tr>
+<tr><th><{t}>备注：<{/t}></th><td><{$detail.memo}></td></tr>
+<tr><th><{t}>平台订单号：<{/t}></th><td><{$orderinfo.order_bn}></td></tr>
+<tr><th><{t}>第三方交易号：<{/t}></th><td><{$detail.trade_no}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>支付方式：<{/t}></th><td><{$detail.paymethod}></td></tr>
+<tr><th><{t}>收款方式：<{/t}></th><td><{if $detail.pay_type == 'online'}><{t}>在线支付<{/t}><{elseif $detail.pay_type == 'offline'}><{t}>线下付款<{/t}><{elseif $detail.pay_type == 'deposit'}><{t}>预存款支付<{/t}><{elseif $detail.pay_type == 'recharge'}><{t}>预存款充值<{/t}><{/if}></td></tr>
+<tr><th><{t}>付款金额：<{/t}></th><td><{$detail.money}></td></tr>
+<tr><th><{t}>对账单类型：<{/t}></th><td><{if $detail.original_type=='payments'}>支付单<{else}>退款单<{/if}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+<td>
+<div class="division">
+<table cellpadding="0" cellspacing="0" border="0">
+<tbody>
+<tr><th><{t}>对账金额：<{/t}></th><td><{$detail.tatal_amount}></td></tr>
+<tr><th><{t}>费率：<{/t}></th><td><{$detail.pay_fee}></td></tr>
+<tr><th><{t}>差额：<{/t}></th><td><{$orderinfo.difference_money}></td></tr>
+<tr><th><{t}>导入对账单时间：<{/t}></th><td><{if $detail.importer_time}><{$detail.importer_time|cdate:SDATE_FTIME}><{/if}></td></tr>
+</tbody>
+</table>
+</div>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>

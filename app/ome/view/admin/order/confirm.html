@@ -84,7 +84,19 @@
                 </tbody>
             </table>
         </div>
-
+		<{if $order.is_tax=='true'}>
+		<h3 style="border-bottom:none;" >发票信息</h3>    
+        <div class="finder-detail">    
+            <!--{include file="admin/order/confirm/combine_confirm_member.html"}-->
+            <table class="gridlist" >
+                <tbody>
+                    <tr>
+                        <td id="delivery_info"> <{include file="admin/order/confirm/tax_info.html"}></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+		<{/if}>
         <h3 style="border-bottom:none;">购物清单信息<{if $repeat_product}><span style="color:#ff0000;">（订单中包含重复商品货号时[例货号：<{$repeat_product}> ] 系统不支持拆单！ <a href="javascript:void(null)" onclick="window.location='index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]=<{$order_id}>&filter=<{$filter}>&find_id=<{$finder_id}>&is_repeat=1'">点击继续拆单，</a>请确保库存充足否则有可能超卖！<input type="hidden" name="is_repeat_product" value="true"/>）</span><{elseif $order_is_cod=='true'}><input type="hidden" name="is_repeat_product" value="true"/><{/if}></h3>
         <div class="finder-detail">
             <{include file="admin/order/confirm/product_confirm.html"}>
@@ -157,7 +169,75 @@
             </div>
         </div>
     </div>
-    
+     <div id="issplitarea"></div>
+	 <h3>礼品卡信息</h3>
+    <div class="finder-detail" style="margin-top:10px;">
+        <div class="clearfix">
+            <div class="fr" style="margin:6px 10px 0 0;"></div>
+        </div>
+		 <div class="division" style="background:#fff; height:auto; overflow:hidden;" id="buyer_area">
+		 	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+		 	<{if $order.is_card=="true"}>
+				<tbody>
+                    <tr>
+                        <th>第一行：</th>
+						<td><{$order.message1}></td>
+						 <th>第二行：</th>
+						<td><{$order.message2}></td>
+						 <th>第三行：</th>
+						<td><{$order.message3}></td>
+					</tr>
+					<tr>
+						<th>第四行：</th>
+						<td><{$order.message4}></td>
+						 <th>第五行：</th>
+						<td><{$order.message5}></td>
+						 <th>第六行：</th>
+						<td><{$order.message6}></td>
+					</tr>
+				</tbody>
+			<{else}>
+				<tr>
+					 <td style="width:40px;"></td>
+					  <td >
+					   无
+						</td>
+					</tr>
+			<{/if}>
+			</table>
+		 </div>
+	</div>
+	 <div id="issplitarea"></div>
+	 <h3>WelcomeCard</h3>
+    <div class="finder-detail" style="margin-top:10px;">
+        <div class="clearfix">
+            <div class="fr" style="margin:6px 10px 0 0;"></div>
+        </div>
+		 <div class="division" style="background:#fff; height:auto; overflow:hidden;" id="buyer_area">
+		 	<table width="100%" cellspacing="0" cellpadding="0" border="0">
+		 	<{if $order.is_w_card=="true"}>
+				<tr>
+					 <td style="width:40px;"></td>
+					  <td >
+					  <{if $order.welcomecard!=""}>
+					   <{$order.welcomecard}>
+					  <{else}>
+					  	1张
+					  <{/if}>
+						</td>
+					</tr>
+			<{else}>
+				<tr>
+					 <td style="width:40px;"></td>
+					  <td >
+					   无
+						</td>
+					</tr>
+			<{/if}>
+			</table>
+		 </div>
+	</div>
+	
     <span id="has_gifts" style="display:none;">
     <h3><font color="red">注意事项</font></h3>
     <div class="finder-detail" style="margin-top:10px;">

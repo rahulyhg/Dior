@@ -444,13 +444,14 @@ function selectArea(sel,path,depth){
 		var sels=$ES('select',areaPanel);
 		sels.each(function(s){
 		  if(s.getValue()!= '_NULL_' && sel_break){
-			  rst.push($(s.options[s.selectedIndex]).get('text'));
+			  rst.push($(s.options[s.selectedIndex]).innerHTML);
 		  }else{
 		    sel_break = false;
 		  }
 		});
         if(sel.value != '_NULL_'){
 		    $E('input',areaPanel).value = areaPanel.get('package')+':'+rst.join('/')+':'+sel.value;
+			//alert(areaPanel.get('package')+':'+rst.join('/')+':'+sel.value);
 		}else{
 		    $E('input',areaPanel).value =function(sel){
 			  var s=sels.indexOf(sel)-1;

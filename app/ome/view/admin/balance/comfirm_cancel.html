@@ -1,0 +1,51 @@
+<form action="index.php?app=ome&ctl=<{$env.get.ctl}>&act=do_confirm_cancel&finder_id=<{$env.get.finder_id}>" method="post" id="disForm">
+<input name="statement_id" value="<{$statement.statement_id}>" type="hidden">
+<table class="tableform">
+    <tbody>
+    <tr>
+        <th>作废对账单：</th>
+        <td>
+           <{$statement.original_bn}>
+        </td>
+    </tr>
+    <tr>
+        <th>账单金额：</th>
+        <td><{$statement.tatal_amount}></td>
+    </tr>
+	 <tr>
+        <th>账单手续费：</th>
+        <td><{$statement.pay_fee}></td>
+    </tr>
+	 <tr>
+        <th>作废原因：</th>
+        <td><{input type="text" name="memo" }></td>
+    </tr>
+    </tbody>
+</table>
+</form>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="btnSubmit" ><span><span><{t}>确定<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+var flag = true;
+
+ $('btnSubmit').addEvent('click',function(e){
+	 if(flag){
+		flag = false;
+
+        finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+		$('disForm').fireEvent('submit',{stop:$empty});
+		setTimeout("$('disForm').getParent('.dialog').retrieve('instance').close()",1000);
+	}
+ });
+
+
+</script>

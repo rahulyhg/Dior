@@ -340,7 +340,7 @@ class ome_mdl_orders extends dbeav_model{
         if($row == 'true'){
             return "<div style='width:48px;padding:2px;height:16px;background-color:green;float:left;'><span style='color:#eeeeee;'>货到付款</span></div>";
         }else{
-            return '款到发货';
+            return '在线支付';
         }
     }
 
@@ -1723,9 +1723,23 @@ class ome_mdl_orders extends dbeav_model{
                 $sdf = $order_sdf_service->modify_sdfdata($sdf);
             }
         }
-
+//echo "<pre>";print_r($sdf);exit();
         if(!$this->save($sdf)) return false;
-
+		
+		if($sdf['order_pmt']['0']['pmt_describe']!=""){
+			$objOpmt=kernel::single("ome_mdl_order_pmt");
+			foreach($sdf['order_pmt'] as $youhui){
+				$arrOrderPmt['id']='';
+				$arrOrderPmt['order_id']=$sdf['order_id'];
+				$arrOrderPmt['pmt_amount']=$youhui['pmt_amount'];
+				$arrOrderPmt['pmt_describe']=$youhui['pmt_describe'];
+				// echo "<pre>"; print_r($arrOrderPmt);print_r($city2);
+				if(!$objOpmt->save($arrOrderPmt)){
+					return false;
+				}
+			}
+		}
+//exit();
         $c2c_shop_list = ome_shop_type::shop_list();
 
         if( !in_array($sdf['shop_type'], $c2c_shop_list) && (bccomp('0.000', ($sdf['total_amount']/1),3) == 0) ){ #0元订单是否需要财审.
@@ -1895,8 +1909,8 @@ class ome_mdl_orders extends dbeav_model{
         $childOptions = array(
             'product_bn'=>app::get('ome')->_('货号'),
             'product_barcode'=>app::get('ome')->_('条形码'),
-            'member_uname'=>app::get('ome')->_('用户名'),
-            'ship_tel_mobile'=>app::get('ome')->_('联系电话'),
+            'member_uname'=>app::get('ome')->_('注册人手机'),
+            'ship_tel_mobile'=>app::get('ome')->_('收货人电话'),
             'logi_no'=>app::get('ome')->_('物流单号')
         );
         return $Options = array_merge($parentOptions,$childOptions);

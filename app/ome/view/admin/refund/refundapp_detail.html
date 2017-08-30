@@ -109,11 +109,7 @@
             <{/if}>
         </b></td>
         <td><b class="<{if $status_info ==1||$status_info ==2||$status_info ==3}>submitBtn<{else}>submitBtnoff<{/if}>">
-            <{if $status_info==5||$status_info ==4}>
-            <{button type="submit" label="退款" name="butsubmit" disabled="disabled"}>
-            <{else}>
-            <{button type="submit" label="退款" name="butsubmit" onclick="if(confirm('退款操作！确认要执行吗？'))set_statusb2b('{$refunddata.r_id}',this)"}>
-            <{/if}>
+            
         </b></td>
         <{else}>
         <td><b class="<{if $status_info ==1}>submitBtn<{else}>submitBtnoff<{/if}>">
@@ -150,11 +146,7 @@
             <{/if}>
         </b></td>
         <td <{if $status_info != 2 && $status_info != 6 && $status_info != 5}>style="display:none;"<{/if}>><b class="<{if $status_info ==5}>submitBtnoff<{else}>submitBtn<{/if}>">
-            <{if $status_info != 2 && $status_info != 6 && $status_info != 5}>
-            <{button label="退款" name="butsubmit" disabled="disabled"}>
-            <{else}>
-                <{button label="退款" name="butsubmit" onclick="new Dialog('index.php?ctl=admin_refund_apply&act=accept&app=ome&p[0]={$refunddata.apply_id}&finder_id={$finder_id}&source={$refunddata.source}',{width:800,height:360,title:'订单{$orderinfo.order_bn}的退款申请'})"}>
-            <{/if}>
+            
         </b></td>
         <{/if}>
       </tr>

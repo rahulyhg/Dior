@@ -1,0 +1,23 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="delivery-info">
+  <tbody>
+    <tr>
+      <th>发票抬头：</th>
+      <td><span><{$order.tax_title}></span></td>
+
+      <th>发票地址：</th>
+
+      <td><span id='consignee[area]'><{$order.invoice_area|region}></span>
+        <span id='consignee[addr]' style="display:none;"><{$order.consignee.addr}></span><{$order.invoice_addr}></td>
+
+      <th>电话/手机：</th>
+      <td><span><{$order.invoice_contact}></span></td>
+
+      <th></th>
+      <td></td>
+      <th>邮政编码：</th>
+      <td><span><{$order.invoice_zip}></span></td>
+
+      <td></td>
+    </tr>
+  </tbody>
+</table>

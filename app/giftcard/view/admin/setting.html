@@ -1,0 +1,66 @@
+<h3>GiftCard配置</h3>
+<div class="tabs-wrap">
+  <ul>
+    <li class="tab current"><a href="index.php?app=giftcard&ctl=admin_setting&act=index"><span><{t}>GiftCard<{/t}></span></a></li>
+  </ul>
+</div>
+  <form method="post" action="index.php?app=giftcard&ctl=admin_setting&act=save" id="whitelist">
+    <div style="text-align:right;padding:3px 30px"></div>
+
+  <table class="tableform" style="width:99%;">
+    <tbody> 
+	<span style=" font-size:14px; font-weight:bolder;">JingSocial:</span
+      <tr>
+        <th><{t}>APPID：<{/t}></th>
+        <td><{input type="text" name='appid' value=$giftcard_setting.appid size="40"}>      
+   
+        </td>
+      </tr>
+      <tr>
+        <th><{t}>APPSECRET：<{/t}></th>
+        <td><{input type="text" name='appsecret' value=$giftcard_setting.appsecret size="60"}>
+        </td>
+      </tr>
+      <tr>
+        <th><{t}>JingSocial URL：<{/t}></th>
+        <td><{input type=text name='jingurl' value=$giftcard_setting.jingurl size="60"}></td>
+        <td></td>
+      </tr>
+	  <tr>
+        <th><{t}>JingSocial Token：<{/t}></th>
+        <td><{input type=text name='jingtoken' value=$giftcard_setting.jingtoken size="60"}></td>
+        <td></td>
+      </tr>
+	 </tbody>
+	</table>
+	  <table class="tableform" style="width:99%;">
+	  <tbody>
+	  <span style=" font-size:14px; font-weight:bolder;">WeChat:</span>
+	   <tr>
+        <th><{t}>WeChat URL：<{/t}></th>
+        <td><{input type=text name='wxurl' value=$giftcard_setting.wxurl size="60"}></td>
+        <td></td>
+      </tr>
+	  <tr>
+        <th><{t}>APPID：<{/t}></th>
+        <td><{input type=text name='wxappid' value=$giftcard_setting.wxappid size="60"}></td>
+        <td></td>
+      </tr>
+	  <tr>
+        <th><{t}>APPSECRET：<{/t}></th>
+        <td><{input type=text name='wxappsecret' value=$giftcard_setting.wxappsecret size="60"}></td>
+        <td></td>
+      </tr>
+	  <tr>
+        <th><{t}>Template ID<{/t}></th>
+        <td><{input type=text name='templateid' value=$giftcard_setting.templateid size="60"}></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="table-action">
+    <{button type="submit"  label=$___importexport="保存"|t:'site'}>
+  </div>
+  </form>
+
+

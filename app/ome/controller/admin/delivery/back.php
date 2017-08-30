@@ -271,6 +271,11 @@ class ome_ctl_admin_delivery_back extends desktop_controller {
                 $this->end(false, app::get('base')->_('发货拒收确认失败'));
             }
         }
+		kernel::single('omeftp_service_back')->delivery($delivery_id,'拒收');
+		//如果是货到付款，将订单状态更新为取消
+		if($orderdata['shipping']['is_cod']=='true'){
+			kernel::single('omemagento_service_order')->update_status($orderdata['order_bn'],'canceled');
+		}
         if ($is_selfWms) {
             //更新发货单状态为退回
             //$deliveryObj->db->exec("UPDATE sdb_ome_delivery SET `status`='return_back' WHERE delivery_id=".$delivery_id." AND `status`='succ'");

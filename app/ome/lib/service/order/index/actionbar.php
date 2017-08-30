@@ -19,6 +19,10 @@ class ome_service_order_index_actionbar{
 	                    'href'=>'index.php?app=ome&ctl=admin_order&act=exportTemplate',
 	                    'target'=>'_blank'
 	                ),
+						array(
+	                    'label'=>'生产AX文件',
+	                    'submit'=>'index.php?app=ome&ctl=admin_order&act=sync_ax',
+	                ),
         );
     }
     

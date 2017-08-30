@@ -1,0 +1,44 @@
+<div class="tableform">
+<div class="division">
+<form method="post" action="index.php?app=ome&ctl=admin_refund_apply&act=doRefund" id="zrefund" target="_blank">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+       <tr>
+          <td>订单号</td>
+          <td>交易流水号</td>
+		  <td>退款金额</td>
+        </tr>
+      <{foreach from=$arrPayments item=payments}>
+	  	 <{foreach from=$payments item=payMent}>
+         <tr>
+          <td><{$payMent.order_bn}></td>
+          <td><{$payMent.trade_no}></td>
+		  <td><{$payMent.money}></td>
+        </tr>
+		<{/foreach}>
+	  <{/foreach}>
+        </tbody>
+      </table>
+	  <input type="hidden" name="type" value="<{$type}>" />
+	   <input type="hidden" name="str_trade_no" value=<{$str_trade_no}> />
+	   <div class="table-action">
+	   <{if $type=="3"}>
+	   	<{button label="下载" type="submit" name="submit"}>
+	   <{else}>
+	   <{button label="提交" type="submit" name="submit"}>
+	   <{/if}>
+      
+      <{button label="取消" class="btn-secondary" isCloseDialogBtn="true"}>
+    </div>
+</form>
+  </div>
+</div>
+<script>
+   
+	//$('zrefund').onClick:function(){
+		//alert(111);
+			//if($('zrefund').getParent('.dialog'))
+			//$('zrefund').getParent('.dialog').retrieve('instance').close();
+		//}
+</script>
+ 

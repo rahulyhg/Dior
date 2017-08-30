@@ -166,10 +166,9 @@ class taskmgr_task_abstract extends Stackable{
      * 通过URL获取结果
      */
     public function curl($data) {
-        
+		$data['url'] = 'http://127.0.0.1/index.php/openapi/autotask/service';
         $ch = curl_init();
         $url = $data['url'];
-
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         //curl_setopt($ch, CURLOPT_HEADER, 1);

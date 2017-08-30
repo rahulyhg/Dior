@@ -88,9 +88,9 @@
     <div class="span-auto"><strong class="action-bar-info">订单操作：</strong></div>
     <{if $act_confirm || $act_abnormal}>
     <div class="flt">
-    <{if $Cancel eq '1'}>
-      <{if  $order.ship_status != 0 || $order.status != 'active' || $order.process_status == 'cancel'}>
-      <{button label="订单取消" disabled="disabled"}>&nbsp;
+    <{if true}>
+      <{if  $order.ship_status != 0 || $order.status != 'active' || $order.process_status == 'cancel'||$order.pay_status == '1'||$order.process_status == 'splited'}>
+      
       <{else}>
       <{button label="订单取消" onclick="new Dialog('index.php?ctl=admin_order&act=do_cancel&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:700,height:300,title:'订单取消'})"}>&nbsp;
       <{/if}>
@@ -165,8 +165,12 @@
 
     <div class="flt">
     <{if $flag_refund eq 1 && $order.order_source neq 'taofenxiao' && ($order.process_status neq 'splitting' && $order.ship_status neq '3')}>
-      <{if  $isrefund == 'false' || ($order.pay_status != 1 &&$order.pay_status != 3 && $order.pay_status != 4) || $order.status != 'active' || $order.process_status == 'cancel'}>
-      <{button label="退款申请" disabled="disabled"}>&nbsp;
+      <{if  $isrefund == 'false' || ($order.pay_status != 1 &&$order.pay_status != 3 && $order.pay_status != 4) || $order.status != 'active' || $order.process_status == 'cancel'||$order.process_status == 'splited'}>
+		<{if $order.shop_type=='cardshop'}>
+			<{button label="退款申请" onclick="if({$refundapply_confirm}){
+	  new Dialog('index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:800,height:550,title:'订单{$order.order_bn}的退款申请',onLoad:function(){ $('back_url').set('value','order_confirm'); }});
+	}" }>&nbsp;
+		<{/if}>
       <{else}>
       <{button label="退款申请" onclick="if({$refundapply_confirm}){
   new Dialog('index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]={$order.order_id}&finder_id={$env.get.finder_id}',{width:800,height:550,title:'订单{$order.order_bn}的退款申请',onLoad:function(){ $('back_url').set('value','order_confirm'); }});
@@ -176,7 +180,7 @@
     </div>
 
     <div class="flt">
-    <{if $flag_fail_time eq 1}>
+    <{if false}>
     <{input type="date" name="order[order_limit_time]" maxlength=20 value=$order.order_limit_time}>&nbsp;
       <{if $order.pay_status != 0 || $order.pay_status != 0 || $order.status != 'active' || $order.process_status == 'cancel'}>
       <{button label="失效时间编辑" disabled="disabled"}>&nbsp;

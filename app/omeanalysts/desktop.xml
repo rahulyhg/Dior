@@ -16,6 +16,8 @@
         <permission id="analysis_branchdelivery">仓库发货情况统计</permission>
         <permission id="analysis_storeStatus">库存状况分析</permission>
         <permission id="analysis_export">报表导出</permission>
+
+		<permission id="analysis_stream">订单流水</permission>
     </permissions>
 
 
@@ -40,7 +42,12 @@
             <menu controller='ome_analysis' action='products' permission='analysis_products' display='true' order='1000701'>货品销售统计</menu>
             <menu controller='ome_goodsale' action='index' permission='analysis_goods_sale' display='true' order='1000702'>商品销售明细</menu>
             <menu controller='ome_analysis' action='sales' permission='analysis_sales' display='true' order='1000703'>订单销售统计</menu>
-            <menu controller='ome_analysis' action='aftersale' permission='analysis_aftersale' display='true' order='1000704'>退货统计</menu>            
+            <menu controller='ome_analysis' action='aftersale' permission='analysis_aftersale' display='true' order='1000704'>退货统计</menu>
+			
+			<menu controller='ome_analysis' action='order_stream' permission='analysis_export' display='true' order='1000705'>订单流水</menu>
+			
+			<menu controller='ome_analysis' action='order_stream_item' permission='analysis_export' display='true' order='1000706'>明细流水</menu>
+
             <menu permission='analysis_export' display='false'>报表导出</menu>    
         </menugroup>
     </workground>

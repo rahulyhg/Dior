@@ -242,6 +242,18 @@ function response_html(val){
     <td><{input type='text' name='pay_account' value=$payment_account width="80"}></td>
   </tr>
   <tr>
+  	<td colspan="2"></td><td align="right"><{t}>收款银行:<{/t}></td><td><{input type='text' name='BeneficiaryBankName' width="80"}></td>
+  </tr>
+  <tr>
+  	<td colspan="2"></td><td align="right"><{t}>收款人姓名:<{/t}></td><td><{input type='text' name='BeneficiaryName' width="80"}></td>
+  </tr>
+   <tr>
+  	<td colspan="2"></td><td align="right"><{t}>是否为跨行:<{/t}></td><td>是:<input type="radio" value="1" name="isk" />否:<input type="radio" value="0" name="isk"  checked="checked"/></td>
+  </tr>
+   <tr>
+  	<td colspan="2"></td><td align="right"><{t}>是否为上海建行:<{/t}></td><td>是:<input type="radio" value="1" name="iss" />否:<input type="radio" value="0" name="iss"  checked="checked"/></td>
+  </tr>
+  <tr>
        <th><{t}>剩余金额:<{/t}></th>
     <td><{$order.payed}></td>
 

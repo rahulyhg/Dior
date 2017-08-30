@@ -33,7 +33,7 @@ class pam_callback{
                     $params['uname'] = $_POST['uname'];
                     foreach(kernel::servicelist('pam_login_listener') as $service)
                     {
-                        $service->listener_login($params);
+                       // $service->listener_login($params);
                     }   
                     if($params['redirect'] && $module_uid){
                         $service = kernel::service('callback_infomation');

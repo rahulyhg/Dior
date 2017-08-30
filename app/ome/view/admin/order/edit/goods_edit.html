@@ -29,8 +29,8 @@
         <td class="goods_bn"><{$obj.bn}></td>
         <td class="goods_name"><{$obj.name}></td>
         <td class="goods_addon">商品</td>
-        <td class="goods_num"><input type="text" id="obj_pmt_<{$obj.obj_id}>" aid="<{$obj.obj_id}>" vtype="unsigned" atype="obj_pmt_price" class="goods_pmt_price" value="<{$obj.pmt_price|default:0}>" name="goods[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $g_del == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" />(额外)</td>
-        <td class="goods_price"><input type="text" style="display:none" id="goodstotal_<{$obj.obj_id}>" size="2" value="0" /><input type="text" size="5" id="goodssalepr_<{$obj.obj_id}>" class="none_input goodssaleprice" readonly="readonly" value="<{$obj.sale_price}>"></td>
+        <td class="goods_num"><input type="text" readonly="readonly" id="obj_pmt_<{$obj.obj_id}>" aid="<{$obj.obj_id}>" vtype="unsigned" atype="obj_pmt_price" class="goods_pmt_price" value="<{$obj.pmt_price|default:0}>" name="goods[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $g_del == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" />(额外)</td>
+        <td class="goods_price"><input type="text" readonly="readonly" style="display:none" id="goodstotal_<{$obj.obj_id}>" size="2" value="0" /><input type="text" readonly="readonly" size="5" id="goodssalepr_<{$obj.obj_id}>" class="none_input goodssaleprice" readonly="readonly" value="<{$obj.sale_price}>"></td>
         <td class="goods_op"></td>
 
 
@@ -41,15 +41,15 @@
         <td class="item_bn <{$item.item_type}>class">
           <span class="number"><{$item.bn}></span>
           <input type="hidden" value="<{$item.bn}>" name="bn_list[]" /></td>
-        <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" value="<{$item.product_id}>" style="display:none;" /></td>
+        <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" readonly="readonly" value="<{$item.product_id}>" style="display:none;" /></td>
         <td class="item_addon"><{$item.addon}></td>
         <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="goods[obj][<{$obj.obj_id}>][]" />
-          <input atype="num" aid="<{$item.item_id}>" name="goods[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" /></td>
-        <td class="item_price"><input name="goods[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" atype="price" id="pr_<{$item.item_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" /></td>
+          <input atype="num" aid="<{$item.item_id}>" name="goods[num][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.quantity}>" vtype="required&&unsignedint" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" /></td>
+        <td class="item_price"><input name="goods[price][<{$item.item_id}>]" type="text" readonly="readonly" size="8" value="<{$item.price}>" vtype="required&&unsigned" atype="price" id="pr_<{$item.item_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" /></td>
 
-        <td class="goods_num"><input type="text" id="pmt_<{$item.item_id}>" aid="<{$item.item_id}>" vtype="unsigned" atype="pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price"  name="goods[item_pmt_price][<{$item.item_id}>]" size="6" <{if $item.delete == 'true'}>disabled="true"<{/if}>  onchange="changetotalgoods(this);total();" /></td>
+        <td class="goods_num"><input type="text" readonly="readonly" id="pmt_<{$item.item_id}>" aid="<{$item.item_id}>" vtype="unsigned" atype="pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price"  name="goods[item_pmt_price][<{$item.item_id}>]" size="6" <{if $item.delete == 'true'}>disabled="true"<{/if}>  onchange="changetotalgoods(this);total();" /></td>
         
-        <td class="goods_num"><input type="text" class="goodstotal" style="display:none" id="goodstotal_<{$item.item_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" size="5" id="goodssalepr_<{$item.item_id}>" readonly="readonly" <{if $item.delete == 'true'}>disabled="true"<{/if}> class="none_input<{if $obj.obj_type != 'gift' && $obj.order_items|@count == '1'}> goodssaleprice<{/if}>" value="<{$item.sale_price}>"></td>
+        <td class="goods_num"><input type="text" readonly="readonly" class="goodstotal" style="display:none" id="goodstotal_<{$item.item_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" readonly="readonly" size="5" id="goodssalepr_<{$item.item_id}>" readonly="readonly" <{if $item.delete == 'true'}>disabled="true"<{/if}> class="none_input<{if $obj.obj_type != 'gift' && $obj.order_items|@count == '1'}> goodssaleprice<{/if}>" value="<{$item.sale_price}>"></td>
 
 
         <{foreach from=$branch_list item=branch}>
@@ -59,11 +59,7 @@
         <{/foreach}>
         
         <td class="item_op" objid="<{$obj.obj_id}>">
-          <{if $item.delete == 'false'}>
-          <{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }></td>
-        <{else}>
-        <{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }></td>
-      <{/if}>
+         无
       </tr>
       <{/foreach}>
     <{/foreach}>
@@ -99,8 +95,8 @@
         <td class="goods_bn"><{$obj.bn}></td>
         <td class="goods_name"><{$obj.name}></td>
         <td class="goods_addon">商品</td>
-        <td class="goods_num"><input type="text" id="obj_pmt_<{$obj.obj_id}>" aid="<{$obj.obj_id}>" vtype="unsigned" atype="obj_pmt_price" class="goods_pmt_price" value="<{$obj.pmt_price|default:0}>" name="goods[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $g_del == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" />(额外)</td>
-        <td class="goods_price"><input type="text" style="display:none" id="goodstotal_<{$obj.obj_id}>" size="2" value="0" /><input type="text" size="5" id="goodssalepr_<{$obj.obj_id}>" class="none_input goodssaleprice" readonly="readonly" value="<{$obj.sale_price}>"></td>
+        <td class="goods_num"><input type="text" readonly="readonly" id="obj_pmt_<{$obj.obj_id}>" aid="<{$obj.obj_id}>" vtype="unsigned" atype="obj_pmt_price" class="goods_pmt_price" value="<{$obj.pmt_price|default:0}>" name="goods[obj_pmt_price][<{$obj.obj_id}>]" size="6" <{if $g_del == 'true'}>disabled="true"<{/if}> onchange="changetotalgoods(this);total();" />(额外)</td>
+        <td class="goods_price"><input type="text" readonly="readonly" style="display:none" id="goodstotal_<{$obj.obj_id}>" size="2" value="0" /><input type="text" readonly="readonly" size="5" id="goodssalepr_<{$obj.obj_id}>" class="none_input goodssaleprice" readonly="readonly" value="<{$obj.sale_price}>"></td>
         <td class="goods_op"></td>
 
 
@@ -111,25 +107,25 @@
         <td class="item_bn <{$item.item_type}>class">
           <span class="number"><{$item.bn}></span>
           <input type="hidden" value="<{$item.bn}>" name="bn_list[]" /></td>
-        <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" value="<{$item.product_id}>" style="display:none;" /></td>
+        <td class="item_name"><{$item.name}><input name="product_ids[]" id="product_ids_<{$item.item_id}>" type="text" readonly="readonly" value="<{$item.product_id}>" style="display:none;" /></td>
         <td class="item_addon"><{$item.addon}></td>
         
-        <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="goods[obj][<{$obj.obj_id}>][]" /><input atype="num" aid="<{$item.item_id}>" name="goods[num][<{$item.item_id}>]" type="text" size="5" value="<{$item.quantity}>" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$item.quantity}>" id="old_goods_nums_<{$item.item_id}>" /></td>
+        <td class="item_num"><input type="hidden" value="<{$item.item_id}>" name="goods[obj][<{$obj.obj_id}>][]" /><input atype="num" aid="<{$item.item_id}>" name="goods[num][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.quantity}>" id="num_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{else}>readonly="readonly" style="color:#666;"<{/if}> /><input type="hidden" value="<{$item.quantity}>" id="old_goods_nums_<{$item.item_id}>" /></td>
         
         <td class="item_buy_nums">
         <{if $item.left_nums <= 0}>
-        	<input aid="<{$item.item_id}>" name="goods[item_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="item_buy_nums_<{$item.item_id}>" disabled="true" />
+        	<input aid="<{$item.item_id}>" name="goods[item_buy_nums][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.left_nums}>" id="item_buy_nums_<{$item.item_id}>" disabled="true" />
         <{else}>
-        	<input atype="num" aid="<{$item.item_id}>" name="goods[item_buy_nums][<{$item.item_id}>]" type="text" size="5" value="<{$item.left_nums}>" id="item_buy_nums_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotalgoods(this);total();" />
+        	<input atype="num" aid="<{$item.item_id}>" name="goods[item_buy_nums][<{$item.item_id}>]" type="text" readonly="readonly" size="5" value="<{$item.left_nums}>" id="item_buy_nums_<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{/if}> onchange="split_changetotalgoods(this);total();" />
         <{/if}>
         <{if $item.make_nums}><br />(<font color="#f00;">已发货：<{$item.make_nums}></font>)<input type="hidden" value="<{$item.make_nums}>" id="split_send_<{$item.item_id}>" /><{/if}>
         </td>
         
-        <td class="item_price"><input name="goods[price][<{$item.item_id}>]" type="text" size="8" value="<{$item.price}>" vtype="required&&unsigned" atype="price" id="pr_<{$item.item_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalgoods(this);total();"<{/if}> /></td>
+        <td class="item_price"><input name="goods[price][<{$item.item_id}>]" type="text" readonly="readonly" size="8" value="<{$item.price}>" vtype="required&&unsigned" atype="price" id="pr_<{$item.item_id}>" aid="<{$item.item_id}>" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalgoods(this);total();"<{/if}> /></td>
 
-        <td class="goods_num"><input type="text" id="pmt_<{$item.item_id}>" aid="<{$item.item_id}>" vtype="unsigned" atype="pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price"  name="goods[item_pmt_price][<{$item.item_id}>]" size="6" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalgoods(this);total();"<{/if}> /></td>
+        <td class="goods_num"><input type="text" readonly="readonly" id="pmt_<{$item.item_id}>" aid="<{$item.item_id}>" vtype="unsigned" atype="pmt_price" value="<{$item.pmt_price|default:0}>" class="goods_pmt_price"  name="goods[item_pmt_price][<{$item.item_id}>]" size="6" <{if $item.delete == 'true'}>disabled="true"<{elseif $item.make_nums > 0}>readonly="readonly" style="color:#666;"<{else}>onchange="changetotalgoods(this);total();"<{/if}> /></td>
         
-        <td class="goods_num"><input type="text" class="goodstotal" style="display:none" id="goodstotal_<{$item.item_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" size="5" id="goodssalepr_<{$item.item_id}>" readonly="readonly" <{if $item.delete == 'true'}>disabled="true"<{/if}> class="none_input<{if $obj.obj_type != 'gift' && $obj.order_items|@count == '1'}> goodssaleprice<{/if}>" value="<{$item.sale_price}>"></td>
+        <td class="goods_num"><input type="text" readonly="readonly" class="goodstotal" style="display:none" id="goodstotal_<{$item.item_id}>" size="2" value="0" <{if $item.delete == 'true'}>disabled="true"<{/if}> /><input type="text" readonly="readonly" size="5" id="goodssalepr_<{$item.item_id}>" readonly="readonly" <{if $item.delete == 'true'}>disabled="true"<{/if}> class="none_input<{if $obj.obj_type != 'gift' && $obj.order_items|@count == '1'}> goodssaleprice<{/if}>" value="<{$item.sale_price}>"></td>
 
 
         <{foreach from=$branch_list item=branch}>
@@ -140,11 +136,7 @@
         
         <td class="item_op" objid="<{$obj.obj_id}>">
         <{if empty($item.make_nums)}>
-            <{if $item.delete == 'false'}>
-            	<{button type="button" label="删除" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }>
-            <{else}>
-            	<{button type="button" label="恢复" id="d_{$item.item_id}" onclick="del_goods('{$item.item_id}');" }>
-            <{/if}>
+            无
         <{else}>
         	<span style="color:red;"><{if $item.left_nums <= 0}>已拆分完<{else}>部分拆分<{/if}></span>
         <{/if}>
@@ -231,9 +223,9 @@ function init(rs){
 
 function create(pid,rs){
 	<{if $delivery_list}>
-    var trr = new Element('tr', {id:'tr_'+pid,oid:pid,'aid':pid,'g-pid':pid,'g-type':'product','g-del':'a',html:'<td>'+rs.bn+'</td><td>'+rs.name+'<input name="product_ids[]" id="product_ids_'+pid+'" type="text" value="'+rs.product_id+'" style="display:none;" /></td><td>'+(rs.spec_info||'-')+'</td><td><input type="text" onchange="changetotalgoods(this);total();" id="num_'+pid+'" vtype="required&amp;&amp;unsignedint" value="1" size="5" name="goods[newnum]['+pid+']" aid="'+pid+'" atype="num"></td><td>0</td><td><input type="text" onchange="changetotalgoods(this);total();" id="pr_'+pid+'" vtype="required&amp;&amp;unsigned" value="'+rs.price+'" size="8" name="goods[newprice]['+pid+']" aid="'+pid+'" atype="price" value="0"></td><td><input type="text" onchange="changetotalgoods(this);total();" size="6" name="goods[new_item_pmt_price]['+pid+']" value="0" atype="pmt_price" vtype="unsigned" aid="'+pid+'" id="pmt_'+pid+'"></td><td><input type="text" value="0" size="2" id="goodstotal_'+pid+'" style="display:none;" class="goodstotal"><input type="text" size="5" class="none_input goodssaleprice" value="0" readonly="readonly" id="goodssalepr_'+pid+'"></td><td><button class="btn" onclick="del_goods_new('+pid+');" id="d_'+pid+'" type="button"><span><span>删除</span></span></button></td>'}).inject($E('#goods_list tbody'));
+    var trr = new Element('tr', {id:'tr_'+pid,oid:pid,'aid':pid,'g-pid':pid,'g-type':'product','g-del':'a',html:'<td>'+rs.bn+'</td><td>'+rs.name+'<input name="product_ids[]" id="product_ids_'+pid+'" type="text" readonly="readonly" value="'+rs.product_id+'" style="display:none;" /></td><td>'+(rs.spec_info||'-')+'</td><td><input type="text" readonly="readonly" onchange="changetotalgoods(this);total();" id="num_'+pid+'" vtype="required&amp;&amp;unsignedint" value="1" size="5" name="goods[newnum]['+pid+']" aid="'+pid+'" atype="num"></td><td>0</td><td><input type="text" readonly="readonly" onchange="changetotalgoods(this);total();" id="pr_'+pid+'" vtype="required&amp;&amp;unsigned" value="'+rs.price+'" size="8" name="goods[newprice]['+pid+']" aid="'+pid+'" atype="price" value="0"></td><td><input type="text" readonly="readonly" onchange="changetotalgoods(this);total();" size="6" name="goods[new_item_pmt_price]['+pid+']" value="0" atype="pmt_price" vtype="unsigned" aid="'+pid+'" id="pmt_'+pid+'"></td><td><input type="text" readonly="readonly" value="0" size="2" id="goodstotal_'+pid+'" style="display:none;" class="goodstotal"><input type="text" readonly="readonly" size="5" class="none_input goodssaleprice" value="0" readonly="readonly" id="goodssalepr_'+pid+'"></td><td><button class="btn" onclick="del_goods_new('+pid+');" id="d_'+pid+'" type="button"><span><span>删除</span></span></button></td>'}).inject($E('#goods_list tbody'));
 	<{else}>
-    var trr = new Element('tr', {id:'tr_'+pid,oid:pid,'aid':pid,'g-pid':pid,'g-type':'product','g-del':'a',html:'<td>'+rs.bn+'</td><td>'+rs.name+'<input name="product_ids[]" id="product_ids_'+pid+'" type="text" value="'+rs.product_id+'" style="display:none;" /></td><td>'+(rs.spec_info||'-')+'</td><td><input type="text" onchange="changetotalgoods(this);total();" id="num_'+pid+'" vtype="required&amp;&amp;unsignedint" value="1" size="5" name="goods[newnum]['+pid+']" aid="'+pid+'" atype="num"></td><td><input type="text" onchange="changetotalgoods(this);total();" id="pr_'+pid+'" vtype="required&amp;&amp;unsigned" value="'+rs.price+'" size="8" name="goods[newprice]['+pid+']" aid="'+pid+'" atype="price" value="0"></td><td><input type="text" onchange="changetotalgoods(this);total();" size="6" name="goods[new_item_pmt_price]['+pid+']" value="0" atype="pmt_price" vtype="unsigned" aid="'+pid+'" id="pmt_'+pid+'"></td><td><input type="text" value="0" size="2" id="goodstotal_'+pid+'" style="display:none;" class="goodstotal"><input type="text" size="5" class="none_input goodssaleprice" value="0" readonly="readonly" id="goodssalepr_'+pid+'"></td><td><button class="btn" onclick="del_goods_new('+pid+');" id="d_'+pid+'" type="button"><span><span>删除</span></span></button></td>'}).inject($E('#goods_list tbody'));
+    var trr = new Element('tr', {id:'tr_'+pid,oid:pid,'aid':pid,'g-pid':pid,'g-type':'product','g-del':'a',html:'<td>'+rs.bn+'</td><td>'+rs.name+'<input name="product_ids[]" id="product_ids_'+pid+'" type="text" readonly="readonly" value="'+rs.product_id+'" style="display:none;" /></td><td>'+(rs.spec_info||'-')+'</td><td><input type="text" readonly="readonly" onchange="changetotalgoods(this);total();" id="num_'+pid+'" vtype="required&amp;&amp;unsignedint" value="1" size="5" name="goods[newnum]['+pid+']" aid="'+pid+'" atype="num"></td><td><input type="text" readonly="readonly" onchange="changetotalgoods(this);total();" id="pr_'+pid+'" vtype="required&amp;&amp;unsigned" value="'+rs.price+'" size="8" name="goods[newprice]['+pid+']" aid="'+pid+'" atype="price" value="0"></td><td><input type="text" readonly="readonly" onchange="changetotalgoods(this);total();" size="6" name="goods[new_item_pmt_price]['+pid+']" value="0" atype="pmt_price" vtype="unsigned" aid="'+pid+'" id="pmt_'+pid+'"></td><td><input type="text" readonly="readonly" value="0" size="2" id="goodstotal_'+pid+'" style="display:none;" class="goodstotal"><input type="text" readonly="readonly" size="5" class="none_input goodssaleprice" value="0" readonly="readonly" id="goodssalepr_'+pid+'"></td><td><button class="btn" onclick="del_goods_new('+pid+');" id="d_'+pid+'" type="button"><span><span>删除</span></span></button></td>'}).inject($E('#goods_list tbody'));
 	<{/if}>
 
     changetotalgoods($('pr_'+pid));

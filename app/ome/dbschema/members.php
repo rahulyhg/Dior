@@ -13,6 +13,30 @@ $db['members']=array (
       'editable' => false,
       'in_list' => true,
     ),
+	'm_memeber_num' => 
+    array (
+      'type' => 'varchar(50)',
+      'label' => '前端用户编号',
+      'width' => 75,
+      'searchtype' => 'head',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'filterdefault' => 'true',
+      'in_list' => true,
+      'default_in_list' => true,
+    ),
+	'm_memeber_card' => 
+    array (
+      'type' => 'varchar(50)',
+      'label' => '前端用户卡号',
+      'width' => 75,
+      'searchtype' => 'head',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'filterdefault' => 'true',
+      'in_list' => true,
+      'default_in_list' => true,
+    ),
     'uname' => 
     array (
       'type' => 'varchar(50)',

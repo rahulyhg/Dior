@@ -1,0 +1,14 @@
+<desktop>
+   <workground name="订单" id="order_center" order="100">
+  
+    <menugroup name="订单查看">
+    <menu controller='admin_order' action='index' permission='errororder' display='true' order='1000900'>
+	接口异常订单</menu>
+     
+    </menugroup>
+    </workground>
+  
+  <permissions>
+    <permission id="errororder" display='true'>接口异常订单</permission>
+  </permissions>
+</desktop>

@@ -21,6 +21,28 @@ $db['refund_apply']=array (
       'in_list' => true,
       'is_title' => true,
     ),
+	  'alipaybatchno' =>
+    array (
+      'type' => 'varchar(200)',
+      'required' => false,
+      'default' => '',
+      'label' => '支付宝退款批次号',
+      //'width' => 140,
+      'editable' => false,
+   //   'in_list' => true,
+    //  'is_title' => true,
+    ),
+	 'wxpaybatchno' =>
+    array (
+      'type' => 'varchar(200)',
+      'required' => false,
+      'default' => '',
+      'label' => '微信退款批次号',
+      //'width' => 140,
+      'editable' => false,
+   //   'in_list' => true,
+    //  'is_title' => true,
+    ),
     'order_id' =>
     array (
       'type' => 'table:orders@ome',
@@ -29,6 +51,16 @@ $db['refund_apply']=array (
       'in_list' => false,
       'default_in_list' => false,
       'label' => '订单号',
+      'editable' => false,
+    ),
+	'reship_id' =>
+    array (
+      'type' => 'varchar(200)',
+      'required' => false,
+      'editable' => false,
+      'in_list' => false,
+      'default_in_list' => false,
+      'label' => 'reship_id',
       'editable' => false,
     ),
     'pay_type' => 
@@ -62,6 +94,27 @@ $db['refund_apply']=array (
       'in_list' => true,
       'default_in_list' => true,
       'label' => '退款银行',
+    ),
+	 'BeneficiaryName' =>
+    array (
+      'type' => 'varchar(50)',
+      'editable' => false,
+      'in_list' => true,
+      'label' => '收款人',
+    ),
+	 'BeneficiaryBankName' =>
+    array (
+      'type' => 'varchar(250)',
+      'editable' => false,
+      'in_list' => true,
+      'label' => '收款人银行',
+    ),
+	 'BankName' =>
+    array (
+      'type' => 'varchar(250)',
+      'editable' => false,
+      'in_list' => true,
+      'label' => '银行',
     ),
     'pay_account' =>
     array (
@@ -106,6 +159,16 @@ $db['refund_apply']=array (
        'in_list' => true,
       'default_in_list' => true,
       'label' => '退款原因',
+    ),
+	  'apimsg' =>
+    array (
+      'type' => 'text',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+       'in_list' => true,
+      'default_in_list' => true,
+      'label' => '退款错误信息',
     ),
     'create_time' =>
     array (
@@ -158,6 +221,26 @@ $db['refund_apply']=array (
       'label' => '退款状态',
       'filtertype' => 'yes',
       'filterdefault' => true,
+    ),
+	 'isk' =>
+    array (
+      'type' =>
+      array (
+        0 => '不是',
+        1 => '是',
+      ),
+      'default' => '0',
+	  'label' => '是否跨行',
+    ),
+	 'iss' =>
+    array (
+      'type' =>
+      array (
+        0 => '不是',
+        1 => '是',
+      ),
+      'default' => '0',
+	  'label' => '是否上海建行',
     ),
     'disabled' => 
     array (
@@ -248,6 +331,13 @@ $db['refund_apply']=array (
       'width' => 130,
       'editable' => false,
     
+    ),
+	 'wxstatus' => 
+    array (
+      'type' => 'bool',
+      'required' => true,
+      'default' => 'false',
+     // 'editable' => false,
     ),
     'archive' =>
     array (

@@ -1,0 +1,27 @@
+<?php
+return array(
+	'keyword1'=>array(//订单号
+		'value'=>'%s',
+		'color'=>'#173177',
+	),
+	'keyword2'=>array(//支付时间
+		'value'=>'%s',
+		'color'=>'#173177',
+	),
+	'keyword3'=>array(//商品名称
+		'value'=>'%s',
+		'color'=>'#173177',
+	),
+	'keyword4'=>array(//收货人
+		'value'=>'%s',
+		'color'=>'#173177',
+	),
+	'keyword5'=>array(//收货地址
+		'value'=>'%s',
+		'color'=>'#173177',
+	),
+	'keyword6'=>array(//
+		'value'=>'%s',
+		'color'=>'#173177',
+	),
+);

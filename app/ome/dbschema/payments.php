@@ -237,6 +237,58 @@ $db['payments']=array (
       'filtertype' => 'normal',
       'filterdefault' => true,
     ),
+	'tatal_amount'=>array( 
+	  'type' => 'money',
+      'default' => '0',
+	  'label' => '实际到账金额',
+      'required' => true,
+      'editable' => false,
+	),
+	'pay_fee'=>array(
+	  'type' => 'money',
+      'default' => '0',
+	  'label' => '手续费',
+      'required' => true,
+      'editable' => false,
+	),
+	'statement_status'=>array(
+	  'type' => 'bool',
+	  'label' => '是否已生成对账单',
+      'default' => 'false',
+      'editable' => false,
+	),
+	'fee_rate'=>array(
+	  'type' => 'decimal(10,4)',
+      'default' => '0',
+	  'label' => '手续费率',
+      'required' => true,
+      'editable' => false,
+	),
+	'difference_money'=>array(
+	  'type' => 'money',
+      'default' => '0',
+	  'label' => '差额',
+      'required' => true,
+      'editable' => false,
+	),
+	'balance_status'=>array(
+	  'type' => array(
+		'none'=>'未对账',
+		'auto'=>'自动对账完成',
+		'hand'=>'手工对账完成',
+		'require'=>'需要手工确认',
+		'sync'=>'已同步',
+	  ),
+	  'label' => '对账状态',
+      'default' => 'none',
+      'required' => true,
+      'editable' => false,
+	),
+	'difference_reason'=>array(
+	  'type' => 'varchar(225)',
+	  'label' => '差额原因',
+      'editable' => false,
+	),
     'payment_refer' =>
     array(
       'type' =>

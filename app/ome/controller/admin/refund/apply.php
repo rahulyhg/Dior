@@ -1,4 +1,10 @@
 <?php
+define('PHPEXCEL_ROOT', ROOT_DIR.'/app/omecsv/lib/static');
+require_once PHPEXCEL_ROOT.'/PHPExcel.php';
+require_once PHPEXCEL_ROOT.'/PHPExcel/IOFactory.php';
+require_once PHPEXCEL_ROOT.'/PHPExcel/CachedObjectStorageFactory.php';
+require_once PHPEXCEL_ROOT.'/PHPExcel/Settings.php';
+require_once PHPEXCEL_ROOT.'/PHPExcel/CachedObjectStorage/MemorySerialized.php';
 class ome_ctl_admin_refund_apply extends desktop_controller{
     var $name = "退款单";
     var $workground = "finance_center";
@@ -42,32 +48,165 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
        $action = array();
        switch ($_GET['view']) {
             
-            case '1':
-            case '2':
-            case '3':
-            default:
-                $action[] = array(
+           
+				case '7':
+					default:
+					$action [] = array(
+							'label' => '微信批量退款',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=allRefund&type=1',
+							'target' => "dialog::{width:700,height:300,title:'微信批量退款'}",
+							
+					);
+					$action [] = array(
+							'label' => '更新微信退款状态',
+							'href' => 'index.php?app=ome&ctl=admin_refund_apply&act=checkRefund&type=1',
+							
+					);
+ 					$action[] = array(
                         'label' => '批量接受申请',
                         'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=agree',
                         'target' => "dialog::{width:700,height:490,title:'批量接受申请'}",
                         
                       );    
-                $action [] = array(
-                        'label' => '批量拒绝',
-                        'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=refuse',
-                    'target' => "dialog::{width:700,height:490,title:'批量拒绝'}",
-                        
-                      );
-                $action[] = array(
-                        'label' => '批量同步天猫退款单',
-                        'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_get_refund_detial&type=batch',
-                        'target' => "dialog::{width:700,height:490,title:'批量同步'}",
-                );
+					$action [] = array(
+							'label' => '批量拒绝',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=refuse',
+						'target' => "dialog::{width:700,height:490,title:'批量拒绝'}",
+							
+						  );
+					/*$action[] = array(
+							'label' => '批量同步天猫退款单',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_get_refund_detial&type=batch',
+							'target' => "dialog::{width:700,height:490,title:'批量同步'}",
+					);*/
                 break;
-                
-                case '4':
-                case '5':
-                case '6':
+				case '8':
+					default:
+					$action [] = array(
+							'label' => '支付宝批量退款',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=allRefund&type=2',
+							'target' => "dialog::{width:700,height:300,title:'支付宝批量退款'}",
+							
+					);
+					$action[] = array(
+                        'label' => '批量接受申请',
+                        'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=agree',
+                        'target' => "dialog::{width:700,height:490,title:'批量接受申请'}",
+                        
+                      );    
+					$action [] = array(
+							'label' => '批量拒绝',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=refuse',
+						'target' => "dialog::{width:700,height:490,title:'批量拒绝'}",
+							
+						  );
+					/*$action[] = array(
+							'label' => '批量同步天猫退款单',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_get_refund_detial&type=batch',
+							'target' => "dialog::{width:700,height:490,title:'批量同步'}",
+					);*/
+                break;
+				case '10':
+					default:
+					$action [] = array(
+							'label' => '货到付款批量退款',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=allRefund&type=3',
+							'target' => "dialog::{width:700,height:300,title:'货到付款批量退款'}",
+							
+					);
+					$action [] = array(
+							'label' => '退款失败',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=codRefundFail&type=3',
+							'target' => "dialog::{width:300,height:300,title:'退款失败'}",
+							
+					);
+					/*$action [] = array(
+							'label' => '模拟成功退款',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=moniS&type=3',
+						//	'target' => "dialog::{width:700,height:300,title:'模拟成功退款'}",
+							
+					);
+					$action [] = array(
+							'label' => '模拟失败退款',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=moniF&type=3',
+						//	'target' => "dialog::{width:700,height:300,title:'模拟失败退款'}",
+							
+					);*/
+					$action [] = array(
+							'label' => '导入回执文件',
+							'href' => 'index.php?app=ome&ctl=admin_refund_apply&act=importCod',
+							'target' => "dialog::{width:400,height:150,title:'导入'}",
+							
+					);
+					$action[] = array(
+                        'label' => '批量接受申请',
+                        'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=agree',
+                        'target' => "dialog::{width:700,height:490,title:'批量接受申请'}",
+                        
+                      );    
+					$action [] = array(
+							'label' => '批量拒绝',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=refuse',
+						'target' => "dialog::{width:700,height:490,title:'批量拒绝'}",
+							
+						  );
+					/*$action[] = array(
+							'label' => '批量同步天猫退款单',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_get_refund_detial&type=batch',
+							'target' => "dialog::{width:700,height:490,title:'批量同步'}",
+					);*/
+                break;
+				case '5':
+					$action [] = array(
+							'label' => '退回已审核状态',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=setStatusTwo',
+							'confirm' => '确定退回已审核状态吗?(如果长时间收不到第三方退款成功或失败回执)',
+							'target' => "dialog::{width:700,height:490,title:'退回待审核状态'}",
+							
+						  );
+					break;
+				case '9':
+				case '1':
+				case '2':
+				case '3':
+				case '12':
+				$action [] = array(
+							'label' => '礼品卡批量退款',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=allRefund&type=99',
+							'target' => "dialog::{width:700,height:300,title:'礼品卡批量退款'}",
+							
+					);
+					$action[] = array(
+                        'label' => '批量接受申请',
+                        'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=agree',
+                        'target' => "dialog::{width:700,height:490,title:'批量接受申请'}",
+                        
+                      );    
+					$action [] = array(
+							'label' => '批量拒绝',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=refuse',
+						'target' => "dialog::{width:700,height:490,title:'批量拒绝'}",
+							
+						  );
+					break;
+             	default:
+					$action[] = array(
+                        'label' => '批量接受申请',
+                        'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=agree',
+                        'target' => "dialog::{width:700,height:490,title:'批量接受申请'}",
+                        
+                      );    
+					$action [] = array(
+							'label' => '批量拒绝',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_Updatestatus&status_type=refuse',
+						'target' => "dialog::{width:700,height:490,title:'批量拒绝'}",
+							
+						  );
+					/*$action[] = array(
+							'label' => '批量同步天猫退款单',
+							'submit' => 'index.php?app=ome&ctl=admin_refund_apply&act=batch_get_refund_detial&type=batch',
+							'target' => "dialog::{width:700,height:490,title:'批量同步'}",
+					);*/
                 break;
                     
             
@@ -85,9 +224,240 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
             'actions' => $action,
        ));
     }
+	
+	function editCod(){
+		$refundapp = &app::get('ome')->model('refund_apply');
+		$apply_id=$_GET['p']['0'];
+		$sql="SELECT pay_account,BeneficiaryName,BeneficiaryBankName,BankName,isk,iss FROM sdb_ome_refund_apply WHERE apply_id='$apply_id'";
+		$arrApply=$refundapp->db->select($sql);
+		$arrApply=$arrApply[0];
+		if(!empty($arrApply['BeneficiaryBankName'])){
+			$this->pagedata['arrApply'] = $arrApply;
+		}
+		//echo "<pre>";print_r($arrApply);exit();
+		$this->pagedata['apply_id'] = $apply_id;
+		$this->page('admin/refund/editcod.html');
+		
+	}
+	
+	function setStatusTwo(){
+		$refundapp = &app::get('ome')->model('refund_apply');
+		$arrApply=$_POST['apply_id'];
+		foreach($arrApply as $apply_id){//echo "<pre>";print_r($_POST);exit();
+			$refundapp->db->exec("UPDATE sdb_ome_refund_apply SET status='2' WHERE apply_id='$apply_id'");
+		}
+		echo "succ";
+	}
+	
+	function saveCod(){
+		//echo "<pre>";print_r($_POST);exit();
+		$this->begin('index.php?app=ome&ctl=admin_refund_apply&act=index&view=10');
+		$post=$_POST;
+		$refundapp = &app::get('ome')->model('refund_apply');
+		$apply_id=$post['apply_id'];
+		$pay_account=$post['pay_account'];
+		$BeneficiaryName=$post['BeneficiaryName'];
+		if($post['iss']=="1"){
+			$BeneficiaryBankName='上海分行';
+			$BankName='中国建设银行';
+			$isk='0';
+			$iss='1';
+		}else{
+			if(strpos($post['BankName'],'建设银行')!==false){
+				$isk='0';
+			}else{
+				$isk='1';
+			}
+			$BeneficiaryBankName=$post['BeneficiaryBankName'];
+			$iss='0';
+			$BankName=$post['BankName'];
+		}
+		
+	
+		$sql="UPDATE sdb_ome_refund_apply SET pay_account='$pay_account',BeneficiaryName='$BeneficiaryName',BeneficiaryBankName='$BeneficiaryBankName',BankName='$BankName',isk='$isk',iss='$iss' WHERE apply_id='$apply_id'";
+		$result=$refundapp->db->exec($sql);
+		if($result){
+            $this->end(true, app::get('eccommon')->_('修改成功').$msg);
+        }else{
+            $this->end(false, app::get('eccommon')->_('修改失败'));
+        }
+		//echo $sql;exit();
+	}
+	
+	function codRefundFail(){
+		$data=$_POST['apply_id'];
+		foreach($data as $apply_id){
+			$apply_id=$apply_id;
+			if(empty($apply_id))continue;
+			
+			$objOrder = kernel::single("ome_mdl_orders");
+			$arrOrderBn=$objOrder->db->select("SELECT o.order_bn,a.reship_id,o.order_id,o.shop_id,a.money,a.bcmoney FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id' AND (a.status!='4' OR a.status!='5' OR a.status!='6')");
+			if(!empty($arrOrderBn[0])){
+				//echo "<pre>";print_r($arrOrderBn);exit();
+				$objOrder->db->exec("UPDATE sdb_ome_refund_apply SET status='6' WHERE apply_id='$apply_id'");
+				kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
+				$result=$this->app->model('refund_apply')->sendRefundStatus($apply_id,2);
+				$result=json_decode($result,true);
+				if($result['success']=="true"){
+					if(kernel::single('ome_cod_refund')->autoRefund($arrOrderBn)){
+						echo "订单:".$arrOrderBn[0]['order_bn']."申请成功<br>";
+					}else{
+						echo "订单:".$arrOrderBn[0]['order_bn']."申请失败<br>";
+					}
+				}else{
+					echo "订单:".$arrOrderBn[0]['order_bn']."申请修改失败<br>";
+				}
+			}
+		}
+		echo "SUCC";
+	}
+	
+	function checkRefund(){
+		$this->begin('index.php?app=ome&ctl=admin_refund_apply&act=index&view=7');
+		app::get('ome')->model('refund_apply')->updateWxRefund();
+		$this->end(true,'更新成功!');
+	}
+	
+	 public function importCod(){
+		$this->pagedata['finder_id'] = $_GET['finder_id'];
+		$this->display('admin/order/import.html');
+	 }
+	
+	public function do_import(){
+		//$this->begin('index.php/index.php#app=ome&ctl=admin_refund_apply&act=index');
+		$fileName = $_FILES['import_file']['name'];
+	//	echo "<pre>";print_r($_FILES);exit;
+        if( !$fileName ){
+			$this->end(false,'上传失败，未上传文件');
+        }
+
+		$pathinfo = pathinfo($fileName);
+
+        $oIo = kernel::servicelist('omecsv_io');
+        foreach( $oIo as $aIo ){        
+            if( $aIo->io_type_name == $pathinfo['extension']){
+                $oImportType = $aIo;
+                break;
+            }
+        }
+        unset($oIo);
+
+		 if( !$oImportType ){
+            echo '<script>top.MessageBox.error("上传失败");alert("导入格式错误");</script>';
+            exit;
+        }
+		$contents = array();
+        $oImportType->fgethandle($_FILES['import_file']['tmp_name'],$contents);
+		//$objRefund=$ke
+		
+		$contents=array_slice($contents,4);
+		
+		kernel::single('ome_cod_refund')->CallBackRefund($contents);
+		/*if(strpos($fileName,"失败")){
+			$contents=array_slice($contents,4);
+			kernel::single('ome_cod_refund')->CallBackRefund($contents,false);
+		}else{
+			$contents=array_slice($contents,10);
+			kernel::single('ome_cod_refund')->CallBackRefund($contents,true);
+		}*/
+		//print_r($_FILES);exit;
+		header("content-type:text/html; charset=utf-8");
+		echo "<script>parent.MessageBox.success(\"导入成功\");alert(\"导入成功\");if(parent.$('import_form').getParent('.dialog'))parent.$('import_form').getParent('.dialog').retrieve('instance').close();if(parent.window.finderGroup&&parent.window.finderGroup['".$_GET['finder_id']."'])parent.window.finderGroup['".$_GET['finder_id']."'].refresh();</script>";
+		//$this->end(true,'操作成功');
+		//
+	}
+	 
+	 
+	function moniS(){
+		$apply_id=$_REQUEST['apply_id']['0'];
+		$this->app->model('refund_apply')->updateCodRefund($apply_id);
+		echo "退款成功";
+	}
+	
+	function moniF(){
+		$apply_id=$_REQUEST['apply_id']['0'];
+		
+						$objOrder = kernel::single("ome_mdl_orders");
+						$arrOrderBn=$objOrder->db->select("SELECT o.order_bn FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
+						$objOrder->db->exec("UPDATE sdb_ome_refund_apply SET status='6' WHERE apply_id='$apply_id'");
+						//echo "<pre>";print_r($arrOrderBn);exit();
+						 kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
+						
+						//传给买尽头2
+						$this->app->model('refund_apply')->sendRefundStatus($apply_id,2);
+		echo "退款失败";exit();
+	}
+	
+	function allRefund(){
+	//kernel::single('omemagento_service_order')->update_status('500000481','refund_failed');exit();
+		if(empty($_GET['type'])){
+			echo "错误,请重试";exit();
+		}
+		$arrApllyId=$_POST['apply_id'];
+		$objPayments=$this->app->model('payment_cfg');
+		$oRefaccept = &$this->app->model('refund_apply');
+		$arrPayments=array();
+		foreach($arrApllyId as $id){
+			$arrPayments[]=$oRefaccept->db->select("SELECT r.apply_id,r.refund_apply_bn,r.BankName,r.BeneficiaryName,r.BeneficiaryBankName,r.pay_account,r.money,r.isk,r.iss,p.trade_no,o.order_bn,o.wx_order_bn,p.money AS p_money,o.pay_bn FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments p ON p.order_id=r.order_id LEFT JOIN sdb_ome_orders o ON o.order_id=r.order_id WHERE r.apply_id='$id' AND r.status='2'");
+		}
+		$arrPayments=array_filter($arrPayments);
+		foreach($arrPayments as $ks=>$vs){
+			foreach($vs as $k=>$v){
+				if($v['pay_bn']=="cod"){
+					if($v['BeneficiaryName']==""||$v['BeneficiaryBankName']==""||$v['pay_account']==""){
+						unset($arrPayments[$ks][$k]);
+					}
+					$arrPayments[$ks][$k]['pay_account']=trim(str_replace(" ","",$arrPayments[$ks][$k]['pay_account']));
+					$arrPayments[$ks][$k]['BeneficiaryName']=trim(str_replace(" ","",$arrPayments[$ks][$k]['BeneficiaryName']));
+					$arrPayments[$ks][$k]['BeneficiaryBankName']=trim(str_replace(" ","",$arrPayments[$ks][$k]['BeneficiaryBankName']));
+				}
+			}
+		}
+		
+		if(empty($arrPayments['0'])){
+			echo "没有可以操作的数据";exit();
+		}
+		$arrPayments=array_filter($arrPayments);
+		
+		$this->pagedata['arrPayments']=$arrPayments;
+		$this->pagedata['type']=$_GET['type'];
+		 
+		$this->pagedata['str_trade_no']=json_encode($arrPayments);
+		 //  echo "<pre>";print_r($this->pagedata);exit();
+		$this->display("admin/order/allRefund.html");
+	}
+	
+	function doRefund(){
+	
+	 	header("Content-type: text/html; charset=utf-8");
+		$arrTrade_no=json_decode($_POST['str_trade_no'],true);
+		$p_type=$_POST['type'];
+		if(empty($p_type)||empty($arrTrade_no)){
+			echo "错误";exit();
+		}
+		
+		switch ($p_type){
+            case '1'://微信支付
+                kernel::single('ome_wxpay_refund')->doRefund($arrTrade_no);
+                break;
+			 case '2'://支付宝
+                kernel::single('ome_alipay_alipayapi')->doRefund($arrTrade_no);
+                break;
+			 case '3':
+			  	kernel::single('ome_cod_upload')->doUpload($arrTrade_no);
+                break;
+			case '99':
+				kernel::single('giftcard_wechat_request_refund')->doRefund($arrTrade_no);
+				break;
+		}
+		//echo "<pre>";print_r($p_type);exit();
+	}
 
     function _views(){
         $mdl_refund_apply = $this->app->model('refund_apply');
+		$mdl_payments=$this->app->model('payment_cfg');
+		$arrPayments=$mdl_payments->getList('id,custom_name,pay_bn');
+		
         $sub_menu = array(
             0 => array('label'=>__('全部'),'filter'=>array('disabled'=>'false'),'optional'=>false),
             1 => array('label'=>__('未处理'),'filter'=>array('status'=>'0', 'disabled'=>'false'),'optional'=>false),
@@ -97,12 +467,35 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
             5 => array('label'=>__('退款中'),'filter'=>array('status'=>'5', 'disabled'=>'false'),'optional'=>false),
             6 => array('label'=>__('退款失败'),'filter'=>array('status'=>'6', 'disabled'=>'false'),'optional'=>false),
         );
+		$h=7;
+		foreach($sub_menu as $k=>$v){
+			foreach($arrPayments as $km=>$pm){
+				$sub_menu[$h]['label'] = $pm['custom_name'].'(退款)';
+				$sub_menu[$h]['filter']['payment'] = $pm['id'];
+				$sub_menu[$h]['filter']['shop_type'] = 'magento';
+	    // 		$sub_menu[$h]['filter']['status'] = '3';
+				$sub_menu[$h]['filter']['disabled'] ='false';
+				$sub_menu[$h]['optional'] = 'false';
+				unset($arrPayments[$km]);
+				break;
+			}
+            $h++;
+        }
+		$sub_menu[11]['label'] ='已退款';
+		$sub_menu[11]['filter']['status'] = 4;
+		$sub_menu[11]['filter']['disabled'] ='false';
+		$sub_menu[11]['optional'] = '';
+		
+		$sub_menu[12]['label'] ='微信礼品卡(退款)';
+		$sub_menu[12]['filter']['shop_type'] = 'cardshop';
+		$sub_menu[12]['filter']['disabled'] ='false';
+		$sub_menu[12]['optional'] = '';
         $i=0;
         foreach($sub_menu as $k=>$v){
             $sub_menu[$k]['filter'] = $v['filter']?$v['filter']:null;
             $sub_menu[$k]['addon'] = $mdl_refund_apply->count($v['filter']);
             $sub_menu[$k]['href'] = 'index.php?app=ome&ctl=admin_refund_apply&act=index&view='.$i++;
-        }
+        } //echo "<pre>";print_r($sub_menu);exit();
         return $sub_menu;
     }
 
@@ -131,7 +524,7 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
        $finder_id = $_GET['finder_id'];
        if ($_POST)
        {
-          
+        //  echo "<pre>1";print_r($_POST);print_r($refund_request);exit();
           $oRefund = &$this->app->model('refunds');
           $oLoger = &$this->app->model('operation_log');
           $objShop = &$this->app->model('shop');
@@ -228,6 +621,7 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
                     }
                     $orderdata['order_id'] =  $apply_detail['order_id'];
                     $orderdata['payed'] = $order_detail['payed'] - ($apply_detail['money']-$apply_detail['bcmoney']);//需要将补偿运费减掉
+				//	echo "<pre>";print_r($orderdata);exit();
                     $oOrder->save($orderdata);
 
                     $oLoger->write_log('order_modify@ome',$orderdata['order_id'],$fail_msg."退款成功，更新订单退款金额。");
@@ -361,12 +755,29 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
     }
 
    /*add by hujie 添加退款申请*/
-    function showRefund(){
+    function showRefund(){//echo "<pre>";print_r($_POST);exit();
         if ($_POST){
             if ($_POST['back_url'] != 'order_confirm'){
                 $begin_url = "index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]=".$_POST['order_id'];
             }
             $this->begin($begin_url);
+
+			$process_status = app::get('ome')->model('orders')->getList('process_status,ship_status,shop_type,order_bn,is_accept_card,createtime',array('order_id'=>$_POST['order_id']));
+			if($process_status[0]['process_status']=='splitting'){
+				$this->end(false, app::get('base')->_('订单已同步AX，不能申请退款！'));
+			}
+			
+			switch($process_status[0]['shop_type']){
+				case 'cardshop'://去核销
+					if($process_status[0]['is_accept_card']=="true"){
+						$this->end(false, app::get('base')->_('已领取的卡劵不能退款！'));
+					}
+					break;
+				case 'minishop':
+					$this->end(false, app::get('base')->_('小程序店铺订单，不能申请退款！'));
+					break;
+			}
+			
             /*
             if (strval($_POST['refund_money']) <= 0){
                 $this->end(false, app::get('base')->_('退款金额必须大于0'));

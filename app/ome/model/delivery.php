@@ -1663,7 +1663,7 @@ class ome_mdl_delivery extends dbeav_model{
      *
      * @return $int $delivery_id 发货单id
      */
-    function addDelivery($order_id,$delivery,$ship_info=array(),$order_items=array(),&$split_status){
+    function addDelivery($order_id,$delivery,$ship_info=array(),$order_items=array(),&$split_status='',$sync=false){
         $branch_productObj = &$this->app->model("branch_product");
         $oOrder            = &$this->app->model("orders");
         $oDly_corp         = &$this->app->model("dly_corp");
@@ -1899,7 +1899,7 @@ class ome_mdl_delivery extends dbeav_model{
         //发货单创建
         foreach(kernel::servicelist('service.delivery') as $object=>$instance){
             if(method_exists($instance,'delivery')){
-                $instance->delivery($data['delivery_id']);
+                $instance->delivery($data['delivery_id'],$sync);
             }
         }
 

@@ -1,8 +1,8 @@
       <h4>销售单中的商品</h4>
-      <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" id="gridlist" class="gridlist">
               <thead>
                 <tr>
-                  <th><{t}>选择<{/t}></th>
+                  <th><{t}><input type="checkbox" onclick="selectAll(this)">选择<{/t}></th>
                   <th><{t}>货号<{/t}></th>
                   <th><{t}>商品名称<{/t}></th>
                   <th><{t}>规格<{/t}></th>
@@ -23,7 +23,7 @@
               <tbody>
                 <tr id=s<{$aGoods.bn}>  onmouseover='showtips(this,event,"<{$aGoods.ref}>");' >
                   <td>
-                    <{if $aGoods.effective>0}><input type="checkbox" shouhou="return" id="goods_bn" name="return[goods_bn][]" value='<{$aGoods.bn}>'><{/if}></td>
+                    <{if $aGoods.effective>0}><input type="checkbox" class="js_goods_bn" shouhou="return" id="goods_bn" name="return[goods_bn][]" value='<{$aGoods.bn}>'><{/if}></td>
                   <td><{$aGoods.bn}></td>
                   <td>
                   <{if $aGoods.obj_type=='pkg'}>
@@ -34,7 +34,7 @@
                   </td>
                   <td> <{$aGoods.spec_value}></td>
                   <td><{$aGoods.price|cur}></td>
-                  <td><input type='text' name='return[price][<{$aGoods.bn}>]' value='<{$aGoods.sale_price/$aGoods.nums}>' size='6'></td>
+                  <td><input type='text' name='return[price][<{$aGoods.bn}>]' readonly="true" value='<{$aGoods.sale_price/$aGoods.nums}>' size='6'></td>
                   <td><{$aGoods.effective}></td>
                   <td><{if $aGoods.effective>0}><input type='text' id='num<{$aGoods.bn}>' name='return[num][<{$aGoods.bn}>]' value='<{$aGoods.effective}>' size='6'><{/if}></td>
 
@@ -102,6 +102,18 @@ function visibility(e){
         el.removeClass('active');
       });
       el.fireEvent('mouseenter',e);
+}
+
+function selectAll(obj){
+	if(obj.checked){
+		$$('.js_goods_bn').each(function(item,index){
+			item.checked = true;
+		});
+	}else{
+		$$('.js_goods_bn').each(function(item,index){
+			item.checked = false;
+		});
+	}
 }
 
 

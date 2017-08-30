@@ -68,7 +68,32 @@ $db['order_items']=array (
       'required' => true,
       'editable' => false,
     ),
+	 'true_price' => 
+    array (
+      'type' => 'money',
+      'default' => '0',
+      'required' => false,
+      'editable' => false,
+    ),
     'pmt_price' => 
+    array (
+      'type' => 'money',
+      'default' => '0',
+    'editable' => false,
+    ),
+	 'pmt_percent' => 
+    array (
+      'type' => 'decimal(10,4)',
+      'default' => '0',
+	'editable' => false,
+    ),
+	'ax_pmt_price' => 
+    array (
+      'type' => 'money',
+      'default' => '0',
+    'editable' => false,
+    ),
+	'ax_pmt_percent' => 
     array (
       'type' => 'money',
       'default' => '0',
@@ -143,6 +168,26 @@ $db['order_items']=array (
       'editable' => false,
       'label' => '已退货量',
     ),
+	'message1' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message2' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message3' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message4' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
     'delete' =>
     array (
       'type' => 'bool',
@@ -150,7 +195,7 @@ $db['order_items']=array (
       'editable' => false,
     ),
     
-  ), 
+  ),
   'engine' => 'innodb',
   'version' => '$Rev:  $',
 );

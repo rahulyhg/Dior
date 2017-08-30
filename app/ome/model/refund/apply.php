@@ -68,7 +68,8 @@ class ome_mdl_refund_apply extends dbeav_model{
                 $where .= ' AND apply_id IN ('.implode(',', $_apply_id).')';
                 unset($filter['memo']);
             }
-        } 
+        }
+		 
         return parent::_filter($filter,$tableAlias,$baseWhere).$where;
     }
 
@@ -233,7 +234,672 @@ class ome_mdl_refund_apply extends dbeav_model{
             return '系统';
         }
     }
+	
+	function checkRefundApplyBn($trade_no){
+		$oRefaccept = &$this->app->model('refund_apply');
+		$arrTrade_no=$oRefaccept->db->select("SELECT apply_id,refund_apply_bn FROM `sdb_ome_refund_apply` where refund_apply_bn like '$trade_no%' ORDER BY apply_id ASC");
+		if(!empty($arrTrade_no['0']['refund_apply_bn'])){
+			foreach($arrTrade_no as $refund_apply_bn){
+				$refund_apply_bn=$refund_apply_bn['refund_apply_bn'];
+			}
+			if(strpos($refund_apply_bn,'_')!==false){
+				$id=substr($refund_apply_bn,strpos($refund_apply_bn,'_')+1);
+				$id++;
+				$refund_apply_bn=$trade_no."_".$id;
+			}else{
+				$refund_apply_bn=$refund_apply_bn."_1";
+			}
+			return $refund_apply_bn;
+		}else{
+			return $trade_no;
+		}
+	}
+	
+	function updateCodRefund($apply_id){
+	$oRefaccept = &$this->app->model('refund_apply');
+        $oOrder = &$this->app->model('orders');
+	    $deoObj = &app::get('ome')->model('delivery_order');
+		$oRefund = &$this->app->model('refunds');
+        $oLoger = &$this->app->model('operation_log');
+        $objShop = &$this->app->model('shop');
+		
+	$trade_no['apply_id']=$apply_id;
+		$apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
+					$apply_id=$trade_no['apply_id'];
+					if (in_array($apply_detail['status'],array('2','5','6'))){
+						$db = kernel::database();
+						$transaction_status = $db->beginTransaction();
+					
+						$order_id = $apply_detail['order_id'];
+						$order_detail = $oOrder->order_detail($order_id);
+						$ids = $deoObj->getList('delivery_id',array('order_id'=>$order_id));
+						//售后申请单处理
+						$oretrun_refund_apply = &$this->app->model('return_refund_apply');
+						$return_refund_appinfo = $oretrun_refund_apply->dump(array('refund_apply_id'=>$trade_no['apply_id']));
+						if ($return_refund_appinfo['return_id'])
+						{
+							$oreturn = &$this->app->model('return_product');
+							$return_info = $oreturn->product_detail($return_refund_appinfo['return_id']);
+							if (($return_info['refundmoney']+$apply_detail['money'])>$return_info['tmoney'])
+							{
+								//$this->end(false, '申请退款金额大于售后的退款金额！');
+							}
+							$return_info['refundmoney'] = $return_info['refundmoney']+$apply_detail['money'];
+	
+							if(!$oreturn->save($return_info)){
+								 $db->rollback();
+								 return false;
+							}
+	
+							$oLoger->write_log('return@ome',$return_info['return_id'],"售后退款成功。");
+						}
+						 //订单信息更新
+						$orderdata = array();
+						if (round($apply_detail['money'],3)== round(($order_detail['payed']),3))
+						{
+							$orderdata['pay_status'] = 5;
+						}
+						else
+						{
+							$orderdata['pay_status'] = 4;
 
+						}
+						$orderdata['order_id'] =  $apply_detail['order_id'];
+						$orderdata['payed'] = $order_detail['payed'] - ($apply_detail['money']-$apply_detail['bcmoney']);//需要将补偿运费减掉
+						
+						if(!$oOrder->save($orderdata)){
+							$db->rollback();
+							return false;
+						}
+
+                   		$oLoger->write_log('order_modify@ome',$orderdata['order_id'],$fail_msg."退款成功，更新订单退款金额。");
+						
+						//退款申请状态更新
+						$applydata = array();
+						$applydata['apply_id'] = $apply_id;
+						$applydata['status'] = 4;//已经退款
+						$applydata['refunded'] = $apply_detail['money'];// + $order_detail['payinfo']['cost_payment'];
+						$applydata['last_modified'] = time();
+						$oRefaccept->save($applydata,true);
+						$oLoger->write_log('refund_apply@ome',$applydata['apply_id'],"退款成功，更新退款申请状态。");
+						//更新售后退款金额
+						$return_id = intval($_POST['return_id']);
+						if(!empty($return_id)){
+						   $sql = "UPDATE `sdb_ome_return_product` SET `refundmoney`=IFNULL(`refundmoney`,0)+{$apply_detail['money']} WHERE `return_id`='".$return_id."'";
+						   kernel::database()->exec($sql);
+						}
+						 //单据生成：生成退款单
+						$refunddata = array();
+						$refund_apply_bn = $apply_detail['refund_apply_bn'];
+						if ($refund_apply_bn){
+							$refund_bn = $refund_apply_bn;
+						}else{
+							$refund_bn = $oRefund->gen_id();
+						}
+						$refunddata['refund_bn'] = $refund_bn;
+						$refunddata['order_id'] = $apply_detail['order_id'];
+						$refunddata['shop_id'] = $order_detail['shop_id'];
+						$refunddata['pay_account'] = $apply_detail['pay_account'];
+						$refunddata['currency'] = $order_detail['currency'];
+						$refunddata['money'] = $apply_detail['money'];
+						$refunddata['paycost'] = 0;//没有第三方费用
+						$refunddata['cur_money'] = $apply_detail['money'];//汇率计算 TODO:应该为汇率后的金额，暂时是人民币金额
+						$refunddata['pay_type'] = $apply_detail['pay_type'];
+						$refunddata['payment'] = $apply_detail['payment'];
+						$paymethods = ome_payment_type::pay_type();
+						$refunddata['paymethod'] = $paymethods[$refunddata['pay_type']];
+						//Todo ：确认paymethod
+						$opInfo = kernel::single('ome_func')->getDesktopUser();
+						$refunddata['op_id'] = $opInfo['op_id'];
+	
+						$refunddata['t_ready'] = time();
+						$refunddata['t_sent'] = time();
+						$refunddata['status'] = "succ";#支付状态
+						$refunddata['statement_status'] ='true';
+						$refunddata['memo'] = $apply_detail['memo'];
+						if(!$oRefund->save($refunddata)){
+							$db->rollback();
+							return false;
+						}
+						
+						$objStatement = &$this->app->model('statement');
+						$arrStatement=array();
+						$arrStatement['original_bn'] = $refund_bn;
+						$arrStatement['order_id'] = $apply_detail['order_id'];
+						$arrStatement['money'] = "-".$apply_detail['money'];
+						$arrStatement['paycost'] =0;
+						$arrStatement['cur_money'] = "-".$apply_detail['money'];
+						$arrStatement['payment'] = 4;
+						$arrStatement['paymethod'] = 'cod';
+						$arrStatement['memo'] = '';
+					
+						$sql="SELECT trade_no,t_begin FROM sdb_ome_payments WHERE order_id='".$apply_detail['order_id']."'";
+						$arrS_trade_no=$this->db->select($sql);
+					
+						$arrStatement['trade_no'] = $arrS_trade_no[0]['trade_no'];
+						$arrStatement['original_type'] = 'refunds';
+						$arrStatement['tatal_amount'] = "-".$apply_detail['money'];
+						$arrStatement['balance_status'] = 'auto';
+						$arrStatement['importer_time'] = time();
+						$arrStatement['cod_time'] ='second';
+						$arrStatement['pay_time'] = $arrS_trade_no[0]['t_begin'];
+						if(!$objStatement->save($arrStatement)){
+							$db->rollback();
+							return false;
+						}
+
+								
+						$oLoger->write_log('refund_accept@ome',$refunddata['refund_id'],"退款成功，生成退款单".$refunddata['refund_bn']);
+						if(!empty($return_id)){
+						    $return_data = array ('return_id' => $_POST['return_id'], 'status' => '4', 'refundmoney'=>$refunddata['money'], 'last_modified' => time () );
+						    $Oreturn_product = $this->app->model('return_product');
+						    if(!$Oreturn_product->update_status ( $return_data )){
+								$db->rollback();
+								return false;
+							}
+						}
+						
+						$db->commit($transaction_status);
+						
+						kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
+						//传给买尽头
+						$objOrder = kernel::single("ome_mdl_orders");
+						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
+						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
+						
+						//传给买尽头2
+						$this->sendRefundStatus($apply_id,1);
+						return true;
+					
+					}//if	
+	}
+	
+	function updateAlipayRefundFail($batch_no,$trade_no,$money){
+		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
+		if(!empty($arrRefund['0']['apply_id'])){
+			foreach($arrRefund as $trade_no){
+				$apply_id=$trade_no['apply_id'];
+				$this->db->exec("UPDATE sdb_ome_refund_apply SET status='2',apimsg='退款失败' WHERE apply_id='$apply_id'");
+				$arrOrderBn=$this->db->select("SELECT o.order_bn FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
+							//echo "<pre>";print_r($arrOrderBn);exit();
+				kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
+				$this->sendRefundStatus($apply_id,2);
+			}
+		}
+	}
+	
+	function updateAlipayRefund($batch_no,$trade_no,$money){
+		$oRefaccept = &$this->app->model('refund_apply');
+        $oOrder = &$this->app->model('orders');
+	    $deoObj = &app::get('ome')->model('delivery_order');
+		$oRefund = &$this->app->model('refunds');
+        $oLoger = &$this->app->model('operation_log');
+        $objShop = &$this->app->model('shop');
+		
+		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
+		if(!empty($arrRefund['0']['apply_id'])){
+			foreach($arrRefund as $trade_no){
+				    $apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
+					$apply_id=$trade_no['apply_id'];
+					if (in_array($apply_detail['status'],array('2','5','6'))){
+						$db = kernel::database();
+						$transaction_status = $db->beginTransaction();
+					
+						$order_id = $apply_detail['order_id'];
+						$order_detail = $oOrder->order_detail($order_id);
+						$ids = $deoObj->getList('delivery_id',array('order_id'=>$order_id));
+						//售后申请单处理
+						$oretrun_refund_apply = &$this->app->model('return_refund_apply');
+						$return_refund_appinfo = $oretrun_refund_apply->dump(array('refund_apply_id'=>$trade_no['apply_id']));
+						if ($return_refund_appinfo['return_id'])
+						{
+							$oreturn = &$this->app->model('return_product');
+							$return_info = $oreturn->product_detail($return_refund_appinfo['return_id']);
+							if (($return_info['refundmoney']+$apply_detail['money'])>$return_info['tmoney'])
+							{
+								//$this->end(false, '申请退款金额大于售后的退款金额！');
+							}
+							$return_info['refundmoney'] = $return_info['refundmoney']+$apply_detail['money'];
+	
+							if(!$oreturn->save($return_info)){
+								 $db->rollback();
+								 return false;
+							}
+	
+							$oLoger->write_log('return@ome',$return_info['return_id'],"售后退款成功。");
+						}
+						 //订单信息更新
+						$orderdata = array();
+						if (round($apply_detail['money'],3)== round(($order_detail['payed']),3))
+						{
+							$orderdata['pay_status'] = 5;
+						}
+						else
+						{
+							$orderdata['pay_status'] = 4;
+
+						}
+						$orderdata['order_id'] =  $apply_detail['order_id'];
+						$orderdata['payed'] = $order_detail['payed'] - ($apply_detail['money']-$apply_detail['bcmoney']);//需要将补偿运费减掉
+						
+						if(!$oOrder->save($orderdata)){
+							$db->rollback();
+							return false;
+						}
+
+                   		$oLoger->write_log('order_modify@ome',$orderdata['order_id'],$fail_msg."退款成功，更新订单退款金额。");
+						
+						//退款申请状态更新
+						$applydata = array();
+						$applydata['apply_id'] = $apply_id;
+						$applydata['status'] = 4;//已经退款
+						$applydata['refunded'] = $apply_detail['money'];// + $order_detail['payinfo']['cost_payment'];
+						$applydata['last_modified'] = time();
+						$oRefaccept->save($applydata,true);
+						$oLoger->write_log('refund_apply@ome',$applydata['apply_id'],"退款成功，更新退款申请状态。");
+						//更新售后退款金额
+						$return_id = intval($_POST['return_id']);
+						if(!empty($return_id)){
+						   $sql = "UPDATE `sdb_ome_return_product` SET `refundmoney`=IFNULL(`refundmoney`,0)+{$apply_detail['money']} WHERE `return_id`='".$return_id."'";
+						   kernel::database()->exec($sql);
+						}
+						 //单据生成：生成退款单
+						$refunddata = array();
+						$refund_apply_bn = $apply_detail['refund_apply_bn'];
+						if ($refund_apply_bn){
+							$refund_bn = $refund_apply_bn;
+						}else{
+							$refund_bn = $oRefund->gen_id();
+						}
+						$refunddata['refund_bn'] = $refund_bn;
+						$refunddata['order_id'] = $apply_detail['order_id'];
+						$refunddata['shop_id'] = $order_detail['shop_id'];
+						$refunddata['pay_account'] = $apply_detail['pay_account'];
+						$refunddata['currency'] = $order_detail['currency'];
+						$refunddata['money'] = $apply_detail['money'];
+						$refunddata['paycost'] = 0;//没有第三方费用
+						$refunddata['cur_money'] = $apply_detail['money'];//汇率计算 TODO:应该为汇率后的金额，暂时是人民币金额
+						$refunddata['pay_type'] = $apply_detail['pay_type'];
+						$refunddata['payment'] = $apply_detail['payment'];
+						$paymethods = ome_payment_type::pay_type();
+						$refunddata['paymethod'] = $paymethods[$refunddata['pay_type']];
+						//Todo ：确认paymethod
+						$opInfo = kernel::single('ome_func')->getDesktopUser();
+						$refunddata['op_id'] = $opInfo['op_id'];
+	
+						$refunddata['t_ready'] = time();
+						$refunddata['t_sent'] = time();
+						$refunddata['status'] = "succ";#支付状态
+						$refunddata['memo'] = $apply_detail['memo'];
+						if(!$oRefund->save($refunddata)){
+							$db->rollback();
+							return false;
+						}
+						
+						
+						$oLoger->write_log('refund_accept@ome',$refunddata['refund_id'],"退款成功，生成退款单".$refunddata['refund_bn']);
+						if(!empty($return_id)){
+						    $return_data = array ('return_id' => $_POST['return_id'], 'status' => '4', 'refundmoney'=>$refunddata['money'], 'last_modified' => time () );
+						    $Oreturn_product = $this->app->model('return_product');
+						    if(!$Oreturn_product->update_status ( $return_data )){
+								$db->rollback();
+								return false;
+							}
+						}
+						
+						$db->commit($transaction_status);
+						
+						kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
+						//传给买尽头
+						$objOrder = kernel::single("ome_mdl_orders");
+						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
+						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
+						
+						//传给买尽头2
+						$this->sendRefundStatus($apply_id,1);
+					
+					}//if			
+			}//foreach
+		}//if
+		
+	}
+	
+	function updateWxRefund(){
+		$oRefaccept = &$this->app->model('refund_apply');
+        $oOrder = &$this->app->model('orders');
+	    $deoObj = &app::get('ome')->model('delivery_order');
+		$oRefund = &$this->app->model('refunds');
+        $oLoger = &$this->app->model('operation_log');
+        $objShop = &$this->app->model('shop');
+
+		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id,r.wxpaybatchno FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE r.wxstatus='true' AND (r.status='5' OR r.status='6')");
+		
+		if(!empty($arrRefund[0]['trade_no'])){
+		    foreach($arrRefund as $trade_no){
+			    if(kernel::single('ome_wxpay_refund')->checkRefund($trade_no)){
+				    $apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
+					$apply_id=$trade_no['apply_id'];
+					if (in_array($apply_detail['status'],array('2','5','6'))){
+						$db = kernel::database();
+						$transaction_status = $db->beginTransaction();
+					
+						$order_id = $apply_detail['order_id'];
+						$order_detail = $oOrder->order_detail($order_id);
+						$ids = $deoObj->getList('delivery_id',array('order_id'=>$order_id));
+						//售后申请单处理
+						$oretrun_refund_apply = &$this->app->model('return_refund_apply');
+						$return_refund_appinfo = $oretrun_refund_apply->dump(array('refund_apply_id'=>$trade_no['apply_id']));
+						if ($return_refund_appinfo['return_id'])
+						{
+							$oreturn = &$this->app->model('return_product');
+							$return_info = $oreturn->product_detail($return_refund_appinfo['return_id']);
+							if (($return_info['refundmoney']+$apply_detail['money'])>$return_info['tmoney'])
+							{
+								//$this->end(false, '申请退款金额大于售后的退款金额！');
+							}
+							$return_info['refundmoney'] = $return_info['refundmoney']+$apply_detail['money'];
+	
+							if(!$oreturn->save($return_info)){
+								 $db->rollback();
+								 return false;
+							}
+	
+							$oLoger->write_log('return@ome',$return_info['return_id'],"售后退款成功。");
+						}
+						 //订单信息更新
+						$orderdata = array();
+						if (round($apply_detail['money'],3)== round(($order_detail['payed']),3))
+						{
+							$orderdata['pay_status'] = 5;
+						}
+						else
+						{
+							$orderdata['pay_status'] = 4;
+
+						}
+						$orderdata['order_id'] =  $apply_detail['order_id'];
+						$orderdata['payed'] = $order_detail['payed'] - ($apply_detail['money']-$apply_detail['bcmoney']);//需要将补偿运费减掉
+						
+						if(!$oOrder->save($orderdata)){
+							$db->rollback();
+							return false;
+						}
+
+                   		$oLoger->write_log('order_modify@ome',$orderdata['order_id'],$fail_msg."退款成功，更新订单退款金额。");
+						
+						//退款申请状态更新
+						$applydata = array();
+						$applydata['apply_id'] = $apply_id;
+						$applydata['status'] = 4;//已经退款
+						$applydata['refunded'] = $apply_detail['money'];// + $order_detail['payinfo']['cost_payment'];
+						$applydata['last_modified'] = time();
+						$oRefaccept->save($applydata,true);
+						$oLoger->write_log('refund_apply@ome',$applydata['apply_id'],"退款成功，更新退款申请状态。");
+						//更新售后退款金额
+						$return_id = intval($_POST['return_id']);
+						if(!empty($return_id)){
+						   $sql = "UPDATE `sdb_ome_return_product` SET `refundmoney`=IFNULL(`refundmoney`,0)+{$apply_detail['money']} WHERE `return_id`='".$return_id."'";
+						   kernel::database()->exec($sql);
+						}
+						 //单据生成：生成退款单
+						$refunddata = array();
+						$refund_apply_bn = $apply_detail['refund_apply_bn'];
+						if ($refund_apply_bn){
+							$refund_bn = $refund_apply_bn;
+						}else{
+							$refund_bn = $oRefund->gen_id();
+						}
+						$refunddata['refund_bn'] = $refund_bn;
+						$refunddata['order_id'] = $apply_detail['order_id'];
+						$refunddata['shop_id'] = $order_detail['shop_id'];
+						$refunddata['pay_account'] = $apply_detail['pay_account'];
+						$refunddata['currency'] = $order_detail['currency'];
+						$refunddata['money'] = $apply_detail['money'];
+						$refunddata['paycost'] = 0;//没有第三方费用
+						$refunddata['cur_money'] = $apply_detail['money'];//汇率计算 TODO:应该为汇率后的金额，暂时是人民币金额
+						$refunddata['pay_type'] = $apply_detail['pay_type'];
+						$refunddata['payment'] = $apply_detail['payment'];
+						$paymethods = ome_payment_type::pay_type();
+						$refunddata['paymethod'] = $paymethods[$refunddata['pay_type']];
+						//Todo ：确认paymethod
+						$opInfo = kernel::single('ome_func')->getDesktopUser();
+						$refunddata['op_id'] = $opInfo['op_id'];
+	
+						$refunddata['t_ready'] = time();
+						$refunddata['t_sent'] = time();
+						$refunddata['status'] = "succ";#支付状态
+						$refunddata['memo'] = $apply_detail['memo'];
+						$refunddata['trade_no'] = $apply_detail['wxpaybatchno'];
+						if(!$oRefund->save($refunddata)){
+							$db->rollback();
+							return false;
+						}
+						
+						$oLoger->write_log('refund_accept@ome',$refunddata['refund_id'],"退款成功，生成退款单".$refunddata['refund_bn']);
+						if(!empty($return_id)){
+						    $return_data = array ('return_id' => $_POST['return_id'], 'status' => '4', 'refundmoney'=>$refunddata['money'], 'last_modified' => time () );
+						    $Oreturn_product = $this->app->model('return_product');
+						    if(!$Oreturn_product->update_status ( $return_data )){
+								$db->rollback();
+								return false;
+							}
+						}
+						
+						$db->commit($transaction_status);
+						
+						kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
+						//传给买尽头
+						$objOrder = kernel::single("ome_mdl_orders");
+						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
+						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
+						
+						//传给买尽头2
+						$this->sendRefundStatus($apply_id,1);
+					
+					}//if
+					//echo "<pre>2";print_r($apply_detail);print_r($refunddata);exit();
+				}else{//if失败
+					$apply_id=$trade_no['apply_id'];
+					//$this->db->exec("UPDATE sdb_ome_refund_apply SET status='2',apimsg='退款失败',wxstatus='false' WHERE apply_id='$apply_id'");
+					$arrOrderBn=$this->db->select("SELECT o.order_bn FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
+						//echo "<pre>";print_r($arrOrderBn);exit();
+				    kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
+					
+					$this->sendRefundStatus($apply_id,2);
+				}
+			}//foreach
+			 
+		}//if
+		//echo "<pre>";print_r($arrRefund);exit();
+	}
+	
+	public function updateCardRefund($apply_id){
+		$oRefaccept = &$this->app->model('refund_apply');
+        $oOrder = &$this->app->model('orders');
+	    $deoObj = &app::get('ome')->model('delivery_order');
+		$oRefund = &$this->app->model('refunds');
+        $oLoger = &$this->app->model('operation_log');
+        $objShop = &$this->app->model('shop');
+		
+		$apply_detail = $oRefaccept->refund_apply_detail($apply_id);
+		if (in_array($apply_detail['status'],array('2','5','6'))){
+			$db = kernel::database();
+			$transaction_status = $db->beginTransaction();
+					
+			$order_id = $apply_detail['order_id'];
+			$order_detail = $oOrder->order_detail($order_id);
+			$ids = $deoObj->getList('delivery_id',array('order_id'=>$order_id));
+			//售后申请单处理
+			$oretrun_refund_apply = &$this->app->model('return_refund_apply');
+			$return_refund_appinfo = $oretrun_refund_apply->dump(array('refund_apply_id'=>$apply_id));
+			if ($return_refund_appinfo['return_id'])
+			{
+				$oreturn = &$this->app->model('return_product');
+				$return_info = $oreturn->product_detail($return_refund_appinfo['return_id']);
+				if (($return_info['refundmoney']+$apply_detail['money'])>$return_info['tmoney'])
+				{
+					//$this->end(false, '申请退款金额大于售后的退款金额！');
+				}
+				$return_info['refundmoney'] = $return_info['refundmoney']+$apply_detail['money'];
+	
+				if(!$oreturn->save($return_info)){
+					 $db->rollback();
+					 return false;
+				}
+	
+				$oLoger->write_log('return@ome',$return_info['return_id'],"售后退款成功。");
+			}
+			 //订单信息更新
+			$orderdata = array();
+			if (round($apply_detail['money'],3)== round(($order_detail['payed']),3))
+			{
+				$orderdata['pay_status'] = 5;
+			}
+			else
+			{
+				$orderdata['pay_status'] = 4;
+
+			}
+			$orderdata['order_id'] =  $apply_detail['order_id'];
+			$orderdata['payed'] = $order_detail['payed'] - $apply_detail['money'];//需要将补偿运费减掉
+			
+			if(!$oOrder->save($orderdata)){
+				$db->rollback();
+				return false;
+			}
+
+            $oLoger->write_log('order_modify@ome',$orderdata['order_id'],$fail_msg."退款成功，更新订单退款金额。");
+			
+			//退款申请状态更新
+			$applydata = array();
+			$applydata['apply_id'] = $apply_id;
+			$applydata['status'] = 4;//已经退款
+			$applydata['refunded'] = $apply_detail['money'];// + $order_detail['payinfo']['cost_payment'];
+			$applydata['last_modified'] = time();
+			$oRefaccept->save($applydata,true);
+			$oLoger->write_log('refund_apply@ome',$applydata['apply_id'],"退款成功，更新退款申请状态。");
+			//更新售后退款金额
+			$return_id = intval($_POST['return_id']);
+			if(!empty($return_id)){
+			   $sql = "UPDATE `sdb_ome_return_product` SET `refundmoney`=IFNULL(`refundmoney`,0)+{$apply_detail['money']} WHERE `return_id`='".$return_id."'";
+			   kernel::database()->exec($sql);
+			}
+			 //单据生成：生成退款单
+			$refunddata = array();
+			$refund_apply_bn = $apply_detail['refund_apply_bn'];
+			if ($refund_apply_bn){
+				$refund_bn = $refund_apply_bn;
+			}else{
+				$refund_bn = $oRefund->gen_id();
+			}
+			$refunddata['refund_bn'] = $refund_bn;
+			$refunddata['order_id'] = $apply_detail['order_id'];
+			$refunddata['shop_id'] = $order_detail['shop_id'];
+			$refunddata['pay_account'] = $apply_detail['pay_account'];
+			$refunddata['currency'] = $order_detail['currency'];
+			$refunddata['money'] = $apply_detail['money'];
+			$refunddata['paycost'] = 0;//没有第三方费用
+			$refunddata['cur_money'] = $apply_detail['money'];//汇率计算 TODO:应该为汇率后的金额，暂时是人民币金额
+			$refunddata['pay_type'] = $apply_detail['pay_type'];
+			$refunddata['payment'] = $apply_detail['payment'];
+			$paymethods = ome_payment_type::pay_type();
+			$refunddata['paymethod'] = $paymethods[$refunddata['pay_type']];
+			//Todo ：确认paymethod
+			$opInfo = kernel::single('ome_func')->getDesktopUser();
+			$refunddata['op_id'] = $opInfo['op_id'];
+	
+			$refunddata['t_ready'] = time();
+			$refunddata['t_sent'] = time();
+			$refunddata['status'] = "succ";#支付状态
+			$refunddata['memo'] = $apply_detail['memo'];
+			$refunddata['trade_no'] = $apply_detail['wxpaybatchno'];
+			if(!$oRefund->save($refunddata)){
+				$db->rollback();
+				return false;
+			}
+			
+			$oLoger->write_log('refund_accept@ome',$refunddata['refund_id'],"退款成功，生成退款单".$refunddata['refund_bn']);
+			if(!empty($return_id)){
+			    $return_data = array ('return_id' => $_POST['return_id'], 'status' => '4', 'refundmoney'=>$refunddata['money'], 'last_modified' => time () );
+			    $Oreturn_product = $this->app->model('return_product');
+			    if(!$Oreturn_product->update_status ( $return_data )){
+					$db->rollback();
+					return false;
+				}
+			}
+			
+			$db->commit($transaction_status);
+			
+			kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
+		}
+	}
+	
+	function sendRefundToM($refund_id,$order_id,$z_money,$oms_refund_rma_ids=''){
+		//return true;
+		//$url="http://guerlain.d.d1m.cn/oms_api/v1/refundlog";
+		//$url='http://guerlain-pc.d.d1m.cn/oms_api/v1/refundlog';
+		//$url="http://guerlain:gu-160321@preprod.guerlain.com.cn/oms_api/v1/refundlog";
+		$url="http://dior:pcd-160308@www.dior.cn/beauty/zh_cn/store/oms_api/v1/refundlog";//dior正式
+		$data['refund_id']=$refund_id;
+		$data['order_id']=$order_id;
+		$data['refund_amount']=$z_money;
+		$data['refund_status']=0;
+		$data['oms_refund_rma_ids']=$oms_refund_rma_ids;
+		$data=json_encode($data);//echo "<pre>";print_r($data);exit();
+		error_log('orders:'.$data,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
+			$ch = curl_init();//初始化一个cURL会话
+
+          
+            curl_setopt($ch, CURLOPT_URL,$url);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            // 我们在POST数据哦！
+            curl_setopt($ch, CURLOPT_POST, 1);
+            // 把post的变量加上
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+            //抓取URL并把它传递给浏览器
+            $output = curl_exec($ch);//kernel::log($output);
+			error_log('返回:'.$output,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
+			return $output;
+	}
+	
+	function ceshi(){
+		$data['refund_id']=3;
+		$data['refund_status']=1;
+		$data=json_encode($data);
+		error_log('orders:'.$data,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
+	}
+	
+	function sendRefundStatus($refund_id,$status){
+		//return true;
+		//$url="http://guerlain.d.d1m.cn/oms_api/v1/refundlog";
+		//$url='http://guerlain-pc.d.d1m.cn/oms_api/v1/refundlog';
+		//$url="http://guerlain:gu-160321@preprod.guerlain.com.cn/oms_api/v1/refundlog";
+		$url="http://dior:pcd-160308@www.dior.cn/beauty/zh_cn/store/oms_api/v1/refundlog";//dior正式
+		$data['refund_id']=$refund_id;
+		$data['refund_status']=$status;
+		$data=json_encode($data);
+		error_log('orders:'.$data,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
+			$ch = curl_init();//初始化一个cURL会话
+
+          
+            curl_setopt($ch, CURLOPT_URL,$url);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            // 我们在POST数据哦！
+            curl_setopt($ch, CURLOPT_POST, 1);
+            // 把post的变量加上
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+            //抓取URL并把它传递给浏览器
+            $output = curl_exec($ch);//kernel::log($output);
+			error_log('返回:'.$output,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
+			return $output;
+
+	}
     /**
      * 补偿费用显示
      * @param int

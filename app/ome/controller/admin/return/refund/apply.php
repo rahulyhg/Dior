@@ -217,6 +217,11 @@ class ome_ctl_admin_return_refund_apply extends desktop_controller {
     function apply_refund(){
        $post = kernel::single('base_component_request')->get_params(true);
        $this->begin();
+
+		$process_status = app::get('ome')->model('orders')->getList('process_status,ship_status',array('order_id'=>$post['order_id']));
+		if($process_status[0]['process_status']=='splitting'){
+			$this->end(false, app::get('base')->_('订单已同步AX，不能申请退款！'));
+		}
        $Oorefund = &$this->app->model('refund_apply');
        $return = kernel::single('ome_refund_apply')->refund_apply_add($post,'1');
        if ($return['result'] == true){

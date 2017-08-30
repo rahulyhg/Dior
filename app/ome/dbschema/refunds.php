@@ -202,6 +202,12 @@ $db['refunds']=array (
       'filterdefault' => true,
       'in_list' => true,
     ),
+	'statement_status'=>array(
+	  'type' => 'bool',
+	  'label' => '是否已生成对账单',
+      'default' => 'false',
+      'editable' => false,
+	),
     'memo' =>
     array (
       'type' => 'longtext',

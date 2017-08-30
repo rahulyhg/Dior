@@ -98,6 +98,41 @@ $db['order_objects']=array (
 
       'editable' => false,
     ),
+	  'pkg_name' => 
+    array (
+      'type' => 'varchar(250)',
+      'default' => '',
+      'required' => false,
+      'editable' => false,
+    ),
+	'pkg_bn' => 
+    array (
+      'type' => 'varchar(50)',
+      'default' => '',
+      'required' => false,
+      'editable' => false,
+    ),
+	  'pkg_id' => 
+    array (
+      'type' => 'varchar(50)',
+      'default' => '',
+      'required' => false,
+      'editable' => false,
+    ),
+	  'pkg_price' => 
+    array (
+      'type' => 'money',
+      'default' => '0',
+
+      'editable' => false,
+    ),
+	  'pkg_num' => 
+    array (
+        'type' => 'number',
+      'default' => 1,
+      'required' => true,
+      'editable' => false,
+    ),
     'oid' => 
     array (
       'type' => 'varchar(50)',

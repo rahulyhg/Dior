@@ -20,6 +20,13 @@
         <class>ome_finder_payments</class>
     </service>
 
+	 <service id="desktop_finder.ome_mdl_balance_account">
+        <class>ome_finder_bill</class>
+    </service>
+	
+	<service id="desktop_finder.ome_mdl_statement">
+        <class>ome_finder_statement</class>
+    </service>
     <service id="desktop_finder.ome_mdl_operation_log">
         <class>ome_finder_operation_log</class>
     </service>

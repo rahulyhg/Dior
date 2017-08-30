@@ -22,6 +22,22 @@
       </td>
     </tr>
     <{/if}>
+	<tr>
+		<th>默认备注信息：</th>
+		<td>
+			<select width="100" onchange="wirte_default(this)">
+				<option value=''></option>
+				<option value='无人接听'>无人接听</option>
+                <option value='审单中发现订单异常'>审单中发现订单异常</option>
+				<option value='补开/重开发票'>补开/重开发票</option>
+				<option value='退货单无法生成'>退货单无法生成</option>
+				<option value='顾客升级'>顾客升级</option>
+				<option value='缺货跟进'>缺货跟进</option>
+				<option value='退款跟进'>退款跟进</option>
+				<option value='其他'>其他</option>
+			</select>
+		</td>
+	</tr>
     <tr>
       <th><{t}>追加备注：<{/t}></th>
       <td><textarea name="order[mark_text]" id="memo" rows="6" vtype="required" style="width:80%"></textarea>
@@ -46,4 +62,10 @@
             $('b1').checked = true;
         }
     });
+
+	function wirte_default(obj){
+		var default_memo = obj.value;
+		var memo = $('memo').value;
+		 $('memo').value = default_memo+' '+memo;
+	}
 </script>

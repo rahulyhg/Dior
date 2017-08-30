@@ -1,0 +1,93 @@
+<form id="area_add_form" method="post" action="index.php?app=ome&ctl=admin_refund_apply&act=saveCod" class="tableform" >
+<div class="division">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+      <th><{t}>账户名:<{/t}></th>
+      <td><input type="text" value="<{$arrApply.BeneficiaryName}>" name="BeneficiaryName" /></td>
+    </tr>
+	<tr>
+      <th><{t}>卡号:<{/t}></th>
+      <td><input type="text" value="<{$arrApply.pay_account}>" name="pay_account" /></td>
+    </tr>
+	<tr>
+      <th><{t}>开户行为建设银行上海分行:<{/t}></th>
+      <td><input type="radio" value="1" name="iss" <{if $arrApply['iss']=="1"}>checked="checked"<{/if}> onclick="checkbank(this);"/>&nbsp;是<input type="radio" value="0" name="iss" <{if $arrApply['iss']=="0"}>checked="checked"<{/if}> onclick="checkbank(this);"/>&nbsp;否</td>
+    </tr>
+	<tr>
+	<td colspan="2">
+		<table id='bankinfo' width="100%" border="0" cellpadding="0" cellspacing="0" style="display:none;">
+		<tr>
+		  <td align="right" style="width:145px;"><{t}>开户行名称:<{/t}> </td>
+		   <td><select name="BankName">
+			<option value="中国建设银行" <{if $arrApply['BankName']=="中国建设银行"}>selected="selected"<{/if}> >中国建设银行</option>
+			<option value="中国工商银行" <{if $arrApply['BankName']=="中国工商银行"}>selected="selected"<{/if}>>中国工商银行</option>
+			<option value="中国农业银行" <{if $arrApply['BankName']=="中国农业银行"}>selected="selected"<{/if}>>中国农业银行</option>
+			<option value="中国银行" <{if $arrApply['BankName']=="中国银行"}>selected="selected"<{/if}>>中国银行</option>
+			<option value="交通银行" <{if $arrApply['BankName']=="交通银行"}>selected="selected"<{/if}>>交通银行</option>
+			<option value="招商银行" <{if $arrApply['BankName']=="招商银行"}>selected="selected"<{/if}>>招商银行</option>
+			<option value="中国民生银行" <{if $arrApply['BankName']=="中国民生银行"}>selected="selected"<{/if}>>中国民生银行</option>
+			<option value="中信银行" <{if $arrApply['BankName']=="中信银行"}>selected="selected"<{/if}>>中信银行</option>
+			<option value="上海浦东发展银行" <{if $arrApply['BankName']=="上海浦东发展银行"}>selected="selected"<{/if}>>上海浦东发展银行</option>
+			<option value="平安银行" <{if $arrApply['BankName']=="平安银行"}>selected="selected"<{/if}>>平安银行</option>
+			<option value="兴业银行" <{if $arrApply['BankName']=="兴业银行"}>selected="selected"<{/if}>>兴业银行</option>
+			<option value="中国光大银行" <{if $arrApply['BankName']=="中国光大银行"}>selected="selected"<{/if}>>中国光大银行</option>
+			<option value="广发银行" <{if $arrApply['BankName']=="广发银行"}>selected="selected"<{/if}>>广发银行</option>
+			<option value="华夏银行" <{if $arrApply['BankName']=="华夏银行"}>selected="selected"<{/if}>>华夏银行</option>
+		  </select></td>
+		</tr>
+		<tr>
+		  <td align="right" style="width:145px;"><{t}>开户行详细信息:<{/t}></td>
+		  <td> <input type="text" value="<{$arrApply['BeneficiaryBankName']}>" name="BeneficiaryBankName" /></td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+    </table>
+  </div>
+<input type="hidden" name="apply_id" value="<{$apply_id}>">
+  <div class="table-action">
+	<{button label=$___eccommon="保存"|t:'eccommon' type="button" id='save_area'}><input type="hidden" name="package" value="mainland">
+	<{button label=$___eccommon="取消"|t:'eccommon' isCloseDialogBtn="true"}>
+</div>
+
+
+</form>
+<script>
+ window.addEvent('domready', function(){
+<{if $arrApply['iss']=="0"}>
+$('bankinfo').setStyle('display','block');
+<{/if}>
+  }); 
+ function checkbank(e){
+ 	if(e.value=="1"){
+		$('bankinfo').setStyle('display','none');
+	}else{
+		$('bankinfo').setStyle('display','block');
+	}
+ 	 //alert(e.value);
+ }	
+$('save_area').addEvent('click',function(e){
+	var form=this.getParent('form');
+	var _this=this;
+	 
+	form.store('target',{
+	
+			onComplete:function(jsontext){
+	
+	  var json = Json.evaluate(jsontext);
+		if (typeof(json.error) != 'undefined'){
+			this.disabled=false;
+		}else{
+	
+			$('area_add_form').getParent('.dialog').retrieve('instance').close();
+	
+		}
+			
+			}
+		});
+	
+	form.fireEvent('submit',e);
+
+});
+
+</script>

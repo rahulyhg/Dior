@@ -30,13 +30,13 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
         $rows = $this->db->select($sql);
 
         $this->getSkuItems($rows[0],$filter);
-
+//echo "<pre>";print_r($rows);exit;
         return $rows[0];
     }
 
-    public function count($filter = null){
+    public function count($filter = null){//echo "<pre>";print_r($filter);exit;
 
-        $sql = 'SELECT count(*) as _count FROM (SELECT S.sale_id FROM sdb_ome_sales S left join sdb_ome_delivery D on S.delivery_id = D.delivery_id WHERE '.$this->_filter($filter).') as omeanalysts_sales';
+         $sql = 'SELECT count(S.sale_id) as _count FROM sdb_ome_sales S left join sdb_ome_delivery D on S.delivery_id = D.delivery_id WHERE '.$this->_filter($filter).'';
 
         $rows = $this->db->select($sql);
 
@@ -64,7 +64,6 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
         $oItem = kernel::single("ome_mdl_sales_items");
         $cols = 'D.logi_no,D.ship_area,S.sale_id,S.order_id,S.sale_bn,S.discount,S.total_amount,S.cost_freight,S.sale_amount,S.branch_id,S.delivery_cost_actual,S.member_id,S.additional_costs,S.payment,S.delivery_id,S.order_create_time,S.paytime,S.ship_time,S.shop_id';
         $sql = 'SELECT '.$cols.' FROM sdb_ome_sales S left join sdb_ome_delivery D on S.delivery_id = D.delivery_id WHERE '.$this->_filter($filter);
-
 
         $_SESSION['filter'] = $filter;
 
@@ -188,12 +187,20 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
 
         $offset = 0;
 
-        while ($this->countSkuitems($offset,$s_data,$filter)) {
+		$sql = 'select sum(SI.nums) as nums,sum(SI.cost_amount) as goods_cost from sdb_ome_sales_items SI left join sdb_ome_sales S on SI.sale_id = S.sale_id where '.$this->_filter($filter).' ';
+		$rows = $this->db->select($sql);
+		
+	//	echo "<pre>";print_r($rows);exit;
+
+		$data['product_nums'] = $rows[0]['nums'];
+		$data['cost_amounts'] = $rows[0]['goods_cost'];
+
+       /* while ($this->countSkuitems($offset,$s_data,$filter)) {
 
             $data['product_nums'] = $s_data['nums'];
             $data['cost_amounts'] = $s_data['goods_cost'];
             $offset++;
-        }
+        }*/
 
     }
 
@@ -201,7 +208,7 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
 
         $limit = 1000;
 
-        $sql = 'select SI.nums,SI.cost_amount as goods_cost from sdb_ome_sales_items SI left join sdb_ome_sales S on SI.sale_id = S.sale_id where '.$this->_filter($filter).' limit '.$offset*$limit.','.$limit;
+        $sql = 'select SI.nums,SI.cost_amount as goods_cost from sdb_ome_sales_items SI left join sdb_ome_sales S on SI.sale_id = S.sale_id where '.$this->_filter($filter).' ';
 
         $rows = $this->db->select($sql);
 
@@ -405,7 +412,7 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
         }
 
         // 所有的订单信息
-        $rs = $oOrder->getList('order_id,order_bn,mark_type',array('order_id'=>$order_ids));
+        $rs = $oOrder->getList('order_id,order_bn,mark_type,paytime,payment',array('order_id'=>$order_ids));
         foreach($rs as $v) {
             $orders[$v['order_id']] = $v;
         }
@@ -433,12 +440,30 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
             $productRow['*:毛利'] = $aFilter['gross_sales'];
             $productRow['*:毛利率'] = $aFilter['gross_sales_rate'];
             $productRow['*:订单创建时间'] = date('Y-m-d H:i:s',$aFilter['order_create_time']);
-            $productRow['*:订单支付时间'] = $aFilter['paytime']?date('Y-m-d H:i:s',$aFilter['paytime']):'';
+			if(empty($aFilter['paytime'])){
+				if(empty($orders[$aFilter['order_id']]['paytime'])){
+					$paytime=' ';
+				}else{
+					$paytime=date('Y-m-d H:i:s',$orders[$aFilter['order_id']]['paytime']);
+				}
+			}else{
+				$paytime=date('Y-m-d H:i:s',$aFilter['paytime']);
+			}
+			if(empty($aFilter['payment'])){
+				if(empty($orders[$aFilter['order_id']]['payment'])){
+					$payment='货到付款';
+				}else{
+					$payment=$orders[$aFilter['order_id']]['payment'];
+				}
+			}else{
+				$payment=$aFilter['payment'];
+			}
+            $productRow['*:订单支付时间'] = $paytime;
             $productRow['*:订单发货时间'] = date('Y-m-d H:i:s',$aFilter['ship_time']);
             $productRow['*:仓库名称'] = $branch[$aFilter['branch_id']];
             $productRow['*:用户名称'] = $members[$aFilter['member_id']];
             $productRow['*:附加费'] = $aFilter['additional_costs'];
-            $productRow['*:支付方式'] = $aFilter['payment'];
+            $productRow['*:支付方式'] = $payment;
             $productRow['*:发货单号'] = $deliverys[$aFilter['delivery_id']]."\t";
             $productRow['*:收货人地区'] = $aFilter['ship_area'];
             $productRow['*:订单备注图标'] = $this->mark_type[$orders[$aFilter['order_id']]['mark_type']];
@@ -865,7 +890,7 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
         }
 
         // 所有的订单信息
-        $rs = $oOrder->getList('order_id,order_bn,mark_type',array('order_id'=>$order_ids));
+        $rs = $oOrder->getList('order_id,order_bn,mark_type,paytime,payment',array('order_id'=>$order_ids));
         foreach($rs as $v) {
             $orders[$v['order_id']] = $v;
         }
@@ -893,12 +918,30 @@ class omeanalysts_mdl_ome_sales extends dbeav_model{
             $productRow['gross_sales'] = $aFilter['gross_sales'];
             $productRow['gross_sales_rate'] = $aFilter['gross_sales_rate'];
             $productRow['order_create_time'] = date('Y-m-d H:i:s',$aFilter['order_create_time']);
-            $productRow['paytime'] = $aFilter['paytime']?date('Y-m-d H:i:s',$aFilter['paytime']):'';
+			if(empty($aFilter['paytime'])){
+				if(empty($orders[$aFilter['order_id']]['paytime'])){
+					$paytime=' ';
+				}else{
+					$paytime=date('Y-m-d H:i:s',$orders[$aFilter['order_id']]['paytime']);
+				}
+			}else{
+				$paytime=date('Y-m-d H:i:s',$aFilter['paytime']);
+			}
+			if(empty($aFilter['payment'])){
+				if(empty($orders[$aFilter['order_id']]['payment'])){
+					$payment='货到付款';
+				}else{
+					$payment=$orders[$aFilter['order_id']]['payment'];
+				}
+			}else{
+				$payment=$aFilter['payment'];
+			}
+            $productRow['paytime'] =$paytime;
             $productRow['ship_time'] = date('Y-m-d H:i:s',$aFilter['ship_time']);
             $productRow['branch_id'] = $branch[$aFilter['branch_id']];
             $productRow['member_id'] = $members[$aFilter['member_id']];
             $productRow['additional_costs'] = $aFilter['additional_costs'];
-            $productRow['payment'] = $aFilter['payment'];
+            $productRow['payment'] = $payment;
             $productRow['delivery_id'] = $deliverys[$aFilter['delivery_id']];
             $productRow['ship_area'] = $aFilter['ship_area'];
             $productRow['mark_type'] = $this->mark_type[$orders[$aFilter['order_id']]['mark_type']];

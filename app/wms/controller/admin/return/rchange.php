@@ -1178,4 +1178,36 @@ class wms_ctl_admin_return_rchange extends desktop_controller {
         $this->end(true);
     }
 
+	public function uplode_qa($reship_id){
+		$this->pagedata['reship_id'] = $reship_id;
+		$this->pagedata['finder_id'] = $_GET['finder_id'];
+
+		$objReship = app::get('ome')->model('reship');
+		$info = $objReship->dump($reship_id,'qa_memo,image2,image1,image3');
+		//echo "<pre>";print_r($info);exit;
+		$this->pagedata['info'] = $info;
+		$this->display('admin/return_product/rchange/uplode_qa.html');
+	}
+
+	public function check_qa($reship_id){
+		$this->pagedata['reship_id'] = $reship_id;
+		$this->pagedata['finder_id'] = $_GET['finder_id'];
+
+		$objReship = app::get('ome')->model('reship');
+		$info = $objReship->dump($reship_id,'qa_memo,image2,image1,image3');
+		//echo "<pre>";print_r($info);exit;
+		$this->pagedata['info'] = $info;
+		$this->display('admin/return_product/rchange/check_qa.html');
+	}
+
+	public function do_upload_qa(){
+		//$this->begin('index.php?app=wms&ctl=admin_return_rchange&act=index&flt=process_list');
+		$objReship = app::get('ome')->model('reship');
+		$data=$_POST;
+		$sign = $objReship->save($data);
+		 echo "<script>$$('.dialog').getLast().retrieve('instance').close();</script>";
+		//$this->end(true);
+		
+	}
+
 }

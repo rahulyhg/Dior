@@ -183,6 +183,34 @@ $db['goods']=array (
       'in_list' => true,
       'default_in_list' => true,
     ),
+	'card_id' =>
+    array (
+      'type' => 'varchar(150)',
+      'default' => '',
+      'required' => false,
+      'editable' => false,
+      'label' => '卡劵ID',
+      'width' => 100,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+
+	'is_prepare' =>
+    array (
+      'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
+      'editable' => false,
+      'label' => '是否预售',
+      'width' => 75,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => true,
+    ),
+
     'marketable' =>
     array (
       'type' => 'bool',

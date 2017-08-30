@@ -44,7 +44,7 @@
                     </select>
                </td>
 
-              <th>销售单:</th>
+              <th>订单:</th>
               <td>
                 <span id="auto_supp" style="position:relative;">
                   <{if $reship_data.reship_id}><{$reship_data.order_bn}>
@@ -57,13 +57,15 @@
               </td>
 
                 <input type="hidden" name="is_protect" value="<{$reship_data.is_protect}>" />
-                <input type="hidden" name="shop_id" value="<{$reship_data.shop_id}>" />              
+                <input type="hidden" name="shop_id" value="<{$reship_data.shop_id}>" />
+		<input type="hidden" name="shop_type" value="<{$reship_data.shop_type}>" />        				
 
                <th>会员名:</th><td><span id="member_id"><{$reship_data.member_id|default:'-'}></span></td>
 
                <input type="hidden" name="member_id" value="" />
                <th style="width:80px;">退回物流公司:</th><td>
-               <{input type="object" name="return_logi_name" value=$reship_data.return_logi_name mdl_object="ome_mdl_dly_corp" cols="name" object="dly_corp" app="ome" style="width:120px" }></td>
+               <{input type="object" name="return_logi_name" value=$reship_data.return_logi_name mdl_object="ome_mdl_dly_corp" cols="name" object="dly_corp" app="ome" style="width:120px" }>
+			   </td>
 
               </tr>
 
@@ -109,7 +111,19 @@
                <{/if}>
                </td>
                <td colspan='2'></td>  
-               <th></th><td></td> 
+               <th>退货原因:</th><td>
+			   <select name="return_reason" width="150">
+				<option value="ACF" <{if $reship_data.return_reason=='ACF'}>selected<{/if}> >Account closure</option>
+				<option value="ACG" <{if $reship_data.return_reason=='ACG'}>selected<{/if}> >Over Stock</option>
+				<option value="ACH" <{if $reship_data.return_reason=='ACH'}>selected<{/if}> >Destruction by cust.</option>
+				<option value="ALA" <{if $reship_data.return_reason=='ACJ'}>selected<{/if}> >Repurchase Grey Market</option>
+				<option value="ALA" <{if $reship_data.return_reason=='ALA'}>selected<{/if}> >Supply error</option>
+				<option value="APF" <{if $reship_data.return_reason=='APF'}>selected<{/if}> >Discontinued product</option>
+				<option value="APH" <{if $reship_data.return_reason=='APH'}>selected<{/if}> >Replacement</option>
+				<option value="API" <{if $reship_data.return_reason=='API'}>selected<{/if}> >Out-of-date</option>
+				<option value="APJ" <{if $reship_data.return_reason=='APJ'}>selected<{/if}> >Damaged</option>
+				<option value="APL" <{if $reship_data.return_reason=='APL'}>selected<{/if}> >Allergy</option>
+			   </select></td> 
                <th></th><td></td>                      
               </tr>
               <tr>
@@ -153,7 +167,7 @@
       <table width="100%" border="0" cellpadding="0" cellspacing="0" class="gridlist">
         <thead>
           <th>应退商品金额</th>
-          <th>补偿费用</th>
+          <th>是否手续费</th>
           <th <{if $reship_data.return_type != 'change'}>style='display:none;'<{/if}> class='change-money-info'>换出商品金额</th>
           <th>折旧(其他费用)</th>
           <th>买家承担的邮费</th>
@@ -166,12 +180,13 @@
           <td>
             <div id='tmoney'><{$reship_data.tmoney|cur}></div>
           </td>
-          <td><input type="text" size='5' name='bcmoney' value='<{$reship_data.bcmoney}>'></td>
+          <td> <input id="cost_feight_checkbox" type="checkbox" onclick="re_cost_freight(this)" cost_feight="<{$order.shipping.cost_shipping}>"><span id="cost_feight"></span><input id="cost_feight_input" type="hidden" size='5' name='bcmoney' readonly value='<{$reship_data.bcmoney}>'></td>
+
           <td <{if $reship_data.return_type != 'change'}>style='display:none;'<{/if}> class='change-money-info'>
             <div id='change_amount'><{$reship_data.change_amount|cur}></div>
           </td>
-          <td><{input type="text" name="bmoney" size=5 value=$reship_data.bmoney id="bmoney" }></td>
-          <td><{input type="text" name="cost_freight_money" size=5 value=$reship_data.cost_freight_money id="cost_freight_money" vtype='unsigned'}></td>
+          <td><{input type="text" name="bmoney" size=5 readonly="true" value=$reship_data.bmoney id="bmoney" }></td>
+          <td><{input type="text" name="cost_freight_money" readonly="true" size=5 value=$reship_data.cost_freight_money id="cost_freight_money" vtype='unsigned'}></td>
           <td <{if $reship_data.return_type != 'change' || !$reship_data.diff_order_bn}>style='display:none;'<{/if}> class='change-money-info diff-order-info'>
 
             <div id="diff-order-btn" <{if $reship_data.diff_order_bn}>style="display:none;"<{/if}> > <{button label='添加补差价订单' id='select-diff-order'}> </div>
@@ -243,7 +258,7 @@
                          <{$aGoods.price}>
                          <input type='hidden' name='return[price][<{$aGoods.bn}>]' value='<{$aGoods.price}>' size='6'>
                          <{else}>
-                         <input type='text' name='return[price][<{$aGoods.bn}>]' value='<{$aGoods.price}>' size='6'>
+                         <input type='text' readonly="true" name='return[price][<{$aGoods.bn}>]' value='<{$aGoods.price}>' size='6'>
                          <{/if}>
                         </td>
                         <td><{$aGoods.effective}></td>
@@ -252,7 +267,7 @@
                         <input type='hidden' id='num<{$aGoods.bn}>' name='return[num][<{$aGoods.bn}>]' price='<{$aGoods.price}>' class="hidden_money" value='<{$aGoods.num}>' size='6'>
                         <{$aGoods.num}>
                         <{else}>
-                        <input type='text' id='num<{$aGoods.bn}>' name='return[num][<{$aGoods.bn}>]' price='<{$aGoods.price}>' class="hidden_money" value='<{$aGoods.num}>' size='6'>
+                        <input type='text' id='num<{$aGoods.bn}>'  name='return[num][<{$aGoods.bn}>]' price='<{$aGoods.price}>' class="hidden_money" value='<{$aGoods.num}>' size='6'>
                         <{/if}>
                        </td>
                         <td><{$aGoods.normal_num}></td>
@@ -382,7 +397,7 @@
     </div>
     <div class="table-action">
       <{button_permission label="确认并审核" permission='aftersale_rchange_check' type="button" id="reship-check"}> &nbsp;&nbsp;
-      <{button_permission label="确定并保存" permission='aftersale_rchange_edit' class="btn-primary" type="button"}> &nbsp; &nbsp;
+      <{button_permission label="确定并保存" permission='aftersale_rchange_edit' class="btn-primary" type="button" style="display:none;"}> &nbsp; &nbsp;
       <{button label="取消" class="btn-secondary" isCloseDialogBtn="true" onclick="this.getParent('.dialog').retrieve('instance').close();"}>
     </div>    
   </div>
@@ -815,6 +830,7 @@ function _callback_orderinfo(rs){
                 $E('input[name=ship_mobile]').set('value',msg.ship_mobile);                
                 $E('input[name=is_protect]').set('value',msg.is_protect); 
                 $E('input[name=shop_id]').set('value',msg.shop_id);
+				$E('input[name=shop_type]').set('value',msg.shop_type);
                 //支付金额等信息
                 $('cost_item').set('html',msg.cost_item);
                 $('cost_shipping').set('html',msg.shipping.cost_shipping);
@@ -826,6 +842,8 @@ function _callback_orderinfo(rs){
                 $('pmt_order').set('html',msg.pmt_order);
                 $('total_amount').set('html',msg.total_amount);
                 $('payed').set('html',msg.payed);
+				var cost_shipping = msg.shipping.cost_shipping-msg.pmt_cost_shipping+parseFloat(msg.payinfo.cost_payment);
+				$('cost_feight_checkbox').set('cost_feight',cost_shipping);
                 //
                 if (branchtype!='branch')
                 {
@@ -956,5 +974,15 @@ function calculate(){
   return money;
 }
 
+function re_cost_freight(obj){
+	var cost_freight = obj.get('cost_feight');
+	if(obj.checked==true){
+		$('cost_feight').innerHTML = '￥'+cost_freight;
+		$('cost_feight_input').value = cost_freight;
+	}else{
+		$('cost_feight').innerHTML = '￥'+cost_freight;
+		$('cost_feight_input').value = 0;
+	}
+}
 
 </script>

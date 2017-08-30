@@ -1,4 +1,4 @@
-
+ 
 <desktop>
     <widgets id="ome_desktop_widgets_waittask" order='30'>待办事务表</widgets>
 
@@ -83,6 +83,8 @@
         <permission id="finance_payment_confirm">付款确认</permission>
         <permission id="finance_refund_confirm">退款确认</permission>
 
+		 <permission id="balance_payment_account">对账</permission>
+
         <permission id="setting_basic">系统设置</permission>
         <permission id="setting_print">打印模板管理</permission>
         <permission id="setting_payment_cfg">支付方式配置</permission>
@@ -135,8 +137,12 @@
 		<permission id="retrial_success">已复审订单</permission>
 		<!-- 复审权限end -->
 		<permission id="aftersale_branchset">退货仓库设置</permission>	 
-		 <permission id="aftersale_delivery_refuse">追回单据</permission>		  
-		 <permission id="aftersale_delivery_refuse_process">发货追回</permission>
+		<permission id="aftersale_delivery_refuse">追回单据</permission>		  
+		<permission id="aftersale_delivery_refuse_process">发货追回</permission>
+
+		<permission id="aftersale_reship_uplode_image">上传质检凭证</permission> 
+		<permission id="aftersale_reship_check_image">查看质检凭证</permission>
+
     </permissions>
 
     <adminpanel group="desktop_apilog" permission="setting_api_log" controller='admin_api_log' action='index' display='true'>所有</adminpanel>
@@ -171,7 +177,7 @@
             <menu controller='admin_consign' action='fast_consign' permission='process_fast_consign' display='true' order='3000500'>状态回写</menu>
         </menugroup>
         <menugroup name="撤销发货单">
-            <menu controller='admin_delivery' action='reback' params='status:1' permission='reback_delivery' display='true' order='8000002'>撤销发货单</menu>
+            <menu controller='admin_delivery' action='reback' params='status:1' permission='reback_delivery' display='true' order='8000002'>发货拦截</menu>
         </menugroup>
         <menugroup name="异常订单">
             <menu controller='admin_order' action='abnormal' permission='order_abnormal' display='true' order='4000100'>异常订单</menu>
@@ -271,9 +277,12 @@
 		 </menugroup>
          <menugroup name="退货收货">
             <menu controller='admin_return_sv' action='edit' permission='aftersale_rchange_sv' display='false' order='1000119'>质检</menu>
-		 </menugroup>
+
+			<menu controller='admin_return_sv' action='upload_qa' permission='aftersale_reship_uplode_image' display='false' order='1000119'>上传</menu> 
+			<menu controller='admin_return_sv' action='check_qa' permission='aftersale_reship_check_image' display='false' order='1000119'>查看</menu>
+		 </menugroup> 
 		 <menugroup name="追回">
-		 <menu controller='admin_delivery_back' action='check' permission='aftersale_rchange_back' display='true' order="10000120">发货追回</menu>
+		 <menu controller='admin_delivery_back' action='check' permission='aftersale_rchange_back' display='true' order="10000120">COD追回</menu>
             <menu controller='admin_delivery_back' action='index' permission='aftersale_rchange_back_process' display='true' order='1000121'>追回单据</menu>
 		 </menugroup>
     </workground>
@@ -283,6 +292,10 @@
             <menu controller='admin_finance' action='index' permission='finance_payment_confirm' display='true'>付款确认</menu>
             <menu controller='admin_refund_apply' action='index' permission='finance_refund_confirm' display='true' order='3000102'>退款确认</menu>
             <menu  permission='finance_export' display='false'>财务导出</menu>
+        </menugroup>
+
+		<menugroup name="对账任务"> 
+            <menu controller='admin_statement' action='index' permission='balance_payment_account' display='true' order='3000102'>财务对账</menu>
         </menugroup>
     </workground>
 

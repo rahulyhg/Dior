@@ -109,7 +109,7 @@ class ome_mdl_reship extends dbeav_model{
             'order_bn'=>app::get('base')->_('订单号'),
             'bn' => '货号',
         );
-        return $Options = array_merge($parentOptions,$childOptions);
+        return $Options = array_merge($childOptions,$parentOptions);
     }
 
   /**
@@ -120,7 +120,6 @@ class ome_mdl_reship extends dbeav_model{
    **/
   function create_treship($adata,&$msg)
   {
-      
       
       if($adata['delivery_id']) {
         if ($adata['source'] == 'archive'){
@@ -170,8 +169,9 @@ class ome_mdl_reship extends dbeav_model{
         'shop_id'          => ( $adata['shop_id'] ? $adata['shop_id'] : $delivery['shop_id'] ),
         'problem_id'       => $adata['problem_type'][0],
         'branch_id'=>$branch_id,
+		'return_reason'    => $adata['return_reason'],
       );
-    
+	
      if ($adata['source'] == 'archive') {
           $sdf_data['archive'] = '1';
           $sdf_data['source'] = 'archive';
@@ -265,7 +265,12 @@ class ome_mdl_reship extends dbeav_model{
         );
         $this->save($oReship_problem_id);
         */
-
+		// 同步退货单信息到AX
+		/*$objDeliveryOrder = app::get('ome')->model('delivery_order');
+		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$sdf_data['order_id']));
+		//echo "<pre>";print_r($delivery_id);exit;
+		$delivery_id = array_reverse($delivery_id);
+		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$sdf_data['reship_id']);*/
         $msg = '新建退换货单成功，请等待审核!';
         return $sdf_data['reship_bn'];
       }else{
@@ -929,15 +934,31 @@ class ome_mdl_reship extends dbeav_model{
         $orders = $oOrder->dump(array('order_id'=>$order_id));
       }
       
-      
+	  //zjr
+	  $z_bn=$orders['pay_bn'];
+	  $z_order_bn=$orders['order_bn'];
+	  $arrPay_id= $this->db->selectrow("SELECT id FROM sdb_ome_payment_cfg WHERE pay_bn='$z_bn'");
+	  //echo "<pre>";print_r($arrPay_id);
+	  $arrPay_id=$arrPay_id['id'];
+	  if($arrPay_id=="3"){
+	      $arrPay_id=4;
+	  }
+      $z_r_apply_bn=$this->db->selectrow("SELECT payment_bn FROM sdb_ome_payments WHERE order_id='$order_id' AND status='succ'");
+	  $refund_apply_bn=$z_r_apply_bn['payment_bn'];
+	  $refund_apply_bn=$oRefund_apply->checkRefundApplyBn($refund_apply_bn);
       //生成退款申请单
-      $refund_apply_bn = $oRefund_apply->gen_id();
+      //$refund_apply_bn = $oRefund_apply->gen_id();
       $money = (float)$reshipinfo['tmoney']+(float)$reshipinfo['diff_money']+(float)$reshipinfo['bcmoney']-(float)$reshipinfo['bmoney'];
+	  //zjr
+	  $z_money=$money;
+	  
       $refund_sdf = array(
             'refund_refer'       => '1',
             'apply_op_id'        =>kernel::single('desktop_user')->get_id(),
             'verify_op_id'        =>kernel::single('desktop_user')->get_id(),
             'order_id'             => $order_id,
+			'reship_id'				=>$reship_id,
+			'payment'               => $arrPay_id,
             'refund_apply_bn' => $refund_apply_bn,
             'pay_type'            => 'online',
             'money'               => (float)$money,
@@ -1129,6 +1150,18 @@ class ome_mdl_reship extends dbeav_model{
             $is_generate_aftersale = false;
             
         }
+		//echo "<pre>";print_r($arrPay_id);
+		//zjr发给买尽头
+		$z_refund_id=$refund_sdf['apply_id'];
+		$z_order_bn=$z_order_bn;
+		
+		$z_refund_info[] = array('oms_rma_id'=>$reship_id);
+		if($arrPay_id=="4"){
+			kernel::single('omemagento_service_order')->update_status($z_order_bn,'refund_required','',time(),$z_refund_info);
+		}else{
+			kernel::single('omemagento_service_order')->update_status($z_order_bn,'refunding','',time(),$z_refund_info);
+		}
+		app::get('ome')->model('refund_apply')->sendRefundToM($z_refund_id,$z_order_bn,$z_money,$reship_id);
       }
 
 

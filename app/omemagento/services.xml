@@ -1,0 +1,9 @@
+<services>
+	<service id="service.magento_order">
+        <class>omemagento_service_order</class>
+    </service>
+
+	<service id="desktop_finder.omemagento_mdl_request_log">
+        <class>omemagento_finder_log</class>
+    </service>
+</services>

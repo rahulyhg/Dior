@@ -379,7 +379,7 @@ class console_ctl_admin_purchase extends desktop_controller{
 
         if (!empty($data)){
             foreach ($data as $k => $item){
-                $item['num'] = 0;
+                $item['num'] = 100;
                 if($supplier_id > 0){
                     $item['price'] = app::get('purchase')->model('po')->getPurchsePriceBySupplierId($supplier_id, $item['product_id'], 'desc');
                     if (!$item['price']){

@@ -1,0 +1,55 @@
+<form action="index.php?app=ome&ctl=<{$env.get.ctl}>&act=do_confirm_status&finder_id=<{$env.get.finder_id}>" method="post" id="disForm">
+<input name="statement_id" value="<{$payments.statement_id}>" type="hidden">
+<table class="tableform">
+    <tbody>
+    <tr>
+        <th>对账订单：</th>
+        <td>
+           <{$payments.order_bn}>
+        </td>
+    </tr>
+    <tr>
+        <th>订单金额：</th>
+        <td><{$payments.money}></td>
+    </tr>
+    <tr>
+        <th>实际金额：</th>
+        <td><{$payments.tatal_amount}></td>
+    </tr>
+	 <tr>
+        <th>差额：</th>
+        <td><{$payments.difference_money}></td>
+    </tr>
+	 <tr>
+        <th>差额原因：</th>
+        <td><{input type="text" name="difference_reason" }></td>
+    </tr>
+    </tbody>
+</table>
+</form>
+<{area inject=".mainFoot"}>
+<div class="table-action">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tbody>
+      <tr>
+        <td><button class="btn btn-primary" id="btnSubmit" ><span><span><{t}>确定<{/t}></span></span></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<{/area}>
+<script>
+var flag = true;
+
+ $('btnSubmit').addEvent('click',function(e){
+	 if(flag){
+		flag = false;
+
+        finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,finderGroup['<{$env.get.finder_id}>']);
+		$('disForm').fireEvent('submit',{stop:$empty});
+		setTimeout("$('disForm').getParent('.dialog').retrieve('instance').close()",1000);
+	}
+ });
+
+
+</script>

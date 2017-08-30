@@ -1,0 +1,18 @@
+<app>
+    <name>giftcard</name>
+    <description>giftcard</description>
+
+    <author>
+        <name>zjr开发团队</name>
+        <email>zjrhaoshuai.cn</email>
+        <url>http://www.zjrshuai.cn</url>
+    </author>
+
+    <version>1.0.0</version>
+    <license>zjr license</license>
+    <parent_model_class>dbeav_model</parent_model_class>
+
+	<depends>
+		<app>ome</app>
+	</depends>
+</app>

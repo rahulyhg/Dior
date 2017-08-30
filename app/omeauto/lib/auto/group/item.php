@@ -599,7 +599,7 @@ class omeauto_auto_group_item {
      * @param Array $consignee 收件人信息
      * @return boolean
      */
-    public function mkDelivery($consignee) {
+    public function mkDelivery($consignee,$sync=false) {
 
         if (isset($consignee['memo'])) {
             $remark = $consignee['memo'];
@@ -626,7 +626,7 @@ class omeauto_auto_group_item {
                 unset($deliveryInfo['order_items']);
                 
                 #[拆单]新增$split_status部分拆分 ExBOY
-                $delivery_id = $deliveryObj->addDelivery($orderId, $deliveryInfo,array(),$order_items, $split_status);
+                $delivery_id = $deliveryObj->addDelivery($orderId, $deliveryInfo,array(),$order_items, $split_status,$sync);
                 
                 if ($delivery_id) {
                     $ids[] = $delivery_id;

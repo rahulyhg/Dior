@@ -1,0 +1,48 @@
+<form action="index.php?<{$env.server.QUERY_STRING}>" id="memo_form" method="post">
+<div class="tableform">
+  <input type="hidden" name='reship[reship_id]' value="<{$reship.reship_id}>">
+  <h4>留言信息</h4>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+   <{if $reship.custom_mark}>
+   <tr>
+      <th><{t}>留言历史：<{/t}></th>
+      <td>
+        <{foreach from=$reship.custom_mark item=items}>
+        <div id="memo_show">
+	    <b><{$items.op_content|escape:"HTML"}></b> <{$items.op_time}> by <{$items.op_name}>
+	    </div>
+	    <{/foreach}>
+      </td>
+    </tr>
+    <{/if}>
+    <tr>
+      <th><{t}>追加留言：<{/t}></th>
+      <td><textarea name="reship[custom_mark]" id="memo" rows="6" vtype="required" style="width:80%"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <th>&nbsp;</th>
+      <td><{button type="submit" label="保存" }></td>
+    </tr>
+    </table>  
+</div>
+</form>
+
+
+
+
+<script>
+    window.addEvent('domready',function(){
+        if('<{$order.mark_type}>'!=''){
+            $('<{$order.mark_type}>').checked = true;
+        }else{
+            $('b1').checked = true;
+        }
+    });
+
+	function wirte_default(obj){
+		var default_memo = obj.value;
+		var memo = $('memo').value;
+		 $('memo').value = default_memo+' '+memo;
+	}
+</script>

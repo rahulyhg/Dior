@@ -1,6 +1,7 @@
 <{capture name="header"}>
 <{css app="ome" src="ome.css"}>
 <{script src="coms/autocompleter.js" app='desktop' }>
+<{script src="zeroclipboard.js" app='ome' }>
 <{/capture}>
 
 <form class="tableform" style="background:#fff; border:0 none;" method="post" action="index.php?app=ome&ctl=admin_order&act=finish_edit" id="order_split">
@@ -19,15 +20,12 @@
         <td style="text-align: right;" >
         <{foreach from=$conf_list key=name item=conf}>
             <{if $conf.is_add==true}>
-        <{button label="{$conf.add_title}" id="{$conf.add_id}"}>
+        <{button label="{$conf.add_title}" id="{$conf.add_id}" disabled="disabled"}>
         <input type="hidden" name="add<{$name}>[]" value="" /> &nbsp;
             <{/if}>
         <input type="hidden" name="alltotal[]" value="<{$conf.js_count}>" /> &nbsp;
         <{/foreach}>
-            <span style="position:relative">
-            <span id='pfba'><label>添加货号：</label><{input type="text" name="bn" size="25" }></span>
-            <span id='pfba2'><label>添加货品名称：</label><{input type="text" name="name" size="20" }></span>
-           </span>
+            
           </td>
         </tr>
       </tbody>
@@ -41,7 +39,7 @@
   <table width="100%" class="gridlist">
     <thead>
       <tr>
-        <th style="text-align:left;">配送信息</th>
+        <th style="text-align:left;"><h3>配送信息&nbsp;<span style="color:red;">(可编辑)</span></h3></th>
       </tr>
     </thead>
     <tbody>
@@ -50,9 +48,9 @@
           <table width="100%" border="0" cellpadding="0" cellspacing="0" class="delivery-info">
            <tr>
             <th>收货人姓名：</th>
-            <td><{input type="text&&required" name="order[consignee][name]" size="12" value=$order.consignee.name }> <em class="c-red">*</em></td>
+            <td><{input type="text&&required"   name="order[consignee][name]" size="12" value=$order.consignee.name }> <em class="c-red">*</em></td>
             <th>送货时间：</th>
-            <td><{input type="text" name="order[consignee][r_time]" value=$order.consignee.r_time}></td>
+            <td><{input type="text" name="order[consignee][r_time]"  readonly="readonly" value=$order.consignee.r_time}></td>
             <th>收货地区：</th>
             <td><{if $region}>
               <div id="region"> <{$region}> </div>
@@ -69,13 +67,13 @@
              <th>邮政编码：</th>
              <td><{input type="text" name="order[consignee][zip]" size="6" value=$order.consignee.zip }></td>
             <th>收货地址：</th>
-            <td><{input type="required" name="order[consignee][addr]" size="40" value=$order.consignee.addr }> <em class="c-red">*</em></td>
+            <td><{input type="required"  name="order[consignee][addr]" size="40" value=$order.consignee.addr }> <em class="c-red">*</em></td>
             </tr>
            <tr>
              <th>联系电话：</th>
-             <td><{input type="text" vtype="requiredalmost" name="order[consignee][telephone]" size="12" value=$order.consignee.telephone}></td>
+             <td><{input type="text"  vtype="requiredalmost" name="order[consignee][telephone]" size="12" value=$order.consignee.telephone}></td>
              <th>Email地址：</th>
-             <td><{input type="email" name="order[consignee][email]" value=$order.consignee.email}></td>
+             <td><{input type="email"  name="order[consignee][email]" value=$order.consignee.email}></td>
             <th>&nbsp;</th>
             <td>&nbsp;</td>
             <input type="hidden" name="log_name" value="<{$order.consignee.name}>" />
@@ -124,17 +122,17 @@
       <table width="100%" cellspacing="0" cellpadding="0" border="0">
         <tbody><tr>
             <th>订单号：</th>
-            <td><span id="order_bn"><{$order.order_bn}><input type="hidden" name="order_bn" value="<{$order.order_bn}>"></span> <a href="javascript:void(0);" id="btn_copy" class="lnk">[复制]</a></td>
+            <td><span id="order_bn"><{$order.order_bn}><input type="hidden" name="order_bn" value="<{$order.order_bn}>"></span><a href="javascript:void(0);" id="btn_copy" class="lnk">[复制]</a></td>
             <th><b>订单总金额：</b></th>
             <td><b id="total_amount_show" val="<{$order.total_amount}>"><{$order.total_amount|cur}></b><input type="hidden" name="new_total_amount" id="new_total_amount" value="<{$order.total_amount}>" /></td>
             <th>订单折扣或涨价：</th>
-            <td><input type="text" vtype="number" name="discount" id="discount" size="10" onchange="cal_total_amount(this);" value="<{$order.discount}>" /><br />要给顾客便宜100元，则输入"-100";要提高订单价格100元，则输入"100".</td>
+            <td><input type="text" readonly="readonly" vtype="number" name="discount" id="discount" size="10" onchange="cal_total_amount(this);" value="<{$order.discount}>" /><br />要给顾客便宜100元，则输入"-100";要提高订单价格100元，则输入"100".</td>
           </tr>
           <tr>
             <th>下单日期：</th>
             <td><{$order.createtime|date_format:'%Y-%m-%d'}> <span style="color:#84A2AD;">(至今<{$order.difftime}>)<input type="hidden" name="createtime" value="<{$order.createtime|date_format:'%Y-%m-%d'}>"></span></td>
             <th>配送费用：</th>
-            <td><input id='cost_shipping' size='10' name="cost_shipping"  onchange="cal_cost_shiping(this);"  value="<{$order.shipping.cost_shipping}>"></td>
+            <td><input id='cost_shipping' readonly="readonly" size='10' name="cost_shipping"  onchange="cal_cost_shiping(this);"  value="<{$order.shipping.cost_shipping}>"></td>
             <th>支付方式：</th>
             <td><{$order.payinfo.pay_name}><input type="hidden" name="pay_name" value="<{$order.payinfo.pay_name}>"></td>
           </tr>
@@ -157,7 +155,7 @@
           </tr>
           <tr>
             <th>商品优惠金额：</th>
-            <td><input type="text" class="none_input" size="6" readonly="readonly" name="pmt_goods" id="total_pmt" value="<{$order.pmt_goods|cur}>"></td>
+            <td><input type="text" readonly="readonly" class="none_input" size="6" readonly="readonly" name="pmt_goods" id="total_pmt" value="<{$order.pmt_goods|cur}>"></td>
             <th>商品重量：</th>
             <td><{$order.weight}><input type="hidden" name="weight" value="<{$order.weight}>"></td>
             <th>发票抬头：</th>
@@ -174,7 +172,40 @@
       </tbody></table>
     </div>
   </div>
+<div class="finder-detail" style="margin-top:10px;">
+    <div><h3>发票信息&nbsp;<span style="color:red; display:inline;">(可编辑)</span></h3></div>
+    <div class="division" style="background:#fff;" id="buyer_area">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+          <tr>
+            <th>订单发票号：</th>
+            <td><{$order.tax_no}><input type="hidden" name="tax[tax_no]" value="<{$order.tax_no}>"></td>
+            <th>发票抬头：</th>
+            <td><input type="text" name="tax[tax_title]" value="<{$order.tax_title}>"></td>
+            <th>发票姓名：</th>
+            <td><input type="text" name="tax[invoice_name]" value="<{$order.invoice_name}>"></td>
+            <th>发票地区：</th>
+            <{if $order.is_tax=='false'}>
+				<td><{input type='region' app='eccommon' name="tax[invoice_area]" value=$order.invoice_area}></td>
+			<{else}>
+				<td><{input type='region' app='eccommon' name="tax[invoice_area]" value=$order.invoice_area required="true"}></td>
+			<{/if}>
+          </tr>
+          <tr>
+            <th>发票电话：</th>
+            <td><input type="text" name="tax[invoice_contact]" value="<{$order.invoice_contact}>"></td>
+            <th>发票地址：</th>
+            <td><{$member.contact.zipcode}><input type="text" name="tax[invoice_addr]" value="<{$order.invoice_addr}>"></td>
+            <th>发票邮编：</th>
+            <td><input type="text" name="tax[invoice_zip]" value="<{$order.invoice_zip}> <{$member.contact.addr}>"></td>
 
+			<th>纳税人识别号：</th>
+            <td><input type="text" name="taxpayer_identity_number" value="<{$order.taxpayer_identity_number}>"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <div class="finder-detail" style="margin-top:10px;">
     <div><h3>购买人信息</h3></div>
     <div class="division" style="background:#fff;" id="buyer_area">
@@ -259,7 +290,27 @@
 
 
 <script>
+zhantie();
 //改变客服备注背景色[ExBOY]
+function zhantie(){
+	 
+		
+		clip = new ZeroClipboard.Client();
+			clip.setHandCursor( true );
+			
+			 
+			clip.addEventListener('mouseOver', function (client) {
+				// update the text on mouse over
+				clip.setText( $('order_bn').get('text') );
+			});
+			
+			clip.addEventListener('complete', function (client, text) {
+				alert("已复制");
+			});
+			 
+			clip.glue( 'btn_copy' );
+}
+ 	
 function input_remarks()
 {
 	document.getElementById("kefu_remarks").style.color = "#000000";
@@ -316,7 +367,7 @@ function total(){
 
   var totalarr = [], total=0, sale_amount=0;
   var totals = $$('input[name^=alltotal[]');//['total_goods()','total_pkg()','total_gift()'];
-
+//alert(totals);
   totals.each(function(e,i){
     totalarr.push(new Function('return '+e.value)());
     total += totalarr[i][0];
@@ -446,7 +497,7 @@ function dosubmit(act)
     $('order_split').fireEvent('submit',{stop:function(){}});
 }
 
-function docheck(text){
+function docheck(text,orders){
     var id = $("order_id").value;
     var newtotal = parseFloat($('new_total_amount').get('value'));
     var pay_status = parseInt(<{$order.pay_status}>);
@@ -462,18 +513,18 @@ function docheck(text){
     if (payed > newtotal && retrial_order != 'true'){
         var width=800;
         var height=500;
-		ome_order_new_dialog(id, newtotal, total, is_cod, pay_status, width, height, product_ids);
-    }else{
-        var width=400;
-        var height=310;
-		ome_order_new_dialog(id, newtotal, total, is_cod, pay_status, width, height, product_ids);
+		ome_order_new_dialog(id, newtotal, total, is_cod, pay_status, width, height, product_ids,orders);
+    }else{//alert(111);
+        var width=600;
+        var height=450;
+		ome_order_new_dialog(id, newtotal, total, is_cod, pay_status, width, height, product_ids,orders);
     }
 }
 
 //增加product_ids参数
-function ome_order_new_dialog(id, newtotal, total, is_cod, pay_status,width,height, product_ids)
+function ome_order_new_dialog(id, newtotal, total, is_cod, pay_status,width,height, product_ids,orders)
 {
-	var url	= 'index.php?<{$env.server.QUERY_STRING|replace:"view_edit":"do_check"}>&p[0]='+id+'&p[1]='+newtotal+'&p[2]='+total+'&is_cod='+is_cod+'&pay_status='+pay_status+'&product_ids='+product_ids;
+	var url	= 'index.php?<{$env.server.QUERY_STRING|replace:"view_edit":"do_check"}>&p[0]='+id+'&p[1]='+newtotal+'&p[2]='+total+'&is_cod='+is_cod+'&pay_status='+pay_status+'&product_ids='+product_ids+'&orders='+orders;
 	var retrial_order	= '<{$retrial_order}>';
 	if(retrial_order == 'true')
 	{
@@ -485,7 +536,7 @@ function ome_order_new_dialog(id, newtotal, total, is_cod, pay_status,width,heig
         width:width,
         height:height,
         modal:true,
-        resizeable:false,
+        resizeable:true,
         onClose:function(){
             $('enter_submit').set('disabled', '');
             $('enter_submit').getElements('span')[1].set('text','确认');
@@ -514,7 +565,9 @@ $('order_split').store('target',{
        var json = Json.evaluate(jsontext);
        if ($("do_action").value == 0){
               if (typeof(json.error) == 'undefined'){
-                    docheck(json.error);
+			  //alert(jsontext);
+			  		//var orders=json.orders;
+                    docheck(json.error,jsontext);
               }else {
                   $('enter_submit').set('disabled', '');
                   $('enter_submit').getElements('span')[1].set('text','确认');
@@ -565,9 +618,10 @@ window.addEvent('keydown',function(e){
     }
 })
 
-    $('btn_copy').addEvent('click',function(){
-      copyToClip($('order_bn').get('text'));
-    });
+    //$('btn_copy').addEvent('click',function(){
+     // copyToClip($('order_bn').get('text'));
+		
+    //});
 
     function copyToClip(txt) {
       var flag = false;

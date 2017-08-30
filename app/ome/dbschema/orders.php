@@ -24,6 +24,75 @@ $db['orders']=array (
       'in_list' => true,
       'default_in_list' => false,
     ),
+	'ax_order_bn'=>array(
+	  'type' => 'varchar(32)',
+	  'label' => 'AX系统订单号',
+	  'is_title' => true,
+	  'width' => 125,
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
+	'wx_order_bn'=>array(
+	  'type' => 'varchar(32)',
+	  'label' => 'WX系统订单号',
+	  'is_title' => true,
+	  'width' => 125,
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
+	 'card_code' =>
+    array (
+      'type' => 'varchar(100)',
+      'label' => '卡劵Code码',
+      'is_title' => true,
+      'width' => 125,
+      'searchtype' => 'nequal',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	 'card_id' =>
+    array (
+      'type' => 'varchar(100)',
+      'label' => '卡劵Card_id',
+      'is_title' => true,
+      'width' => 125,
+     // 'searchtype' => 'nequal',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'is_accept_card' =>
+    array (
+      'type' =>
+      array (
+        'false' => '未领取',
+        'true' => '已领取',
+      ),
+      'default' => 'false',
+      'label' => '领取状态',
+      'width' => 35,
+      'editable' => false,
+      'in_list' => true,
+      'default_in_list' => false,
+	  'filtertype' => 'yes',
+      //'filterdefault' => true,
+    ),
+	 'form_id' =>
+    array (
+      'type' => 'varchar(30)',
+	  'required'=>false,
+    ),
     'archive' =>
     array (
       'type' => 'tinyint unsigned',
@@ -57,7 +126,7 @@ $db['orders']=array (
         'unconfirmed' => '未确认',
         'confirmed' => '已确认',
         'splitting' => '部分拆分',
-        'splited' => '已拆分完',
+        'splited' => '已同步AX',
         'cancel' => '取消',
         'remain_cancel' => '余单撤销',
         'is_retrial' => '复审订单',
@@ -131,6 +200,30 @@ $db['orders']=array (
       'editable' => false,
       'in_list' => true,
       'default_in_list' => false,
+    ),
+	'route_status' =>
+    array (
+      'type' =>
+      array (
+        0 => '未签收',
+        1 => '已签收',
+      ),
+      'default' => '0',
+      'required' => true,
+      'label' => '签收状态',
+      'width' => 75,
+      'editable' => false,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'routetime' =>
+    array (
+      'type' => 'time',
+      'label' => '签收时间',
+      'width' => 130,
+      'editable' => false,
+      'in_list' => true,
+	  'default_in_list' => true,
     ),
     'is_delivery' =>
     array (
@@ -275,7 +368,7 @@ $db['orders']=array (
     ),
     'ship_addr' =>
     array (
-      'type' => 'varchar(100)',
+      'type' => 'varchar(255)',
       'label' => '收货地址',
       'width' => 180,
       'editable' => false,
@@ -424,6 +517,11 @@ $db['orders']=array (
       'editable' => false,
       'sdfpath' => 'tax_title',
     ),
+	 'taxpayer_identity_number' =>
+    array (
+      'type' => 'varchar(255)',
+      'editable' => false,
+    ),
     'cost_freight' =>
     array (
       'type' => 'money',
@@ -436,6 +534,19 @@ $db['orders']=array (
       'sdfpath' => 'shipping/cost_shipping',
       'in_list' => true,
     ),
+	/* 'cost_freight_cod' =>
+    array (
+      'type' => 'money',
+      'default' => '0',
+      'required' => true,
+      'label' => '货到付款手续费',
+      'width' => 70,
+      'editable' => false,
+      'filtertype' => 'number',
+      //'sdfpath' => 'shipping/cost_shipping',
+      'in_list' => true,
+    ),*/
+
     'is_protect' =>
     array (
       'type' => 'bool',
@@ -484,7 +595,11 @@ $db['orders']=array (
     array (
       'type' => 'money',
       'editable' => false,
+	  'label' => '货到付款手续费',
       'sdfpath' => 'payinfo/cost_payment',
+	  'in_list' => true,
+      'default_in_list' => false,
+      'width' => 30,
     ),
     'currency' =>
     array (
@@ -526,6 +641,13 @@ $db['orders']=array (
       'editable' => false,
     ),
     'pmt_order' =>
+    array (
+      'type' => 'money',
+      'default' => '0',
+      'required' => true,
+      'editable' => false,
+    ),
+	'pmt_cost_shipping' =>
     array (
       'type' => 'money',
       'default' => '0',
@@ -594,6 +716,51 @@ $db['orders']=array (
     array (
       'type' => 'varchar(50)',
       'label' => '发票号',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'invoice_name' =>
+    array (
+      'type' => 'varchar(50)',
+      'label' => '发票收件人',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'invoice_area' =>
+    array (
+      'type' => 'region',
+      'label' => '发票寄送地区',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'invoice_addr' =>
+    array (
+      'type' => 'varchar(255)',
+      'label' => '发票寄送地址',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'invoice_zip' =>
+    array (
+      'type' => 'varchar(20)',
+      'label' => '发票寄送地区邮编',
+      'editable' => false,
+      'filtertype' => 'normal',
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'invoice_contact' =>
+    array (
+      'type' => 'varchar(30)',
+      'label' => '发票寄送联系方式',
       'editable' => false,
       'filtertype' => 'normal',
       'in_list' => true,
@@ -719,6 +886,13 @@ $db['orders']=array (
       'default' => 'matrix',
       'editable' => false,
     ),
+	'wx_source' =>
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+	  'label'=>'卡劵流量来源',
+	  'in_list' => true,
+    ),
     'pause' =>
     array (
       'type' =>'bool',
@@ -739,6 +913,32 @@ $db['orders']=array (
       'width' => 60,
       'filtertype' => 'yes',
       'filterdefault' => true,
+    ),
+	'is_prepare' =>
+    array (
+      'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
+      'editable' => false,
+      'label' => '是否预售',
+      'width' => 75,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => true,
+    ),
+	'is_lettering' =>
+    array (
+      'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
+      'editable' => false,
+      'label' => '是否刻字',
+      'width' => 75,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => true,
     ),
     'old_amount' =>
     array (
@@ -805,6 +1005,63 @@ $db['orders']=array (
       'label' => '打印状态',
       //'in_list' => true,
     ),
+	'message1' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message2' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message3' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message4' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message5' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'message6' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'welcomecard' => 
+    array (
+      'type' => 'varchar(200)',
+      'editable' => false,
+    ),
+	'is_card' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      'in_list' => true,
+	  'default_in_list' => true,
+      'label' => '礼品卡',
+    ),
+	'is_w_card' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      'in_list' => true,
+	  'default_in_list' => true,
+      'label' => 'WelcomeCard',
+    ),
     'logi_id' =>
     array (
       'type' => 'table:dly_corp@ome',
@@ -839,6 +1096,46 @@ $db['orders']=array (
       'editable' => false,
       'filtertype' => 'yes',
       'filterdefault' => true,
+    ),
+	'order_refer_source' =>
+    array (
+      'type' => array(
+          'pc' => 'PC端',
+          'wap' => '手机',
+      ),
+      'default' => 'pc',
+      'label' => '订单来源',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+	  'in_list' => true,
+    //  'default_in_list' => true,
+    ),
+	'is_wechat' =>
+    array (
+      'type' => array(
+          'yes' => '是',
+          'no' => '不是',
+      ),
+      'default' => 'no',
+      'label' => '微信商城',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+	  'in_list' => true,
+	  'width' =>70,
+    //  'default_in_list' => true,
+    ),
+	'wechat_openid' =>
+    array (
+      'type' => 'varchar(200)',
+      'default' => '',
+      'label' => 'openid',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+	  'in_list' => true,
+    //  'default_in_list' => true,
     ),
     'paytime' =>
     array (

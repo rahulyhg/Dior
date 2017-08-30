@@ -92,6 +92,15 @@ class omeanalysts_ctl_ome_analysis extends desktop_controller{
         kernel::single('omeanalysts_ome_branchdelivery')->set_params($_POST)->display();
     }
 
+
+	public function order_stream(){
+		kernel::single('omeanalysts_ome_orderStream')->set_params($_POST)->display();
+	}
+
+	public function order_stream_item(){
+		kernel::single('omeanalysts_ome_orderSteamItems')->set_params($_POST)->display();
+	}
+
     private function getOperBranches(){
         $oBranch = &app::get('ome')->model('branch');
         $is_super = kernel::single('desktop_user')->is_super();

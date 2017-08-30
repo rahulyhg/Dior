@@ -20,17 +20,17 @@
       <tbody>
         <{foreach from=$objs item=obj}>
         <tr>
-          <td><strong><{$obj.bn}></strong></td>
-          <td><strong><{$obj.name}></strong></td>
+          <td><strong><{$obj.pkg_bn}></strong></td>
+          <td><strong><{$obj.pkg_name}></strong></td>
           <td>捆绑商品&nbsp;</td>
           <td>件&nbsp;</td>
           <{if $is_consign}>
             <td>-</td>
           <{/if}>          
-          <td><strong><{$obj.price}></strong></td>
-          <td><strong><{$obj.sale_price/$obj.quantity|cur}></strong></td>
-          <td><strong><{$obj.pmt_price/$obj.quantity|cur}></strong></td>
-          <td><strong><{$obj.quantity}></strong></td>
+          <td><strong><{$obj.pkg_price}></strong></td>
+          <td><strong><{$obj.pkg_price|cur}></strong></td>
+          <td><strong>-</td>
+          <td><strong><{$obj.pkg_num}></strong></td>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
         </tr>
@@ -44,8 +44,8 @@
           <td><{$item.buyer_payment}></td>
           <{/if}>          
           <td><{$item.price}></td>
-          <td><{$item.sale_price/$item.quantity|cur}></td>
-          <td><{$item.pmt_price/$item.quantity|cur}></td>
+          <td><{$item.true_price|cur}></td>
+          <td><{$item.ax_pmt_price/$item.quantity|cur}></td>
           <td><{$item.quantity}></td>
           <td><{$item.sendnum}></td>
           <td><{$item.return_num}></td>

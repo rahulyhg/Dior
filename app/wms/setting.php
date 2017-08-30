@@ -1,5 +1,5 @@
 <?php
-$setting = array(
+$setting = array( 
 'wms.delivery.check'=>array('type'=>SET_T_INT,'default'=>5,'desc'=>'发货校验商品数量设置'),
 'wms.delivery.weight'=>array('type'=>SET_T_ENUM,'default'=>'on','options'=>array('on'=>'开启','off'=>'关闭'),'desc'=>'逐单发货是否称重'),
 'wms.delivery.weightwarn'=>array('type'=>SET_T_ENUM,'default'=>'off','options'=>array('on'=>'开启','off'=>'关闭'),'desc'=>'逐单发货是否称重报警'),
