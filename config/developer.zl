@@ -1,0 +1,9 @@
+Product-Name = ShopEx-ERP-Commerce-Standard-Source
+Registered-To = developer
+Max-Concurrent = 3
+Lease-Expiration = 60
+Wait-For-Lease = no
+Expires = Never
+Hardware-Locked = No
+Produced-By = 180410
+Verification-Code = 0QCRPxuUDhvzXf3hG6W6W941wFfhBAIUD3GeeBjMVnHIa/khFjRB2Gl5Y0Q=

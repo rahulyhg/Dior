@@ -1,0 +1,120 @@
+<deploy>
+    <ver>3.7.1.20150906</ver>
+    <licence file="license.txt" />
+    <product_name>商派ONex 订单管理中心 自有仓储版</product_name>
+    <product_id>taog</product_id>
+    <product_desc><![CDATA[
+               
+        <p>订单业务管理系统</p>
+        
+   ]]></product_desc>
+   
+	<installer>
+		
+		<title>商派ONex 订单管理中心 自有仓储版 System installer</title>
+		
+		<banner><![CDATA[
+		<span id="OME-logo">商派ONex 订单管理中心 自有仓储版</span> System installer
+		]]></banner>
+
+		<style><![CDATA[
+			#ShopEx-logo{
+				background:#000;
+				color:#fff;
+				margin-right:10px;
+				font-size:18px;
+				padding:4px;
+			}
+		]]></style>
+
+		<finish>
+			<message><![CDATA[
+			<div>安装顺利完成！
+			 <div class="installer-success-txt">现在开始体验吧...</div>
+             <p>访问您的平台: <a href="%BASE_URL%">%BASE_URL%/index.php</a></p>
+            </div>
+			]]></message>
+			<links>
+				<app id="desktop">商派ONex 订单管理中心 自有仓储版</app>
+			</links>
+		</finish>
+	</installer>
+    
+
+	<package hidden="false" collapse="false" search_online="false" search_filter="*">
+		<!--公共模块-->
+                <app id="base" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="dbeav" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="eccommon" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="image" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="pam" default="true" hidden="false" locked="true" autostart="true" />
+                <app id="rpc" default="true" hidden="false" locked="true" autostart="true" />
+                <app id="desktop" default="true" hidden="false" locked="true" autostart="true" />
+                <app id="entermembercenter" default="true" hidden="false" locked="true" autostart="true" />
+
+                <!--OMS-->
+                <app id="apibusiness" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="omeauto" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="omepkg" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="sales" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="omecsv" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="iostock" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="inventorydepth" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="omedlyexport" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="omeanalysts" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="purchase" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="replacesku" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="siso" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="taoguanallocate" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="taoguaninventory" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="taoguaniostockorder" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="tgstockcost" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="logistics" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="logisticsmanager" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="logisticsaccounts" default="true" locked="true" hidden="false" autostart="true" />
+                <app id="console" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="erpapi" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="archive" default="true" locked="false" hidden="false" autostart="true" />
+
+                <!--自有仓储-->
+                <app id="wms" default="true" locked="false" hidden="false" autostart="true" />
+                <!--<app id="tgkpi" default="true" locked="false" hidden="false" autostart="true" />-->
+                <app id="monitor" default="true" locked="false" hidden="false" autostart="true" />
+
+                <!--三方对接-->
+		<!--
+                <app id="channel" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="wangwang" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="crm" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="openapi" default="true" locked="false" hidden="false" autostart="true" />
+		-->
+                <!--第三方仓储管理-->
+                <app id="wmsmgr" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="middleware" default="true" locked="false" hidden="false" autostart="true" />
+		<!--
+		<app id="omevirtualwms" default="true" locked="false" hidden="false" autostart="true" />
+		-->
+                <!--增值应用-->
+                <!--
+                <app id="finance" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="invoice" default="true" locked="false" hidden="false" autostart="true" />
+		-->
+
+		<!--任务管理器-->
+		<app id="customs" default="true" locked="false" hidden="false" autostart="true" />
+                <app id="taskmgr" default="true" locked="true" hidden="false" autostart="true" />
+	</package>
+	
+	<setting app="desktop" key="banner" value="商派ONex 订单管理中心 自有仓储版" />
+	<setting app="desktop" key="logo">订单管理中心 自有仓储版</setting>
+	<setting app="desktop" key="logo_desc"></setting>
+    	<setting app="desktop" key="title">OME</setting>
+    	<setting app="desktop" key="title_desc">Powered By Shopex</setting>
+    	<setting app="desktop" key="product_id">taog</setting>
+ 	<setting app="desktop" key="sale_id">commerce.basic</setting>
+    <writeable_check>
+        <dir>data</dir>
+        <dir>public</dir>
+        <dir>config</dir>
+    </writeable_check>
+</deploy>
