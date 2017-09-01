@@ -1,4 +1,10 @@
-config/
-public/
-data/
-app/taskmgr/logs/
+config/config.php
+config/defined_ext.php
+config/install.lock.php
+data/backup
+data/cache
+data/export
+data/kvstore
+.DS_Store
+.idea/
+node_modules/

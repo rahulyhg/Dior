@@ -1,0 +1,22 @@
+<h5 class="head-title">清除数据</h5>
+<div class="division">
+只有超级管理员有此权限！
+</div>
+<div class="table-action">
+    <form method="post" action="index.php?app=ome&ctl=admin_data_clear&act=logi" id="submit_form">
+	    <div>
+		    <table>
+			   <tr><td align="left" style="width: 150px">请输入超级管理员名称：</td><td align="left"><input type="text" name="name" vtype="required" value="<{$user}>" /></td></tr>
+			   <tr><td align="left">请输入超级管理员密码：</td><td align="left"><input type="password" name="pwd" vtype="required" /></td></tr>
+			</table>   
+		</div>	
+	   <div align="left" style="margin-left: 130px;margin-top: 30px"><{button class="btn-primary" label="提交" id="submit_btn" onclick='pre_submit()'}></div>
+    </form>
+</div>
+<script type="text/javascript">
+function pre_submit(){
+    if(confirm('确认清除系统数据？')){
+      	$('submit_form').fireEvent('submit',{stop:$empty});
+    }
+}    
+</script> 
