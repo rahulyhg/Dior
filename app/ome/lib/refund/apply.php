@@ -166,7 +166,7 @@ class ome_refund_apply
             $oLoger = &app::get('ome')->model('operation_log');
             $oShop = &app::get('ome')->model ( 'shop' );
 			$order_id=$data['order_id'];
-			$arrOrderBn=$objOrder->db->select("SELECT o.pay_bn,p.trade_no,o.order_bn FROM sdb_ome_orders o LEFT JOIN sdb_ome_payments p ON o.order_id=p.order_id WHERE o.order_id='$order_id'");			
+			$arrOrderBn=$objOrder->db->select("SELECT o.pay_bn,p.trade_no,o.order_bn,o.wx_order_bn FROM sdb_ome_orders o LEFT JOIN sdb_ome_payments p ON o.order_id=p.order_id WHERE o.order_id='$order_id'");			
             $bcmoney = $mathLib->getOperationNumber($data['bcmoney']);//补偿费用
             $countPrice=0;
             $countPrice=$data['refund_money'];
@@ -199,6 +199,7 @@ class ome_refund_apply
                  'return_id'=>$data['return_id'],
                  'refund_apply_bn'=>$refund_apply_bn,
                  'order_id'=>$data['order_id'],
+				 'wx_order_bn'=>$arrOrderBn['0']['wx_order_bn'],
                  'shop_id'=>$orderdata['shop_id'],
                  'pay_type'=>$data['pay_type'],
                  'bank'=>$data['bank'],

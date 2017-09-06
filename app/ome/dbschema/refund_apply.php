@@ -53,6 +53,16 @@ $db['refund_apply']=array (
       'label' => '订单号',
       'editable' => false,
     ),
+	'wx_order_bn'=>array(
+	  'type' => 'varchar(32)',
+	  'is_title' => true,
+	  'label' => 'WX系统订单号',
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => true,
+	),
 	'reship_id' =>
     array (
       'type' => 'varchar(200)',
