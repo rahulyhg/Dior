@@ -36,6 +36,17 @@ $db['statement']=array (
       'width' => 200,
       'editable' => false,
     ),
+	'wx_order_bn'=>array(
+	  'type' => 'varchar(32)',
+	  'is_title' => true,
+	  'label' => 'WX系统订单号',
+	  'width' => 125,
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
 	'shop_id' =>
     array (
       'type' => 'table:shop@ome',
