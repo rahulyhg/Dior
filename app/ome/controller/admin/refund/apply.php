@@ -398,11 +398,15 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 		$oRefaccept = &$this->app->model('refund_apply');
 		$arrPayments=array();
 		foreach($arrApllyId as $id){
-			$arrPayments[]=$oRefaccept->db->select("SELECT r.apply_id,r.refund_apply_bn,r.BankName,r.BeneficiaryName,r.BeneficiaryBankName,r.pay_account,r.money,r.isk,r.iss,p.trade_no,o.order_bn,o.wx_order_bn,p.money AS p_money,o.pay_bn FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments p ON p.order_id=r.order_id LEFT JOIN sdb_ome_orders o ON o.order_id=r.order_id WHERE r.apply_id='$id' AND r.status='2'");
+			$arrPayments[]=$oRefaccept->db->select("SELECT r.apply_id,r.refund_apply_bn,r.BankName,r.BeneficiaryName,r.BeneficiaryBankName,r.pay_account,r.money,r.isk,r.iss,p.trade_no,o.order_bn,o.wx_order_bn,p.money AS p_money,o.pay_bn,o.ship_status FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments p ON p.order_id=r.order_id LEFT JOIN sdb_ome_orders o ON o.order_id=r.order_id WHERE r.apply_id='$id' AND r.status='2'");
 		}
 		$arrPayments=array_filter($arrPayments);
+		
 		foreach($arrPayments as $ks=>$vs){
 			foreach($vs as $k=>$v){
+				if($v['ship_status']=="1"){
+					echo "订单:".$v['order_bn']."已发货不可提交退款";exit();
+				}
 				if($v['pay_bn']=="cod"){
 					if($v['BeneficiaryName']==""||$v['BeneficiaryBankName']==""||$v['pay_account']==""){
 						unset($arrPayments[$ks][$k]);
@@ -428,12 +432,23 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 	}
 	
 	function doRefund(){
-	
+	 
 	 	header("Content-type: text/html; charset=utf-8");
 		$arrTrade_no=json_decode($_POST['str_trade_no'],true);
 		$p_type=$_POST['type'];
 		if(empty($p_type)||empty($arrTrade_no)){
 			echo "错误";exit();
+		}
+		//再次判断是否已发货
+		$objOrder=$this->app->model("orders");
+		foreach($arrTrade_no as $key=>$data){
+			foreach($data as $order){
+				$isShip=array();
+				$isShip=$objOrder->getList("ship_status",array('order_bn'=>$order['order_bn']));
+				if($isShip['0']['ship_status']=="1"){//已发货不允许退款
+					echo "订单:".$order['order_bn']."已发货不可提交退款";exit();
+				}
+			}
 		}
 		
 		switch ($p_type){
