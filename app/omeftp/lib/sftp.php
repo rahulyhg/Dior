@@ -202,8 +202,15 @@ class omeftp_sftp{
           $read += strlen($buf);
           $contents .= $buf;
         }       
-        file_put_contents ($params['local'], $contents);
+        $res = file_put_contents ($params['local'], $contents);
         @fclose($stream);
+
+		if($contents){
+			if($res<=0||$res===false){
+				$msg = app::get('omeftp')->_('备份文件失败！');
+				return false;
+			}
+		}
 		return true;
     }
 

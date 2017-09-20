@@ -70,6 +70,9 @@ class omeftp_auto_update_product{
 				continue;
 			}
 			$info = $this->file_obj->toRead(array('file'=>$filename),$msg);
+			if(!$info){
+				continue;
+			}
 			$product_arr = explode("\n",$info);
 
 			$file_all_products = array();
@@ -138,7 +141,9 @@ class omeftp_auto_update_product{
 				continue;
 			}
 			$info = kernel::single('omeftp_type_txt')->toRead(array('file'=>$filename),$msg);
-			
+			if(!$info){
+				continue;
+			}
 			$product_arr = explode("\n",$info);
 			foreach($product_arr as $row){
 				$pinfo = array();
