@@ -447,21 +447,19 @@ class erpapi_oms_order
 		}else{
 			$member = $mObj->dump(array('m_memeber_num'=>$post['account']['m_memeber_num']),'member_id');
 			
-			if (!$member){
-			
-				$member['account']['uname']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
-				$member['m_memeber_num']=$post['account']['m_memeber_num'];
-				$member['m_memeber_card']=$post['account']['m_memeber_card'];
-				$member['contact']['name']=$post['account']['name'];
-				$member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
-				$member['contact']['area']=$post['address_id'];
-				$member['profile']['gender']=$post['account']['gender'];
+			$member['account']['uname']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
+			$member['m_memeber_num']=$post['account']['m_memeber_num'];
+			$member['m_memeber_card']=$post['account']['m_memeber_card'];
+			$member['contact']['name']=$post['account']['name'];
+			$member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
+			$member['contact']['area']=$post['address_id'];
+			$member['profile']['gender']=$post['account']['gender'];
 				//echo "<pre>"; print_r($member);exit();
-				if (!$mObj->save($member)){
-					return $this->send_error('会员更新失败 请重试');
-				}
-			
+			if (!$mObj->save($member)){
+				return $this->send_error('会员更新失败 请重试');
 			}
+			
+			
 		} 
 		unset($post['account']);
 		unset($post['products']);

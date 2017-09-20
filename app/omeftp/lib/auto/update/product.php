@@ -70,6 +70,16 @@ class omeftp_auto_update_product{
 				continue;
 			}
 			$info = $this->file_obj->toRead(array('file'=>$filename),$msg);
+
+			$charset[1] = substr($info, 0, 1);
+			$charset[2] = substr($info, 1, 1);
+			$charset[3] = substr($info, 2, 1);
+			if (ord($charset[1]) == 239 && ord($charset[2]) == 187 && ord($charset[3]) == 191) {
+				$info = substr($info, 3);
+			}
+			if(!$info){
+				continue;
+			}
 			$product_arr = explode("\n",$info);
 
 			$file_all_products = array();
@@ -138,7 +148,15 @@ class omeftp_auto_update_product{
 				continue;
 			}
 			$info = kernel::single('omeftp_type_txt')->toRead(array('file'=>$filename),$msg);
-			
+			$charset[1] = substr($info, 0, 1);
+			$charset[2] = substr($info, 1, 1);
+			$charset[3] = substr($info, 2, 1);
+			if (ord($charset[1]) == 239 && ord($charset[2]) == 187 && ord($charset[3]) == 191) {
+				$info = substr($info, 3);
+			}
+			if(!$info){
+				continue;
+			}
 			$product_arr = explode("\n",$info);
 			foreach($product_arr as $row){
 				$pinfo = array();
