@@ -79,9 +79,15 @@ class ome_ctl_admin_delivery_back extends desktop_controller {
                     break;
                 }
 
-                if(($order['shipping']['is_cod'] == 'true' ) && !$has_error){
+                if(($order['is_cod'] == 'false' ) && !$has_error){
                     $has_error = true;
-                    $msg = '货到付款状态的订单无法做退回处理';
+                    $msg = '在线支付订单不能用COD追回，请走退货退款流程!';
+                    break;
+                }
+
+				if(($order['pay_status'] == '1' ) && !$has_error){
+                    $has_error = true;
+                    $msg = '已支付订单不能使用COD追回，请走退货退款流程';
                     break;
                 }
                 $return = $orderObj->db->select("SELECT * from sdb_ome_return_product WHERE order_id=".$order_id." AND `status` not in('5')");
