@@ -219,7 +219,7 @@ class ome_ctl_admin_return_refund_apply extends desktop_controller {
        $this->begin();
 
 		$process_status = app::get('ome')->model('orders')->getList('process_status,ship_status',array('order_id'=>$post['order_id']));
-		if($process_status[0]['process_status']=='splitting'){
+		if($process_status[0]['process_status']=='splited'){
 			$this->end(false, app::get('base')->_('订单已同步AX，不能申请退款！'));
 		}
        $Oorefund = &$this->app->model('refund_apply');
