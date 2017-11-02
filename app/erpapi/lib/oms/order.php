@@ -707,6 +707,10 @@ class erpapi_oms_order
 			$iorder['invoice_addr']=$post['invoice_addr'];
 			$iorder['invoice_zip']=$post['invoice_zip'];
 			$iorder['invoice_contact']=$post['invoice_contact'];
+
+			//if(urldecode($post['invoice_type'])=='电子发票'){
+				$iorder['is_einvoice']='true';
+		//	}
         }
 
         if ($iorder['total_amount'] < 0)
@@ -760,6 +764,24 @@ class erpapi_oms_order
             $oObj_orextend->save($code_data);
             
         }
+
+		if($post['is_tax'] == 'true'){
+			$order_id = $oObj->getList('order_id',array('order_bn'=>$post['order_bn']));
+			if($order_id){
+				$data = array(
+					'order_id' => $order_id[0]['order_id'],
+					'order_bn' => $post['order_bn'],
+					'invoice_id' => $res['id'],
+					'invoiceCode' => $res['invoiceCode'],
+					'invoiceNo' => $res['invoiceNo'],
+					'invoiceTime' => $res['invoiceTime'],
+					'pdfUrl' => $res['pdfUrl'],
+					'invoice_type' => 'ready',
+				);
+				$objInvoice = $this->app->model('invoice');
+				$objInvoice->insert($data);
+			}
+		}
         return $this->send_succ('创建成功');
 	}
 	
@@ -1190,4 +1212,61 @@ class erpapi_oms_order
         );
         return $rs;
     }
+
+
+	public function getInvoice($params){
+		$sign = $params['sign'];
+		if($sign!="123456"||empty($sign)){
+			return $this->send_error('pwd不正确');
+		}
+		
+		error_log('补开发票:'.$params['order'],3,DATA_DIR.'/orderadd/'.date("Ymd").'einvoice.txt');
+		$post=json_decode($params['order'],true);
+//echo "<pre>";print_r($params);exit;
+		$objOrder = &app::get('ome')->model('orders');
+
+		$order_bn = $post['order_bn'];
+
+		$info = $objOrder->getList('*',array('order_bn'=>$order_bn));
+		if(empty($info)){
+			return $this->send_error('订单不存在！');
+		}
+
+		$info = $info[0];
+
+		$data = array(
+				'taxpayer_identity_number'=>$post['taxpayer_identity_number'],
+				'tax_company'=>$post['tax_title'],
+				'is_einvoice'=>'true',
+			);
+		//echo "<pre>";print_r($data);exit;
+		$objOrder->update($data,array('order_id'=>$info['order_id']));
+		
+		$edata = array(
+				'order_id' => $info['order_id'],
+				'order_bn' => $info['order_bn'],
+				'invoice_id' => $res['id'],
+				'invoiceCode' => $res['invoiceCode'],
+				'invoiceNo' => $res['invoiceNo'],
+				'invoiceTime' => $res['invoiceTime'],
+				'pdfUrl' => $res['pdfUrl'],
+				'invoice_type' => 'ready',
+			);
+			
+		$objInvoice = app::get('einvoice')->model('invoice');
+		$objInvoice->insert($edata);//echo "<pre>";print_r(2);exit;
+		if($info['ship_status']=='1'){
+			kernel::single('einvoice_request_invoice')->invoice_request($info['order_id'],'getApplyInvoiceData');
+		}
+		if($info['ship_status']=='3'&&$info['pay_status']=='4'){
+			kernel::single('einvoice_request_invoice')->invoice_request($info['order_id'],'getApplyInvoiceData');
+		}
+		 $res=$this->send_succ('申请成功');
+		 //print_r($res);exit;
+		 echo json_encode($res);exit;
+
+	
+
+
+	}
 }

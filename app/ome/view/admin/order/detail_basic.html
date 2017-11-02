@@ -12,7 +12,7 @@
           <table cellspacing="0" cellpadding="0" border="0" class="orderdetails_basic">
             <tbody>
               <tr>
-                <td style=" vertical-align:top;">
+                <td >
                   <h4>商品价格</h4>
                   <div class="division">
                     <table cellspacing="0" cellpadding="0"  border="0">
@@ -69,7 +69,7 @@
                     </table>
                     </div>
                   </td>
-                  <td style=" vertical-align:top;">
+                  <td >
                     <h4>订单其他信息</h4>
                     <div class="division">
                      <form method='post' action='index.php?<{$env.server.QUERY_STRING}>'>
@@ -125,37 +125,10 @@
                           </td>
                         </tr>
 						
-						
                         <tr>
-                         <th>纳税人识别号：</th>
-                         <td><{$order.taxpayer_identity_number}></td>
+                         <th>订单发票号：</th>
+                         <td><{if ($env.get.flt eq 'myown') || ($env.get.act eq 'index') || ($env.get.act eq 'active')||($env.get.act eq 'confirm' && $env.get.flt eq 'unmyown')}><{$order.tax_no}><{else}><{$order.tax_no}><{/if}></td>
                        </tr>
-                       <tr>
-                         <th >发票抬头：</th>
-                         <td><input type="text" name="tax_title" value="<{$order.tax_title}>"> </td>
-                       </tr>
-					 
-					   <tr>
-                         <th >发票姓名：</th>
-                         <td><{$order.invoice_name}> </td>
-                       </tr>
-					   <tr>
-                         <th >发票地区：</th>
-                         <td><{$order.invoice_area|region}> </td>
-                       </tr>
-					   <tr>
-                         <th >发票电话：</th>
-                         <td><{$order.invoice_contact}> </td>
-                       </tr>
-					   <tr>
-                         <th >发票地址：</th>
-                         <td><{$order.invoice_addr}> </td>
-                       </tr>
-					   <tr>
-                         <th >发票邮编：</th>
-                         <td><{$order.invoice_zip}> </td>
-                       </tr>
-					    
                        <tr>
                          <th >可得积分：</th>
                          <td><{$order.score_g}></td>
@@ -166,7 +139,7 @@
 
                  </div>
                </td>
-               <td style=" vertical-align:top;">
+               <td >
                 <h4>购买人信息</h4>
                 <div class="division">
                   <table cellspacing="0" cellpadding="0" border="0">
@@ -214,7 +187,7 @@
               </table>
             </div>
           </td>
-          <td style=" vertical-align:top;">
+          <td >
             <h4>
               <span><{t}>收货人信息<{/t}></span>
               <span style="position:relative;" id="order_receiver_copy_span"><button class="btn" id="order_receiver_copy" stu="Y" info="<{$order.consignee.area|region}>,<{$order.consignee.addr|escape:'html'}>,<{$order.consignee.name}><{if $order.consignee.telephone}>,<{$order.consignee.telephone|escape:'html'}><{/if}><{if $order.consignee.mobile}>,<{$order.consignee.mobile|escape:'html'}><{/if}>,<{$order.consignee.zip|escape:'html'}>"><span><span><{t}>复制收货人信息<{/t}></span></span></button></span>
