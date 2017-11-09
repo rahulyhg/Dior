@@ -312,7 +312,7 @@ class omeftp_service_delivery{
 		$ax_i[] = '';//Invoice Number by ax  Ax invoice number
 		$ax_i[] = '';//Invoice date 
 		$ax_i[] = $this->math->number_plus(array($delivery['order']['cost_tax'],0));//Total Amount incl. taxes
-		if($delivery['order']['is_tax']=='true'){
+		if($delivery['order']['is_tax']=='true'&&$delivery['order']['is_einvoice']=='false'){
 			$ax_i[] = $delivery['order']['tax_title']?$delivery['order']['tax_title']:$delivery['consignee']['name'];//Invoice  Name
 
 			$ax_i[] = $invoice_district?($invoice_district.'==CR=='.$delivery['order']['invoice_addr']):($delivery['consignee']['district'].'==CR=='.$delivery['consignee']['addr']);//Invoice  Street name
@@ -492,7 +492,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,is_einvoice');
                 }
 
                 // 发货地址

@@ -99,7 +99,7 @@
                            <th >支付费用：</th>
                            <td><{$order.payinfo.cost_payment|cur}></td>
                          </tr>
-                         <tr>
+                        <!-- <tr>
                            <th >是否开票：</th>
                            <td>
                             <input type="radio" name="is_tax" value='true' <{if $order.is_tax == 'true'}>checked<{/if}>><{t}>是<{/t}>
@@ -107,15 +107,9 @@
                             <{/t}>
 
                           </td>
-                        </tr>
+                        </tr>-->
 						
-						 <tr>
-                           <th >是否有礼品卡：</th>
-                           <td>
-                             <{if $order.is_c == '1'}><{t}>是<{/t}><{else}><{t}>否<{/t}><{/if}>
-
-                          </td>
-                        </tr>
+						
 						
 						 <tr>
                            <th >是否有Welcome卡：</th>
@@ -133,6 +127,14 @@
                          <th >可得积分：</th>
                          <td><{$order.score_g}></td>
                        </tr>
+
+					    <tr>
+                           <th >是否有礼品卡：</th>
+                           <td>
+                             <{if $order.is_c == '1'}><{t}>是<{/t}><{else}><{t}>否<{/t}><{/if}>
+
+                          </td>
+                        </tr>
                      </tbody></table>
                      
                    </form>
