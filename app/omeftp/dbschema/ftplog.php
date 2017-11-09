@@ -61,7 +61,7 @@ $db['ftplog']=array (
       'type' => 'varchar(225)',
       'label' => '上传的本地文件',
       'width' => 100,
-      'in_list' => true,
+      'in_list' => false,
       'filtertype' => 'normal',
       'filterdefault' => true,
     ),
@@ -69,7 +69,7 @@ $db['ftplog']=array (
     array (
       'type' => 'varchar(225)',
       'label' => '服务器文件',
-      'width' => 100,
+      'width' => 280,
       'in_list' => true,
       'filtertype' => 'normal',
       'filterdefault' => true,

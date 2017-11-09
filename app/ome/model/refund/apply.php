@@ -580,6 +580,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 				    $apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
 					$apply_id=$trade_no['apply_id'];
 					if (in_array($apply_detail['status'],array('2','5','6'))){
+						$db=NULL;
 						$db = kernel::database();
 						$transaction_status = $db->beginTransaction();
 					
@@ -601,7 +602,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 	
 							if(!$oreturn->save($return_info)){
 								 $db->rollback();
-								 return false;
+								 continue;
 							}
 	
 							$oLoger->write_log('return@ome',$return_info['return_id'],"售后退款成功。");
@@ -622,7 +623,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 						
 						if(!$oOrder->save($orderdata)){
 							$db->rollback();
-							return false;
+							continue;
 						}
 
                    		$oLoger->write_log('order_modify@ome',$orderdata['order_id'],$fail_msg."退款成功，更新订单退款金额。");
@@ -672,7 +673,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$refunddata['trade_no'] = $apply_detail['wxpaybatchno'];
 						if(!$oRefund->save($refunddata)){
 							$db->rollback();
-							return false;
+							continue;
 						}
 						
 						$oLoger->write_log('refund_accept@ome',$refunddata['refund_id'],"退款成功，生成退款单".$refunddata['refund_bn']);
@@ -681,7 +682,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 						    $Oreturn_product = $this->app->model('return_product');
 						    if(!$Oreturn_product->update_status ( $return_data )){
 								$db->rollback();
-								return false;
+								continue;
 							}
 						}
 						
