@@ -223,6 +223,14 @@ $db['statement']=array (
 		'editable' => false,
 		'in_list' => true,
 	),
+	'remark' =>
+    array (
+      'type' => 'varchar(255)',
+      'editable' => false,
+      'comment' => '财务备注',
+	  'in_list' => true,
+	  'label' => '财务备注',
+    ),
     'payment_refer' =>
     array(
       'type' =>
