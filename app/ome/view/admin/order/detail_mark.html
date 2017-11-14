@@ -27,6 +27,7 @@
 		<td>
 			<select width="100" onchange="wirte_default(this)">
 				<option value=''></option>
+				<option value='刻字内容'>刻字内容</option>
 				<option value='无人接听'>无人接听</option>
                 <option value='审单中发现订单异常'>审单中发现订单异常</option>
 				<option value='补开/重开发票'>补开/重开发票</option>
@@ -41,6 +42,7 @@
     <tr>
       <th><{t}>追加备注：<{/t}></th>
       <td><textarea name="order[mark_text]" id="memo" rows="6" vtype="required" style="width:80%"></textarea>
+	  <input type="hidden" value="<{$strLettering}>" id="lettering"/>
       </td>
     </tr>
     <tr>
@@ -65,6 +67,9 @@
 
 	function wirte_default(obj){
 		var default_memo = obj.value;
+		if(default_memo=="刻字内容"){
+			default_memo= $('lettering').value;
+		}
 		var memo = $('memo').value;
 		 $('memo').value = default_memo+' '+memo;
 	}

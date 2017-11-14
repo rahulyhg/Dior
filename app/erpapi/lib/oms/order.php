@@ -253,6 +253,9 @@ class erpapi_oms_order
 				if(!empty($v['pkg_name'])){
 					error_log('捆绑商品:'.$post['products'][$k]['pkg_name'],3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
 				}
+				if(!empty($v['lettering'])){
+					$post['products'][$k]['lettering']=str_replace(array("\r\n", "\r", "\n"),'\n',urldecode($v['lettering']));
+				}
 			}
 			$post['giftmessage']['message1']=urldecode($post['giftmessage']['message1']);
 			$post['giftmessage']['message2']=urldecode($post['giftmessage']['message2']);
@@ -359,6 +362,7 @@ class erpapi_oms_order
 		
 		$arrLin=array();
 		$arrLinPkg=array();
+		$lettering='';
 		foreach($post['products'] as $k=>$v){
 			if($v['type']!="pkg"){
 				if(isset($arrLin[$v['type']][$v['bn']])){
@@ -377,6 +381,10 @@ class erpapi_oms_order
 				    return $this->send_error('PKG参数异常');
 				}
 				$arrLinPkg[$v['pkg_id']][$v['bn']]=$v['pkg_id'];
+			}
+			
+			if(!empty($v['lettering'])){
+				$lettering.=$v['lettering'];
 			}
 		}
 		//echo "<pre>";print_r($post['products']);exit();
@@ -426,6 +434,7 @@ class erpapi_oms_order
 					$post['num'][$isBn['0']['product_id']]['name']=$product['name'];
 					$post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
 					$post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
+					$post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
 					$post['price'][$isBn['0']['product_id']]=$mprice;
 					
 					$post['true_price'][$isBn['0']['product_id']]=$true_price;
@@ -606,10 +615,9 @@ class erpapi_oms_order
 			}
 		}
 	   	
-        if ($post['is_lettering']=="1"){
+        if (!empty($lettering)){
 			$iorder['is_lettering']=true;
-            $c_memo = $post['customer_memo'];
-            $c_memo = array('op_name'=>'系统', 'op_time'=>date('Y-m-d H:i',time()), 'op_content'=>$c_memo);
+			$c_memo = array('op_name'=>'系统', 'op_time'=>date('Y-m-d H:i',time()), 'op_content'=>'刻字订单');
             $tmp[]  = $c_memo;
             $iorder['custom_mark']  = serialize($tmp);
             $tmp = null;

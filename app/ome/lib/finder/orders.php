@@ -374,6 +374,7 @@ class ome_finder_orders{
     function detail_mark($order_id){
         $render = app::get('ome')->render();
         $oOrders = &app::get('ome')->model('orders');
+		$oOrderItems = app::get('ome')->model('order_items');
 
         if($_POST){
             $order_id = $_POST['order']['order_id'];
@@ -424,6 +425,18 @@ class ome_finder_orders{
             }
         }
         $order_detail['mark_type_arr'] = ome_order_func::order_mark_type();
+		
+		//zjr 刻字
+		if($order_detail['is_lettering']=='true'){
+			$arrItems=$oOrderItems->getList('message1',array('order_id'=>$order_id));
+			foreach($arrItems as $items){
+				if(!empty($items['message1'])){
+					$strLettering.=$items['message1'];
+				}
+			}
+			$render->pagedata['strLettering']  = $strLettering;
+		}
+		
         $render->pagedata['order']  = $order_detail;
 
         return $render->fetch('admin/order/detail_mark.html');
