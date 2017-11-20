@@ -1,18 +1,20 @@
 <?php
 class giftcard_wechat_request_order extends giftcard_wechat_request
 {	
-	public function getCardCodeInfo($order,&$msg=''){
+	public function getCardCodeInfo($order,&$msg='',&$begin_time='',&$end_time=''){
 		$post['code']=$order['card_code'];
 		$post['card_id']=$order['card_id'];
+		//时间判断区间 如果是设置领取时间开始算则time() 如果设置固定则createtime
 		if($result=$this->post(2,'/card/code/get',json_encode($post),'code_get',$order['order_bn'],$msg)){//查询成功 比较时间 金额
-			if($result['card']['begin_time']<=$order['createtime']&&$order['createtime']<=$result['card']['end_time']&&$result['can_consume']=="1"){
+			if($result['card']['begin_time']<=time()&&time()<=$result['card']['end_time']){
+				$begin_time=$result['card']['begin_time'];
+				$end_time=$result['card']['end_time'];
 				return true;//能够核销
 			}
 			
 		}
-		
 		if($msg!="timeout"){
-			$msg='礼品卡过期';
+			$msg='礼品卡过期或超额';
 		}else{
 			$msg='请求超时, 请重试';
 		}
@@ -21,9 +23,9 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 	}
 	
 	public function getExistOrderId($order){
-		$post['code']=$order['trade_no'];
+		$post['code']=$order['card_code'];
 		$post['card_id']=$order['card_id'];
-		$result=$this->post(2,'/card/code/get',json_encode($post),'code_get',$order['trade_no'],$msg);
+		$result=$this->post(2,'/card/code/get',json_encode($post),'code_get',$order['card_code'],$msg);
 		if(!empty($result['order_id'])){
 			return $result['order_id'];
 		}
@@ -50,6 +52,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		if(!empty($order_id)){
 			$post=array();
 			$post['order_id']=$order_id;
+			
 			if($result=$this->post(2,'/card/giftcard/order/get',json_encode($post),'get',$post['order_id'])){
 				if($this->addOrder($result['order'])){//update 1
 					$objGiftOrder->db->exec("UPDATE sdb_giftcard_orders SET status='1' WHERE OrderId='".$order_id."'");
@@ -78,10 +81,11 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		$sObj=  kernel::single("ome_mdl_shop");
 		$objPayment = kernel::single("ome_mdl_payment_cfg");
 		$objLibCardOrder=kernel::single("giftcard_order");
+		$ojbCard=kernel::single("giftcard_mdl_cards");
 		$arrOrders=array();
 		//Sku+卡劵Code拼接成OMS订单号
 		if(!$order_bn=$objLibCardOrder->getOrderBn($order))return false;
-		
+			
 		$nickname=trim($objLibCardOrder->filterNickName($order['nickname']));
 		if(empty($nickname))$nickname='WX_'.time();
 		
@@ -99,19 +103,24 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 			}
 		}
 		$arrOrders['member_id']=$member['member_id'];
-		$arrOrders['wechat_openid']=$order['open_id'];
+		
+		$transaction = $oObj->db->beginTransaction();//事物开始
 		
 		$iorder=array();
 		$card_code='';
 		$card_id='';
+		$i=1;
 	 	foreach($order['card_list'] as $item){
+			$card_code=$card_id='';
+			$price=0;
 			
-			$arrProduct=$pObj->db->select("SELECT p.goods_id,p.product_id,p.price,p.bn,p.name FROM sdb_ome_products p LEFT JOIN sdb_ome_goods g ON g.goods_id=p.goods_id WHERE g.card_id='".$item['card_id']."'");
+			$arrProduct=$pObj->db->select("SELECT g.deadline,g.convert_type,p.goods_id,p.product_id,p.price,p.bn,p.name FROM sdb_ome_products p LEFT JOIN sdb_ome_goods g ON g.goods_id=p.goods_id WHERE g.card_id='".$item['card_id']."'");
 			$arrProduct=$arrProduct[0];
 			
 			if (empty($arrProduct['product_id'])){
 				return false;
 			}
+			
 			$card_code=$item['code'];
 			$card_id=$item['card_id'];
 			$price=round($item['price']/100,2);
@@ -138,6 +147,25 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 							)
 					)
 			);
+			//多卡存入cards表
+			$arrCards=array();
+			//$arrCards['order_bn']=$order_bn."-".$i;//多卡
+			$arrCards['p_order_bn']=$order_bn;
+			$arrCards['order_bn']=$order_bn;//单卡
+			$arrCards['wx_order_bn']=$order['order_id'];
+			$arrCards['status']='normal';
+			$arrCards['card_type']='online';
+			$arrCards['convert_type']=$arrProduct['convert_type'];
+			$arrCards['card_code']=$card_code;
+			$arrCards['old_card_code']=$card_code;
+			$arrCards['price']=$price;
+			$arrCards['card_id']=$card_id;
+			$arrCards['createtime']=time();
+			if(!$ojbCard->save($arrCards)){
+				$oObj->db->rollBack();
+				return false;
+			}
+			$i++;
 		}
 
 		$arrOrders['order_objects']=$iorder['order_objects'];
@@ -146,10 +174,10 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		$arrOrders['createtime']=$order['create_time'];
 		$arrOrders['itemnum']=1;
 		$arrOrders['order_bn']=$order_bn;
+		//订单表需要保留的三个字段
 		$arrOrders['wx_order_bn']=$order['order_id'];
 		$arrOrders['wx_source']=$order['outer_str'];
-		$arrOrders['card_code']=$card_code;
-		$arrOrders['card_id']=$card_id;
+		$arrOrders['wechat_openid']=$order['open_id'];
 		//店铺
 		$arrShop=$sObj->getList("shop_id",array('shop_type'=>'cardshop'));
 		if(empty($arrShop)){
@@ -176,13 +204,17 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		$arrOrders['trade_no']=$order['trans_id'];
 		$arrOrders['paytime']=$order['pay_finish_time'];
 		
-		$transaction = $oObj->db->beginTransaction();
 		if(!$oObj->create_order($arrOrders)){
 			$oObj->db->rollBack();
 			return false;
 		}
 		if(!$this->do_payorder($arrOrders)){
 			$oObj->db->rollBack();//保存失败
+			return false;
+		}
+		
+		if(!$ojbCard->update(array("p_order_id"=>$arrOrders['order_id']),array("wx_order_bn"=>$order['order_id']))){
+			$oObj->db->rollBack();
 			return false;
 		}
 	
@@ -204,7 +236,8 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		$orderdata['op_id']=1;
 		$orderdata['process_status']='splited';
 		$orderdata['confirm']='Y';
-		//$orderdata['status']='finish';
+		$orderdata['status']='finish';
+		$orderdata['archive']='1';
 		$orderdata['order_id'] = $iorder['order_id'];
 		$orderdata['pay_bn'] = $iorder['pay_bn'];
 		$orderdata['payed'] = $objMath->number_plus(array(0,$pay_money));

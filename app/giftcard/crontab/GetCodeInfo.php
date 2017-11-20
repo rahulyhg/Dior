@@ -8,7 +8,7 @@ if(!kernel::register_autoload()){
 }
 require_once(APP_DIR.'/base/defined.php');
 cachemgr::init(false);
-$order['card_code']='209882512984';
-$order['card_id']='pmZYgszlF0EOnQEK6EJU-kmg4ZgI';
-$order['order_bn']='AQCAqhxgzq6PTDcKBpmWILO-Y0d1';
+$order['card_code']='845907295071';
+$order['card_id']='pmZYgswHde5ua0XP0I3I1CvBHsBM';
+$order['order_bn']='xxx';
 kernel::single("giftcard_wechat_request_order")->getCardCodeInfo($order);//½Å±¾

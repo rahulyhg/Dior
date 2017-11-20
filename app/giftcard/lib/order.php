@@ -31,4 +31,13 @@ class giftcard_order{
         return $return;
 	}
 	
+	public function cardEndTime($begin_time,$card_id){
+		$objGoods=app::get("ome")->model('goods');
+		$arrGoods=array();
+		$arrGoods=$objGoods->db->select("SELECT deadline FROM sdb_ome_goods WHERE card_id='$card_id'");
+		
+		$deadline=$arrGoods[0]['deadline']*24*60*60+$begin_time;
+		
+		return $deadline;
+	}
 }

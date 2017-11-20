@@ -2,6 +2,7 @@
     <permissions>
 		<permission id="gift_card_log">日志</permission>
 		<permission id="gift_card_setting">配置</permission>
+		<permission id="gift_card_cards">礼品卡订单</permission>
     </permissions>
 	
     <workground name="系统" id="setting_tools" order="800">
@@ -11,4 +12,10 @@
         </menugroup>
 		
     </workground>
+	
+	 <workground name="订单" id="order_center" order="100">
+		<menugroup name="订单查看">
+		    <menu controller='admin_cards' action='index' permission='gift_card_cards' display='true' order='1000301'>礼品卡卡劵</menu>
+        </menugroup>
+	 </wordasword>
 </desktop>

@@ -4,8 +4,8 @@ class giftcard_wechat_request{
 	public function __construct($app) {
         $this->app = $app;
 		$this->arrSetting=$this->app->getConf("giftcard_setting");
-		$this->wx_access_token=kernel::single("giftcard_wxtoken")->get();
-		$this->js_access_token=kernel::single("giftcard_jstoken")->get();
+		$this->wx_access_token='4AyXahtamA1D7myw35JaobbWfZFFKZjafaeTK_UmTRW9QHfd53A-lmKz4WQAxQdvA2B1mh9HwSUNikCS4D2Rnu2IIOqjtcHpko1HY8d-xYAC-08XhZ4z__sQMGm5-QcwILZfAHAUXL';//kernel::single("giftcard_wxtoken")->get();
+		$this->js_access_token='4AyXahtamA1D7myw35JaobbWfZFFKZjafaeTK_UmTRW9QHfd53A-lmKz4WQAxQdvA2B1mh9HwSUNikCS4D2Rnu2IIOqjtcHpko1HY8d-xYAC-08XhZ4z__sQMGm5-QcwILZfAHAUXL';//kernel::single("giftcard_jstoken")->get();
     }
 	
 	public function post($type,$method,$post=array(),$api_method='',$key_id='',&$msg=''){
@@ -44,8 +44,7 @@ class giftcard_wechat_request{
 		$headers = array(
 			"Content-type: application/json;charset='utf-8'","Accept: application/json","Cache-Control: no-cache","Pragma: no-cache",
 		);
-	//	echo $url;
-      //  echo "<pre>2";print_r($headers);exit();
+
 	    $ch = curl_init();//初始化一个cURL会话
 		curl_setopt($ch, CURLOPT_URL,$url);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -61,7 +60,7 @@ class giftcard_wechat_request{
 		$api_status = curl_getinfo($ch);
 		curl_close($ch);
 		$result=json_decode($output,true);
-	
+ //echo "<pre>2";print_r($output);print_r($result);exit();
 		error_log('Response:'.date("Y-m-d H:i:s").$output,3,$log_dir.date("Ymd").'zjrorder.txt');
 		
 		if($result['errcode']=="0"){

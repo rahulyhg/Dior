@@ -58,6 +58,38 @@
       </tr>
     </tbody>
   </table>
+  <table class="tableform" style="width:99%;">
+	  <tbody>
+	  <span style=" font-size:14px; font-weight:bolder;">Pos:</span>
+	   <tr>
+        <th><{t}>Api_Client_Id：<{/t}></th>
+        <td><{input type=text name='api_client_id' value=$giftcard_setting.api_client_id size="60"}></td>
+        <td></td>
+      </tr>
+	  <tr>
+        <th><{t}>Token<{/t}></th>
+        <td><{input type=text name='postoken' value=$giftcard_setting.postoken size="60"}></td>
+        <td></td>
+      </tr>
+	<tr>
+        <th><{t}>微信手续费费率：<{/t}></th>
+        <td><{input type=text name='fee_rate' value=$giftcard_setting.fee_rate size="60"}></td>
+        <td></td>
+      </tr>
+	
+    </tbody>
+  </table>
+    <table class="tableform" style="width:99%;">
+	  <tbody>
+	  <span style=" font-size:14px; font-weight:bolder;">Magento:</span>
+	   <tr>
+        <th><{t}>Magento_Url：<{/t}></th>
+        <td><{input type=text name='magento_url' value=$giftcard_setting.magento_url size="60"}></td>
+        <td></td>
+      </tr>
+	 
+    </tbody>
+  </table>
   <div class="table-action">
     <{button type="submit"  label=$___importexport="保存"|t:'site'}>
   </div>

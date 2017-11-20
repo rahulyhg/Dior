@@ -1,7 +1,7 @@
 <?php
 class giftcard_wechat_request_message extends giftcard_wechat_request{
 		
-	public function send($arrSend){
+	public function send($arrSend){return true;
 		$arrTemplate=array();
 		$arrTemplate['touser']=$arrSend['wechat_openid'];
 		$arrTemplate['template_id']=$this->arrSetting['templateid'];

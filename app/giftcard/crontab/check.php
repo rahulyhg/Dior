@@ -8,6 +8,6 @@ if(!kernel::register_autoload()){
 }
 require_once(APP_DIR.'/base/defined.php');
 cachemgr::init(false);
-$order_id='AQCA4zec2a8vjeoKBpmWILMPsgoH';
-kernel::single("giftcard_wechat_request_order")->getOrders();//重云
-//kernel::single("giftcard_wechat_request_order")->getOrders($order_id);//重云
+
+
+kernel::single("giftcard_wechat_request_check")->check();
