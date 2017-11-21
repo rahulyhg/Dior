@@ -97,7 +97,7 @@ class omeftp_response_delivery{
 		
 		$order_bn = $data['H'][0][5];
 		$order_info = $mdl_order->getList('order_id,ship_status,shop_type',array('order_bn'=>$order_bn));
-		if($order_info[0]['ship_status']=='1'){
+		if($order_info[0]['ship_status']!='0'){
 			return true;
 		}
 		
