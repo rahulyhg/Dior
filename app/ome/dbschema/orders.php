@@ -1079,7 +1079,7 @@ $db['orders']=array (
       'type' => array(
           'pc' => 'PC端',
           'wap' => '手机',
-		  'minishop' => 'EC小程序',
+		  'minishop' => '微信小程序',
       ),
       'default' => 'pc',
       'label' => '订单来源',

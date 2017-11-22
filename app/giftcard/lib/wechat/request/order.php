@@ -1,7 +1,7 @@
 <?php
 class giftcard_wechat_request_order extends giftcard_wechat_request
 {	
-	public function getCardCodeInfo($order,&$msg='',&$begin_time='',&$end_time=''){
+	public function getCardCodeInfo($order,&$msg='',&$begin_time='',&$end_time=''){return true;
 		$post['code']=$order['card_code'];
 		$post['card_id']=$order['card_id'];
 		//时间判断区间 如果是设置领取时间开始算则time() 如果设置固定则createtime
@@ -32,7 +32,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		return false;
 	}
 	
-	public function consume($order,&$msg=''){
+	public function consume($order,&$msg=''){return true;
 		$post['code']=$order['card_code'];
 		$post['card_id']=$order['card_id'];
 		if($result=$this->post(2,'/card/code/consume',json_encode($post),'conusme',$order['order_bn'],$msg)){
@@ -185,6 +185,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		}
 		$arrOrders['shop_id']=$arrShop[0]['shop_id'];
 		$arrOrders['shop_type']='cardshop';
+		$arrOrders['order_refer_source']='minishop';
 		
 		//记录备注 禁止自动分派
 		/*$c_memo = array('op_name'=>'系统', 'op_time'=>date('Y-m-d H:i',time()), 'op_content'=>'卡劵:'.$card_code);

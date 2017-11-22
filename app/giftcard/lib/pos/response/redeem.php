@@ -16,6 +16,12 @@ class giftcard_pos_response_redeem
 			return array('status'=>'fail','msg'=>'parameter invalid','api_code'=>'301');
 		}
 		
+		$card_setting    = app::get('giftcard')->getConf('giftcard_setting');
+		$arrOfflineStore=explode(',',$card_setting['offline_store']);
+		if(!in_array($customer_code,$arrOfflineStore)){
+			return array('status'=>'fail','msg'=>'The gift card can not redeem in this boutique','api_code'=>'203');
+		}
+		
 		if($redeem_quantity!==1){
 			return array('status'=>'fail','msg'=>'The gift card can not redeem this product or quantity','api_code'=>'202');
 		}
@@ -32,7 +38,7 @@ class giftcard_pos_response_redeem
 		}
 		
 		if($arrCard_code['convert_type']=="pkg"){
-			return array('status'=>'fail','msg'=>'pkg can not redeem in this boutique','api_code'=>'202');
+			return array('status'=>'fail','msg'=>'pkg can not redeem in PCD BTQ','api_code'=>'204');
 		}
 		
 		if($arrCard_code['status']=="redeem"){
@@ -77,7 +83,7 @@ class giftcard_pos_response_redeem
 		$UpdateCard['redeemtime']=$redeemtime;
 		if(!$objCard->update($UpdateCard,array('id'=>$arrCard_code['id']))){
 			$objQueue->db->rollBack();
-			return array('status'=>'fail','msg'=>'This gift card can not redeem in PCD BTQ','api_code'=>'204');
+			return array('status'=>'fail','msg'=>'Unknow exception','api_code'=>'403');
 		}
 		
 		$arrProducts=array();
@@ -85,7 +91,7 @@ class giftcard_pos_response_redeem
 			
 			$objQueue->db->rollBack();
 			
-			return array('status'=>'fail','msg'=>'not found products','api_code'=>'102');
+			return array('status'=>'fail','msg'=>'The gift card can not redeem this product or quantity','api_code'=>'202');
 		}
 		
 		$boolValidateProduct=false;
@@ -119,6 +125,9 @@ class giftcard_pos_response_redeem
 		
 		$objQueue->db->commit($transaction);
 		$transaction=NULL;
+		
+		//暂时直接生成文件给ax
+		kernel::single('giftcard_queue_statement')->run($arrQueue);
 		
 		return array('status'=>'succ','msg'=>'succ','api_code'=>200);
 	}

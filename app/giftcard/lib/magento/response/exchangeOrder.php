@@ -191,6 +191,7 @@ class giftcard_magento_response_exchangeOrder
 		$arrShop=$sObj->getList("shop_id",array('shop_type'=>'minishop'));
 		$arrOrders['shop_id']=$arrShop[0]['shop_id'];
 		$arrOrders['shop_type']='minishop';
+		$arrOrders['order_refer_source']='minishop';
 		
 		$arrOrders['golden_box']=$order['golden_box']=="1"?true:false;//金色礼盒
 		$arrOrders['ribbon_sku']=empty($order['ribbon_sku'])?'':$order['ribbon_sku'];//丝带

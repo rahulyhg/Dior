@@ -13,6 +13,12 @@ class giftcard_pos_response_validate
 			return array('status'=>'fail','msg'=>'parameter invalid','api_code'=>'301');
 		}
 		
+		$card_setting    = app::get('giftcard')->getConf('giftcard_setting');
+		$arrOfflineStore=explode(',',$card_setting['offline_store']);
+		if(!in_array($customer_code,$arrOfflineStore)){
+			return array('status'=>'fail','msg'=>'The gift card can not redeem in this boutique','api_code'=>'203');
+		}
+		
 		$objCard=kernel::single("giftcard_mdl_cards");
 		$arrCard_code=array();
 		$arrCard_code=$objCard->getList("order_bn,status,card_code,card_id,convert_type,createtime",array("card_code"=>$card_code));
@@ -23,7 +29,7 @@ class giftcard_pos_response_validate
 		}
 		
 		if($arrCard_code['convert_type']=="pkg"){
-			return array('status'=>'fail','msg'=>'pkg can not redeem in this boutique','api_code'=>'202');
+			return array('status'=>'fail','msg'=>'pkg can not redeem in PCD BTQ','api_code'=>'204');
 		}
 		
 		if($arrCard_code['status']=="redeem"){
