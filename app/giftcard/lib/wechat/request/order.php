@@ -170,7 +170,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 			$arrCards['old_card_code']=$card_code;
 			$arrCards['price']=$price;
 			$arrCards['card_id']=$card_id;
-			$arrCards['createtime']=time();
+			$arrCards['createtime']=$order['create_time'];
 			if(!$ojbCard->save($arrCards)){
 				$oObj->db->rollBack();
 				return false;

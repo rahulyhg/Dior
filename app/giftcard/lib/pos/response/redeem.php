@@ -127,7 +127,7 @@ class giftcard_pos_response_redeem
 		$transaction=NULL;
 		
 		//暂时直接生成文件给ax
-		//kernel::single('giftcard_queue_statement')->run($arrQueue);
+		kernel::single('giftcard_queue_statement')->run($arrQueue);
 		
 		return array('status'=>'succ','msg'=>'succ','api_code'=>200);
 	}
