@@ -84,6 +84,8 @@ class kernel{
                 return kernel::single('giftcard_jing_api')->process($pathinfo);
             }elseif($part=='/magentoapi'){
                 return kernel::single('giftcard_magento_api')->process($pathinfo);
+            }elseif($part=='/cardapi'){
+                return kernel::single('giftcard_pos_api')->process($pathinfo);
             }elseif($part=='/openapi'){
                 cachemgr::init();
                 return kernel::single('base_rpc_service')->process($pathinfo);
