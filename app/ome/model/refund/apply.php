@@ -836,71 +836,22 @@ class ome_mdl_refund_apply extends dbeav_model{
 	}
 	
 	function sendRefundToM($refund_id,$order_id,$z_money,$oms_refund_rma_ids=''){
-		//return true;
-		//$url="http://guerlain.d.d1m.cn/oms_api/v1/refundlog";
-		//$url='http://guerlain-pc.d.d1m.cn/oms_api/v1/refundlog';
-		//$url="http://guerlain:gu-160321@preprod.guerlain.com.cn/oms_api/v1/refundlog";
-		$url="http://dior:pcd-160308@www.dior.cn/beauty/zh_cn/store/oms_api/v1/refundlog";//dior正式
 		$data['refund_id']=$refund_id;
 		$data['order_id']=$order_id;
 		$data['refund_amount']=$z_money;
 		$data['refund_status']=0;
 		$data['oms_refund_rma_ids']=$oms_refund_rma_ids;
-		$data=json_encode($data);//echo "<pre>";print_r($data);exit();
-		error_log('orders:'.$data,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
-			$ch = curl_init();//初始化一个cURL会话
-
-          
-            curl_setopt($ch, CURLOPT_URL,$url);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-            // 我们在POST数据哦！
-            curl_setopt($ch, CURLOPT_POST, 1);
-            // 把post的变量加上
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-
-            //抓取URL并把它传递给浏览器
-            $output = curl_exec($ch);//kernel::log($output);
-			error_log('返回:'.$output,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
-			return $output;
-	}
-	
-	function ceshi(){
-		$data['refund_id']=3;
-		$data['refund_status']=1;
-		$data=json_encode($data);
-		error_log('orders:'.$data,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
+		
+		kernel::single('omemagento_service_request')->do_request('refundlog',$data);
 	}
 	
 	function sendRefundStatus($refund_id,$status){
-		//return true;
-		//$url="http://guerlain.d.d1m.cn/oms_api/v1/refundlog";
-		//$url='http://guerlain-pc.d.d1m.cn/oms_api/v1/refundlog';
-		//$url="http://guerlain:gu-160321@preprod.guerlain.com.cn/oms_api/v1/refundlog";
-		$url="http://dior:pcd-160308@www.dior.cn/beauty/zh_cn/store/oms_api/v1/refundlog";//dior正式
 		$data['refund_id']=$refund_id;
 		$data['refund_status']=$status;
-		$data=json_encode($data);
-		error_log('orders:'.$data,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
-			$ch = curl_init();//初始化一个cURL会话
-
-          
-            curl_setopt($ch, CURLOPT_URL,$url);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-            // 我们在POST数据哦！
-            curl_setopt($ch, CURLOPT_POST, 1);
-            // 把post的变量加上
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-
-            //抓取URL并把它传递给浏览器
-            $output = curl_exec($ch);//kernel::log($output);
-			error_log('返回:'.$output,3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');	
-			return $output;
-
+		
+		kernel::single('omemagento_service_request')->do_request('refundlog',$data);
 	}
+	
     /**
      * 补偿费用显示
      * @param int

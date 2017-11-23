@@ -185,7 +185,7 @@ $db['goods']=array (
     ),
 	'card_id' =>
     array (
-      'type' => 'varchar(150)',
+      'type' => 'varchar(50)',
       'default' => '',
       'required' => false,
       'editable' => false,
@@ -196,7 +196,25 @@ $db['goods']=array (
       'in_list' => true,
       'default_in_list' => false,
     ),
-
+	'deadline' =>
+    array (
+      'type' => 'int(8)',
+	  'label' => '卡劵过期时间',
+      'required' => false,
+	  'in_list' => true,
+    ),
+	'convert_type' =>
+    array (
+      'type' =>
+      array (
+        'product' => '普通商品',
+        'pkg' => '捆绑商品',
+      ),
+      'default' => 'product',
+      'required' => true,
+      'label' => '卡劵兑换类型',
+      'in_list' => true,
+    ),
 	'is_prepare' =>
     array (
       'type' => 'bool',

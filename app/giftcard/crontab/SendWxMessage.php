@@ -9,5 +9,5 @@ if(!kernel::register_autoload()){
 require_once(APP_DIR.'/base/defined.php');
 cachemgr::init(false);
 
-$json='{"touser":"oDvUM0RvQCN-Qw0151YyNSTaooog","template_id":"j_d9ZdpAaABtYnM5v2D2Grwuwxkw36SFszhJgE990PE","page":"","form_id":"60812605c751ccfe5d685db6c8d600d6","data":{"keyword1":{"value":"GC004585166558512","color":"#173177"},"keyword2":{"value":"2017-08-10 20:25:55","color":"#173177"},"keyword3":{"value":"Diorè¿ªå¥¥çƒˆè‰³è“é‡‘å”‡è†","color":"#173177"},"keyword4":{"value":"é»„çš‡","color":"#173177"},"keyword5":{"value":"ä¸Šæµ·-ä¸Šæµ·å¸‚-æµ¦ä¸œæ–°åŒº èŠ±æœ¨è·¯500å¼„3å·701","color":"#173177"},"keyword6":{"value":"æ‚¨å¯é€šè¿‡å¾®ä¿¡æœä¸€æœæœç´¢â€œè¿ªå¥¥â€ï¼Œè¿›å…¥è¿ªå¥¥å®˜æ–¹å•†åŸŽå°ç¨‹åºæŸ¥è¯¢è®¢å•çŠ¶æ€","color":"#173177"}},"emphasis_keyword":""}';
-kernel::single("giftcard_wechat_request_message")->reSend($json,'GC004585166558512');//è„šæœ¬
+$json='{"touser":"oDvUM0RvQCN-Qw0151YyNSTaooog","template_id":"j_d9ZdpAaABtYnM5v2D2Grwuwxkw36SFszhJgE990PE","page":"","form_id":"9bfcb7768e9f8eb6c0e220cbc3c4b6d7","data":{"keyword1":{"value":"GC003831662075993","color":"#173177"},"keyword2":{"value":"2017-08-08 16:07:31","color":"#173177"},"keyword3":{"value":"¿ËÀöË¿Í¡µÏ°ÂµÏ°ÂÐ¡½ã»¨Ñúµ­ÏãË® 50ml","color":"#173177"},"keyword4":{"value":"ÀîÀ×","color":"#173177"},"keyword5":{"value":"ºÓ±±Ê¡-Ê¯¼Ò×¯ÊÐ-³¤°²Çø »¨Ä¾Â·500 ","color":"#173177"},"keyword6":{"value":"Äú¿ÉÍ¨¹ýÎ¢ÐÅËÑÒ»ËÑËÑË÷¡°µÏ°Â¡±£¬½øÈëµÏ°Â¹Ù·½ÉÌ³ÇÐ¡³ÌÐò²éÑ¯¶©µ¥×´Ì¬","color":"#173177"}},"emphasis_keyword":""}';
+kernel::single("giftcard_wechat_request_message")->reSend($json,'GC003831662075993');//½Å±¾

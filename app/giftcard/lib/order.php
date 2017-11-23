@@ -31,4 +31,27 @@ class giftcard_order{
         return $return;
 	}
 	
+	public function cardEndTime($begin_time,$card_id){
+		$objGoods=app::get("ome")->model('goods');
+		$arrGoods=array();
+		$arrGoods=$objGoods->db->select("SELECT deadline FROM sdb_ome_goods WHERE card_id='$card_id'");
+		
+		$deadline=$arrGoods[0]['deadline']*24*60*60+$begin_time;
+		
+		return $deadline;
+	}
+	
+	public function CheckCardStatus($p_order_bn){
+		$ojbCard=kernel::single("giftcard_mdl_cards");
+		$arrCards=array();
+		
+		$arrCards=$ojbCard->getList("status,p_order_bn",array('p_order_bn'=>$p_order_bn,'status|noequal'=>'normal'));
+		$arrCards=$arrCards[0];
+		
+		if(empty($arrCards)){
+			return true;
+		}
+		
+		return false;
+	}
 }

@@ -44,8 +44,7 @@ class giftcard_wechat_request{
 		$headers = array(
 			"Content-type: application/json;charset='utf-8'","Accept: application/json","Cache-Control: no-cache","Pragma: no-cache",
 		);
-	//	echo $url;
-      //  echo "<pre>2";print_r($headers);exit();
+
 	    $ch = curl_init();//初始化一个cURL会话
 		curl_setopt($ch, CURLOPT_URL,$url);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -61,7 +60,7 @@ class giftcard_wechat_request{
 		$api_status = curl_getinfo($ch);
 		curl_close($ch);
 		$result=json_decode($output,true);
-	
+
 		error_log('Response:'.date("Y-m-d H:i:s").$output,3,$log_dir.date("Ymd").'zjrorder.txt');
 		
 		if($result['errcode']=="0"){

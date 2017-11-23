@@ -180,10 +180,20 @@ class omeftp_service_delivery{
 				$pkg_names[$oobject['pkg_bn']] = $oobject['pkg_name'];
 			}
 		}
+		
+		$golden_box='';
+		if($delivery['order']['golden_box']=='true'){
+			$golden_box=' 圣诞金色包装';
+		}
+		
 		if($custom_memo){
-			$ax_h[] = $custom_memo.','.implode(',',$pkg_names); //Sales Description
+			$ax_h[] = $custom_memo.','.implode(',',$pkg_names).','.$golden_box; //Sales Description
 		}else{
-			$ax_h[] = implode(',',$pkg_names); //Sales Description
+			if(empty($pkg_names)){
+				$ax_h[] =$golden_box;
+			}else{
+				$ax_h[] = implode(',',$pkg_names).','.$golden_box; //Sales Description
+			}
 		}
 
 		
@@ -423,6 +433,15 @@ class omeftp_service_delivery{
 		if($delivery['order']['is_w_card']=='true'){
 			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
 		}
+		
+		if(!empty($delivery['order']['ribbon_sku'])){
+			$arrRibbon=array();
+			$arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
+			$arrRibbon=$arrRibbon[0];
+			
+			$ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||';
+		}
+		
 		return implode("\n",$ax_l_str);
 	}
 
@@ -492,7 +511,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku');
                 }
 
                 // 发货地址

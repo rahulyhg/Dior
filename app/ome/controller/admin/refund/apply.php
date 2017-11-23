@@ -784,7 +784,7 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 			
 			switch($process_status[0]['shop_type']){
 				case 'cardshop'://去核销
-					if($process_status[0]['is_accept_card']=="true"){
+					if(!kernel::single("giftcard_order")->CheckCardStatus($process_status[0]['order_bn'])){
 						$this->end(false, app::get('base')->_('已领取的卡劵不能退款！'));
 					}
 					break;

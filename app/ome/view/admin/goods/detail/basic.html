@@ -65,6 +65,15 @@ $('gEditor').retrieve('setTabs',function(){
 					<th><{t}>礼劵ID<{/t}></th>
 					<td><{input type="text" name="goods[card_id]" value=$goods.card_id }></td>
 				</tr>
+				<tr>
+					<th><{t}>礼劵过期时间<{/t}></th>
+					<td><{input type="text" name="goods[deadline]" value=$goods.deadline }>&nbsp天</td>
+				</tr>
+				<tr>
+					<th><{t}>礼劵兑换类型<{/t}></th>
+					<td><input type="radio" value="product" name="goods[convert_type]" <{if $goods.convert_type == 'product' }> checked="checked"<{/if}>>普通商品
+                        <input type="radio" value="pkg" name="goods[convert_type]" <{if $goods.convert_type == 'pkg' }> checked="checked"<{/if}>>捆绑商品</td>
+				</tr>
                 <{if $goods.spec }>
 				<tr>
 					<th><{t}>条码：<{/t}></th>
