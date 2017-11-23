@@ -214,6 +214,7 @@ class giftcard_magento_response_exchangeOrder
 			$arrOrders['pay_id']=$pay_bn['0']['id'];
 		}
 		$arrOrders['paytime']=$order['createtime'];
+		$arrOrders['wechat_openid']=$order['account']['open_id'];
 	//	echo "<pre>222";print_r($order);print_r($arrOrders);exit(); 
 		$transaction = $oObj->db->beginTransaction();
 		if(!$oObj->create_order($arrOrders)){
@@ -239,7 +240,7 @@ class giftcard_magento_response_exchangeOrder
 		$arrUpdateCard['status']='redeem';
 		$arrUpdateCard['redeemtime']=time();
 		$arrUpdateCard['form_id']=$order['form_id'];
-		$arrUpdateCard['wechat_openid']=$order['wechat_openid'];
+		$arrUpdateCard['wechat_openid']=$order['account']['open_id'];
 		$arrUpdateCard['order_id']=$arrOrders['order_id'];
 		$arrUpdateCard['begin_time']=$card_begin_time;
 		$arrUpdateCard['end_time']=$card_end_time;
@@ -257,7 +258,6 @@ class giftcard_magento_response_exchangeOrder
 		//模板消息
 		$arrOrders['address_id']=$order['address_id'];
 		$arrOrders['form_id']=$order['form_id'];
-		$arrOrders['wechat_openid']=$order['wechat_openid'];
 		kernel::single("giftcard_wechat_request_message")->send($arrOrders);
 		
 		return array('status'=>'succ','msg'=>'订单兑换成功','data'=>$arrOrders['order_bn']);exit();
