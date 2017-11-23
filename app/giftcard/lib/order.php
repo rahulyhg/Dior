@@ -40,4 +40,18 @@ class giftcard_order{
 		
 		return $deadline;
 	}
+	
+	public function CheckCardStatus($p_order_bn){
+		$ojbCard=kernel::single("giftcard_mdl_cards");
+		$arrCards=array();
+		
+		$arrCards=$ojbCard->getList("status,p_order_bn",array('p_order_bn'=>$p_order_bn,'status|noequal'=>'normal'));
+		$arrCards=$arrCards[0];
+		
+		if(empty($arrCards)){
+			return true;
+		}
+		
+		return false;
+	}
 }

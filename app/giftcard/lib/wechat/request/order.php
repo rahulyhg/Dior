@@ -1,7 +1,7 @@
 <?php
 class giftcard_wechat_request_order extends giftcard_wechat_request
 {	
-	public function getCardCodeInfo($order,&$msg='',&$begin_time='',&$end_time=''){return true;
+	public function getCardCodeInfo($order,&$msg='',&$begin_time='',&$end_time=''){
 		$post['code']=$order['card_code'];
 		$post['card_id']=$order['card_id'];
 		//时间判断区间 如果是设置领取时间开始算则time() 如果设置固定则createtime
@@ -32,7 +32,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		return false;
 	}
 	
-	public function consume($order,&$msg=''){return true;
+	public function consume($order,&$msg=''){
 		$post['code']=$order['card_code'];
 		$post['card_id']=$order['card_id'];
 		if($result=$this->post(2,'/card/code/consume',json_encode($post),'conusme',$order['order_bn'],$msg)){
@@ -84,7 +84,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		$ojbCard=kernel::single("giftcard_mdl_cards");
 		$arrOrders=array();
 		//Sku+卡劵Code拼接成OMS订单号
-		if(!$order_bn=$objLibCardOrder->getOrderBn($order))return false;
+		if(!$order_bn=$objLibCardOrder->getOrderBn($order))return true;
 			
 		$nickname=trim($objLibCardOrder->filterNickName($order['nickname']));
 		if(empty($nickname))$nickname='WX_'.time();
@@ -110,6 +110,9 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		$card_code='';
 		$card_id='';
 		$i=1;
+		$card_setting    = app::get('giftcard')->getConf('giftcard_setting');
+		$arrRefuseCode=explode(',',$card_setting['refuse_code']);
+		
 	 	foreach($order['card_list'] as $item){
 			$card_code=$card_id='';
 			$price=0;
@@ -118,10 +121,17 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 			$arrProduct=$arrProduct[0];
 			
 			if (empty($arrProduct['product_id'])){
-				return false;
+				$oObj->db->rollBack();
+				return true;
 			}
 			
 			$card_code=$item['code'];
+			
+			if(in_array($card_code,$arrRefuseCode)){//测试code不进生产环境
+				$oObj->db->rollBack();
+				return true;
+			}
+		
 			$card_id=$item['card_id'];
 			$price=round($item['price']/100,2);
 			$iorder['order_objects'][] = array(
@@ -181,6 +191,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		//店铺
 		$arrShop=$sObj->getList("shop_id",array('shop_type'=>'cardshop'));
 		if(empty($arrShop)){
+			$oObj->db->rollBack();
 			return false;
 		}
 		$arrOrders['shop_id']=$arrShop[0]['shop_id'];
@@ -196,6 +207,7 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 		//payment		
 		$pay_bn=$objPayment->getList('id,pay_bn,custom_name',array('pay_bn'=>'wxpayjsapi'));//支付方式
 		if(empty($pay_bn)){
+			$oObj->db->rollBack();
 			return false;
 		}else{
 			$arrOrders['pay_bn']='wxpayjsapi';

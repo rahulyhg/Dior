@@ -30,6 +30,12 @@ class giftcard_jing_api{
 				
 				if($MsgType=="event"){
 					switch($Event){
+						case 'giftcard_send_to_friend':
+							error_log('Request:'.$Event.'-'.json_encode($data),3,$log_dir.date("Ymd").'zjrorder.txt');
+							break;
+						case 'user_gifting_card':
+							error_log('Request:'.$Event.'-'.json_encode($data),3,$log_dir.date("Ymd").'zjrorder.txt');
+							break;
 						case 'giftcard_pay_done':
 							error_log('Request:'.$Event.'-'.json_encode($data),3,$log_dir.date("Ymd").'zjrorder.txt');
 							$objLog=$this->app->model('logs');

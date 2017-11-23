@@ -1,7 +1,7 @@
 <?php
 class giftcard_wechat_request_message extends giftcard_wechat_request{
 		
-	public function send($arrSend){return true;
+	public function send($arrSend){
 		if(empty($arrSend['wechat_openid'])||empty($arrSend['form_id'])){
 			return true;
 		}

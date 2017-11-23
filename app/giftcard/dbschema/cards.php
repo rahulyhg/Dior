@@ -71,6 +71,7 @@ $db['cards']=array (
         'normal' => '正常',
         'accept' => '已领取',
 		'redeem' => '已核销',
+		'refunded' => '已退款',
       ),
       'default' => 'normal',
       'required' => true,

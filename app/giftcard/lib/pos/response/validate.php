@@ -59,9 +59,9 @@ class giftcard_pos_response_validate
 		
 		$return=array();
 		$return['card_code_ref']=substr($card_code,-4);
-		$return['created_at']=$arrCard_code['createtime'];
-		//$return['expires_on']=$card_end_time;//要更改
-		$return['expires_on']=time()+60*60*24;
+		$return['created_at']=$card_begin_time;
+		$return['expires_on']=$card_end_time;//要更改
+		//$return['expires_on']=time()+60*60*24;
 		$items=array();
 		foreach($arrProducts as $k=>$product){
 			$items[$k]['name']=$product['name'];
