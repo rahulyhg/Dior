@@ -5,7 +5,7 @@ class giftcard_wechat_request_check{
 		$this->app = $app;
 	}
 	
-	public function check(){
+	public function check(){exit();
 		$ojbCard=kernel::single("giftcard_mdl_cards");
 		$objOrder=app::get("ome")->model("orders");
 		$arrOrder=$objOrder->db->select("SELECT order_id,order_bn,wx_order_bn,card_code,card_id,`status`,process_status,is_accept_card,total_amount,createtime,wechat_openid FROM `sdb_ome_orders` where shop_type='cardshop'");
