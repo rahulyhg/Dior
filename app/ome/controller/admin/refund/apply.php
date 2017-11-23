@@ -770,14 +770,14 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
     }
 
    /*add by hujie 添加退款申请*/
-    function showRefund(){//echo "<pre>";print_r($_POST);exit();
+    function showRefund(){
         if ($_POST){
             if ($_POST['back_url'] != 'order_confirm'){
                 $begin_url = "index.php?ctl=admin_refund_apply&act=request&app=ome&p[0]=".$_POST['order_id'];
             }
             $this->begin($begin_url);
 
-			$process_status = app::get('ome')->model('orders')->getList('process_status,ship_status,shop_type,order_bn,is_accept_card,createtime',array('order_id'=>$_POST['order_id']));
+			$process_status = app::get('ome')->model('orders')->getList('process_status,ship_status,shop_type,order_bn,createtime',array('order_id'=>$_POST['order_id']));
 			if($process_status[0]['process_status']=='splited'&&$process_status[0]['shop_type']!="cardshop"){
 				$this->end(false, app::get('base')->_('订单已同步AX，不能申请退款！'));
 			}
