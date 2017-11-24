@@ -9,6 +9,9 @@ class giftcard_magento_response_exchangeOrder
 	public function exchangeOrder($order){  
 		$ojbOrder=kernel::single("ome_mdl_orders");
 		$objCard=kernel::single("giftcard_mdl_cards");
+		//兼容版本
+		$order['card_code']=empty($order['card_code'])?$order['trade_no']:$order['card_code'];
+		$order['wechat_openid']=empty($order['wechat_openid'])?$order['account']['open_id']:$order['wechat_openid'];
 		
 		$arrCard_code=array();
 		$arrCard_code=$objCard->getList("p_order_id,order_bn,wx_order_bn,card_code,card_id,status",array('card_code'=>$order['card_code'],'card_id'=>$order['card_id']),0,1);
@@ -214,7 +217,7 @@ class giftcard_magento_response_exchangeOrder
 			$arrOrders['pay_id']=$pay_bn['0']['id'];
 		}
 		$arrOrders['paytime']=$order['createtime'];
-		$arrOrders['wechat_openid']=$order['account']['open_id'];
+		$arrOrders['wechat_openid']=$order['wechat_openid'];
 	//	echo "<pre>222";print_r($order);print_r($arrOrders);exit(); 
 		$transaction = $oObj->db->beginTransaction();
 		if(!$oObj->create_order($arrOrders)){
@@ -240,7 +243,7 @@ class giftcard_magento_response_exchangeOrder
 		$arrUpdateCard['status']='redeem';
 		$arrUpdateCard['redeemtime']=time();
 		$arrUpdateCard['form_id']=$order['form_id'];
-		$arrUpdateCard['wechat_openid']=$order['account']['open_id'];
+		$arrUpdateCard['wechat_openid']=$order['wechat_openid'];
 		$arrUpdateCard['order_id']=$arrOrders['order_id'];
 		$arrUpdateCard['begin_time']=$card_begin_time;
 		$arrUpdateCard['end_time']=$card_end_time;
