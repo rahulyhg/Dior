@@ -26,9 +26,9 @@ class giftcard_queue_statement
 		$ax_h_customer_account=$ax_setting['ax_h_customer_account']?$ax_setting['ax_h_customer_account']:"C4010P1";
 		
 		$row=array();
-		$row[]=$paytime.",".$ax_h_customer_account.",".$objMath->number_plus(array($arrCard_code['price'],0)).",".$objMath->number_plus(array($arrCard_code['price'],0)).",".$order_bn.",,wechatcard,PG4A,".$pay_fee.",wechatcard reverse ".$order_bn." in ".$paytime;
+		$row[]=$paytime.",".$ax_h_customer_account.",-".$objMath->number_plus(array($arrCard_code['price'],0)).",-".$objMath->number_plus(array($arrCard_code['price'],0)).",".$order_bn.",,wechatcard,PG4A,-".$pay_fee.",wechatcard reverse ".$order_bn." in ".$paytime;
 		
-		$row[]=$paytime.",".$arrCard_code['customer_code'].",-".$objMath->number_plus(array($arrCard_code['price'],0)).",-".$objMath->number_plus(array($arrCard_code['price'],0)).",".$order_bn.",,wechatcard,PG4A,-".$pay_fee.",wechatcard redeem ".$order_bn." in ".$paytime;
+		$row[]=$paytime.",".$arrCard_code['customer_code'].",".$objMath->number_plus(array($arrCard_code['price'],0)).",".$objMath->number_plus(array($arrCard_code['price'],0)).",".$order_bn.",,wechatcard,PG4A,".$pay_fee.",wechatcard redeem ".$order_bn." in ".$paytime;
 		
 		$content = implode("\n",$row);
 		

@@ -32,6 +32,8 @@ class giftcard_pos_api{
 			$log_dir=DATA_DIR.'/pos/'.$method.'/';
 			if(!is_dir($log_dir))$res = mkdir($log_dir,0777,true);//创建日志目录
 			
+			error_log('Request:'.$_POST,3,$log_dir.date("Ymd").'zjrorder.txt');
+			
 			$arrLogs=array();
 			$arrLogs['order_bn']=$post['code'];
 			$arrLogs['code']=$post['code'];

@@ -17,7 +17,7 @@ class giftcard_magento_response_search
 		$isExisit=$objOrder->count(array('wechat_openid'=>$open_id));
 		if($isExisit<1)return array('status'=>'succ','msg'=>'succ','data'=>$arrRetrun);
 		
-		$arrOrders=$objOrder->db->select("SELECT o.order_id,o.order_bn,o.card_code,o.logi_no,o.ship_addr,o.ship_name,o.ship_area,o.ship_mobile,o.wechat_openid,o.total_amount,o.ship_status,o.pay_status,o.route_status,o.createtime FROM sdb_ome_orders o WHERE o.wechat_openid='$open_id' ORDER BY o.createtime DESC");
+		$arrOrders=$objOrder->db->select("SELECT o.order_id,o.order_bn,o.logi_no,o.ship_addr,o.ship_name,o.ship_area,o.ship_mobile,o.wechat_openid,o.total_amount,o.ship_status,o.pay_status,o.route_status,o.createtime FROM sdb_ome_orders o WHERE o.wechat_openid='$open_id' ORDER BY o.createtime DESC");
 		
 		if(empty($arrOrders))return array('status'=>'succ','msg'=>'succ','data'=>$arrRetrun);
 		
