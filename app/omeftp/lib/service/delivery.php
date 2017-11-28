@@ -222,6 +222,9 @@ class omeftp_service_delivery{
 		if($delivery['order']['is_w_card']=='true'){
 			$itemNums +=1 ;
 		}
+		if(!empty($delivery['order']['ribbon_sku'])){
+			$itemNums +=1 ;
+		}
 
 		$ax_h[] = intval($itemNums);//total quantity
 
