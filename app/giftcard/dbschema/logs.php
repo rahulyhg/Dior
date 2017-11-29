@@ -155,6 +155,15 @@ $db['logs']=array (
       'is_title' => true,
 	  'default_in_list' => true,
     ),
+	'ip' =>
+    array (
+      'type' => 'varchar(20)',
+      'label' => '来源IP',
+      'editable' => false,
+	  'in_list' => true,
+      'is_title' => true,
+	  'default_in_list' => false,
+    ),
   ),
   'engine' => 'innodb',
   'version' => '$Rev:  $',

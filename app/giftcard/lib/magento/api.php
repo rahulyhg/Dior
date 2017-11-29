@@ -4,7 +4,7 @@ class giftcard_magento_api{
 	public function __construct($app) {
         $this->app = $app;
 	}
-
+	
 	public function process($path){
 		if(!kernel::is_online()){
             die('error');
@@ -39,6 +39,7 @@ class giftcard_magento_api{
 			$arrLogs['request']=json_encode($params);
 			$arrLogs['response']='';
 			$arrLogs['createtime']=time();
+			$arrLogs['ip']=kernel::single("giftcard_func")->getIp();
 			$objLog->save($arrLogs);
 			
 			if(empty($token)||$token!=$arrSetting['jingtoken']){
