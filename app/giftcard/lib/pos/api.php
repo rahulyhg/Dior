@@ -43,6 +43,7 @@ class giftcard_pos_api{
 			$arrLogs['request']=json_encode($post);
 			$arrLogs['response']='';
 			$arrLogs['createtime']=time();
+			$arrLogs['ip']=kernel::single("giftcard_func")->getIp();
 			$objLog->save($arrLogs);
 			$this->log_id=$arrLogs['log_id'];
 			

@@ -45,7 +45,32 @@ class giftcard_magento_response_search
 			unset($arrOrders[$k]['ship_status']);
 			unset($arrOrders[$k]['pay_status']);
 			unset($arrOrders[$k]['order_id']);
-			$arrOrders[$k]['items']=$objOrder->db->select("SELECT bn,price,nums,name FROM sdb_ome_order_items WHERE order_id='$order_id'");
+			
+			$arrOrderObjects=$arrItems=$arrPkg=array();
+			$arrOrderObjects=$objOrder->db->select("SELECT bn,price,quantity,name,pkg_bn,pkg_id,pkg_name,pkg_price,pkg_num FROM sdb_ome_order_objects WHERE order_id='$order_id'");
+			$i=0;
+			foreach($arrOrderObjects as $key=>$value){
+				if(!empty($value['pkg_id'])){
+					if(!isset($arrPkg[$value['pkg_id']])){
+						$arrPkg[$value['pkg_id']]=1;
+						$arrItems[$i]['bn']=$value['pkg_bn'];
+						$arrItems[$i]['price']=$value['pkg_price'];
+						$arrItems[$i]['nums']=$value['pkg_num'];
+						$arrItems[$i]['name']=$value['pkg_name'];
+					}else{
+						continue;
+					}
+				}else{
+					$arrItems[$i]['bn']=$value['bn'];
+					$arrItems[$i]['price']=$value['price'];
+					$arrItems[$i]['nums']=$value['quantity'];
+					$arrItems[$i]['name']=$value['name'];
+				}
+				$i++;
+			}
+			
+			$arrOrders[$k]['items']=$arrItems;
+			//$arrOrders[$k]['items']=$objOrder->db->select("SELECT bn,price,nums,name,pkg_bn,pkg_id,pkg_name,pkg_price,pkg_num FROM sdb_ome_order_objects WHERE order_id='$order_id'");
 		}
 		return array('status'=>'succ','msg'=>'succ','data'=>$arrOrders);
 	}
