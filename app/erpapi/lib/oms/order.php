@@ -671,10 +671,10 @@ class erpapi_oms_order
 		$iorder['message5']     = $post['giftmessage']['message5'];
 		$iorder['message6']     = $post['giftmessage']['message6'];
 		//echo "<pre>";print_r($post);print_r($iorder);exit();
-		if(isset($post['welcomecard'])||$post['order_refer_source']=="minishop"){
-			$iorder['is_w_card']=true;
-			$intTotalNums=$intTotalNums+1;
-		}
+		//改成默认有welcomecard
+		$iorder['is_w_card']=true;
+		$intTotalNums=$intTotalNums+1;
+		
 		foreach($post['giftmessage'] as $message){
 			if(!empty($message)){
 				$iorder['is_card']=true;
