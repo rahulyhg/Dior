@@ -46,53 +46,6 @@ $db['orders']=array (
 	  'in_list' => true,
 	  'default_in_list' => false,
 	),
-	 'card_code' =>
-    array (
-      'type' => 'varchar(100)',
-      'label' => '卡劵Code码',
-      'is_title' => true,
-      'width' => 125,
-      'searchtype' => 'nequal',
-      'editable' => false,
-      'filtertype' => 'normal',
-      'filterdefault' => true,
-      'in_list' => true,
-      'default_in_list' => false,
-    ),
-	 'card_id' =>
-    array (
-      'type' => 'varchar(100)',
-      'label' => '卡劵Card_id',
-      'is_title' => true,
-      'width' => 125,
-     // 'searchtype' => 'nequal',
-      'editable' => false,
-      'filtertype' => 'normal',
-      'filterdefault' => true,
-      'in_list' => true,
-      'default_in_list' => false,
-    ),
-	'is_accept_card' =>
-    array (
-      'type' =>
-      array (
-        'false' => '未领取',
-        'true' => '已领取',
-      ),
-      'default' => 'false',
-      'label' => '领取状态',
-      'width' => 35,
-      'editable' => false,
-      'in_list' => true,
-      'default_in_list' => false,
-	  'filtertype' => 'yes',
-      //'filterdefault' => true,
-    ),
-	 'form_id' =>
-    array (
-      'type' => 'varchar(30)',
-	  'required'=>false,
-    ),
     'archive' =>
     array (
       'type' => 'tinyint unsigned',
@@ -940,6 +893,30 @@ $db['orders']=array (
       'in_list' => true,
       'default_in_list' => true,
     ),
+	'golden_box' =>
+    array (
+      'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
+      'editable' => false,
+      'label' => '金色礼盒',
+      'width' => 75,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
+	'ribbon_sku' =>
+    array (
+      'type' => 'varchar(15)',
+      'default' => '',
+      'label' => '丝带',
+      'width' => 75,
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
     'old_amount' =>
     array (
       'type' => 'money',
@@ -1102,6 +1079,7 @@ $db['orders']=array (
       'type' => array(
           'pc' => 'PC端',
           'wap' => '手机',
+		  'minishop' => '微信小程序',
       ),
       'default' => 'pc',
       'label' => '订单来源',
@@ -1128,7 +1106,7 @@ $db['orders']=array (
     ),
 	'wechat_openid' =>
     array (
-      'type' => 'varchar(200)',
+      'type' => 'varchar(40)',
       'default' => '',
       'label' => 'openid',
       'editable' => false,
