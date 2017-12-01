@@ -908,7 +908,7 @@ $db['orders']=array (
     ),
 	'ribbon_sku' =>
     array (
-      'type' => 'varchar(10)',
+      'type' => 'varchar(15)',
       'default' => '',
       'label' => '丝带',
       'width' => 75,
