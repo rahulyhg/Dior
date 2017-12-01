@@ -3970,6 +3970,7 @@ class ome_mdl_orders extends dbeav_model{
                             $orderObjRow['*:商品优惠金额'] = $itemv['pmt_price'];
                             $orderObjRow['*:商品类型'] = mb_convert_encoding($_typeName['type_name'], 'GBK', 'UTF-8');
                             $orderObjRow['*:商品品牌'] = mb_convert_encoding($_typeName['brand_name'], 'GBK', 'UTF-8');
+							$orderObjRow['*:刻字内容'] = mb_convert_encoding($itemv['message1'], 'GBK', 'UTF-8');
                             
 
                             $data[$row_num] = implode(',', $orderObjRow );
@@ -3994,6 +3995,7 @@ class ome_mdl_orders extends dbeav_model{
                 '*:商品优惠金额',
                 '*:商品类型',
                 '*:商品品牌',
+				'*:刻字内容',
             );
 
             foreach ((array)$title as $key => $value) {

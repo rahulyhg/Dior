@@ -7,12 +7,19 @@ class ome_auto_statement{
 		$paymentObj = app::get('ome')->model('payments');
 		$statementObj = app::get('ome')->model('statement');
 		$refundObj = app::get('ome')->model('refunds');
+		$orderObj= app::get('ome')->model('orders');
 
 		$payments = $paymentObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
+	
 		foreach($payments as $row){
 			$data = array();
+			$wx_order_bn='';
 			$data['original_bn'] = $row['payment_bn'];
 			$data['order_id'] = $row['order_id'];
+			if($row['shop_id']=="c7c44eade93b87b69062c76dc27c8ae7"){
+				$wx_order_bn =$orderObj->getList("wx_order_bn",array('order_id'=>$row['order_id'],'shop_type'=>'cardshop'));
+				$data['wx_order_bn']=$wx_order_bn['0']['wx_order_bn'];
+			}
 			$data['shop_id'] = $row['shop_id'];
 			$data['money'] = $row['money'];
 			$data['paycost'] = $row['paycost'];
@@ -28,8 +35,13 @@ class ome_auto_statement{
 		$refunds = $refundObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 		foreach($refunds as $row){
 			$data = array();
+			$wx_order_bn='';
 			$data['original_bn'] = $row['refund_bn'];
 			$data['order_id'] = $row['order_id'];
+			if($row['shop_id']=="c7c44eade93b87b69062c76dc27c8ae7"){
+				$wx_order_bn =$orderObj->getList("wx_order_bn",array('order_id'=>$row['order_id'],'shop_type'=>'cardshop'));
+				$data['wx_order_bn']=$wx_order_bn['0']['wx_order_bn'];
+			}
 			$data['shop_id'] = $row['shop_id'];
 			$data['money'] = $row['money'];
 			$data['paycost'] = $row['paycost'];

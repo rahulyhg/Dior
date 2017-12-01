@@ -15,6 +15,7 @@
           <th><{t}>优惠额<{/t}></th>
           <th><{t}>购买量<{/t}></th>          <th><{t}>已发货量<{/t}></th>
           <th><{t}>已退货量<{/t}></th>
+		  <th><{t}>刻字内容<{/t}></th>
         </tr>
       </thead>
       <tbody>
@@ -51,6 +52,7 @@
         <td><{$item.ax_pmt_price/$item.quantity|cur}></td>
         <td><{$item.quantity}></td>        <td><{$item.sendnum}></td>
         <td><{$item.return_num}></td>
+		<td><{$item.message1}></td>
       </tr>
       <{/foreach}>
       <{/foreach}>

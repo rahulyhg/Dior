@@ -1,6 +1,8 @@
 <?php
 class ome_finder_statement{
     var $detail_basic = "对账单详情";
+
+	var $detail_remark = "对账单备注";
     
     function detail_basic($statement_id){
         $render = app::get('ome')->render();
@@ -15,6 +17,22 @@ class ome_finder_statement{
         $render->pagedata['orderinfo'] = $orderinfo;
         return $render->fetch('admin/balance/detail.html');
     }
+
+	function detail_remark($statement_id){
+        $render = app::get('ome')->render();
+        $oPayment = &app::get('ome')->model('statement');
+		if($_POST){
+			$post_data = $_POST;
+			$data = array('statement_id'=>$statement_id,'remark'=>$post_data['remark']);
+			$oPayment->save($data);
+		}
+        $detail = $oPayment->dump($statement_id);
+        
+        $render->pagedata['detail'] = $detail;
+        return $render->fetch('admin/balance/detail_remark.html');
+    }
+
+	
     var $addon_cols = 'archive,order_id';
     var $column_order_id='订单号';
     var $column_order_id_width='100';
