@@ -253,6 +253,9 @@ class erpapi_oms_order
 				if(!empty($v['pkg_name'])){
 					error_log('捆绑商品:'.$post['products'][$k]['pkg_name'],3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
 				}
+				if(!empty($v['lettering'])){
+					$post['products'][$k]['lettering']=str_replace(array("\r\n", "\r", "\n"),'\n',urldecode($v['lettering']));
+				}
 			}
 			$post['giftmessage']['message1']=urldecode($post['giftmessage']['message1']);
 			$post['giftmessage']['message2']=urldecode($post['giftmessage']['message2']);
@@ -326,7 +329,8 @@ class erpapi_oms_order
         $logi_no = $post['logi_no'];
 		$arrShop=$oShop->getList('shop_id',array('shop_type'=>'magento'));
 		$post['shop_id']=$arrShop['0']['shop_id']."*ecos.b2c";//'8a24cd49e61ab1193ae21dcdd33384b2*ecos.b2c';//8a24cd49e61ab1193ae21dcdd33384b2//f983d9b59cf0d45b54a4336032146d12
-		 
+		
+		$address_id=$post['address_id'];
 		if(!$post['address_id']=$this->checkArea($post['address_id'])){
 			return $this->send_error('地区不正确');
 		}
@@ -359,6 +363,7 @@ class erpapi_oms_order
 		
 		$arrLin=array();
 		$arrLinPkg=array();
+		$lettering='';
 		foreach($post['products'] as $k=>$v){
 			if($v['type']!="pkg"){
 				if(isset($arrLin[$v['type']][$v['bn']])){
@@ -378,7 +383,12 @@ class erpapi_oms_order
 				}
 				$arrLinPkg[$v['pkg_id']][$v['bn']]=$v['pkg_id'];
 			}
+			
+			if(!empty($v['lettering'])){
+				$lettering.=$v['lettering'];
+			}
 		}
+		
 		//echo "<pre>";print_r($post['products']);exit();
 		$h=0;
 		foreach($post['products'] as $product){
@@ -426,6 +436,7 @@ class erpapi_oms_order
 					$post['num'][$isBn['0']['product_id']]['name']=$product['name'];
 					$post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
 					$post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
+					$post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
 					$post['price'][$isBn['0']['product_id']]=$mprice;
 					
 					$post['true_price'][$isBn['0']['product_id']]=$true_price;
@@ -433,17 +444,23 @@ class erpapi_oms_order
 			}
 			$isBn='';
 		}
-		 
+		
 		//新建会员
 		if(empty($post['account']['m_memeber_num'])){
+			if($post['order_refer_source']=="minishop"){//EC小程序
+				$member['account']['uname']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
+				$member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
+			}else{
 				$member['account']['uname']=$post['consignee']['mobile'];
 				$member['contact']['phone']['mobile']=$post['consignee']['mobile'];
-				$member['contact']['area']=$post['address_id'];
-				$member['profile']['gender']='male';
-				 
-				if (!$mObj->save($member)){
-					return $this->send_error('会员更新失败 请重试');
-				}
+			}
+			
+			$member['contact']['area']=$post['address_id'];
+			$member['profile']['gender']='male';
+			
+			if (!$mObj->save($member)){ 
+				return $this->send_error('会员更新失败 请重试');
+			}
 		}else{
 			$member = $mObj->dump(array('m_memeber_num'=>$post['account']['m_memeber_num']),'member_id');
 			
@@ -463,7 +480,6 @@ class erpapi_oms_order
 		} 
 		unset($post['account']);
 		unset($post['products']);
-		 
 		
         $post['member_id'] = $member['member_id'];
         if (!$post['member_id'])
@@ -521,7 +537,6 @@ class erpapi_oms_order
 
         $num = $tmp_num;
         $iorder = $post['order'];
-	 
         $iorder['consignee'] = $consignee;
         $iorder['shipping'] = $shipping;
 
@@ -605,15 +620,22 @@ class erpapi_oms_order
 				$item_cost=$cost+$item_cost;
 			}
 		}
-	   	
-        if ($post['is_lettering']=="1"){
+		
+		$iorder['golden_box']=$post['golden_box']=="1"?true:false;//金色礼盒
+		if(!empty($post['ribbon_sku'])){
+			$iorder['ribbon_sku']=$post['ribbon_sku'];
+			$intTotalNums=$intTotalNums+1;
+		}
+		$iorder['order_refer_source']=$post['order_refer_source'];
+		
+        if (!empty($lettering)){
 			$iorder['is_lettering']=true;
-            $c_memo = $post['customer_memo'];
-            $c_memo = array('op_name'=>'系统', 'op_time'=>date('Y-m-d H:i',time()), 'op_content'=>$c_memo);
+			$c_memo = array('op_name'=>'系统', 'op_time'=>date('Y-m-d H:i',time()), 'op_content'=>'刻字订单');
             $tmp[]  = $c_memo;
             $iorder['custom_mark']  = serialize($tmp);
             $tmp = null;
         }
+		
 		if($post['is_presell']=="1"){
 			$iorder['is_prepare']=true;
 			$post['order_memo']='预售订单'.$post['order_memo'];
@@ -648,14 +670,11 @@ class erpapi_oms_order
 		$iorder['message4']     = $post['giftmessage']['message4'];
 		$iorder['message5']     = $post['giftmessage']['message5'];
 		$iorder['message6']     = $post['giftmessage']['message6'];
-		if(isset($post['order_refer_source'])){
-			$iorder['order_refer_source']=$post['order_refer_source'];
-		}
 		//echo "<pre>";print_r($post);print_r($iorder);exit();
-		if(isset($post['welcomecard'])){
-			$iorder['is_w_card']=true;
-			$intTotalNums=$intTotalNums+1;
-		}
+		//改成默认有welcomecard
+		$iorder['is_w_card']=true;
+		$intTotalNums=$intTotalNums+1;
+		
 		foreach($post['giftmessage'] as $message){
 			if(!empty($message)){
 				$iorder['is_card']=true;
@@ -736,14 +755,12 @@ class erpapi_oms_order
 			$iorder['payment']=$pay_bn['0']['custom_name'];
 			$iorder['pay_id']=$pay_bn['0']['id'];
 		}
- 		//echo "<pre>"; print_r($iorder);print_r($post);exit();
-	   
+	  
 		$transaction = $oObj->db->beginTransaction();
         if(!$oObj->create_order($iorder)){
 			$oObj->db->rollBack();
 			return $this->send_error('订单保存失败.请重试');
 		}
-		
 		//生成收款单
 		if($post['is_cod']!='true'){//货到付款不生成收款单
 			if(!$this->do_payorder($iorder)){
@@ -760,6 +777,15 @@ class erpapi_oms_order
             $oObj_orextend->save($code_data);
             
         }
+		
+		//小程序发送模板消息
+		if($post['order_refer_source']=="minishop"){//EC小程序
+			$iorder['address_id']=$address_id;
+			$iorder['form_id']=$post['form_id'];
+			kernel::single("giftcard_wechat_request_message")->send($iorder);
+		
+		}
+		
         return $this->send_succ('创建成功');
 	}
 	
