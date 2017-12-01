@@ -435,6 +435,7 @@ class omeftp_service_delivery{
 
 		if($delivery['order']['is_w_card']=='true'){
 			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+			$key = $key+1;
 		}
 		
 		if(!empty($delivery['order']['ribbon_sku'])){
