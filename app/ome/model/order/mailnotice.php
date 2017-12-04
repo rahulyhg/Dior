@@ -2,6 +2,26 @@
 
 class ome_mdl_order_mailnotice extends dbeav_model{
    
+	public function get_schema(){
+        $schema = array (
+            'columns' => array (
+                'id' => array (
+                    'type' => 'varchar(50)',
+                    'pkey' => true,
+                    'label' => 'id',
+                    'width' => 110,
+                    'editable' => false,
+                    'in_list' => true,
+					//	'searchtype' => 'has',
+                    'default_in_list' => true,
+                    'order'=>1,
+                    'orderby' => true,
+                    'realtype' => 'varchar(50)',
+                ),
+            ),
+        );
+        return $schema;
+    }
 	
 	function sendMail($mailtitle,$mailcontent){
 			$root_dir = realpath(dirname(__FILE__).'/../../');
