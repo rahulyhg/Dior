@@ -59,7 +59,7 @@ class giftcard_jing_response_order
 				$arrCardUpdate=$arrGoods=array();
 				$id=$card['id'];
 				$arrCardUpdate['begin_time']=$accept_time;
-				$arrCardUpdate['end_time']=kernel::single("giftcard_order")->cardEndTime($accept_time,$card_id);
+				$arrCardUpdate['end_time']=kernel::single("giftcard_order")->cardEndTime($accept_time,$card['card_id']);
 				$arrCardUpdate['status']='accept';
 				if(!$objCard->update($arrCardUpdate,array("id"=>$id))){
 					return array('status'=>'fail','msg'=>'update accept fail');
