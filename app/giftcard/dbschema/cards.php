@@ -150,6 +150,7 @@ $db['cards']=array (
 	  'editable' => false,
 	  'filtertype' => 'normal',
 	  'filterdefault' => true,
+	  'in_list' => true,
 	),
 	'chatroom' =>
     array (
