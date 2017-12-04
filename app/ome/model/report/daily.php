@@ -2,7 +2,28 @@
 define('PHPEXCEL_ROOT', ROOT_DIR.'/app/omecsv/lib/static');
 
 class ome_mdl_report_daily extends dbeav_model{
-
+	
+	public function get_schema(){
+        $schema = array (
+            'columns' => array (
+                'id' => array (
+                    'type' => 'varchar(50)',
+                    'pkey' => true,
+                    'label' => 'id',
+                    'width' => 110,
+                    'editable' => false,
+                    'in_list' => true,
+					//	'searchtype' => 'has',
+                    'default_in_list' => true,
+                    'order'=>1,
+                    'orderby' => true,
+                    'realtype' => 'varchar(50)',
+                ),
+            ),
+        );
+        return $schema;
+    }
+	
 	function sendMail($attach1,$attach2,$attach3){
 		require_once('class.phpmailer.php');
 
