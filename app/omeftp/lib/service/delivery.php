@@ -173,13 +173,6 @@ class omeftp_service_delivery{
 		
 		$custom_mark = unserialize($delivery['order']['custom_mark']);
 		$custom_memo = $custom_mark[0]['op_content']; 
-		$order_objects = app::get('ome')->model('order_objects')->getList('*',array('order_id'=>$delivery['order']['order_id']));
-		$pkg_names = array();
-		foreach($order_objects as $oobject){
-			if($oobject['obj_type']=='pkg'){
-				$pkg_names[$oobject['pkg_bn']] = $oobject['pkg_name'];
-			}
-		}
 		
 		$golden_box='';
 		if($delivery['order']['golden_box']=='true'){
@@ -187,13 +180,9 @@ class omeftp_service_delivery{
 		}
 		
 		if($custom_memo){
-			$ax_h[] = $custom_memo.','.implode(',',$pkg_names).','.$golden_box; //Sales Description
+			$ax_h[] = $custom_memo.','.$golden_box; //Sales Description
 		}else{
-			if(empty($pkg_names)){
-				$ax_h[] =$golden_box;
-			}else{
-				$ax_h[] = implode(',',$pkg_names).','.$golden_box; //Sales Description
-			}
+			$ax_h[] = $golden_box;
 		}
 
 		
