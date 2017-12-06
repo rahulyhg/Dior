@@ -761,7 +761,7 @@ class ome_ctl_admin_order extends desktop_controller{
                'use_buildin_new_dialog' => false,
                'use_buildin_set_tag'=>false,
                'use_buildin_recycle'=>false,
-               'use_buildin_export'=>false,
+               'use_buildin_export'=>true,
                'use_buildin_import'=>false,
                'use_buildin_filter'=>true,
                'orderBy' => 'paytime,createtime',
