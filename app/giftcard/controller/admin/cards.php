@@ -15,6 +15,7 @@ class giftcard_ctl_admin_cards extends desktop_controller{
                 'use_buildin_filter'=>false,
                 'use_view_tab'=>false,
 				'use_buildin_filter'=>true,
+				'use_buildin_export'=>true,
             );
             $this->finder('giftcard_mdl_cards',$params);
         }
