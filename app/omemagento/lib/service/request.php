@@ -10,7 +10,13 @@ class omemagento_service_request{
 
 	 public function do_request($method,$params){
 		$url = $this->url.$method;
-
+		
+		if($method=="refundlog"){
+			$log_dir=DATA_DIR.'/magento/'.$method.'/';
+			if(!is_dir($log_dir))$res = mkdir($log_dir,0777,true);//创建日志目录
+			error_log('Request:'.json_encode($params),3,$log_dir.date("Ymd").'zjrorder.txt');
+		}
+		
 		$log_id = $this->write_log($method,$params);
 		//$rs = $this->objBhc->post($url,json_encode($params));
 		$ch = curl_init();
@@ -20,6 +26,11 @@ class omemagento_service_request{
 		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		$rs = curl_exec($ch);
 		curl_close($ch);
+		
+		if($method=="refundlog"){
+			error_log('Response:'.$rs,3,$log_dir.date("Ymd").'zjrorder.txt');
+		}
+		
 		$info = json_decode($rs,1);
 		if ($info['success'] == true) {
 			$logData = array(
@@ -86,6 +97,9 @@ class omemagento_service_request{
 		 }
 		 if($method=='stock'){
 			 $msg = '更新商品库存';
+		 }
+		 if($method=='refundlog'){
+			 $msg = '更新退款单状态';
 		 }
 		$log_data = array(
 				'original_bn'=>$params['order_id']?$params['order_id']:$params['sku'],
