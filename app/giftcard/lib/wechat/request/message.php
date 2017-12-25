@@ -31,7 +31,7 @@ class giftcard_wechat_request_message extends giftcard_wechat_request{
 			}
 			$i++;
 		}
-		if(count($arrItems>1)){
+		if(count($arrItems)>1){
 			$strProduct=$strProduct."等";
 		}*/
 		

@@ -50,7 +50,7 @@ class giftcard_wechat_request{
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		curl_setopt($ch, CURLOPT_HEADER, false);
-		curl_setopt($ch, CURLOPT_TIMEOUT,2);
+		//curl_setopt($ch, CURLOPT_TIMEOUT,2);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_POST, 1);
 		//curl_setopt($ch, CURLOPT_POSTFIELDS,$post);
