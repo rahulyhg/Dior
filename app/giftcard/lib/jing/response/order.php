@@ -46,7 +46,7 @@ class giftcard_jing_response_order
 		$arrCardCode=$objCard->getList("id,card_id",array("wx_order_bn"=>$order_id));
 		if(empty($arrCardCode[0]['id']))return array('status'=>'fail','msg'=>'礼品卡卡劵不存在');
 		
-		$accept_time=$order['CreateTime'];
+		$accept_time=strtotime(date("Y-m-d",$order['CreateTime']));
 		if($order['IsChatRoom']=="true"){//群发 
 			$arrCardUpdate['chatroom']='true';
 			$arrCardUpdate['status']='accept';
@@ -89,7 +89,7 @@ class giftcard_jing_response_order
 		if(empty($arrCard_code))return array('status'=>'fail','msg'=>'老卡不存在');
 		
 		//更新新code 并且更新期限
-		$accept_time=$card['CreateTime'];
+		$accept_time=strtotime(date("Y-m-d",$card['CreateTime']));
 		$arrCardUpdate=array();
 		$arrCardUpdate['begin_time']=$accept_time;
 		$arrCardUpdate['end_time']=kernel::single("giftcard_order")->cardEndTime($accept_time,$card_id);
