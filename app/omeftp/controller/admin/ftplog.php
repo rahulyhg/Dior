@@ -13,6 +13,25 @@ class omeftp_ctl_admin_ftplog extends desktop_controller{
             'use_buildin_recycle' => true,
             'use_buildin_export' => false,
             'use_buildin_import' => false,
+			'base_filter'=>array(
+				'io_type'=>'out',
+			),
+			'orderBy'=>'createtime desc',
+        ));
+	}
+
+	public function dindex(){
+		$this->finder('omeftp_mdl_ftplog', array(
+            'title' => 'ftp上传日志',
+            'use_buildin_new_dialog' => false,
+            'use_buildin_set_tag' => false,
+            'use_buildin_recycle' => true,
+            'use_buildin_export' => false,
+            'use_buildin_import' => false,
+			'base_filter'=>array(
+				'io_type'=>'in',
+			),
+			'orderBy'=>'createtime desc',
         ));
 	}
 
@@ -49,6 +68,23 @@ class omeftp_ctl_admin_ftplog extends desktop_controller{
 
 		//echo "<pre>";print_r($list);exit;
 
+	}
+	public function downFile($log_id){
+		$log_mdl = app::get('omeftp')->model('ftplog');
+
+		$log_info = $log_mdl->dump($log_id);
+
+		$filename = $log_info['file_local_route'];
+
+		$filename = $filename;
+        $file_size = filesize($filename);
+        $file_name = basename($filename); 
+        header("Content-type:text/html;charset=utf-8"); 
+        Header("Content-type: application/octet-stream"); 
+        Header("Accept-Ranges: bytes"); 
+        Header("Accept-Length:".$file_size); 
+        Header("Content-Disposition: attachment; filename=".$file_name); 
+        echo file_get_contents($filename);
 	}
 	
 }

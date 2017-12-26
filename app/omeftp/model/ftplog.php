@@ -2,9 +2,14 @@
 class omeftp_mdl_ftplog extends dbeav_model{
 
     function searchOptions(){
-        return array(
-                'order_bn'=>app::get('base')->_('订单号'),
-            );
+		
+		if($_GET['act']=='dindex'){
+			return parent::searchOptions();
+		}else{
+			return array(
+					'order_bn'=>app::get('base')->_('订单号'),
+				);
+		}
     }
 
 	function _filter($filter,$tableAlias=null,$baseWhere=null){

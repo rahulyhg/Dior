@@ -3,7 +3,8 @@
 	  <workground name="系统" id="setting_tools" order="800">
 		 <menugroup name="AX对接设置">
 				<menu controller='admin_ftpsetting' action='index'  permission='ftp_setting' display='true' order='3000200'>ftp设置</menu>
-				<menu controller='admin_ftplog' action='index'  permission='ftp_setting' display='true' order='3000200'>ftp上传下载日志</menu>
+				<menu controller='admin_ftplog' action='index'  permission='ftp_log_uplode' display='true' order='3000200'>ftp上传日志</menu>
+				<menu controller='admin_ftplog' action='dindex'  permission='ftp_log_down' display='true' order='3000200'>ftp下载日志</menu>
 				<menu controller='admin_filelog' action='index'  permission='ftp_setting' display='true' order='3000200'>文件读写日志</menu>
 		</menugroup>    
 		
@@ -11,7 +12,10 @@
 
 	<permissions>
             <permission id="ftp_setting">ftp交互</permission>
-        
+
+			<permission id="ftp_log_uplode">ftp上传日志</permission>
+
+			<permission id="ftp_log_down">ftp下载日志</permission>
     </permissions>
 	
 </desktop>
