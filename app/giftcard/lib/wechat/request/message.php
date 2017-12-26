@@ -8,7 +8,7 @@ class giftcard_wechat_request_message extends giftcard_wechat_request{
 		$arrTemplate=array();
 		$arrTemplate['touser']=$arrSend['wechat_openid'];
 		$arrTemplate['template_id']=$this->arrSetting['templateid'];
-		$arrTemplate['page']='';
+		$arrTemplate['page']='pages/order/order';
 		$arrTemplate['form_id']=$arrSend['form_id'];
 		$arrTemplate['data']=include_once('template/order.php');
 		$arrTemplate['emphasis_keyword']='';
