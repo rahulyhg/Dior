@@ -576,7 +576,11 @@ class ome_mdl_refund_apply extends dbeav_model{
 		
 		if(!empty($arrRefund[0]['trade_no'])){
 		    foreach($arrRefund as $trade_no){
-			    if(kernel::single('ome_wxpay_refund')->checkRefund($trade_no)){
+				$processing=false;
+			    if(kernel::single('ome_wxpay_refund')->checkRefund($trade_no,$processing)){
+					if($processing){
+						continue;//退款中啥都不做
+					}
 				    $apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
 					$apply_id=$trade_no['apply_id'];
 					if (in_array($apply_detail['status'],array('2','5','6'))){
