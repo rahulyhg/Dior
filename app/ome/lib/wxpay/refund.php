@@ -66,7 +66,7 @@ class ome_wxpay_refund{
 		exit();
 	}
 	
-	function checkRefund($data){//return true;
+	function checkRefund($data,&$processing=false){//return true;
 		require_once("lib/WxPay.Api.php");
 		require_once("log.php");
 		
@@ -93,12 +93,12 @@ class ome_wxpay_refund{
 					    error_log("微信退款流水号:".$transaction_id."退款成功 ",3,DATA_DIR.'/wxrefund/'.date("Ymd").'refund.txt');
 						return true;
               	    break;
-					case 'FAIL'://退款失败
-					    error_log("微信退款流水号:".$transaction_id."退款失败FAIL".$return['err_code'].$return['err_code_des']." ",3,DATA_DIR.'/wxrefund/'.date("Ymd").'refund.txt');
-						$oRefaccept->db->exec('UPDATE sdb_ome_refund_apply SET apimsg="退款失败:'.$return['err_code'].$return['err_code_des'].'",stats="2",wxstatus="false" WHERE apply_id=$apply_id');
-						return false;
+					case 'PROCESSING'://退款中
+					    error_log("微信退款流水号:".$transaction_id."退款PROCESSING".$return['err_code'].$return['err_code_des']." ",3,DATA_DIR.'/wxrefund/'.date("Ymd").'refund.txt');
+						$processing=true;
+						return true;
               	    break;
-					case 'NOTSURE'://退款失败
+					case 'REFUNDCLOSE'://退款失败
 						error_log("微信退款流水号:".$transaction_id."退款失败NOTSURE".$return['err_code'].$return['err_code_des']." ",3,DATA_DIR.'/wxrefund/'.date("Ymd").'refund.txt');
 						$oRefaccept->db->exec('UPDATE sdb_ome_refund_apply SET apimsg="退款失败:'.$return['err_code'].$return['err_code_des'].'",stats="2",wxstatus="false" WHERE apply_id=$apply_id');
 						return false;
