@@ -33,13 +33,20 @@ class omeftp_service_delivery{
 		$file_arr = array($file_prefix,$file_brand,'ORDER',date('YmdHis',time()));
 		$file_name = implode('_',$file_arr);
 
-		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
+		if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+			mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+		}
+		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 
 		while(file_exists($file_params['file'])){
 			sleep(1);
 			$file_arr = array($file_prefix,$file_brand,'ORDER',date('YmdHis',time()));
 			$file_name = implode('_',$file_arr);
-			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
+
+			if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+				mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+			}
+			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 		}
 
 		/*if($sync){

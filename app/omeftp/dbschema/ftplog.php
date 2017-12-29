@@ -26,6 +26,7 @@ $db['ftplog']=array (
 	    'required' => true,
 	    'in_list' => true,
 	    'default_in_list' => true,
+		'searchtype' => 'nequal',
 	    'label' => '业务类型',
 	),
     'createtime' =>
@@ -59,7 +60,7 @@ $db['ftplog']=array (
     'file_local_route' =>
     array (
       'type' => 'varchar(225)',
-      'label' => '上传的本地文件',
+      'label' => '本地备份文件',
       'width' => 100,
       'in_list' => false,
       'filtertype' => 'normal',

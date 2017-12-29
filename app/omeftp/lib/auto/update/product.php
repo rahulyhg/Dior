@@ -114,6 +114,10 @@ class omeftp_auto_update_product{
 							$magentoStore = 0;
 						}
 						kernel::single('omemagento_service_product')->update_store($product['bn'],$magentoStore);
+
+						$logfile = DATA_DIR.'/store_update/'.date('Y-m-d').'.store.log';
+						$loginfo = '同步库存商品库存：'.$product['bn'].'  >>>>   '.$magentoStore;
+						error_log(date('Y-m-d H:i:s') . "\t" . $loginfo."\n",3,$logfile);
 					}
 
 				}else{
@@ -124,6 +128,10 @@ class omeftp_auto_update_product{
 					$re = $this->branch_product_mdl->change_store(1,$product['product_id'],$store);
 					if($re){
 						kernel::single('omemagento_service_product')->update_store($product['bn'],0);
+
+						$logfile = DATA_DIR.'/store_update/'.date('Y-m-d').'.store.log';
+						$loginfo = '同步库存商品库存：'.$product['bn'].'  >>>>   0';
+						error_log(date('Y-m-d H:i:s') . "\t" . $loginfo."\n",3,$logfile);
 					}
 				}
 			}
@@ -210,6 +218,8 @@ class omeftp_auto_update_product{
 				$file_list[] = str_replace('bal','dat',$value);
 			}
 		}
+
+		$ftpLogObj = app::get('omeftp')->model('ftplog');
 		//echo $str;
 		foreach((array)$file_list as $filename){
 			$params = array();
@@ -220,7 +230,26 @@ class omeftp_auto_update_product{
 				if(!file_exists(ROOT_DIR.'/ftp/Testing/out/')){
 					mkdir(ROOT_DIR.'/ftp/Testing/out/',0777,true);
 				}
-				$local = ROOT_DIR.'/ftp/Testing/out/'.$filename;
+
+				if(!file_exists(ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()))){
+					mkdir(ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()),0777,true);
+				}
+				$local = ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()).'/'.$filename;
+
+				if(strpos($filename,'Stock')){
+					$work_type = 'stock';
+				}else{
+					$work_type = 'price';
+				}
+
+				$ftp_log_data = array();
+				$ftp_log_data = array(
+							'io_type'=>'in',
+							'work_type'=>$work_type,
+							'createtime'=>time(),
+							'file_local_route'=>$local,
+							'file_ftp_route'=>$filename,
+						);
 				$params['local'] = $local;
 				$params['resume'] = 0;
 				$sign = $this->ftp_operate->pull($params,$msg);
@@ -228,7 +257,11 @@ class omeftp_auto_update_product{
 				if($sign){
 					$file_arr[] = $local;
 					$this->ftp_operate->delete_ftp($params['remote']);
+					$ftp_log_data['status']='succ';
+				}else{
+					$ftp_log_data['status']='fail';
 				}
+				$ftpLogObj->insert($ftp_log_data);
 			}
 
 		}

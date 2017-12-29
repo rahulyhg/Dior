@@ -87,9 +87,9 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 	 public function push_md5($params,&$msg){
 		$md5file = md5_file($params['local']);
 		if(strpos($params['local'],'.csv')){
-			$md5_file_local = ROOT_DIR.'/ftp/Testing/in/'.basename($params['local'],'.csv').'.bal';
+			$md5_file_local = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.basename($params['local'],'.csv').'.bal';
 		}else{
-			$md5_file_local = ROOT_DIR.'/ftp/Testing/in/'.basename($params['local'],'.dat').'.bal';
+			$md5_file_local = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.basename($params['local'],'.dat').'.bal';
 		}
 	
 		if(!file_exists($md5_file_local)){
