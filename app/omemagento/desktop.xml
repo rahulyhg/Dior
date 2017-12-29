@@ -3,7 +3,7 @@
 	  <workground name="系统" id="setting_tools" order="800">
 		 <menugroup name="店铺对接">
 				<menu controller='admin_requestlog' action='index'  permission='magento_lgo' display='true' order='3000600'>请求日志</menu>
-				<menu controller='admin_order_test' action='index'  permission='magento_lgo' display='true' order='3000600'>模拟测试</menu>
+				<menu controller='admin_order_test' action='index'  permission='magento_lgo' display='true' order='3000600'>magento设置</menu>
 		</menugroup>    		
 	</workground>
 

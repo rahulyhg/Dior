@@ -4,6 +4,8 @@ class omemagento_ctl_admin_order_test extends desktop_controller{
     var $workground = "setting_tools";
 
 	public function index(){
+		$requestUrl = app::get('ome')->getConf('magento_setting');
+		$this->pagedata['request_url'] = $requestUrl;
 		$this->page('admin/order/test.html');
 	}
 
@@ -11,13 +13,9 @@ class omemagento_ctl_admin_order_test extends desktop_controller{
 	public function test(){
 		$this->begin('index.php?app=omemagento&ctl=admin_order_test&act=index');
 
-		$obj = kernel::single('omemagento_service_order');
-		$order_bn = $_POST['order_bn'];
-		$status = $_POST['status'];
-		if($status=='Shipped'){
-			$tracking_code = $_POST['logi_no'];
-		}
-		$obj->update_status($order_bn,$status,$tracking_code);
+		$request_url = $_POST['request_url'];
+	    app::get('ome')->setConf('magento_setting',$request_url);
+
 		$this->end('true','同步成功！');
 	}
 }

@@ -33,8 +33,12 @@ class omeftp_service_reship{
 
 		$file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
 		$file_name = implode('_',$file_arr);
+		
 
-		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
+		if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+			mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+		}
+		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 
 		$file_params['method'] = 'a';
 		$file_params['data'] = $this->getContent($delivery,$file_params['file'],$reship_id);
