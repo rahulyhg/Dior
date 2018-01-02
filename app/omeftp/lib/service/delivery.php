@@ -35,6 +35,7 @@ class omeftp_service_delivery{
 
 		if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
 			mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+			chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
 		}
 		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 
@@ -45,6 +46,7 @@ class omeftp_service_delivery{
 
 			if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
 				mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+				chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
 			}
 			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 		}
