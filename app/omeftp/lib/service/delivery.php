@@ -240,7 +240,15 @@ class omeftp_service_delivery{
 		$ax_h[] = '';
 		$ax_h[] = '';
 		$ax_h[] = '';
-		$ax_h[] = $delivery['order']['order_bn'];
+		//兑换订单需找到原始订单号
+		if($delivery['order']['shop_type']=="minishop"){
+			$arrCards=array();
+			$objCards=app::get("giftcard")->model('cards');
+			$arrCards=$objCards->getList("p_order_bn",array('order_bn'=>$delivery['order']['order_bn']),0,1);
+			$ax_h[] = $arrCards[0]['p_order_bn'];
+		}else{
+			$ax_h[] = $delivery['order']['order_bn'];
+		}
 
 		
 		return implode('|',$ax_h);
