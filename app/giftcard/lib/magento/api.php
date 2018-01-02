@@ -31,7 +31,7 @@ class giftcard_magento_api{
 			
 			$arrLogs=array();
 			$arrLogs['order_bn']=$params['order_bn'];
-			$arrLogs['code']=$params['trade_no'];
+			$arrLogs['code']=$params['card_code'];
 			$arrLogs['open_id']=$params['open_id'];
 			$arrLogs['status']='fail';
 			$arrLogs['api_method']=$api_method;

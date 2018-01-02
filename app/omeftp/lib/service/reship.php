@@ -196,7 +196,7 @@ class omeftp_service_reship{
 		$ax_h[] = $reshipInfo['return_reason'];
 		$ax_h[] = '';
 		$ax_h[] = '';
-		$ax_h[] = $delivery['order']['order_bn'];
+		$ax_h[] = $delivery['order']['order_bn'].'-R'.$nums;
 		
 		return implode('|',$ax_h);
 	}

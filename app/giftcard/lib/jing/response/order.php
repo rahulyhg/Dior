@@ -32,31 +32,32 @@ class giftcard_jing_response_order
 	public function update($order){
 		if($order['MsgType']!='event'||$order['Event']!='giftcard_user_accept')return array('status'=>'succ','msg'=>'事件异常');
 		
-		$objGift=$this->app->model("orders");
 		$objCard=$this->app->model("cards");
 		
-		$isExisitWxOrderBn=$objGift->getList("OrderId,FromUserName",array('OrderId'=>$order['OrderId'],'status'=>'1'));
-		$order_id=$isExisitWxOrderBn[0]['OrderId'];
-		if(empty($order_id))return array('status'=>'fail','msg'=>'礼品卡订单不存在');
-		//判断是否本人签收
-		$FromUserName=$order['FromUserName'];
-		if($FromUserName==$isExisitWxOrderBn[0]['FromUserName']){
+		//判断是否退回由自身领取
+		if($order['IsReturnBack']=="true"){
 			return array('status'=>'succ','msg'=>'succ');
 		}
 		
 		$arrCardUpdate=array();
 		$arrCardCode=array();
-		$accept_time=$order['CreateTime'];
-		if($order['IsChatRoom']=="true"){//群发 需要走脚本 来获取领取事件
+		$order_id=$order['OrderId'];
+		
+		$arrCardCode=$objCard->getList("id,card_id",array("wx_order_bn"=>$order_id));
+		if(empty($arrCardCode[0]['id']))return array('status'=>'fail','msg'=>'礼品卡卡劵不存在');
+		
+		$accept_time=strtotime(date("Y-m-d",$order['CreateTime']));
+		if($order['IsChatRoom']=="true"){//群发 
 			$arrCardUpdate['chatroom']='true';
 			$arrCardUpdate['status']='accept';
-			if(!$objCard->update($arrCardUpdate,array("wx_order_bn"=>$order_id))){
+			$arrCardUpdate['begin_time']=$accept_time;
+			$arrCardUpdate['end_time']=kernel::single("giftcard_order")->cardEndTime($accept_time,$order['CardTpId']);
+			if(!$objCard->update($arrCardUpdate,array("wx_order_bn"=>$order_id,'card_code'=>$order['Code']))){
 				return array('status'=>'fail','msg'=>'update accept fail');
 			}
 		}else{
-			$arrCardCode=$objCard->getList("id,card_id",array("wx_order_bn"=>$order_id));
-			foreach($arrCardCode as $card){//多卡 更新 期限
-				$arrCardUpdate=$arrGoods=array();
+			foreach($arrCardCode as $card){//多卡更新 card_id的期限可能不同所以循环
+				$arrCardUpdate=array();
 				$id=$card['id'];
 				$arrCardUpdate['begin_time']=$accept_time;
 				$arrCardUpdate['end_time']=kernel::single("giftcard_order")->cardEndTime($accept_time,$card['card_id']);
@@ -88,7 +89,7 @@ class giftcard_jing_response_order
 		if(empty($arrCard_code))return array('status'=>'fail','msg'=>'老卡不存在');
 		
 		//更新新code 并且更新期限
-		$accept_time=$card['CreateTime'];
+		$accept_time=strtotime(date("Y-m-d",$card['CreateTime']));
 		$arrCardUpdate=array();
 		$arrCardUpdate['begin_time']=$accept_time;
 		$arrCardUpdate['end_time']=kernel::single("giftcard_order")->cardEndTime($accept_time,$card_id);
