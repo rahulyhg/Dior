@@ -22,11 +22,24 @@ class giftcard_jing_api{
 				$data=(array)simplexml_load_string($GLOBALS['HTTP_RAW_POST_DATA'],'SimpleXMLElement',LIBXML_NOCDATA);
 				$MsgType=$data['MsgType'];
 				$Event=$data['Event'];
+				$res=array();
+				$res = array(
+					'rsp'      =>'succ',
+					'msg'      =>'',
+					'data'	   =>''
+				);
 				 
 				error_log(date("Y-m-d H:i:s").'Request:'.$Event,3,DATA_DIR.'/jingtest/'.date("Ymd").'zjrorder.txt');
 				
 				$log_dir=DATA_DIR.'/jing/';
-				if(!is_dir($log_dir))$res = mkdir($log_dir,0777,true);//创建日志目录
+				if(!is_dir($log_dir))mkdir($log_dir,0777,true);//创建日志目录
+				
+				$event_on_off='on';
+				$arrSetting=$this->app->getConf("giftcard_setting");
+				$event_on_off=$arrSetting['event']['onoff'];
+				if($event_on_off=="off"){
+					echo json_encode($res);exit();
+				}
 				
 				if($MsgType=="event"){
 					switch($Event){
@@ -91,11 +104,6 @@ class giftcard_jing_api{
 					}
 				}
 			}
-			$res = array(
-				'rsp'      =>'succ',
-				'msg'      =>'',
-				'data'	   =>''
-			);
 			echo json_encode($res);exit();
 		}catch (Exception $e) {
             trigger_error($e->getMessage(),E_USER_ERROR);
