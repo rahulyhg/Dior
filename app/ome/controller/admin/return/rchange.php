@@ -402,6 +402,8 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
             if($newItems[$v['bn']] && $newItems[$v['bn']]['bn'] !=''){
                     $newItems[$v['bn']]['nums'] += $items[$k]['nums'];
                     $newItems[$v['bn']]['sendnum'] += $items[$k]['sendnum'];
+					$newItems[$v['bn']]['sale_price']+=$items[$k]['sale_price'];
+					$newItems[$v['bn']]['amount']+=$items[$k]['amount'];
             }else{
                 if ($source == 'archive') {
                     $refund = $archive_ordObj->Get_refund_count ( $order_id, $v ['bn'] );
