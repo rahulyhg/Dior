@@ -33,8 +33,13 @@ class omeftp_service_reship{
 
 		$file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
 		$file_name = implode('_',$file_arr);
+		
 
-		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
+		if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+			mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+			chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+		}
+		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 
 		$file_params['method'] = 'a';
 		$file_params['data'] = $this->getContent($delivery,$file_params['file'],$reship_id);
@@ -192,7 +197,7 @@ class omeftp_service_reship{
 		$ax_h[] = $reshipInfo['return_reason'];
 		$ax_h[] = '';
 		$ax_h[] = '';
-		$ax_h[] = $delivery['order']['order_bn'];
+		$ax_h[] = $delivery['order']['order_bn'].'-R'.$nums;
 		
 		return implode('|',$ax_h);
 	}
@@ -307,29 +312,31 @@ class omeftp_service_reship{
 	}
 
 	public function get_ax_l($delivery,$reship_id){
-		$ax_l = array();
-		$orderObjModel = app::get('ome')->model('order_objects');
+		$ax_l =$reInfo=array();
+		$orderItemModel     = app::get('ome')->model('order_items');
+		
+		
 		$orderReship = app::get('ome')->model('reship_items');
 		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
-		$rBn = array();
-		$rItems = array();
-		foreach($reInfo as $reItem){
-			$rBn[] = $reItem['bn'];
-			$rItems[$reItem['bn']] = $reItem;
-		}
-		//echo "<pre>";print_r($reInfo);exit;
+
 		$line = 0;
-		foreach($delivery['delivery_items'] as $key=>$delivery_items){
-			$order_obj_items = $orderObjModel->dump($delivery_items['obj_id']);
-			if(!in_array($delivery_items['bn'],$rBn)){
-				continue;
+		foreach($reInfo as $key=>$reship_items){
+			$develiy_items=array();
+			$ax_pmt_price=0;
+			$product_id=$reship_items['product_id'];
+			
+			$develiy_items      = $orderItemModel->getList('name, bn, nums as number,price,ax_pmt_price,ax_pmt_percent,pmt_price,amount,item_type,true_price', array('order_id'=>$delivery['order']['order_id'], 'delete'=>'false','product_id'=>$product_id),0,1);
+			// 过滤发货单明细中的空格
+			foreach((array)$develiy_items as $k=>$item){
+				$delivery_items[$k] = array_map('trim', $item);
 			}
+		
 			$ax_l[$key][] = 'L';
-			if($order_obj_items['obj_type']=='goods'){
+			if($delivery_items[0]['item_type']=='product'){
 				$ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
-			}elseif($order_obj_items['obj_type']=='gift'){
+			}elseif($delivery_items[0]['item_type']=='gift'){
 				$ax_l[$key][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
-			}elseif($order_obj_items['obj_type']=='sample'){
+			}elseif($delivery_items[0]['item_type']=='sample'){
 				$ax_l[$key][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
 			}else{
 				$ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
@@ -337,30 +344,24 @@ class omeftp_service_reship{
 			$ax_l[$key][] = '';//AX SO line number
 			$ax_l[$key][] = $line+1;//External SO line number
 			$line++;
-			$ax_l[$key][] = $delivery_items['bn'];//Item Number
+			$ax_l[$key][] = $reship_items['bn'];//Item Number
 			$ax_l[$key][] = '';//Item description
 			$ax_l[$key][] = '';//Text Detailled description of the item 
-			$ax_l[$key][] = $delivery_items['item_id'];//External Item Code
+			$ax_l[$key][] = '';//External Item Code?? 需确认
 			$ax_l[$key][] = '';//Bar code of the salable item  //条形码
-			if($order_obj_items['obj_type']=='sample'){
-				$ax_l[$key][] = $delivery_items['message1'];//First line of the gift message
-				$ax_l[$key][] = $delivery_items['message2'];//Second line of the gift message
-				$ax_l[$key][] = $delivery_items['message3'];//Third line of the gift message
-				$ax_l[$key][] = $delivery_items['message4'];//Fourth line of the gift message
-			}else{
-				$ax_l[$key][] = '';//First line of the gift message
-				$ax_l[$key][] = '';//Second line of the gift message
-				$ax_l[$key][] = '';//Third line of the gift message
-				$ax_l[$key][] = '';//Fourth line of the gift message
-			}
-			$ax_pmt_price = $delivery_items['ax_pmt_price']/intval($order_obj_items['quantity']);
-			$ax_l[$key][] = -$rItems[$delivery_items['bn']]['num'];//Ordered quantity  Sales ordered quantity
-			$ax_l[$key][] = $this->math->number_plus(array(($order_obj_items['price']-$ax_pmt_price),0));//Sales Retail Price  Unit price on of the Sales Order Line
+			
+			$ax_l[$key][] = '';//First line of the gift message
+			$ax_l[$key][] = '';//Second line of the gift message
+			$ax_l[$key][] = '';//Third line of the gift message
+			$ax_l[$key][] = '';//Fourth line of the gift message
+		
+			$ax_l[$key][] = -$reship_items['num'];//Ordered quantity  Sales ordered quantity
+			$ax_l[$key][] = $this->math->number_plus(array($delivery_items[0]['true_price'],0));//Sales Retail Price  Unit price on of the Sales Order Line
 			$ax_l[$key][] = '';//Price unit  Price Unit of the Sales order Line
 			
 			
 			$ax_l[$key][] = '0.00';//Discount amount
-			$ax_l[$key][] = $this->math->number_plus(array($delivery_items['ax_pmt_percent'],0));//Discount % 
+			$ax_l[$key][] = $this->math->number_plus(array($delivery_items[0]['ax_pmt_percent'],0));//Discount % 
 			$ax_l[$key][] = '';//Discount % Level 1
 			$ax_l[$key][] = '';//Discount % Level 2
 			$ax_l[$key][] = '';//Discount % Level 3
@@ -475,17 +476,6 @@ class omeftp_service_reship{
 
                 break;
         }
-
-		$orderItemModel     = app::get('ome')->model('order_items');
-		$develiy_items      = $orderItemModel->getList('name, bn, nums as number,price,ax_pmt_price,ax_pmt_percent,pmt_price,amount,obj_id', array('order_id'=>$delivery['order']['order_id'], 'delete'=>'false'));
-
-		// 过滤发货单明细中的空格
-		foreach((array)$develiy_items as $key=>$item){
-			$delivery_items[$key] = array_map('trim', $item);
-		}
-
-        $delivery['delivery_items'] = $develiy_items;
-
 		// 会员信息
         $memberModel = app::get('ome')->model('members');
         $delivery['member'] = $memberModel->dump(array('member_id'=>$delivery['member_id']),'uname,name');
