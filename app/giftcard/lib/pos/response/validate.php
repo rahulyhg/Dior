@@ -21,8 +21,12 @@ class giftcard_pos_response_validate
 		
 		$objCard=kernel::single("giftcard_mdl_cards");
 		$arrCard_code=array();
-		$arrCard_code=$objCard->getList("order_bn,status,card_code,card_id,convert_type,createtime",array("card_code"=>$card_code));
+		$arrCard_code=$objCard->getList("order_bn,status,card_code,card_id,convert_type,createtime,price",array("card_code"=>$card_code));
 		$arrCard_code=$arrCard_code[0];
+		
+		if($arrCard_code['price']<1){
+			return array('status'=>'fail','msg'=>'system maintenance','api_code'=>'999');
+		}
 		
 		if(empty($arrCard_code['card_code'])){
 			return array('status'=>'fail','msg'=>'invalid gift card','api_code'=>'101');
