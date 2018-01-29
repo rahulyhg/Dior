@@ -24,6 +24,8 @@ class omeftp_response_delivery{
 			}
 		}
 
+		$ftpLogObj = app::get('omeftp')->model('ftplog');
+
 		//echo $str;
 		foreach($file_list as $filename){
 			$params = array();
@@ -34,15 +36,32 @@ class omeftp_response_delivery{
 				if(!file_exists(ROOT_DIR.'/ftp/Testing/out/')){
 					mkdir(ROOT_DIR.'/ftp/Testing/out/',0777,true);
 				}
-				$local = ROOT_DIR.'/ftp/Testing/out/'.$filename;
+				if(!file_exists(ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()))){
+					mkdir(ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()),0777,true);
+				}
+				$local = ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()).'/'.$filename;
 				$params['local'] = $local;
 				$params['resume'] = 0;
+				
+				$ftp_log_data = array();
+				$ftp_log_data = array(
+							'io_type'=>'in',
+							'work_type'=>'delivery',
+							'createtime'=>time(),
+							'file_local_route'=>$local,
+							'file_ftp_route'=>$filename,
+						);
+
 				$sign = $this->ftp_operate->pull($params,$msg);
-				//echo "<pre>";var_dump($sign);exit;
 				if($sign){
 					$file_arr[] = $local;
 					$this->ftp_operate->delete_ftp($params['remote']);
+					$ftp_log_data['status']='succ';
+				}else{
+					$ftp_log_data['status']='fail';
 				}
+
+				$ftpLogObj->insert($ftp_log_data);
 			}
 
 		}
@@ -97,7 +116,7 @@ class omeftp_response_delivery{
 		
 		$order_bn = $data['H'][0][5];
 		$order_info = $mdl_order->getList('order_id,ship_status,shop_type',array('order_bn'=>$order_bn));
-		if($order_info[0]['ship_status']=='1'){
+		if($order_info[0]['ship_status']!='0'){
 			return true;
 		}
 		

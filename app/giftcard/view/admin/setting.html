@@ -37,6 +37,14 @@
 		<{input type=textarea name='refuse_code' value=$giftcard_setting.refuse_code style="width:200px;height:100px;"}></td>
         <td></td>
       </tr>
+	   <tr>
+                <th><{t}>事件接收：<{/t}></th>
+                <td>
+                    <input  type="radio" name="event[onoff]" value="on" <{if $giftcard_setting.event.onoff  =='on'}> checked<{/if}>>开启
+                    <input  type="radio" name="event[onoff]" value="off" <{if $giftcard_setting.event.onoff  == 'off'}> checked<{/if}>>关闭
+                   
+                </td>
+        </tr>
 	 </tbody>
 	</table>
 	  <table class="tableform" style="width:99%;">

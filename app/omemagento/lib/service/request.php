@@ -6,6 +6,11 @@ class omemagento_service_request{
 		  $this->url = "http://dior:pcd-160308@www.dior.cn/beauty/zh_cn/store/oms_api/v1/";
 		  $this->objBhc     = kernel::single('base_httpclient');
 		  $this->log_mdl    = app::get('omemagento')->model('request_log');
+
+		  $request_url = app::get('ome')->getConf('magento_setting');
+		  if($request_url){
+			   $this->url = $request_url;
+		  }
 	 }
 
 	 public function do_request($method,$params){

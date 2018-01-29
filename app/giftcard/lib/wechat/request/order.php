@@ -159,9 +159,9 @@ class giftcard_wechat_request_order extends giftcard_wechat_request
 			);
 			//多卡存入cards表
 			$arrCards=array();
-			//$arrCards['order_bn']=$order_bn."-".$i;//多卡
+			$arrCards['order_bn']=$order_bn."_".$i;//多卡
 			$arrCards['p_order_bn']=$order_bn;
-			$arrCards['order_bn']=$order_bn;//单卡
+			//$arrCards['order_bn']=$order_bn;//单卡
 			$arrCards['wx_order_bn']=$order['order_id'];
 			$arrCards['status']='normal';
 			$arrCards['card_type']='online';

@@ -33,13 +33,22 @@ class omeftp_service_delivery{
 		$file_arr = array($file_prefix,$file_brand,'ORDER',date('YmdHis',time()));
 		$file_name = implode('_',$file_arr);
 
-		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
+		if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+			mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+			chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+		}
+		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 
 		while(file_exists($file_params['file'])){
 			sleep(1);
 			$file_arr = array($file_prefix,$file_brand,'ORDER',date('YmdHis',time()));
 			$file_name = implode('_',$file_arr);
-			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
+
+			if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+				mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+				chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+			}
+			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 		}
 
 		/*if($sync){
@@ -231,7 +240,15 @@ class omeftp_service_delivery{
 		$ax_h[] = '';
 		$ax_h[] = '';
 		$ax_h[] = '';
-		$ax_h[] = $delivery['order']['order_bn'];
+		//兑换订单需找到原始订单号
+		if($delivery['order']['shop_type']=="minishop"){
+			$arrCards=array();
+			$objCards=app::get("giftcard")->model('cards');
+			$arrCards=$objCards->getList("p_order_bn",array('order_bn'=>$delivery['order']['order_bn']),0,1);
+			$ax_h[] = $arrCards[0]['p_order_bn'];
+		}else{
+			$ax_h[] = $delivery['order']['order_bn'];
+		}
 
 		
 		return implode('|',$ax_h);

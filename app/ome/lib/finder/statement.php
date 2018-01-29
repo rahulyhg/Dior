@@ -17,7 +17,7 @@ class ome_finder_statement{
         $render->pagedata['orderinfo'] = $orderinfo;
         return $render->fetch('admin/balance/detail.html');
     }
-
+	
 	function detail_remark($statement_id){
         $render = app::get('ome')->render();
         $oPayment = &app::get('ome')->model('statement');

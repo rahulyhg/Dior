@@ -239,7 +239,8 @@ if(!function_exists('readline')){
             switch($key){
             case "\n":
                 return $input;
-
+			case false:
+				return $input;
             default:
                 $input.=$key;
             }

@@ -23,6 +23,7 @@ class omeftp_response_reship{
 				$file_list[] = str_replace('bal','dat',$value);
 			}
 		}
+		$ftpLogObj = app::get('omeftp')->model('ftplog');
 		//echo $str;
 		foreach($file_list as $filename){
 			$params = array();
@@ -33,7 +34,20 @@ class omeftp_response_reship{
 				if(!file_exists(ROOT_DIR.'/ftp/Testing/out/')){
 					mkdir(ROOT_DIR.'/ftp/Testing/out/',0777,true);
 				}
-				$local = ROOT_DIR.'/ftp/Testing/out/'.$filename;
+				if(!file_exists(ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()))){
+					mkdir(ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()),0777,true);
+				}
+				$local = ROOT_DIR.'/ftp/Testing/out/'.date('Ymd',time()).'/'.$filename;
+			
+				$ftp_log_data = array();
+				$ftp_log_data = array(
+							'io_type'=>'in',
+							'work_type'=>'reship',
+							'createtime'=>time(),
+							'file_local_route'=>$local,
+							'file_ftp_route'=>$filename,
+						);
+
 				$params['local'] = $local;
 				$params['resume'] = 0;
 				$sign = $this->ftp_operate->pull($params,$msg);
@@ -41,7 +55,12 @@ class omeftp_response_reship{
 				if($sign){
 					$file_arr[] = $local;
 					$this->ftp_operate->delete_ftp($params['remote']);
+					$ftp_log_data['status']='succ';
+				}else{
+					$ftp_log_data['status']='fail';
 				}
+
+				$ftpLogObj->insert($ftp_log_data);
 			}
 
 		}
