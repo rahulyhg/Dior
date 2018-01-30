@@ -237,6 +237,7 @@ class omeftp_response_reship{
 		$_POST['por_id'] = $product_process['por_id'];//echo "<pre>";print_r($_POST);exit;
 		$sign = kernel::single('ome_return')->toQC($reship_id,$_POST,$msg);
 		if($sign){
+			kernel::single('einvoice_request_invoice')->invoice_request($order_info[0]['order_id'],'getCancelInvoiceData');
 			return true;
 		}else{
 			error_log(var_export($order_bn,true),3,__FILE__.'error.txt');//记录无法更新的退货单

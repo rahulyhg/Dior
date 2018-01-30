@@ -406,7 +406,9 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$objOrder = kernel::single("ome_mdl_orders");
 						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
 						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
-						
+
+						kernel::single('einvoice_request_invoice')->invoice_request($apply_detail['order_id'],'getApplyInvoiceData');
+
 						//传给买尽头2
 						$this->sendRefundStatus($apply_id,1);
 						return true;
@@ -554,6 +556,8 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$objOrder = kernel::single("ome_mdl_orders");
 						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
 						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
+
+						kernel::single('einvoice_request_invoice')->invoice_request($apply_detail['order_id'],'getApplyInvoiceData');
 						
 						//传给买尽头2
 						$this->sendRefundStatus($apply_id,1);
@@ -697,6 +701,8 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$objOrder = kernel::single("ome_mdl_orders");
 						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
 						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
+
+						kernel::single('einvoice_request_invoice')->invoice_request($apply_detail['order_id'],'getApplyInvoiceData');
 						
 						//传给买尽头2
 						$this->sendRefundStatus($apply_id,1);

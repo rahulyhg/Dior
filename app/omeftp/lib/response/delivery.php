@@ -217,6 +217,8 @@ error_log(var_export($query_params,true),3,__FILE__.'params.txt');
 			if($order_info[0]['shop_type']!='minishop'){
 				kernel::single('omemagento_service_order')->update_status($order_bn,'shipped',$data['D'][0][11]);
 			}
+
+			kernel::single('einvoice_request_invoice')->invoice_request($order_info[0]['order_id'],'getApplyInvoiceData');
 			return  true;
 		}else{
 			error_log(var_export($order_bn.',',true),3,__FILE__.'fail.txt');

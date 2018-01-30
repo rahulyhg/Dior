@@ -1,7 +1,7 @@
 <?php
 class ome_finder_orders{
     var $detail_basic = '基本信息';
-	var $detail_card = '礼品卡';
+	var $detail_invoice = '发票相关';
     var $detail_goods = '订单明细';
     var $detail_pmt = '优惠方案';
     var $detail_bill = '收退款记录';
@@ -201,8 +201,6 @@ class ome_finder_orders{
   
         return $render->fetch('admin/order/detail_basic.html');
     }
-
-	
 	
     function detail_goods($order_id){
         $render = app::get('ome')->render();
@@ -219,7 +217,6 @@ class ome_finder_orders{
 			foreach($arrPkg as $k=>$v){
 				$pkg_id=$v['pkg_id'];
 				$pkg[$pkg_id]['pkg_name']=$v['pkg_name'];
-				$pkg[$pkg_id]['pkg_bn']=$v['pkg_bn'];
 				$pkg[$pkg_id]['pkg_price']=$v['pkg_price'];
 				$pkg[$pkg_id]['pkg_num']=$v['pkg_num'];
 				foreach($v['order_items'] as $item){
@@ -265,22 +262,85 @@ class ome_finder_orders{
         $render->pagedata['object_alias'] = $oOrder->getOrderObjectAlias($order_id);
         return $render->fetch('admin/order/detail_goods.html');
     }
-	
-	function detail_card($order_id){
-		$render = app::get('ome')->render();
-		$oOrders = &app::get('ome')->model('orders');
-		$arrCard = $oOrders->getList('*',array('order_id'=>$order_id));
-		
-		if($arrCard['0']['is_card']){
-			$render->pagedata['arrCard'] = $arrCard['0'];
+
+    function detail_invoice($order_id){
+        $render = app::get('ome')->render();
+        $oOrders = &app::get('ome')->model('orders');
+        $einvoice = &app::get('einvoice')->model('invoice');
+
+        if($_POST){
+            $eItems = $einvoice->getList('taxIdentity,invoice_type',array('order_id'=>$order_id),0,1,'id desc');
+            $isEinvoice = $oOrders->getList('is_einvoice,order_bn',array('order_id'=>$order_id),0,1);
+            //编辑发票信息 @author payne.wu 2017-07-05
+            $data['tax_title'] = $_POST['tax_title'];
+			$data['tax_company'] = $_POST['tax_title'];
+            $data['invoice_name'] = $_POST['invoice_name'];
+            $data['invoice_area'] = $_POST['invoice_area'];
+            $data['invoice_contact'] = $_POST['invoice_contact'];
+            $data['invoice_addr'] = $_POST['invoice_addr'];
+            $data['invoice_zip'] = $_POST['invoice_zip'];
+			$data['taxpayer_identity_number'] = $_POST['taxIdentity'];
+			if($_POST['is_einvoice']){
+				$data['is_einvoice'] = $_POST['is_einvoice'];
+			}
+            $_data['order_id'] = $order_id;
+            $_data['order_bn'] = $isEinvoice[0]['order_bn'];
+            $_data['taxIdentity'] = $_POST['taxIdentity'];
+            $oOrders->update($data,array('order_id'=>$order_id));
+            //根据是否是电子发票(及发票状态)进行插入或更新操作 @author payne.wu 2017-07-06
+			//echo "<pre>";print_r($_POST);exit;
+            if($_POST['is_einvoice']&&$_POST['is_einvoice'] != $isEinvoice[0]['is_einvoice']){
+                if($_POST['is_einvoice'] == 'true'){
+                    $einvoice->insert($_data);
+					kernel::single('omemagento_service_order')->send_invoice_type($isEinvoice[0]['order_bn'],'电子发票');
+                }else{
+					kernel::single('omemagento_service_order')->send_invoice_type($isEinvoice[0]['order_bn'],'纸质发票');
+                    if($eItems[0]['invoice_type'] == 'ready')
+                    $einvoice->update(array('invoice_type'=>'cancel'),array('order_id'=>$order_id));
+                }
+            }
+//echo "<pre>";print_r($_POST);exit;
+			if($_POST['sub_type']=='apply'){
+				 $order_info = $oOrders->getList("*",array('order_id'=>$order_id));
+				 if($order_info[0]['is_einvoice']=='false'){
+					$msg = '此订单的发票类型不是电子发票，无法重开！';
+				 }else{
+					 $info = $einvoice->getList('*',array('order_id'=>$order_id,'invoice_type'=>'active'));
+					 if($info){
+						$msg = '此订单的发票尚未冲红，无法重开！';
+					}else{
+						kernel::single('einvoice_request_invoice')->invoice_request($order_id,'getApplyInvoiceData');
+					}
+				 }
+			}
+			if($_POST['sub_type']=='cancel'){
+				$order_info = $oOrders->getList("*",array('order_id'=>$order_id));
+				 if($order_info[0]['is_einvoice']=='false'){
+					$msg = '此订单的发票类型不是电子发票，无法冲红！';
+				 }else{
+					 $info = $einvoice->getList('*',array('order_id'=>$order_id,'invoice_type'=>'active'));
+					 if($info){
+						kernel::single('einvoice_request_invoice')->invoice_request($order_id,'getCancelInvoiceData');
+					}else{
+						$msg = '此订单的发票尚未开票，不能冲红！';
+					}
+				 }
+			}
+        }
+		$this->pagedata['invoice_msg'] = $msg;
+		$info = $einvoice->getList('*',array('order_id'=>$order_id,'invoice_type'=>'active'));
+		if($info){
+			$render->pagedata['invoice_status'] = 'active';
 		}else{
-			$render->pagedata['arrCard']=1;
+			$render->pagedata['invoice_status'] = 'ready';
 		}
-		
-		return $render->fetch('admin/order/detail_card.html');
-		//echo "<pre>";print_r($arrCard);exit();
-	}
-	
+        $order_detail = $oOrders->dump($order_id,"*",array("order_items"=>array("*")));
+        $render->pagedata['order'] = $order_detail;
+	//	echo "<pre>";print_r($order_detail);exit;
+        $render->pagedata['order']['eItems'] = $eItems[0];
+        return $render->fetch('admin/order/detail_invoice.html');
+    }
+
     function detail_pmt($order_id){
         $render = app::get('ome')->render();
         $oOrder_pmt = &app::get('ome')->model('order_pmt');
@@ -425,10 +485,10 @@ class ome_finder_orders{
             }
         }
         $order_detail['mark_type_arr'] = ome_order_func::order_mark_type();
-		
+
 		//zjr 刻字
 		if($order_detail['is_lettering']=='true'){
-			$arrItems=$oOrderItems->getList('message1',array('order_id'=>$order_id));
+			$arrItems=$oOrderItems->getList('*',array('order_id'=>$order_id));
 			foreach($arrItems as $items){
 				if(!empty($items['message1'])){
 					$strLettering.=$items['message1'];
@@ -438,7 +498,6 @@ class ome_finder_orders{
 		}
 		
         $render->pagedata['order']  = $order_detail;
-
         return $render->fetch('admin/order/detail_mark.html');
     }
 

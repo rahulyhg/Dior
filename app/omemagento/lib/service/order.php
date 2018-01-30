@@ -51,4 +51,25 @@ class omemagento_service_order{
 		$this->request->do_request_test('order',$params);
 	}
 
+	public function send_einvoice($order_bn){
+	
+		$params = array(
+				'increment_id'=>$order_bn,
+			);
+
+		$obj = app::get('einvoice')->model('invoice');
+		$objOrder = app::get('ome')->model('orders');
+		$order_id = $objOrder->getList('order_id',array('order_bn'=>$order_bn));
+
+		$einfo = $obj->getList('*',array('order_id'=>$order_id[0]['order_id'],'invoice_type'=>'active'));
+		$params['electronic_info'] = array(
+				'id'=>$einfo[0]['invoice_id'],
+				'pdfUrl'=>$einfo[0]['pdfUrl'],
+				'invoiceCode'=>$einfo[0]['invoiceCode'],
+				'invoiceNo'=>$einfo[0]['invoiceNo'],
+				'invoiceTime'=>$einfo[0]['invoiceTime'],
+			);
+		$this->request->do_request('seteipp',$params);
+	}
+
 }
