@@ -255,7 +255,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 		}
 	}
 	
-	function updateCodRefund($apply_id){
+	function updateCodRefund($apply_id,$refundTime){
 	$oRefaccept = &$this->app->model('refund_apply');
         $oOrder = &$this->app->model('orders');
 	    $deoObj = &app::get('ome')->model('delivery_order');
@@ -382,7 +382,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$arrStatement['balance_status'] = 'auto';
 						$arrStatement['importer_time'] = time();
 						$arrStatement['cod_time'] ='second';
-						$arrStatement['pay_time'] = $arrS_trade_no[0]['t_begin'];
+						$arrStatement['pay_time'] =$refundTime;
 						if(!$objStatement->save($arrStatement)){
 							$db->rollback();
 							return false;

@@ -96,6 +96,7 @@ class ome_cod_refund{
 			}
 			
 			$data[$k][17]=$apply_id;
+			$data[$k]['refundTime']=strtotime($v[20]);
 			$arrLin[$v['17']]=1;
 		}
 		if(count($data) <= 0){  
@@ -105,10 +106,11 @@ class ome_cod_refund{
 			foreach($data as $key=>$value){
 				$apply_id=$value['17'];//
 				$status=$value['18'];
+				$refundTime=$value['refundTime'];
 				if(!empty($apply_id)){//updateCodRefund
 					
 					if($status=="交易成功"||$status=="银行已汇出"){
-						$objRefund->updateCodRefund($apply_id);
+						$objRefund->updateCodRefund($apply_id,$refundTime);
 					}else{//交易失败
 						$arrOrderBn=$objOrder->db->select("SELECT o.order_bn,a.reship_id,o.order_id,o.shop_id,a.money FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
 						$objOrder->db->exec("UPDATE sdb_ome_refund_apply SET status='6' WHERE apply_id='$apply_id'");
