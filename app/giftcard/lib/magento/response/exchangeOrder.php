@@ -17,10 +17,6 @@ class giftcard_magento_response_exchangeOrder
 		$arrCard_code=$objCard->getList("p_order_id,order_bn,wx_order_bn,card_code,card_id,status,price",array('card_code'=>$order['card_code'],'card_id'=>$order['card_id']),0,1);
 		$arrCard_code=$arrCard_code[0];
 		
-		if($arrCard_code['price']<1){
-			return array('status'=>'fail','msg'=>'系统维护，请稍后再试');
-		}
-		
 		//第一张购卡订单不存在的两种情况
 		//1.jinsocal延迟 或者微信超时 第一张订单还未拉取进来
 		//2.转赠事件 未接受成功  导致传过来的code 跟原始code不同 
