@@ -127,10 +127,12 @@ class giftcard_pos_response_redeem
 		$transaction=NULL;
 		
 		//暂时直接生成文件给ax
-		if(kernel::single('giftcard_queue_statement')->run($arrQueue)){
-			$queue=array();
-			$queue['status']=2;
-			$objQueue->update($queue,array('id'=>$arrQueue['id']));
+		if($arrCard_code['price']>1){
+			if(kernel::single('giftcard_queue_statement')->run($arrQueue)){
+				$queue=array();
+				$queue['status']=2;
+				$objQueue->update($queue,array('id'=>$arrQueue['id']));
+			}
 		}
 		
 		return array('status'=>'succ','msg'=>'succ','api_code'=>200);
