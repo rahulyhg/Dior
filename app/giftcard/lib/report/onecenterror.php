@@ -36,7 +36,7 @@ class giftcard_report_onecenterror{
 			c.p_order_bn,
 			c.card_code,
 			c.`status`,
-			FROM_UNIXTIME(c.createtime),
+			FROM_UNIXTIME(c.createtime) AS createtime,
 			m.uname,
 			g.bn
 		FROM
@@ -137,6 +137,7 @@ class giftcard_report_onecenterror{
 			$objActSheet->setCellValue('C'.$i, $data["card_code"]);
 			$objActSheet->setCellValue('D'.$i, $data["status"]);
 			$objActSheet->setCellValue('E'.$i,$data["uname"]);
+			$objActSheet->setCellValue('F'.$i,$data["createtime"]);
 			$objActSheet->setCellValue('G'.$i,$data["bn"]);
 		}
 		
