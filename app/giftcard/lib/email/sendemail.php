@@ -28,6 +28,8 @@ class giftcard_email_sendemail{
 		$mail->AddAddress("joey.chen@d1m.cn");
 		$mail->AddAddress("gigi.guo@d1m.cn");
 		$mail->AddAddress("kathrine.zhou@d1m.cn");
+		$mail->AddAddress("jasmine.yu@d1m.cn");
+		$mail->AddAddress("abii.fan@d1m.cn");
 	//	$mail->AddCC("jasmine.yu@d1m.cn");
 		
 		if(!empty($attach)){
