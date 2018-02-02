@@ -38,7 +38,8 @@ class giftcard_report_onecenterror{
 			c.`status`,
 			FROM_UNIXTIME(c.createtime) AS createtime,
 			m.uname,
-			g.bn
+			g.bn,
+			g.price
 		FROM
 			`sdb_giftcard_cards` c
 		LEFT JOIN sdb_ome_orders o ON o.order_id = c.p_order_id
@@ -129,6 +130,7 @@ class giftcard_report_onecenterror{
 		$objActSheet->setCellValue('E1', '购卡人昵称');
 		$objActSheet->setCellValue('F1', '购卡时间');
 		$objActSheet->setCellValue('G1', 'SKU');
+		$objActSheet->setCellValue('H1', '金额');
 		$i = 1;
 		foreach($arrSecondReport as $data){
 			$i++;
@@ -139,6 +141,7 @@ class giftcard_report_onecenterror{
 			$objActSheet->setCellValue('E'.$i,$data["uname"]);
 			$objActSheet->setCellValue('F'.$i,$data["createtime"]);
 			$objActSheet->setCellValue('G'.$i,$data["bn"]);
+			$objActSheet->setCellValue('H'.$i,$data["price"]);
 		}
 		
 		$filename=$reportDir.'SecondReport-'.date("Ymd").'.xls';
