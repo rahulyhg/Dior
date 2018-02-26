@@ -235,6 +235,7 @@ class ome_finder_orders{
 					$pkg[$pkg_id]['order_items'][$i]['pmt_price']=$item['pmt_price'];
 					$pkg[$pkg_id]['order_items'][$i]['sendnum']=$item['sendnum'];
 					$pkg[$pkg_id]['order_items'][$i]['return_num']=$item['return_num'];
+					$pkg[$pkg_id]['order_items'][$i]['message1']=$item['message1'];
 					$i++;
 				}
 			}

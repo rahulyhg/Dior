@@ -412,6 +412,7 @@ class erpapi_oms_order
 				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pmt_percent']=$product['pmt_percent'];
 				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_name']=$product['pkg_name'];
 				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['name']=$product['name'];
+				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['message1']=$product['lettering'];
 				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_id']=$product['pkg_id'];
 				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_bn']=$product['pkg_bn'];
 				$post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_price']=$product['pkg_price'];
@@ -700,7 +701,7 @@ class erpapi_oms_order
 		
 		$iorder['pmt_cost_shipping'] = $post['pmt_order']-$ax_pmt_price;
         $iorder['total_amount'] = $mathLib->number_minus(array($iorder['total_amount'],$post['pmt_order']));
-		//echo "<pre>";print_r($iorder);exit();
+	 
 		if($mathLib->number_plus(array($post['pay'],0))!=$iorder['total_amount']){
 			return $this->send_error('订单总金额不一致');
 		}

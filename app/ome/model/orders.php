@@ -3935,6 +3935,10 @@ class ome_mdl_orders extends dbeav_model{
                                 $orderObjRow['*:商品原价'] = $itemv['price'];
                                 $orderObjRow['*:销售价'] = $itemv['sale_price'] / $itemv['nums'];
                                 $orderObjRow['*:商品优惠金额'] = $itemv['pmt_price'];
+								
+								$orderObjRow['*:商品类型'] = '';
+								$orderObjRow['*:商品品牌'] = '';
+								$orderObjRow['*:刻字内容'] = mb_convert_encoding($itemv['message1'], 'GBK', 'UTF-8');
 
                                 $data[$row_num] = implode(',', $orderObjRow );
                                 $row_num++;
