@@ -1,0 +1,52 @@
+<h3>AX对接配置</h3>
+<div class="tabs-wrap">
+  <ul>
+    <li class="tab current"><a href="index.php?app=einvoice&ctl=admin_setting&act=index"><span><{t}>电子发票接口设置<{/t}></span></a></li>
+  </ul>
+</div>
+  <form method="post" action="index.php?app=einvoice&ctl=admin_setting&act=save" id="whitelist">
+    <input type="hidden" name="policy" value='ftp' >
+    <div style="text-align:right;padding:3px 30px"></div>
+    <div class="notice">
+      <{t}>
+      电子发票申请需要配置相关的对接信息，如果信息不正确，将无法开票<br>
+      <{/t}>
+     
+    </div>
+
+  <table class="tableform" style="width:99%;">
+    <tbody>
+      <tr>
+        <th><{t}>接口地址：<{/t}></th>
+        <td><{input type="text" name='request_url' value=$setting.request_url size="40"}>      
+          <span class="notice-inline">例：http://fapiao.itdiffer.com/api</span>
+        </td>
+      </tr>
+      <tr>
+        <th><{t}>accessKey：<{/t}></th>
+        <td><{input type="text" name='accessKey' value=$setting.accessKey size="5"}>
+        </td>
+      </tr>
+      <tr>
+        <th><{t}>secretKey：<{/t}></th>
+        <td><{input type=text name='secretKey' value=$setting.secretKey}></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th><{t}>店铺ID：<{/t}></th>
+        <td><{input type=text name='storeNo' value=$setting.storeNo}></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th><{t}>POS机ID：<{/t}></th>
+        <td><{input type=text name='posNo' value=$setting.posNo size="40"}>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="table-action">
+    <{button type="submit"  label=$___importexport="保存"|t:'site'}>
+  </div>
+  </form>
+
+

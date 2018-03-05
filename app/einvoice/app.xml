@@ -1,0 +1,22 @@
+<app>
+    <name>einvoice</name>
+    <description>业务处理引擎</description>
+
+    <author>
+        <name>d1m开发团队</name>
+        <email>dev@d1m.cn</email>
+        <url>http://www.d1m.cn</url>
+    </author>
+
+    <version>1.0.8</version>   
+    <license>shopex license</license>
+    <api_ver>2.2</api_ver>
+    <parent_model_class>dbeav_model</parent_model_class>
+    <optional app="dev">开发者工具</optional>
+    
+	<depends>
+		<app>desktop</app>
+        <app>base</app>
+		<app>ome</app>
+	</depends>
+</app>

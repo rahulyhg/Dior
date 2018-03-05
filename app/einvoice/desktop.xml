@@ -1,0 +1,12 @@
+ <desktop>
+  <permissions>
+		<permission id="einvoice_list">电子发票</permission>
+   </permissions>
+ <workground name="财务" id="finance_center"  order="3000">
+		<menugroup name="电子发票"> 
+            <menu controller='admin_order' action='index' permission='einvoice_list' display='true' order='3000102'>发票列表</menu>
+			<menu controller='admin_log' action='index' permission='einvoice_list' display='true' order='3000102'>日志列表</menu>
+			<menu controller='admin_setting' action='index' permission='einvoice_list' display='true' order='3000102'>发票设置</menu>
+        </menugroup>
+ </workground>
+ </desktop>

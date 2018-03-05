@@ -719,6 +719,34 @@ $db['orders']=array (
       'in_list' => true,
       'default_in_list' => false,
     ),
+	'is_einvoice' =>
+    array (
+      'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
+      'label' => '是否电子发票',
+      'editable' => false,
+      'in_list' => true,
+      'width' => 80,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+    ),
+	'einvoice_status' =>
+    array (
+      'type' => array(
+		'ready'=>'未开',
+		'succ'=>'已开',
+		'fail'=>'失败',
+	  ),
+      'default' => 'ready',
+      'required' => true,
+      'label' => '开票状态',
+      'editable' => false,
+      'in_list' => true,
+      'width' => 80,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+    ),
     'dt_begin' =>
     array (
       'type' => 'time',
