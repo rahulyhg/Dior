@@ -275,11 +275,6 @@ class ome_finder_orders{
             //编辑发票信息 @author payne.wu 2017-07-05
             $data['tax_title'] = $_POST['tax_title'];
 			$data['tax_company'] = $_POST['tax_title'];
-            $data['invoice_name'] = $_POST['invoice_name'];
-            $data['invoice_area'] = $_POST['invoice_area'];
-            $data['invoice_contact'] = $_POST['invoice_contact'];
-            $data['invoice_addr'] = $_POST['invoice_addr'];
-            $data['invoice_zip'] = $_POST['invoice_zip'];
 			$data['taxpayer_identity_number'] = $_POST['taxIdentity'];
 			if($_POST['is_einvoice']){
 				$data['is_einvoice'] = $_POST['is_einvoice'];

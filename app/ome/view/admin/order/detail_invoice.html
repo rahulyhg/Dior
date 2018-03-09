@@ -8,34 +8,13 @@
                 <td><input type="text" name="tax_title" value="<{$order.tax_title}>"> </td>
             </tr>
             <tr>
-                <th >发票姓名：</th>
-                <td><input type="text" name="invoice_name" value="<{$order.invoice_name}>"></td>
-            </tr>
-            <tr>
-                <th >发票地区：</th>
-                <td><{input type='region' app='eccommon' name="invoice_area" value=$order.invoice_area vtype="area" }></td>
-            </tr>
-            <tr>
-                <th >发票电话：</th>
-                <td><input type="text" name="invoice_contact" value="<{$order.invoice_contact}>"> </td>
-            </tr>
-            <tr>
-                <th >发票地址：</th>
-                <td><input type="text" name="invoice_addr" value="<{$order.invoice_addr}>"> </td>
-            </tr>
-            <tr>
-                <th >发票邮编：</th>
-                <td><input type="text" name="invoice_zip" value="<{$order.invoice_zip}>"> </td>
-            </tr>
-            <tr>
                 <th>纳税人识别号:</th>
                 <td><input type="text" name="taxIdentity" value="<{$order.taxpayer_identity_number}>"> </td>
             </tr>
             <tr>
                 <th>是否电子发票:</th>
                 <td>
-                    <input type="radio" name="is_einvoice" value='true' <{if $order.is_einvoice == 'true'}>checked<{/if}>><{t}>是<{/t}>
-                    <input type="radio" name="is_einvoice" value='false' <{if $order.is_einvoice == 'false'}>checked<{/if}>><{t}>否<{/t}>
+                    <input type="radio" name="is_einvoice" value='true'  checked="checked"><{t}>是<{/t}>
                 </td>
             </tr>
             <tr>
@@ -49,26 +28,6 @@
                 <td><input type="text" name="tax_title" value="<{$order.tax_title}>"> </td>
             </tr>
             <tr>
-                <th >发票姓名：</th>
-                <td><input type="text" name="invoice_name" value="<{$order.invoice_name}>"></td>
-            </tr>
-            <tr>
-                <th >发票地区：</th>
-                <td><{input type='region' app='eccommon' name="invoice_area" value=$order.invoice_area vtype="area" }></td>
-            </tr>
-            <tr>
-                <th >发票电话：</th>
-                <td><input type="text" name="invoice_contact" value="<{$order.invoice_contact}>"> </td>
-            </tr>
-            <tr>
-                <th >发票地址：</th>
-                <td><input type="text" name="invoice_addr" value="<{$order.invoice_addr}>"> </td>
-            </tr>
-            <tr>
-                <th >发票邮编：</th>
-                <td><input type="text" name="invoice_zip" value="<{$order.invoice_zip}>"> </td>
-            </tr>
-            <tr>
                 <th>纳税人识别号:</th>
                 <td><input type="text" name="taxIdentity" value="<{$order.taxpayer_identity_number}>"> </td>
             </tr>
@@ -76,8 +35,8 @@
                <th>是否电子发票:</th>
 			   <{if $order.is_tax=='false'}>
 					<td>
-                    <input type="radio" name="is_einvoice" value='true' <{if $order.is_einvoice == 'true'}>checked<{/if}>><{t}>是<{/t}>
-                    <input type="radio" name="is_einvoice" value='false' <{if $order.is_einvoice == 'false'}>checked<{/if}>><{t}>否<{/t}>
+                    <input type="radio" name="is_einvoice" value='true' checked="checked"><{t}>是<{/t}>
+                  
                 </td>
 			   <{else}>
                 <td>
@@ -102,35 +61,13 @@
                 <th >发票抬头：</th>
                 <td><{$order.tax_title}></td>
             </tr>
-            <tr>
-                <th >发票姓名：</th>
-                <td><{$order.invoice_name}></td>
-            </tr>
-            <tr>
-                <th >发票地区：</th>
-                <td><{$order.invoice_area|region}></td>
-            </tr>
-            <tr>
-                <th >发票电话：</th>
-                <td><{$order.invoice_contact}></td>
-            </tr>
-            <tr>
-                <th >发票地址：</th>
-                <td><{$order.invoice_addr}> </td>
-            </tr>
-            <tr>
-                <th >发票邮编：</th>
-                <td><{$order.invoice_zip}></td>
-            </tr>
-            <tr>
                 <th>纳税人识别号:</th>
                 <td><{$order.taxpayer_identity_number}></td>
             </tr>
             <tr>
                 <th>是否电子发票:</th>
                 <td>
-                    <input type="radio" name="is_einvoice" value='true' <{if $order.is_einvoice == 'true'}>checked<{/if}>><{t}>是<{/t}>
-                    <input type="radio" name="is_einvoice" value='false' <{if $order.is_einvoice == 'false'}>checked<{/if}>><{t}>否<{/t}>
+                    <input type="radio" name="is_einvoice" value='true' checked="checked"><{t}>是<{/t}>
                 </td>
             </tr>
 			<{/if}>
