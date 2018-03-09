@@ -222,8 +222,25 @@ class erpapi_oms_order
 	//	echo "<pre>";print_r($result);print_r($arrRoute);exit();
 	}
 	
-	public function getSign(){
-		return strtoupper(md5(strtoupper(md5('Dior')).'ILoveDior~!'));
+	public function getSign($params){
+		$shop_sign=$params['shop_sign'];
+		if(empty($shop_sign)){
+			return false;
+		}
+		unset($params['shop_sign']);
+		
+		$sign='';
+		asort($params);
+		foreach($params as $k=>$v){
+			$sign.=$k.'='.$v.'&';
+		}
+		 
+		$sign_time=$params['createtime']-101;
+		
+		if($shop_sign!==strtoupper(md5(strtoupper(md5('Dior')).'ILoveDior~!'.$sign.$sign_time))){
+			return false;
+		}
+		return true;
 	}
 	
 	public function base64json($params,&$msg=''){
@@ -236,13 +253,13 @@ class erpapi_oms_order
 		error_log('订单中间:'.base64_decode($params['order']),3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
 		$this->params=base64_decode($params['order']);
 		
-		$post=json_decode(str_replace('	','',base64_decode($params['order'])),true);
-		
-		if(empty($post['shop_sign'])||$post['shop_sign']!=$this->getSign()){
+		if($this->getSign(json_decode(base64_decode($params['order']),true))!==true){
 			$msg='SignError 40002';
 			return false;
 		}
-	
+		
+		$post=json_decode(str_replace('	','',base64_decode($params['order'])),true);
+		
 		if(isset($post['order_bn'])){
 			$post['address_id']=urldecode($post['address_id']);
 			$post['account']['uname']=urldecode($post['account']['uname']);
