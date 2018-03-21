@@ -56,7 +56,6 @@ class omeftp_service_reship{
 
 		$flag = $this->file_obj->toWrite($file_params,$msg);
 		if($flag){
-
 			$this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time()),$file_log_id,'file');
 			$params['remote'] = $this->file_obj->getFileName($file_params['file']);
 			$params['local'] = $file_params['file'];
@@ -64,36 +63,28 @@ class omeftp_service_reship{
 
 			$ftp_log_data = array(
 					'io_type'=>'out',
-					'work_type'=>'delivery',
+					'work_type'=>'reship',
 					'createtime'=>time(),
 					'status'=>'prepare',
 					'file_local_route'=>$file_params['file'],
 					'file_ftp_route'=>$params['remote'],
 				);
 			$ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
-			$ftp_flag = $this->ftp_operate->push($params,$msg);
-			if($ftp_flag){
 
-				$orderReship = app::get('ome')->model('reship_items');
-				$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
-				$refund_info = array();
-				foreach($reInfo as $reItem){
-					$refund_info[] = array(
-							'sku'=>$reItem['bn'],
-							'nums'=>$reItem['num'],
-							'price'=>$reItem['price'],
-							'oms_rma_id'=>$reship_id,
-						);
-				}
-				kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'return_required','',time(),$refund_info);
-
-				$this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
-			}else{
-				$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-			}
+            $orderReship = app::get('ome')->model('reship_items');
+            $reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
+            $refund_info = array();
+            foreach($reInfo as $reItem){
+                $refund_info[] = array(
+                        'sku'=>$reItem['bn'],
+                        'nums'=>$reItem['num'],
+                        'price'=>$reItem['price'],
+                        'oms_rma_id'=>$reship_id,
+                    );
+            }
+            kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'return_required','',time(),$refund_info);
 
 		}else{
-			
 			$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
 		}
     }

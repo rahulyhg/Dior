@@ -11,6 +11,15 @@ class omeftp_sftp{
 		$this->extension_loaded_ftp();
 	}
 
+    public function instance($params,&$msg){
+        if($this->conn&&$this->sftp){
+            return true;
+        }else{
+            $res = $this->connect($params,&$msg);
+            return $res;
+        }
+    }
+
 
 	/**
      * 判断php是否安装了FTP扩展
@@ -41,8 +50,10 @@ class omeftp_sftp{
 
         if( $this->ftp_extension ) {
 		//	echo '<pre>';print_r($params);exit;
-            $connect = ssh2_connect($params['host'], $params['port']);
-            $this->conn = $connect;
+            if($this->conn){
+                $connect = ssh2_connect($params['host'], $params['port']);
+                $this->conn = $connect;
+            }
         } else {
             $msg = app::get('omeftp')->_('请检查FTP扩展是否开启！');
 			return false;
@@ -70,7 +81,9 @@ class omeftp_sftp{
      */
     private function _login($params,&$msg){
 
-
+        if($this->sftp){
+            return true;
+        }
         if( $this->ftp_extension ) {
 			if($this->use_pubkey_file){	
 				$flag = ssh2_auth_pubkey_file($this->conn,$params['user'],$params['pubkey_file'],$params['privkey_file'],$params['passphrase']);
@@ -263,6 +276,24 @@ class omeftp_sftp{
          }
          closedir($handle);
          return $tempArray;
+    }
+
+    public function exec($cmd){
+        if (!($stream = ssh2_exec($this->conn, $cmd))) { 
+            throw new Exception('SSH command failed'); 
+        } 
+        stream_set_blocking($stream, true); 
+        $data = ""; 
+        while ($buf = fread($stream, 4096)) { 
+            $data .= $buf; 
+        } 
+        fclose($stream); 
+        return $data;
+    }
+    
+    public function disconnect() { 
+        $this->exec('echo "EXITING" && exit;'); 
+        unset($this->conn); 
     }
 
 }
