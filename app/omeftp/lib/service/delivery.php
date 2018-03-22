@@ -91,7 +91,7 @@ class omeftp_service_delivery{
 			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
             $update_file_log_data = array(
                 'file_route'=>$file_params['file'],
-            )
+            );
             $this->operate_log->update_log($update_file_log_data,$file_log_id,'file');
             $flag = $this->file_obj->toWrite($file_params,$msg);
         }

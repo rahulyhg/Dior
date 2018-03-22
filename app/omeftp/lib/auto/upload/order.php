@@ -18,7 +18,7 @@ class omeftp_auto_upload_order{
             $params = array();
 
             $params['remote'] = $this->file_obj->getFileName($row['file_ftp_route']);
-            $params['local'] = $file_params['file_local_route'];
+            $params['local'] = $row['file_local_route'];
             $params['resume'] = 0;
 
             $ftp_flag = $this->ftp_operate->push($params,$msg);

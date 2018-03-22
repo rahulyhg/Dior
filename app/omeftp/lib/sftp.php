@@ -15,7 +15,7 @@ class omeftp_sftp{
         if($this->conn&&$this->sftp){
             return true;
         }else{
-            $res = $this->connect($params,&$msg);
+            $res = $this->connect($params,$msg);
             return $res;
         }
     }
@@ -50,10 +50,8 @@ class omeftp_sftp{
 
         if( $this->ftp_extension ) {
 		//	echo '<pre>';print_r($params);exit;
-            if($this->conn){
-                $connect = ssh2_connect($params['host'], $params['port']);
-                $this->conn = $connect;
-            }
+            $connect = ssh2_connect($params['host'], $params['port']);
+            $this->conn = $connect;
         } else {
             $msg = app::get('omeftp')->_('请检查FTP扩展是否开启！');
 			return false;
@@ -186,7 +184,6 @@ class omeftp_sftp{
 		}
         @fclose($stream);
 
-		error_log(var_export($params['remote']." : ".$size.PHP_EOL,true),3,DATA_DIR.'/ftp_log.txt');
 		return true;
     }
 
