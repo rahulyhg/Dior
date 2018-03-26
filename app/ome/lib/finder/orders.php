@@ -2,6 +2,7 @@
 class ome_finder_orders{
     var $detail_basic = '基本信息';
 	var $detail_invoice = '发票相关';
+	var $detail_card = '礼品卡';
     var $detail_goods = '订单明细';
     var $detail_pmt = '优惠方案';
     var $detail_bill = '收退款记录';
@@ -263,6 +264,18 @@ class ome_finder_orders{
         $render->pagedata['object_alias'] = $oOrder->getOrderObjectAlias($order_id);
         return $render->fetch('admin/order/detail_goods.html');
     }
+	
+	function detail_card($order_id){
+		$render = app::get('ome')->render();
+        $oOrders = &app::get('ome')->model('orders');
+		$arrCard=$oOrders->getList("*",array('order_id'=>$order_id));
+		if($arrCard[0]['is_card']){
+			$render->pagedata['arrCard'] =$arrCard[0];
+		}else{
+			$render->pagedata['arrCard'] =1;
+		}
+		return $render->fetch('admin/order/detail_card.html');
+	}
 
     function detail_invoice($order_id){
         $render = app::get('ome')->render();
