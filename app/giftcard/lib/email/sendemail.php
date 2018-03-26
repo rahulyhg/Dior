@@ -25,7 +25,7 @@ class giftcard_email_sendemail{
 		$mail->FromName = "d1m_notice";  //发件人姓名
 
 		$mail->AddAddress("jinrong.zhang@d1m.cn");
-		$mail->AddAddress("joey.chen@d1m.cn");
+		//$mail->AddAddress("joey.chen@d1m.cn");
 		$mail->AddAddress("gigi.guo@d1m.cn");
 		$mail->AddAddress("kathrine.zhou@d1m.cn");
 		$mail->AddAddress("jasmine.yu@d1m.cn");
