@@ -382,16 +382,24 @@ class erpapi_oms_order
 		$arrLinPkg=array();
 		$lettering='';
 		foreach($post['products'] as $k=>$v){
-			if($v['type']!="pkg"){
+			if($v['type']!="pkg"){	
 				if(isset($arrLin[$v['type']][$v['bn']])){
 					if($v['pmt_price']>0){
 						return $this->send_error('优惠金额异常');
+					}
+					if(!empty($v['lettering'])){
+						$post['products'][$k]['lettering']=$v['lettering']."。".$arrLin[$v['type']][$v['bn']]['lettering'];
+						$arrLin[$v['type']][$v['bn']]['lettering']=$post['products'][$k]['lettering'];
+					}else{
+						$post['products'][$k]['lettering']=$arrLin[$v['type']][$v['bn']]['lettering'];
 					}
 					$post['products'][$k]['num']=$post['products'][$k]['num']+$arrLin[$v['type']][$v['bn']]['num'];
 					unset($post['products'][$arrLin[$v['type']][$v['bn']]['key']]);
 				}else{
 					$post['products'][$k]['num']=$v['num'];
+					$arrLin[$v['type']][$v['bn']]['lettering']=$v['lettering'];
 				}
+				
 				$arrLin[$v['type']][$v['bn']]['num']=$post['products'][$k]['num'];
 				$arrLin[$v['type']][$v['bn']]['key']=$k;
 			}else{
