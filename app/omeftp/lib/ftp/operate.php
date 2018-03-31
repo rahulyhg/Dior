@@ -18,7 +18,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
      */
      public function push($params, &$msg){
 		 
-		 if($this->ftp_obj->connect($this->params,$msg)){
+		 if($this->ftp_obj->instance($this->params,$msg)){
 			 if($this->ftp_obj->push($params,$msg)){
 
 				 if(!$this->push_md5($params, $msg)){
@@ -44,7 +44,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 				'pass'=>'f82cc31ba61d',
 			 );//获取文件暂时写死为正式的地址
 		 $this->md5_push_prepro($params,$msg);
-		 if($this->ftp_obj->connect($this->preprod_params,$msg)){
+		 if($this->ftp_obj->instance($this->preprod_params,$msg)){
 			 $params['remote'] = 'PROD/'.$params['remote'];
 			 if($this->ftp_obj->push($params,$msg)){
 				return true;
@@ -71,7 +71,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 		 }
 		 $params['local'] = $md5_file_local;
 		 $params['remote'] = basename($params['local']);
-		 if($this->ftp_obj->connect($this->preprod_params,$msg)){
+		 if($this->ftp_obj->instance($this->preprod_params,$msg)){
 			 $params['remote'] = 'PROD/'.$params['remote'];
 			 if($this->ftp_obj->push($params,$msg)){
 				return true;
@@ -98,7 +98,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 		$params['local'] = $md5_file_local;
 		$params['remote'] = basename($params['local']);
 
-		if($this->ftp_obj->connect($this->params,$msg)){
+		if($this->ftp_obj->instance($this->params,$msg)){
 			 if($this->ftp_obj->push($params,$msg)){
 				return true;
 			 }else{
@@ -111,7 +111,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 
     public function get_file_list( $dir){
 		
-		 if($this->ftp_obj->connect($this->params,$msg)){
+		 if($this->ftp_obj->instance($this->params,$msg)){
 			 if($list=$this->ftp_obj->get_list($dir)){
 				return $list;
 			 }else{
@@ -132,7 +132,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
      */
     public function pull( $params, &$msg){
 		
-		if($this->ftp_obj->connect($this->params,$msg)){
+		if($this->ftp_obj->instance($this->params,$msg)){
 			 if($this->ftp_obj->pull($params,$msg)){
 				return true;
 			 }else{
@@ -160,7 +160,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
      */
     public function delete_ftp($filename){
 		
-		if($this->ftp_obj->connect($this->params,$msg)){
+		if($this->ftp_obj->instance($this->params,$msg)){
 			 if($this->ftp_obj->delete($filename)){
 				return true;
 			 }else{

@@ -79,40 +79,40 @@ class omeftp_service_delivery{
 		$file_log_id = $this->operate_log->write_log($file_log_data,'file');
 
 		$flag = $this->file_obj->toWrite($file_params,$msg);
+        while(!$flag){
+            sleep(1);
+            $file_arr = array($file_prefix,$file_brand,'ORDER',date('YmdHis',time()));
+			$file_name = implode('_',$file_arr);
+
+			if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+				mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+				chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+			}
+			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+            $update_file_log_data = array(
+                'file_route'=>$file_params['file'],
+            );
+            $this->operate_log->update_log($update_file_log_data,$file_log_id,'file');
+            $flag = $this->file_obj->toWrite($file_params,$msg);
+        }
+        
 		
 		if($flag){
-
 			$this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time()),$file_log_id,'file');
-			//error_log(var_export($sync,true),3,'f:/cc.txt');
-			if(true){
-				//$ftp_operate = kernel::single('omeftp_ftp_operate');
-				$params['remote'] = $this->file_obj->getFileName($file_params['file']);
-				$params['local'] = $file_params['file'];
-				$params['resume'] = 0;
+            $params['remote'] = $this->file_obj->getFileName($file_params['file']);
+            $params['local'] = $file_params['file'];
+            $params['resume'] = 0;
+            $ftp_log_data = array(
+                    'io_type'=>'out',
+                    'work_type'=>'delivery',
+                    'createtime'=>time(),
+                    'status'=>'prepare',
+                    'file_local_route'=>$file_params['file'],
+                    'file_ftp_route'=>$params['remote'],
+                );
+            $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
 
-				$ftp_log_data = array(
-						'io_type'=>'out',
-						'work_type'=>'delivery',
-						'createtime'=>time(),
-						'status'=>'prepare',
-						'file_local_route'=>$file_params['file'],
-						'file_ftp_route'=>$params['remote'],
-					);
-				$ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
-			//	error_log(var_export($ftp_log_id,true),3,'f:/cc.txt');
-				$ftp_flag = $this->ftp_operate->push($params,$msg);
-				if($ftp_flag){
-					if($delivery['order']['shop_type']!="minishop"){
-						kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
-					}
-					$this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
-				}else{
-					$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-				}
-			}
-		}else{
-			
-			$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
+            kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
 		}
     }
 

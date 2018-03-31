@@ -11,6 +11,15 @@ class omeftp_sftp{
 		$this->extension_loaded_ftp();
 	}
 
+    public function instance($params,&$msg){
+        if($this->conn&&$this->sftp){
+            return true;
+        }else{
+            $res = $this->connect($params,$msg);
+            return $res;
+        }
+    }
+
 
 	/**
      * 判断php是否安装了FTP扩展
@@ -70,7 +79,9 @@ class omeftp_sftp{
      */
     private function _login($params,&$msg){
 
-
+        if($this->sftp){
+            return true;
+        }
         if( $this->ftp_extension ) {
 			if($this->use_pubkey_file){	
 				$flag = ssh2_auth_pubkey_file($this->conn,$params['user'],$params['pubkey_file'],$params['privkey_file'],$params['passphrase']);
@@ -173,7 +184,6 @@ class omeftp_sftp{
 		}
         @fclose($stream);
 
-		error_log(var_export($params['remote']." : ".$size.PHP_EOL,true),3,DATA_DIR.'/ftp_log.txt');
 		return true;
     }
 
@@ -263,6 +273,24 @@ class omeftp_sftp{
          }
          closedir($handle);
          return $tempArray;
+    }
+
+    public function exec($cmd){
+        if (!($stream = ssh2_exec($this->conn, $cmd))) { 
+            throw new Exception('SSH command failed'); 
+        } 
+        stream_set_blocking($stream, true); 
+        $data = ""; 
+        while ($buf = fread($stream, 4096)) { 
+            $data .= $buf; 
+        } 
+        fclose($stream); 
+        return $data;
+    }
+    
+    public function disconnect() { 
+        $this->exec('echo "EXITING" && exit;'); 
+        unset($this->conn); 
     }
 
 }
