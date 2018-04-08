@@ -341,6 +341,16 @@ class erpapi_oms_order
 		$mObj = kernel::single("ome_mdl_members");
 		$oPcfg = kernel::single("ome_mdl_payment_cfg");
 		$oShop = kernel::single("ome_mdl_shop");
+		
+		if(empty($post['order_bn'])){
+			return $this->send_error('order_bn必须填写');
+		}
+		$order_bn=$post['order_bn'];
+		$isExistOrderBn=$oObj->getList("order_bn",array('order_bn'=>$order_bn));
+		if(!empty($isExistOrderBn[0]['order_bn'])){
+			error_log('订单已存在:'.$order_bn,3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
+			return $this->send_succ('此订单已经存在');
+		}
 
         $logi_id = $post['logi_id'];
         $logi_no = $post['logi_no'];
