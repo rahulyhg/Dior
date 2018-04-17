@@ -31,11 +31,36 @@ $db['reship']=array (
       'default_in_list' => true,
       'is_title' => true,
     ),
+	'm_reship_bn' =>
+    array (
+      'type' => 'varchar(32)',
+      'required' => false,
+      'label' => '前端退换货单号',
+      'comment' => '前端退换货单号',
+      'editable' => false,
+      'searchtype' => 'has',
+      'filterdefault' => true,
+      'filtertype' => 'yes',
+      'width' =>200,
+      'in_list' => true,
+      'default_in_list' => false,
+      'is_title' => true,
+    ),
     'order_id' =>
     array (
       'type' => 'table:orders@ome',
       'label' => '订单号',
       'comment' => '订单号',
+      'editable' => false,
+      'width' =>200,
+      'in_list' => false,
+      'default_in_list' => false,
+    ),
+	'p_order_id' =>
+    array (
+      'type' => 'table:orders@ome',
+      'label' => '换货单相应订单号',
+      'comment' => '换货单相应订单号',
       'editable' => false,
       'width' =>200,
       'in_list' => false,

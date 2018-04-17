@@ -13,6 +13,9 @@
                   <{if $branch_mode!='single'}>
                   <th><{t}>仓库<{/t}></th>
                   <{/if}>
+		  <{if $return_type=="change"}> 		  
+		    <th><{t}>可换商品<{/t}></th>	
+                  <{/if}>			
                 </tr>
               </thead>
               <{foreach from=$items item=aGoods name="item" key=key}>
@@ -23,7 +26,16 @@
               <tbody>
                 <tr id=s<{$aGoods.bn}>  onmouseover='showtips(this,event,"<{$aGoods.ref}>");' >
                   <td>
-                    <{if $aGoods.effective>0}><input type="checkbox" class="js_goods_bn" shouhou="return" id="goods_bn" name="return[goods_bn][]" value='<{$aGoods.bn}>'><{/if}></td>
+                    <{if $aGoods.effective>0}>
+				 <{if $return_type=="change"}> 
+					<{if $aGoods.is_mcd_product=="true"}>
+					<input type="checkbox" class="js_goods_bn" shouhou="return" id="goods_bn" name="return[goods_bn][<{$key}>]" value='<{$aGoods.bn}>'>
+					<{/if}>
+				<{else}>
+					<input type="checkbox" class="js_goods_bn" shouhou="return" id="goods_bn" name="return[goods_bn][<{$key}>]" value='<{$aGoods.bn}>'>
+				<{/if}>
+			<{/if}>
+		</td>
                   <td><{$aGoods.bn}></td>
                   <td>
                   <{if $aGoods.obj_type=='pkg'}>
@@ -36,7 +48,15 @@
                   <td><{$aGoods.price|cur}></td>
                   <td><input type='text' name='return[price][<{$aGoods.bn}>]' readonly="true" value='<{$aGoods.sale_price/$aGoods.nums}>' size='6'></td>
                   <td><{$aGoods.effective}></td>
-                  <td><{if $aGoods.effective>0}><input type='text' id='num<{$aGoods.bn}>' name='return[num][<{$aGoods.bn}>]' value='<{$aGoods.effective}>' size='6'><{/if}></td>
+                  <td>
+			<{if $aGoods.effective>0}>
+				<{if $return_type=="change"}>
+				<input type='text' id='num<{$aGoods.bn}>' readonly="true" name='return[num][<{$aGoods.bn}>]' value='1' size='6'>
+				<{else}>
+				<input type='text' id='num<{$aGoods.bn}>'  name='return[num][<{$aGoods.bn}>]' value='<{$aGoods.effective}>' size='6'>
+				<{/if}>
+			<{/if}>
+		  </td>
 
                   <{if $branch_mode=='single'}>  
                   <{$aGoods.branch.0.branch_name}>              
@@ -46,12 +66,26 @@
                   <span id="canpay<{$aGoods.bn}>"></span>
                   <{else}>
                   <td>
-                    <{foreach from=$aGoods.branch item=branch key=keys}>
+                    <{foreach from=$aGoods.branch item=branch}>
                     <input name="return[branch_id][<{$aGoods.bn}>]" type="hidden" value="<{$branch.branch_id}>" class="x-pdt-chk-<{$aGoods.bn}>"/><{$branch.branch_name}>
                     <{/foreach}>
                     <span id="canpay<{$aGoods.bn}>"></span>
                   </td>
                   <{/if}>
+		    <!--换货新增zjr-->
+		 <{if $return_type=="change"}>
+			<td>
+				<{if $aGoods.effective>0}>
+					<{if $aGoods.is_mcd_product=="true"}>
+					<select name="return[new_change][<{$key}>]">
+						 <{foreach from=$aGoods.change item=change}>
+							<option value="<{$change.bn}>|<{$change.name}>|<{$change.price}>|<{$change.sale_store}>|<{$change.product_id}>"><{$change.name}></option>
+						 <{/foreach}>
+					</select>
+					<{/if}>
+				<{/if}>
+			</td>
+		<{/if}>
                 </tr>
               </tbody>
               <{/if}>

@@ -70,12 +70,26 @@ class einvoice_request_invoice extends einvoice_request_abstract{
 		$order_data = $objOrders->getList('*',array('order_id'=>$order_id));
 
 		$order_data = $order_data[0];
-
-		if($order_data['payed']<=0&&$order_data['ship_status']!=1){
-			return false;
+		
+		$reship_info = $objReship->getList('reship_id,return_type',array('order_id'=>$order_id,'status'=>'succ'));
+		
+		//MCD
+		$mcdFlag=false;
+		if(!empty($reship_info)){
+			foreach($reship_info as $return){
+				if($return['return_type']=="change"){
+					$mcdFlag=true;
+					break;
+				}
+			}
 		}
 		
-		$reship_info = $objReship->getList('reship_id',array('order_id'=>$order_id,'status'=>'succ'));
+		if($mcdFlag!==true){
+			if($order_data['payed']<=0&&$order_data['ship_status']!=1){
+				return false;
+			}
+		}
+		
 		$perfix = '';
 		if(empty($reship_info)){
 			$perfix = '';
@@ -97,8 +111,8 @@ class einvoice_request_invoice extends einvoice_request_abstract{
 				'tranNo'=>$order_data['order_bn'].$perfix,
 				'occurTime'=>date('Y-m-d H:i:s',$order_data['createtime']),
 				'title'=>$order_data['tax_company'],
-				'storeNo'=>'Dior',
-				'posNo'=>'PCD',
+				'storeNo'=>'storeNo',
+				'posNo'=>'posNo',
 				'mobile'=>'',
 				'email'=>'',
 				'taxIdentity'=>$order_data['taxpayer_identity_number'],
@@ -127,6 +141,39 @@ class einvoice_request_invoice extends einvoice_request_abstract{
 					);
 			}
 		}
+		
+		//MCD
+		if($mcdFlag===true){
+			
+			$arrRelateOrderBn=array();
+			$arrRelateOrderBn=$objOrders->getList("order_id,order_bn",array('relate_order_bn'=>$order_data['order_bn'],'createway'=>'after','is_mcd'=>'true','ship_status'=>'1'));
+			
+			if(!empty($arrRelateOrderBn)){
+				foreach($arrRelateOrderBn as $relateOrder){
+					$arrRelateOrderItems=array();
+					$arrRelateOrderItems = $objOrderItem->getList('*',array('order_id'=>$relateOrder['order_id']));
+					foreach($arrRelateOrderItems as $item){
+						if($item['price']==0||$item['sale_price']==0){
+							continue;
+						}
+						if($item['sendnum']-$item['return_num']>0){
+							$invoice_items[] = array(
+									'code'=>$item['bn'],
+									'name'=>$item['name'],
+									'spec'=>$item['name'],
+									'unit'=>'件',
+									'unitPrice'=>$item['price'],
+									'num'=>$item['sendnum']-$item['return_num'],
+									'price'=>$item['price']*($item['sendnum']-$item['return_num']),
+									'discount'=>$item['ax_pmt_price']/$item['nums']*($item['sendnum']-$item['return_num']),
+								);
+						}
+					}
+				}
+			}
+			
+		}
+		
 		if(empty($invoice_items)){
 			return false;
 		}

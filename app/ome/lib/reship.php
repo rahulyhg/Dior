@@ -36,7 +36,7 @@ class ome_reship
      * @param void
      * @return void
      */
-    public function createRefund($refundApply,$order)
+    public function createRefund($refundApply,$order,$return_type='return')
     {
         # 更新退款金额
         $orderModel = $this->app->model('orders');
@@ -48,52 +48,55 @@ class ome_reship
         $opLogModel->write_log('order_modify@ome',$order['order_id'],"售后退款成功，更新订单退款金额。系统自动操作，退款金额用于支付新订单。");
 
         # 退款申请单处理
-        $refundApplyUpdate = array(
-            'status' => '4',
-            'refunded' => $refundApply['money'],
-            'last_modified' => time(),
-            'account' => $refundApply['account'],
-            'pay_account' => $refundApply['pay_account'],
-        );
-        $refundApplyModel = $this->app->model('refund_apply');
-        $refundApplyModel->update($refundApplyUpdate,array('apply_id'=>$refundApply['apply_id']));
-
-        $opLogModel->write_log('refund_apply@ome',$refundApply['apply_id'],"售后退款成功，更新退款申请状态。系统自动操作，退款金额用于支付新订单。");
-
-        # 退款单处理
-        $paymethods = ome_payment_type::pay_type();
-        $opInfo = kernel::single('ome_func')->getDesktopUser();
-        $refunddata = array(
-            'refund_bn' => $refundApply['refund_apply_bn'],
-            'order_id' => $order['order_id'],
-            'shop_id' => $order['shop_id'],
-            'account' => $refundApply['account'],
-            'bank' => $refundApply['bank'],
-            'pay_account' => $refundApply['pay_account'],
-            'currency' => $order['currency'],
-            'money' => $refundApply['money'],
-            'paycost' => 0,
-            'cur_money' => $refundApply['money'],
-            'pay_type' => $refundApply['pay_type'],
-            'payment' => $refundApply['payment'],
-            'paymethod' => $paymethods[$refundApply['pay_type']],
-            'op_id' => $opInfo['op_id'],
-            't_ready' => time(),
-            't_sent' => time(),
-            'memo' => $refundApply['memo'],
-            'status' => 'succ',
-            'refund_refer' => '1',
-            'return_id' => $refundApply['return_id'],
-        );
-        if ($refundApply['archive'] && $refundApply['archive']=='1') {
-            $refunddata['archive'] = '1';
-        }
-        $oRefund = $this->app->model('refunds');
-        $oRefund->save($refunddata);
-
-        // 更新订单支付状态
+		if($return_type!='change'){
+			$refundApplyUpdate = array(
+				'status' => '4',
+				'refunded' => $refundApply['money'],
+				'last_modified' => time(),
+				'account' => $refundApply['account'],
+				'pay_account' => $refundApply['pay_account'],
+			);
+			$refundApplyModel = $this->app->model('refund_apply');
+			$refundApplyModel->update($refundApplyUpdate,array('apply_id'=>$refundApply['apply_id']));
+			
+			$opLogModel->write_log('refund_apply@ome',$refundApply['apply_id'],"售后退款成功，更新退款申请状态。系统自动操作，退款金额用于支付新订单。");
+			
+			# 退款单处理
+			$paymethods = ome_payment_type::pay_type();
+			$opInfo = kernel::single('ome_func')->getDesktopUser();
+			$refunddata = array(
+				'refund_bn' => $refundApply['refund_apply_bn'],
+				'order_id' => $order['order_id'],
+				'shop_id' => $order['shop_id'],
+				'account' => $refundApply['account'],
+				'bank' => $refundApply['bank'],
+				'pay_account' => $refundApply['pay_account'],
+				'currency' => $order['currency'],
+				'money' => $refundApply['money'],
+				'paycost' => 0,
+				'cur_money' => $refundApply['money'],
+				'pay_type' => $refundApply['pay_type'],
+				'payment' => $refundApply['payment'],
+				'paymethod' => $paymethods[$refundApply['pay_type']],
+				'op_id' => $opInfo['op_id'],
+				't_ready' => time(),
+				't_sent' => time(),
+				'memo' => $refundApply['memo'],
+				'status' => 'succ',
+				'refund_refer' => '1',
+				'return_id' => $refundApply['return_id'],
+			);
+			if ($refundApply['archive'] && $refundApply['archive']=='1') {
+				$refunddata['archive'] = '1';
+			}
+			$oRefund = $this->app->model('refunds');
+			$oRefund->save($refunddata);
+			
+			$opLogModel->write_log('refund_accept@ome',$refunddata['refund_id'],"售后退款成功，生成退款单".$refunddata['refund_bn']."，退款金额用于支付新订单。");
+		}
+		// 更新订单支付状态
         kernel::single('ome_order_func')->update_order_pay_status($order['order_id']);
-        $opLogModel->write_log('refund_accept@ome',$refunddata['refund_id'],"售后退款成功，生成退款单".$refunddata['refund_bn']."，退款金额用于支付新订单。");
+        
     }
 
     /**
@@ -145,11 +148,11 @@ class ome_reship
         //$cfg = $this->app->model('payment_cfg')->dump();
         $cfg = array();
 
-        $orderdata['pay_bn'] = $cfg['pay_bn'];
+        $orderdata['pay_bn'] = empty($order['pay_bn'])?$cfg['pay_bn']:$order['pay_bn'];
 
         $orderdata['payed'] = $mathLib->getOperationNumber($order['pay_money']);
 
-        $orderdata['payment'] = '线下支付';
+        $orderdata['payment'] = empty($order['payment'])?'线下支付':$order['payment'];
 
         $orderModel->update($orderdata,array('order_id'=>$order['order_id']));
 
@@ -176,8 +179,8 @@ class ome_reship
         $paymentdata['trade_no']    = '';//支付网关的内部交易单号，默认为空
         $paymentdata['cur_money']   = $paymentdata['money'];
         $paymentdata['pay_type']    = 'offline';
-        $paymentdata['payment']     = '';
-        $paymentdata['paymethod']   = '线下支付';
+        $paymentdata['payment']     = empty($order['pay_id'])?'':$order['pay_id'];//mcd
+        $paymentdata['paymethod']   = empty($order['payment'])?'线下支付':$order['payment'];//mcd
         $paymentdata['payment_refer'] = '1';
 
         $opInfo = kernel::single('ome_func')->getDesktopUser();
@@ -189,6 +192,8 @@ class ome_reship
         $paymentdata['status'] = 'succ';
         $paymentdata['memo'] = '做质检时连带操作;系统生成换货订单支付单据;通过退款金额进行支付;补换货的订单:'.$order['reship_order_bn'];
         $paymentdata['is_orderupdate'] = 'false';
+		//换货订单无需对账
+		$paymentdata['statement_status']='true';
         $paymentModel->create_payments($paymentdata);
 
         //日志

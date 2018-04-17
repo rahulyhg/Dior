@@ -307,17 +307,22 @@ class ome_ctl_admin_return_sv extends desktop_controller {
                 $refuseMemo = unserialize($reason);
                 //$refuseMemo .= '#质检原因#'.$_POST['info']['refuse_memo'];
                 $refuseMemo['refuse'] = $_POST['info']['refuse_memo'];
-				$reship = $oReship->dump($reship_id,'is_check,return_type');
+				$reship = $oReship->dump($reship_id,'is_check,return_type,order_id,m_reship_bn');
 				
                 $refuse = array(
                     #'is_check' => '9',
                     'reason' => serialize($refuseMemo),
                 );
-				if ($reship['is_check'] == '13'){#有过收货记录置拒绝
-					
-					$refuse['is_check'] = '9';
-				}else{#否则异常
-					$refuse['is_check'] = '12';
+				if($reship['return_type']=="change"){//换货直接取消
+					$refuse['is_check'] = '5';
+					$refuse['t_end'] = time();
+				}else{
+					if ($reship['is_check'] == '13'){#有过收货记录置拒绝
+						
+						$refuse['is_check'] = '9';
+					}else{#否则异常
+						$refuse['is_check'] = '12';
+					}
 				}
 				
                 $reship_result = $oReship->update($refuse,array('reship_id'=>$reship_id));
@@ -331,6 +336,15 @@ class ome_ctl_admin_return_sv extends desktop_controller {
                     //释放库存拒绝时
                     if ($reship['return_type'] == 'change') {
                         kernel::single('console_reship')->change_freezeproduct($reship_id,'-');
+						//拒绝后通知magento
+						$objOrder=&$this->app->model("orders");
+						$arrOrder=$data=array();
+						$arrOrder=$objOrder->getList("order_bn",array('order_id'=>$reship['order_id']));
+						$data['order_bn']=$arrOrder[0]['order_bn'];
+						$data['exchange_no']=$reship['m_reship_bn'];
+						$data['status']='fail';
+						$data['admin_comment']=$refuseMemo['refuse'];
+						kernel::single('omemagento_service_change')->updateStatus($data);
                     }
 				}
                 # 写LOG

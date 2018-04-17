@@ -100,7 +100,7 @@ class erpapi_oms_order
 			}
 			return true;
 		}else{
-			$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
+			$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
 			//$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn FROM sdb_ome_orders WHERE order_bn='500000472'";
 		}
 		$arrDelivery=$objOrder->db->select($sql);
@@ -124,8 +124,13 @@ class erpapi_oms_order
 				$arrRoute[$value['logi_no']]['trade_no']=$value['logi_no'];
 				$arrRoute[$value['logi_no']]['order_bn']=$value['order_bn'];
 				$arrRoute[$value['logi_no']]['pay_bn']=$value['pay_bn'];
+				$arrRoute[$value['logi_no']]['shop_type']=$value['shop_type'];
 				$arrRoute[$value['logi_no']]['total_amount']=$value['total_amount'];
 				$arrRoute[$value['logi_no']]['payment']=$value['payment'];
+				//mcd
+				$arrRoute[$value['logi_no']]['is_mcd']=$value['is_mcd'];
+				$arrRoute[$value['logi_no']]['createway']=$value['createway'];
+				$arrRoute[$value['logi_no']]['relate_order_bn']=$value['relate_order_bn'];
 			}
 		}
 		$strRoute=substr($strRoute,0,-1);
@@ -200,8 +205,17 @@ class erpapi_oms_order
 							}
 							
 							$objOrder->db->exec("UPDATE sdb_ome_orders SET route_status='1',routetime='$accept_time' WHERE order_bn='$order_bn'");
-								//发给买尽头
-							if($arrRoute[$intDeliveryId]['shop_type']!='minishop'){
+							//发给magento
+							if($arrRoute[$intDeliveryId]['is_mcd']=="true"&&$$arrRoute[$intDeliveryId]['createway']=="after"){
+								$post=$arrReship=array();
+								$arrReship=$mdl_reship->getList("m_reship_bn",array('p_order_id'=>$order_id));
+								
+								$post['order_bn']=$arrRoute[$intDeliveryId]['relate_order_bn'];
+								$post['exchange_no']=$arrReship[0]['m_reship_bn'];
+								$post['status']='complete';
+								$post['shipped_at']=date('Y-m-d H:i:s',$accept_time);
+								kernel::single('omemagento_service_change')->updateStatus($post);
+							}else{
 								kernel::single('omemagento_service_order')->update_status($order_bn,'complete','',$accept_time);
 							}
 							
@@ -330,8 +344,7 @@ class erpapi_oms_order
 		if(substr($ip,0,8)!='10.0.103'){
 			kernel::single("erpapi_oms_email_sendemail")->sendEmail('Dior IP ERROR !!!!');
 			error_log('ErrorIP--:'.$ip.'Order_bn:'.$post['order_bn'],3,DATA_DIR.'/ip/'.date("Ymd").'zjrorder.txt');
-		}
-		
+		}	
 		//echo "<pre>";print_r($post);exit();		
  		$mathLib = kernel::single('eccommon_math');
   		$pObj = kernel::single("ome_mdl_products");
@@ -470,6 +483,7 @@ class erpapi_oms_order
 					$post['num'][$isBn['0']['product_id']]['num']=$product['num'];
 					$post['num'][$isBn['0']['product_id']]['type']=$product['type'];
 					$post['num'][$isBn['0']['product_id']]['name']=$product['name'];
+					$post['num'][$isBn['0']['product_id']]['is_mcd_product']=$product['is_mcd_product'];
 					$post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
 					$post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
 					$post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
@@ -630,6 +644,7 @@ class erpapi_oms_order
 						'pmt_price'=>$i['pmt_price'],
 						'ax_pmt_percent'=>$i['pmt_percent'],
                         'quantity' => $i['num'],
+						'is_mcd_product' => $i['is_mcd_product'],
                         'sendnum' => 0,
                         'item_type' => $z_p_tpye,
 						'message1' => $i['message1'],
@@ -683,8 +698,24 @@ class erpapi_oms_order
             $iorder['mark_text']    = serialize($tmp);
             $tmp = null;
         }
+		
+		//mcd
+		$iorder['is_mcd'] = $post['is_mcd'];
+        $iorder['mcd_package_sku'] = $post['mcd_package_sku'];
 
-        if($post['shop_id']){
+		foreach($post['giftmessage'] as $message){
+			if(!empty($message)){
+				if($post['is_mcd']=="1"&&$iorder['mcd_package_sku']=="MCD"){
+					$iorder['is_mcd_card']=true;
+				}else{
+					$iorder['is_card']=true;
+				}
+				$intTotalNums=$intTotalNums+1;
+				break;
+			}
+		}
+		
+		if($post['shop_id']){
             $shop = explode('*',$post['shop_id']);
             $iorder['shop_id'] = $shop[0];
             $iorder['shop_type'] = $shop[1];
@@ -710,14 +741,6 @@ class erpapi_oms_order
 		//改成默认有welcomecard
 		$iorder['is_w_card']=true;
 		$intTotalNums=$intTotalNums+1;
-		
-		foreach($post['giftmessage'] as $message){
-			if(!empty($message)){
-				$iorder['is_card']=true;
-				$intTotalNums=$intTotalNums+1;
-				break;
-			}
-		}
 		
 		$iorder['welcomecard']     = $post['welcomecard'];
 		$iorder['itemnum']      = $intTotalNums;//count($iorder['order_objects']);
@@ -771,9 +794,6 @@ class erpapi_oms_order
         if ($iorder['total_amount'] < 0)
             return $this->send_error('订单金额不能小于0');
 		
-		if(empty($post['order_bn'])){
-			return $this->send_error('order_bn必须填写');
-		}
 		if($post['is_cod']!='true'){
 			if(empty($post['trade_no'])){
 				return $this->send_error('trade_no必须填写');
@@ -907,6 +927,181 @@ class erpapi_oms_order
 		
 		return true;
 	
+	}
+	
+	public function change($params){
+		$this->params=base64_decode($params['order']);
+		$post=json_decode(base64_decode($params['order']),true);
+		
+		if($this->getSign($post)!==true){
+			return $this->send_error('SignError 40002');
+		}
+		
+		$objOrder=kernel::single("ome_mdl_orders");
+		$objMember=kernel::single("ome_mdl_members");
+		$objDelivery=kernel::single("ome_mdl_delivery");
+		$objReship=kernel::single("ome_mdl_reship");
+		$objShop=kernel::single("ome_mdl_shop");
+		$objProduct=kernel::single("ome_mdl_products");
+		$objBp=kernel::single("ome_mdl_branch_product");
+		
+		$arrOrderBn=$arrOrder=$arrMember=$arrDelivery=$arrShop=$arrPost=$data=array();
+		
+		$order_bn=$post['order_bn'];
+		$arrOrderBn=$objOrder->getList("order_id",array('order_bn'=>$order_bn));
+		$order_id=$arrOrderBn[0]['order_id'];
+		if(empty($order_id))return $this->send_error('请传入有效订单');
+		
+		//整理数组
+		$str_memo='';
+		foreach($post['items'] as $k=>$items){
+			
+			$memo='';//兑换明细一对一
+			
+			foreach($items as $return_type=>$product){
+				if($return_type=="return"){
+					$memo="货号：".$product['bn'].$memo;
+				}else{
+					$memo=$memo." 换货：".$product['bn']." 数量：1  |  ";
+				}
+				
+				if(isset($arrPost[$return_type][$product['bn']])){
+					$arrPost[$return_type][$product['bn']]['num']=$product['num']+1;
+				}else{
+					$arrPost[$return_type][$product['bn']]['num']=$product['num'];
+				}
+				$arrPost[$return_type][$product['bn']]['bn']=$product['bn'];
+				$arrPost[$return_type][$product['bn']]['price']=$product['price'];
+			}
+			
+			$str_memo.=$memo;
+		}
+		$post=array_merge($post,$arrPost);
+		
+		//判断是否能够申请
+		if(!$objReship->isCanAddMcdReship($order_id,'change',$msg)){
+			return $this->send_error($msg);
+		}
+		
+		$arrOrder=$objOrder->dump ( array ('order_id' => $order_id ),'*' );
+		$arrMember=$objMember->dump(array('member_id'=>$arrOrder['member_id']));
+		$arrDelivery = $objDelivery->getDeliveryByOrder('*',$order_id);
+		$arrOrder = array_merge($arrOrder,$arrDelivery[0]);
+		$arrOrder['member_id'] = $arrMember['account']['uname'];
+        $arrOrder['createtime'] = date('Y-m-d H:i:s',$arrOrder['createtime']);
+		$arrShop=$objShop->getList('shop_id',array('shop_type'=>'magento'));
+		
+		$data['return_type']='change';
+		$data['supplier']=$order_bn;
+		$data['m_reship_bn']=$post['exchange_no'];
+		$data['order_id']=$order_id;
+		$data['is_protect']='false';
+		$data['shop_id']=$arrShop[0]['shop_id'];
+		$data['shop_type']='ecos.b2c';
+		$data['member_id']=$arrOrder['member_id'];
+		$data['logi_name']='顺丰速运';
+		$data['logi_id']=$arrOrder['logi_id'];
+		$data['logi_no']=$arrOrder['logi_no'];
+		$data['ship_name']=$arrOrder['ship_name'];
+		$data['ship_area']=$arrOrder['ship_area'];
+		$data['ship_addr']=$arrOrder['ship_addr'];
+		$data['ship_zip']=$arrOrder['ship_zip'];
+		$data['ship_tel']=$arrOrder['ship_tel'];
+		$data['ship_email']=$arrOrder['ship_email'];
+		$data['ship_mobile']=$arrOrder['ship_mobile'];
+		$data['delivery']='快递';
+		$data['branch_id']='1';
+		$data['return_reason']='ACF';
+		$data['bmoney']='0';
+		$data['cost_freight_money']='0';
+		$data['custom_mark'] = serialize(array(array('op_name'=>'system','op_time'=>date('Y-m-d H:i:s',time()), 'op_content'=>htmlspecialchars($post['reason']))));
+		$data['memo']=$str_memo;
+		
+		$return_price=0;
+		foreach($post['return'] as $return){
+			$bn=$return['bn'];
+			$num=$return['num'];
+			$price=$return['price'];
+			$arrProduct=array();
+			$arrProduct=$objProduct->getList("product_id,name",array('bn'=>$bn));
+			
+			$data['return']['goods_name'][$bn]=$arrProduct[0]['name'];
+			$data['return']['product_id'][$bn]=$arrProduct[0]['product_id'];
+			$data['return']['effective'][$bn]=$num;
+			$data['return']['num'][$bn]=$num;
+			$data['return']['branch_id'][$bn]=1;
+			$data['return']['price'][$bn]=$price;
+			$data['return']['goods_bn'][$bn]=$bn;
+			$return_price=$return_price+($price*$num);
+		}
+		
+		$change_price=0;
+		foreach($post['change'] as $change){
+			$bn=$change['bn'];
+			$num=$change['num'];
+			$price=$change['price'];
+			
+			$arrProduct=array();
+			$store=0;
+			$arrProduct=$objProduct->getList("product_id,name",array('bn'=>$bn));
+			//判断库存
+			$arrBp=$objBp->getList('store,store_freeze',array('product_id'=>$arrProduct[0]['product_id'],'branch_id'=>1));
+			$store=$arrBp['0']['store']-$arrBp['0']['store_freeze'];
+			$store=$store-kernel::single("omeftp_auto_update_product")->getHasUseStore($bn);
+			if($num>$store){
+				return $this->send_error($bn.'库存不足，无法进行换货');
+			}
+			
+			$data['change']['product']['name'][$bn]=$arrProduct[0]['name'];
+			$data['change']['product']['product_id'][$bn]=$arrProduct[0]['product_id'];
+			$data['change']['product']['sale_store'][$bn]=$objProduct->get_product_store(1,$arrProduct[0]['product_id']);
+			$data['change']['product']['num'][$bn]=$num;
+			$data['change']['product']['branch_id'][$bn]=1;
+			$data['change']['product']['price'][$bn]=$price;
+			$data['change']['product']['bn'][$bn]=$bn;
+			$change_price=$change_price+($price*$num);
+		}
+		if($change_price!=$return_price){
+			return $this->send_error('换货金额异常，无法进行换货');
+		}
+		//echo "<pre>2";print_r($post);print_r($data);print_r($str_memo);exit;
+		$db=kernel::database();
+		$transaction =  $db->beginTransaction();
+		
+		$reship_bn = $objReship->create_treship($data,$msg);
+        
+        if($reship_bn == false) {
+			$db->rollBack();
+            return $this->send_error($msg);
+        }
+		
+		if($reship_bn){
+			$refund=$money=array();
+            $money = kernel::single('ome_return_rchange')->calDiffAmount($data);
+            $refund['totalmoney'] = $money['totalmoney'];
+            $refund['tmoney'] = $money['tmoney'];
+            $refund['bmoney'] = $money['bmoney'];
+            $refund['bcmoney'] = $money['bcmoney'];
+            $refund['diff_money'] = $money['diff_money'];
+            $refund['change_amount'] = $money['change_amount'];
+            $refund['diff_order_bn'] = $data['diff_order_bn'] ? $data['diff_order_bn'] : '';
+            $refund['cost_freight_money'] = $money['cost_freight_money'];
+			
+			$refund['is_check']=1;
+			$refund['check_time']=time();
+			if(!$objReship->update($refund,array('reship_bn'=>$reship_bn))){
+				$db->rollBack();
+				return $this->send_error('System Error');
+			}
+        }
+		$db->commit($transaction);
+		//echo "<pre>";print_r($data);exit;
+		//锁库存
+		$reship_id=$objReship->getList("reship_id",array('reship_bn'=>$reship_bn));
+		$reship_id=$reship_id[0]['reship_id'];
+		kernel::single('console_reship')->change_freezeproduct($reship_id,'+');
+		
+		return $this->send_succ('succ');
 	}
 	
 	public function checkOrderStatus($params){
