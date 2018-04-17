@@ -109,13 +109,14 @@ class omeftp_response_delivery{
 		}
 	}
 
-	public function do_delivery($data){	//echo "<pre>";print_r($data);exit;
+	public function do_delivery($data){	//
 		$mdl_order = app::get('ome')->model('orders');
+		$mdl_reship = app::get('ome')->model('reship');
 		$mdl_order_delivery = app::get('ome')->model('delivery_order');
 		$mdl_delivery = app::get('ome')->model('delivery');
 		
 		$order_bn = $data['H'][0][5];
-		$order_info = $mdl_order->getList('order_id,ship_status,shop_type',array('order_bn'=>$order_bn));
+		$order_info = $mdl_order->getList('order_id,ship_status,shop_type,is_mcd,createway,relate_order_bn',array('order_bn'=>$order_bn));
 		if($order_info[0]['ship_status']!='0'){
 			return true;
 		}
@@ -214,12 +215,27 @@ error_log(var_export($query_params,true),3,__FILE__.'params.txt');
 		error_log(var_export($info,true),3,__FILE__.'params.txt');
 
 		if ($info['rsp'] == 'succ') {
-			if($order_info[0]['shop_type']!='minishop'){
+			//MCD换货走其他接口
+			if($order_info[0]['is_mcd']=="true"&&$order_info[0]['createway']=="after"){
+				$post=$arrReship=$arrOrders=array();
+				$arrReship=$mdl_reship->getList("m_reship_bn,order_id",array('p_order_id'=>$order_info[0]['order_id']));
+				
+				$post['order_bn']=$order_info[0]['relate_order_bn'];//老的订单号
+				$post['exchange_no']=$arrReship[0]['m_reship_bn'];
+				$post['status']='shipped';
+				$post['tracking_code']=$data['D'][0][11];
+				$post['shipped_at']=date('Y-m-d H:i:s',time());
+				kernel::single('omemagento_service_change')->updateStatus($post);
+				//换出来的MCD订单判断是否还有其余未发货，如果有等到最后一笔发货后再开
+				$arrOrders=$mdl_order->getList("order_id",array('relate_order_bn'=>$order_info[0]['relate_order_bn'],'ship_status'=>'0','is_mcd'=>'true','createway'=>'after'));
+				if(empty($arrOrders[0]['order_id'])){
+					kernel::single('einvoice_request_invoice')->invoice_request($arrReship[0]['order_id'],'getApplyInvoiceData');
+				}
+			}else{
 				kernel::single('omemagento_service_order')->update_status($order_bn,'shipped',$data['D'][0][11]);
+				kernel::single('einvoice_request_invoice')->invoice_request($order_info[0]['order_id'],'getApplyInvoiceData');
 			}
-
-			kernel::single('einvoice_request_invoice')->invoice_request($order_info[0]['order_id'],'getApplyInvoiceData');
-			return  true;
+			return true;
 		}else{
 			error_log(var_export($order_bn.',',true),3,__FILE__.'fail.txt');
 			return false;

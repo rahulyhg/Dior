@@ -141,6 +141,7 @@ class ome_mdl_reship extends dbeav_model{
       $sdf_data = array(
         'return_id'        => $adata['return_id'],
         'reship_id'        => $adata['reship_id'],
+		'm_reship_bn'	 =>$adata['m_reship_bn'],
         'order_id'         => $adata['order_id'],
         'member_id'        => $adata['member_id'],
         'return_logi_name' => $adata['return_logi_name'],
@@ -158,6 +159,7 @@ class ome_mdl_reship extends dbeav_model{
         'ship_email'       => $adata['ship_email'],
         'ship_mobile'      => $adata['ship_mobile'],
         'memo'             => $adata['memo'],
+		'custom_mark'             => $adata['custom_mark'],
         'status'           => 'ready',
         'op_id'            => $opInfo['op_id'],
         't_end'            =>0,
@@ -604,9 +606,11 @@ class ome_mdl_reship extends dbeav_model{
    {
 
         $oOrder = &$this->app->model('orders');
+		$oReship = &$this->app->model('reship');
         $oitem = &$this->app->model('order_items');
         $oGoods = &$this->app->model('goods');
         $oProducts = &$this->app->model('products');
+		$oPcfg=&$this->app->model('payment_cfg');
         $ret=array();
         $i=0;
         foreach($reship_items as $k=>$v){
@@ -634,15 +638,29 @@ class ome_mdl_reship extends dbeav_model{
         }else{
            $ship_area = $Order_detail['consignee']['area'];
         }
-
-        $order_bn = $oOrder->gen_id();
-        
-        
+		//MCD换货订单号用原始订单号_X
+		$arrReship=$oReship->getList("reship_id",array('order_id'=>$reshipinfo['order_id']));
+		$arrReship = array_reverse($arrReship);
+		foreach($arrReship as $k=>$reship){
+			if($reship['reship_id']==$reshipinfo['reship_id']){
+				$order_bn=$Order_detail['order_bn']."_".($k+1);
+				continue;
+			}
+		}
+		if(empty($order_bn)){
+			$order_bn = $oOrder->gen_id();
+		}
+		
         if ($reshipinfo['source'] == 'archive') {
             $oOrder = app::get('archive')->model('orders');
             $oitem = app::get('archive')->model('order_items');
         }
         $Order_detail = $oOrder->dump($reshipinfo['order_id']);
+		//MCD
+		$arrPayment=array();
+		$arrPayment=$oPcfg->getList('id,pay_bn,custom_name',array('pay_bn'=>$Order_detail['pay_bn']));//支付方式
+		$arrPayment=$arrPayment[0];
+		
         $order_sdf = array(
            'order_bn'=>$order_bn,
            'member_id'=>$Order_detail['member_id'],
@@ -653,6 +671,11 @@ class ome_mdl_reship extends dbeav_model{
             'confirm'=>'N',
             'status'=>'active',
             'pay_status'=>'0',
+			//MCD
+			'pay_bn'=>$arrPayment['pay_bn'],
+			'payment'=>$arrPayment['custom_name'],
+			'pay_id'=>$arrPayment['id'],
+			//
             'ship_status'=>'0',
             'is_delivery'=>'N',
             'shop_id'=>$reshipinfo['shop_id'],
@@ -675,11 +698,14 @@ class ome_mdl_reship extends dbeav_model{
                'area'=>$ship_area,
                'r_time'=>$Order_detail['consignee']['r_time'],
             ),
-            'mark_type' => 'b1',
+			//MCD换货去掉备注
+           // 'mark_type' => 'b1',
+			'is_mcd'=>'true',//打上MCD标识
             'source' => 'local',
             'createway' => 'after',
         );
-        $mark_text = array(
+		//MCD换货去掉备注
+        /*$mark_text = array(
           array(
             'op_name' => 'system',
             'op_time' => time(),
@@ -694,7 +720,7 @@ class ome_mdl_reship extends dbeav_model{
             'op_content' => $reshipinfo['memo'],
           );
         }
-        $order_sdf['mark_text'] = $mark_text;
+        $order_sdf['mark_text'] = $mark_text;*/
 
             foreach($ret as $k1=>$v1){
                 $goods = $oGoods->dump(array('bn'=>$v1['bn']),'goods_id');
@@ -740,7 +766,113 @@ class ome_mdl_reship extends dbeav_model{
 
        return  $result ? $order_sdf : false;
    }
+	//MCD换货相关
+	function getMcd(&$post,$flag=false){
+		if(empty($post['return']['goods_bn']))return false;
+		
+		$arrMcd=$data=array();
+		//获取一对一与给magento的数据格式
+		if($flag){
+			$data=$this->getMcdMagentoArr($post);
+		}
+		
+		$i=0;
+		foreach($post['return']['new_change'] as $k=>$change){
+			if(!isset($post['return']['goods_bn'][$k]))continue;
+			
+			list($m_bn,$m_name,$m_price,$m_sale_store,$m_product_id)=explode("|",$change);
+			if(isset($arrMcd['change']['product']['name'][$m_bn])){
+				$arrMcd['change']['product']['num'][$m_bn]=$arrMcd['change']['product']['num'][$m_bn]+1;
+			}else{
+				$arrMcd['change']['product']['num'][$m_bn]=1;
+				$arrMcd['change']['product']['bn'][$i]=$m_bn;
+				$i++;
+			}
+			$arrMcd['change']['product']['name'][$m_bn]=$m_name;
+			$arrMcd['change']['product']['price'][$m_bn]=$m_price;
+			$arrMcd['change']['product']['sale_store'][$m_bn]=$m_sale_store;
+			$arrMcd['change']['product']['branch_id'][$m_bn]=1;
+			$arrMcd['change']['product']['product_id'][$m_bn]=$m_product_id;
+		}
+		//合并拆分的退货商品
+		$arrReturn=array();
+		foreach($post['return']['goods_bn'] as $old_key=>$bn){
+			$new_key=substr($old_key,0,strpos($old_key,"_"));
+			if(isset($arrReturn[$new_key])){
+				$post['return']['num'][$new_key]=$post['return']['num'][$new_key]+1;
+				$post['return']['effective'][$new_key]=$post['return']['effective'][$new_key]+1;
+			}
+			$arrReturn[$new_key]=$bn;
+			
+			$post['return']['goods_bn'][$new_key]=$bn;
+			unset($post['return']['goods_bn'][$old_key]);
+		}
+		
+		$data=array_merge($data,$arrMcd);
+		
+		return $data;
+	}
+	
+	function isCanAddMcdReship($order_id,$return_type,&$msg){
+		$objOrder = $this->app->model('orders');
+		$arrMcdReship=$base_filter=$arrOrder=array();
+		
+		$arrOrder=$objOrder->getList('order_id,order_bn,route_status,is_mcd,routetime,createway',array('order_id'=>$order_id));
+		$arrOrder=$arrOrder[0];
+		
+		if($arrOrder['createway']=="after"){
+			$msg='此订单已参与过换货，无法再次申请';
+			return false;
+		}
+		
+		if($arrOrder['is_mcd']!="true"){
+			$msg='只有MCD订单才允许换货';
+			return false;
+		}
+		
+		if($arrOrder['route_status']!="1"){
+			$msg='此订单还未签收，无法换货';
+			return false;
+		}
+		
+		$limit_time=strtotime("-7 day");
+		if($arrOrder['routetime']<$limit_time){
+			$msg='此订单已超出7天换货限制';
+			return false;
+		}
+		
+		/*$arrMcdReship=$this->getList("reship_id",array('order_id'=>$order_id));
+		if(!empty($arrMcdReship[0]['reship_id'])){
+			//$msg='此订单已存在MCD换货单，无法再次申请';
+			//return false;
+		}*/
 
+		return true;
+	}
+	
+	function getMcdMagentoArr($data){
+	
+		$str_memo='';
+		$arr=array();
+		
+		foreach($data['return']['goods_bn'] as $k=>$bn){
+			
+			$change_bn=substr($data['return']['new_change'][$k],0,strpos($data['return']['new_change'][$k],'|'));
+			
+			$str_memo.="货号：".$bn." 换货：".$change_bn." 数量：1  |  ";
+			
+			$arr['magento']['items'][]=array(
+				'sku'=>$bn,
+				'ex_sku'=>$change_bn,
+			);
+			
+		}
+		
+		$arr['memo']=$str_memo;
+		
+		return $arr;
+	}
+	
     /*
      * 数据验证
      * param $data 需校验的参数
@@ -850,6 +982,7 @@ class ome_mdl_reship extends dbeav_model{
       
       $order_id = $reshipinfo['order_id'];
       $shop_id = $reshipinfo['shop_id'];
+	  $return_type=$reshipinfo['return_type'];
       $is_archive = kernel::single('archive_order')->is_archive($reshipinfo['source']);
       if ($is_archive) {
           $oOrder = app::get('archive')->model('orders');
@@ -977,9 +1110,13 @@ class ome_mdl_reship extends dbeav_model{
           $refund_sdf['archive'] = '1';
            $refund_sdf['source'] = 'archive';
       }
-      $oRefund_apply->create_refund_apply($refund_sdf);
-
-      $reshipLib = kernel::single('ome_reship');
+	  
+	  //MCD不生成退款单
+	  if($return_type!='change'){
+		  $oRefund_apply->create_refund_apply($refund_sdf);
+	  }
+      
+	  $reshipLib = kernel::single('ome_reship');
       if ($is_archive) {
         $reshipLib = kernel::single('archive_reship');
       }
@@ -1036,7 +1173,8 @@ class ome_mdl_reship extends dbeav_model{
           # 退款申请完成，并产生退款单
             #退款金额=申请+补偿
           $refund_sdf['money'] = $money;
-          $reshipLib->createRefund($refund_sdf,$orders);
+		  //MCD此方法新加一个字段
+          $reshipLib->createRefund($refund_sdf,$orders,$return_type);
 
           $pay_money = $money;
           $pay_status = '1';
@@ -1106,11 +1244,17 @@ class ome_mdl_reship extends dbeav_model{
             'pay_money'       => $pay_money,
             'currency'        => 'CNY',
             'reship_order_bn' => $orders['order_bn'],
+			//MCD
+			'pay_bn'=>$change_order_sdf['pay_bn'],
+			'payment'=>$change_order_sdf['payment'],
+			'pay_id'=>$change_order_sdf['pay_id'],
           );
           if ($is_archive) {
             $order['archive'] = '1';
           }
           $reshipLib->payChangeOrder($order);
+		  //MCD reship中记录新订单order_id
+		  $Oreship->update(array('p_order_id'=>$neworderid),array('reship_id'=>$reship_id));
         }
 
       }elseif($reshipinfo['return_type'] =='return'){

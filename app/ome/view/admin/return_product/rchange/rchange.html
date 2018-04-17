@@ -4,7 +4,7 @@
 }
 <{if $reship_data.return_type eq 'change'}>
 .tabs-wrap .is_display {
-  display: block;
+  display: none;
 }
 <{else}>
 .tabs-wrap .is_display {
@@ -318,7 +318,7 @@
          <{/tab}>
         
          <{tab name="换出商品" class="is_display"}>
-         <div class="clear division" id="rcchangetwo">
+         <div class="clear division" id="rcchangetwo" >
           <table width="100%" border="0" cellspacing="0" cellpadding="0"  class="gridlist">
                   <thead>
                     <tr>
@@ -762,8 +762,11 @@ var options={
     }
 };
 
+var get_return_type = "<{$reship_data.return_type}>";
+
 if ($defined($E('#auto_supp input[type=text]')))
 {
+	
     new Autocompleter.script($E('#auto_supp input[type=text]'),"index.php?app=ome&ctl=admin_return_rchange&act=getOrderinfo&source=<{$source}>", $merge(options,{
         'getVar':'order_bn',
         selectFirst:false,
@@ -778,7 +781,24 @@ if ($defined($E('#auto_supp input[type=text]')))
           if(!this.selected)return;
           var json=this.selected.retrieve('_data');
           $('order_id').set("value",json["order_id"]);
-          _callback_orderinfo(json["order_id"]);
+		  	//放这里判断能否换货
+			if ($defined($E('select[name="return_type"]'))){
+				get_return_type = $E('select[name="return_type"] option:selected').get('value');
+			}
+			
+				//新写个方法来判断
+				new Request.JSON({
+					url:'index.php?app=ome&ctl=admin_return_rchange&act=getOrderReturnType&get_return_type='+get_return_type+'&order_id='+json["order_id"],
+					onComplete:function(resp){
+						if(resp.status != 'succ'){
+							alert(resp.msg);
+							return false;
+						}else{
+							_callback_orderinfo(json["order_id"]);
+						}
+					}
+				 }).send();
+			
         },
         onFocus:$empty
     }));
@@ -787,19 +807,37 @@ if ($defined($E('#auto_supp input[type=text]')))
 /* 销售订单快速搜索之通过dialog查找*/
 if ($defined($E(".btn_supplier")))
 {
-
+   
   $E(".btn_supplier").addEvent('click',function(e){
-    var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=ome&ctl=admin_return&act=getOrders&singleselect=1&ship_status=1&status=active&source=<{$source}>");
-      Ex_Loader('modedialog',function(){
+	if ($defined($E('select[name="return_type"]'))){
+        get_return_type = $E('select[name="return_type"] option:selected').get('value');
+    }
+	//alert(return_type);
+    var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent("index.php?app=ome&ctl=admin_return&act=getOrders&return_type="+get_return_type+"&singleselect=1&ship_status=1&status=active&source=<{$source}>");
+    Ex_Loader('modedialog',function(){
       new finderDialog(url,{params:{url:'index.php?app=ome&ctl=admin_return_rchange&act=getOdersById&source=<{$source}>',name:'id',type:'radio'},handle:'supplier',width:1000,height:500,onCallback:function(e){
-        _callback_orderinfo($('order_id').getValue());
+		
+		//新写个方法来判断
+		new Request.JSON({
+			url:'index.php?app=ome&ctl=admin_return_rchange&act=getOrderReturnType&get_return_type='+get_return_type+'&order_id='+$('order_id').getValue(),
+			onComplete:function(resp){
+				if(resp.status != 'succ'){
+					alert(resp.msg);
+					return false;
+				}else{
+					_callback_orderinfo($('order_id').getValue());
+					}
+				}
+		 }).send();
+        
       }});
     });
   });
 }
 /* 通过order_id获取订单信息*/
 function _callback_orderinfo(rs){
-    var request = new Request({
+	
+	var request = new Request({
      url : 'index.php?app=ome&ctl=admin_return_rchange&act=ajax_getOrderinfo&source=<{$source}>',
      method : 'post',
      data : 'order_id='+rs,
@@ -886,7 +924,7 @@ function response_paydetail(val){
 /* 返回退入商品页面*/
 function response_one(val){
     var request = new Request.HTML({
-       url : 'index.php?app=ome&ctl=admin_return_rchange&act=ajax_getProductinfo_one&source=<{$source}>',
+       url : 'index.php?app=ome&ctl=admin_return_rchange&act=ajax_getProductinfo_one&source=<{$source}>&after_service='+get_return_type,
        method : 'post',
        data : 'order_id='+val,
        evalScripts : true,

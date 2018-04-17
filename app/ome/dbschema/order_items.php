@@ -142,6 +142,13 @@ $db['order_items']=array (
       'required' => true,
       'editable' => false,
     ),
+	'is_mcd_product' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'label' => 'MCD',
+    ),
     'score' =>
     array (
       'type' => 'number',

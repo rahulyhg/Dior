@@ -144,7 +144,7 @@ class omeftp_response_reship{
 		}
 
 		$reship_id = $reshipInfo['reship_id'];
-		$row = $mdl_reship->getList('reship_id,is_check',array('reship_id'=>$reship_id,'is_check'=>array('1','3','13')));
+		$row = $mdl_reship->getList('reship_id,is_check,m_reship_bn,return_type',array('reship_id'=>$reship_id,'is_check'=>array('1','3','13')));
 		if (!$row) {
 			error_log(var_export($order_bn,true),3,__FILE__.'error.txt');//记录无法更新的退货单
         }
@@ -237,6 +237,13 @@ class omeftp_response_reship{
 		$_POST['por_id'] = $product_process['por_id'];//echo "<pre>";print_r($_POST);exit;
 		$sign = kernel::single('ome_return')->toQC($reship_id,$_POST,$msg);
 		if($sign){
+			if($row[0]['return_type']=='change'){//状态传给magento
+				$arrPostMagento=array();
+				$arrPostMagento['status']='exchanging';
+				$arrPostMagento['order_bn']=$order_bn;
+				$arrPostMagento['exchange_no']=$row[0]['m_reship_bn'];
+				kernel::single('omemagento_service_change')->updateStatus($arrPostMagento);
+			}
 			kernel::single('einvoice_request_invoice')->invoice_request($order_info[0]['order_id'],'getCancelInvoiceData');
 			return true;
 		}else{

@@ -88,7 +88,6 @@ class omeftp_service_reship{
 			$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
 		}
     }
-
 	public function getContent($delivery,$file,$reship_id){
 		$ax_content_arr = array();
 		if(file_exists($file)){
@@ -308,7 +307,8 @@ class omeftp_service_reship{
 		
 		
 		$orderReship = app::get('ome')->model('reship_items');
-		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
+		//MCD去掉换货明细
+		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
 
 		$line = 0;
 		foreach($reInfo as $key=>$reship_items){
