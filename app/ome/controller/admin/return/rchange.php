@@ -246,15 +246,17 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$post['order_id']));
 		//echo "<pre>";print_r($delivery_id);exit;
 		$delivery_id = array_reverse($delivery_id);
-		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id']);
-
-        $params['reship_id'] = $reship[0]['reship_id'];
+		
 		//换货发给magento
 		if($post['return_type']=="change"){
 			$arrPostMagento['order_id']=$post['order_id'];
 			$arrPostMagento['exchange_no']=$reship_bn;
-			kernel::single('omemagento_service_change')->sendChangeOrder($arrPostMagento);
+			//kernel::single('omemagento_service_change')->sendChangeOrder($arrPostMagento);
 		}
+		
+		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id'],$post['return_type'],$arrPostMagento);
+
+        $params['reship_id'] = $reship[0]['reship_id'];
 
         $this->end(true,$msg,null,$params);
     }
@@ -510,7 +512,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 								$newItems[$key]['change'][$k]['product_id']=$arrProduct[0]['product_id'];
 							}
 						}
-						$newItems[$key]['change'][0]['bn']='F041542789';
+						/*$newItems[$key]['change'][0]['bn']='F041542789';
 						$newItems[$key]['change'][0]['name']='真我';
 						$newItems[$key]['change'][0]['price']='100';
 						$newItems[$key]['change'][0]['sale_store']=$objProducts->get_product_store(1,'1661');
@@ -520,7 +522,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 						$newItems[$key]['change'][1]['name']='克丽丝汀迪奥真我香发喷雾';
 						$newItems[$key]['change'][1]['price']='100';
 						$newItems[$key]['change'][1]['sale_store']=$objProducts->get_product_store(1,'1444');
-						$newItems[$key]['change'][1]['product_id']='1444';
+						$newItems[$key]['change'][1]['product_id']='1444';*/
 						$effective--;
 					}
 					

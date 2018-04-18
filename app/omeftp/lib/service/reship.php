@@ -22,7 +22,7 @@ class omeftp_service_reship{
      * @access public
      * @param int $delivery_id 发货单ID
      */
-    public function delivery($delivery_id,$reship_id){
+    public function delivery($delivery_id,$reship_id,$return_type='return',$change=array()){
         $deliveryModel = app::get('ome')->model('delivery');
         $delivery = $deliveryModel->dump($delivery_id);
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
@@ -82,7 +82,11 @@ class omeftp_service_reship{
                         'oms_rma_id'=>$reship_id,
                     );
             }
-            kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'return_required','',time(),$refund_info);
+			if($return_type=="change"){
+				kernel::single('omemagento_service_change')->sendChangeOrder($change);
+			}else{
+				kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'return_required','',time(),$refund_info);
+			}
 
 		}else{
 			$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');

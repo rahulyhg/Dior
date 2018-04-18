@@ -213,7 +213,7 @@ class erpapi_oms_order
 								$post['order_bn']=$arrRoute[$intDeliveryId]['relate_order_bn'];
 								$post['exchange_no']=$arrReship[0]['m_reship_bn'];
 								$post['status']='complete';
-								$post['shipped_at']=date('Y-m-d H:i:s',$accept_time);
+								$post['event_time']=date('Y-m-d H:i:s',$accept_time);
 								kernel::single('omemagento_service_change')->updateStatus($post);
 							}else{
 								kernel::single('omemagento_service_order')->update_status($order_bn,'complete','',$accept_time);
@@ -921,6 +921,11 @@ class erpapi_oms_order
 		$paymentdata['status'] = 'succ';
 		$paymentdata['memo'] = '';
 		$paymentdata['is_orderupdate'] = 'false';
+		
+		//MCD
+		if($iorder['is_mcd']=="true"&&$iorder['createway']=="after"){
+			$paymentdata['statement_status']='true';//不需要对账
+		}
 		if(!$oPayment->create_payments($paymentdata)){
 			return false;
 		}

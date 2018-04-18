@@ -29,7 +29,11 @@ class omemagento_service_request{
 		//curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+		if($method=="getAllExchangeSku"){
+			curl_setopt($ch, CURLOPT_POSTFIELDS,$params);
+		}else{
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+		}
 		$rs = curl_exec($ch);
 		curl_close($ch);
 		

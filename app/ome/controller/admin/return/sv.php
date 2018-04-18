@@ -342,7 +342,7 @@ class ome_ctl_admin_return_sv extends desktop_controller {
 						$arrOrder=$objOrder->getList("order_bn",array('order_id'=>$reship['order_id']));
 						$data['order_bn']=$arrOrder[0]['order_bn'];
 						$data['exchange_no']=$reship['m_reship_bn'];
-						$data['status']='fail';
+						$data['status']='failed';
 						$data['admin_comment']=$refuseMemo['refuse'];
 						kernel::single('omemagento_service_change')->updateStatus($data);
                     }
