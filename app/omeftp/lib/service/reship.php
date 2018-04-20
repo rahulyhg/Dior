@@ -72,20 +72,37 @@ class omeftp_service_reship{
 			$ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
 
             $orderReship = app::get('ome')->model('reship_items');
-            $reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
-            $refund_info = array();
-            foreach($reInfo as $reItem){
-                $refund_info[] = array(
-                        'sku'=>$reItem['bn'],
-                        'nums'=>$reItem['num'],
-                        'price'=>$reItem['price'],
-                        'oms_rma_id'=>$reship_id,
-                    );
-            }
+			$objReship=app::get("ome")->model("reship");
+            
 			if($return_type=="change"){
 				kernel::single('omemagento_service_change')->sendChangeOrder($change);
 			}else{
-				kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'return_required','',time(),$refund_info);
+				//售后生成的新订单退货需传原始订单号,原始退的商品
+				$order_bn=$order_id=$relate_reship_id=NULL;
+				$arrOriginalOrder=$arrReship=array();
+				if($delivery['order']['createway']=="after"){
+					$arrOriginalOrder=$objReship->getOriginalOrder($delivery['order']['order_bn']);
+					$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
+					$order_id=$arrOriginalOrder['order_id'];//新订单号
+					//新订单号即为reship表的p_order_id,来查询退了哪些
+					$arrReship=$objReship->getList("reship_id",array('p_order_id'=>$order_id));
+					$relate_reship_id=$arrReship[0]['reship_id'];
+				}else{
+					$order_bn=$delivery['order']['order_bn'];
+					$relate_reship_id=$reship_id;
+				}
+				
+				$reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
+				$refund_info = array();
+				foreach($reInfo as $reItem){
+					$refund_info[] = array(
+							'sku'=>$reItem['bn'],
+							'nums'=>$reItem['num'],
+							'price'=>$reItem['price'],
+							'oms_rma_id'=>$reship_id,//始终用新reship_id
+						);
+				}
+				kernel::single('omemagento_service_order')->update_status($order_bn,'return_required','',time(),$refund_info);
 			}
 
 		}else{

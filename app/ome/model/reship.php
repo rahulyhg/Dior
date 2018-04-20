@@ -820,6 +820,10 @@ class ome_mdl_reship extends dbeav_model{
 		$arrOrder=$objOrder->getList('order_id,order_bn,route_status,is_mcd,routetime,createway',array('order_id'=>$order_id));
 		$arrOrder=$arrOrder[0];
 		
+		if($return_type=="return"){
+			return true;
+		}
+		
 		if($arrOrder['createway']=="after"){
 			$msg='此订单已参与过换货，无法再次申请';
 			return false;
@@ -871,6 +875,31 @@ class ome_mdl_reship extends dbeav_model{
 		$arr['memo']=$str_memo;
 		
 		return $arr;
+	}
+	
+	function getOriginalOrderId($original_order_bn){
+		$arrOriginalOrder=$this->app->model("orders")->getList("order_id",array('order_bn'=>$original_order_bn));
+		return $arrOriginalOrder[0]['order_id'];
+	}
+	
+	function getOriginalOrder($order_bn){
+		$objOrder=$this->app->model("orders");
+		//order_id 新订单 order_id
+		//relate_order_bn 老订单号
+		$arrOriginalOrder=$arrOrder=array();
+		$arrOrder=$objOrder->getList("order_id,relate_order_bn",array('order_bn'=>$order_bn));
+		$arrOrder=$arrOrder[0];
+		
+		$arrOriginalOrder=$objOrder->getList("order_id AS relate_order_id",array('order_bn'=>$arrOrder['relate_order_bn']));
+		$arrOriginalOrder=$arrOriginalOrder[0];
+		
+		return array_merge($arrOrder,$arrOriginalOrder);
+	}
+	
+	function getOriginalTradeNo($original_order_bn){
+		$arrOriginalOrder=$this->app->model("orders")->getList("order_id",array('order_bn'=>$original_order_bn));
+		$arrOriginaPayment=$this->app->model("payments")->getList("trade_no",array('order_id'=>$arrOriginalOrder[0]['order_id']));
+		return $arrOriginaPayment[0]['trade_no'];
 	}
 	
     /*
@@ -1066,17 +1095,22 @@ class ome_mdl_reship extends dbeav_model{
       }else{
         $orders = $oOrder->dump(array('order_id'=>$order_id));
       }
-      
-	  //zjr
+      //zjr
 	  $z_bn=$orders['pay_bn'];
 	  $z_order_bn=$orders['order_bn'];
 	  $arrPay_id= $this->db->selectrow("SELECT id FROM sdb_ome_payment_cfg WHERE pay_bn='$z_bn'");
-	  //echo "<pre>";print_r($arrPay_id);
 	  $arrPay_id=$arrPay_id['id'];
 	  if($arrPay_id=="3"){
 	      $arrPay_id=4;
 	  }
-      $z_r_apply_bn=$this->db->selectrow("SELECT payment_bn FROM sdb_ome_payments WHERE order_id='$order_id' AND status='succ'");
+	  //如果是MCD换货订单申请退款 关联原始支付单号
+	  $relate_order_id=NULL;
+	  if($orders['createway']=="after"){
+		  $relate_order_id=$this->getOriginalOrderId($orders['relate_order_bn']);
+	  }else{
+		  $relate_order_id=$order_id;
+	  }
+      $z_r_apply_bn=$this->db->selectrow("SELECT payment_bn FROM sdb_ome_payments WHERE order_id='$relate_order_id' AND status='succ'");
 	  $refund_apply_bn=$z_r_apply_bn['payment_bn'];
 	  $refund_apply_bn=$oRefund_apply->checkRefundApplyBn($refund_apply_bn);
       //生成退款申请单
@@ -1294,18 +1328,6 @@ class ome_mdl_reship extends dbeav_model{
             $is_generate_aftersale = false;
             
         }
-		//echo "<pre>";print_r($arrPay_id);
-		//zjr发给买尽头
-		$z_refund_id=$refund_sdf['apply_id'];
-		$z_order_bn=$z_order_bn;
-		
-		$z_refund_info[] = array('oms_rma_id'=>$reship_id);
-		if($arrPay_id=="4"){
-			kernel::single('omemagento_service_order')->update_status($z_order_bn,'refund_required','',time(),$z_refund_info);
-		}else{
-			kernel::single('omemagento_service_order')->update_status($z_order_bn,'refunding','',time(),$z_refund_info);
-		}
-		app::get('ome')->model('refund_apply')->sendRefundToM($z_refund_id,$z_order_bn,$z_money,$reship_id);
       }
 
 

@@ -83,6 +83,8 @@ class erpapi_oms_order
 	public function RoutePush($params=NULL,$begin=10,$end=10){
 		$twoweek=strtotime(date("Y-m-d H:i:s",strtotime("-3 week")));
 		$objOrder = kernel::single("ome_mdl_orders");
+		$mdl_reship=kernel::single("ome_mdl_reship");
+		
 		if(!empty($params)){
 			$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment FROM sdb_ome_orders WHERE process_status='splited' AND order_bn='$params'";
 			$arrDelivery=$objOrder->db->select($sql);
@@ -205,11 +207,11 @@ class erpapi_oms_order
 							}
 							
 							$objOrder->db->exec("UPDATE sdb_ome_orders SET route_status='1',routetime='$accept_time' WHERE order_bn='$order_bn'");
+							
 							//发给magento
-							if($arrRoute[$intDeliveryId]['is_mcd']=="true"&&$$arrRoute[$intDeliveryId]['createway']=="after"){
+							if($arrRoute[$intDeliveryId]['is_mcd']=="true"&&$arrRoute[$intDeliveryId]['createway']=="after"){
 								$post=$arrReship=array();
 								$arrReship=$mdl_reship->getList("m_reship_bn",array('p_order_id'=>$order_id));
-								
 								$post['order_bn']=$arrRoute[$intDeliveryId]['relate_order_bn'];
 								$post['exchange_no']=$arrReship[0]['m_reship_bn'];
 								$post['status']='complete';
@@ -935,6 +937,8 @@ class erpapi_oms_order
 	}
 	
 	public function change($params){
+		error_log('begin:'.$params['order'],3,DATA_DIR.'/changeorder/'.date("Ymd").'zjrorder.txt');
+		error_log('end:'.base64_decode($params['order']),3,DATA_DIR.'/changeorder/'.date("Ymd").'zjrorder.txt');
 		$this->params=base64_decode($params['order']);
 		$post=json_decode(base64_decode($params['order']),true);
 		
@@ -971,7 +975,7 @@ class erpapi_oms_order
 				}
 				
 				if(isset($arrPost[$return_type][$product['bn']])){
-					$arrPost[$return_type][$product['bn']]['num']=$product['num']+1;
+					$arrPost[$return_type][$product['bn']]['num']=$arrPost[$return_type][$product['bn']]['num']+1;
 				}else{
 					$arrPost[$return_type][$product['bn']]['num']=$product['num'];
 				}

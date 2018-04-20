@@ -198,11 +198,11 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
         $post['is_check'] = $reshipinfo['is_check'];
 		
 		//zjrMCD
+		$arrPostMagento=array();
 		if($post['return_type']=="change"){
 			$arr=$Oreship->getMcd($post,true);
 			$post['change']['product']=$arr['change']['product'];
 			$post['memo']=$arr['memo'];
-			$arrPostMagento=array();
 			$arrPostMagento=$arr['magento'];
 		}
 		
