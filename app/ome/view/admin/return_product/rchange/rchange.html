@@ -481,6 +481,13 @@ $E('#return-apply #reship-check').addEvent('click',function(e){
     var money = calculate(); 
     if(money == false) {_this.set('disabled',false);return false;}
 
+	if(return_type=="change"){
+		if(money.mvalue.totalmoney!=0) {
+			alert("换货金额异常，无法换货");
+			return false;
+		}
+	}
+	
     if (money.mvalue.totalmoney>0) {
         if (!confirm('还需退还用户'+money.totalmoney)) {
           _this.set('disabled',false);
@@ -563,7 +570,14 @@ $E('#return-apply .btn-primary').addEvent('click',function(){
     /*差价判断*/
     var money = calculate();
     if(money == false) {_this.set('disabled',false); return false;}
-
+	
+	if(return_type=="change"){
+		if(money.mvalue.totalmoney!=0) {
+			alert("换货金额异常，无法换货");
+			return false;
+		}
+	}
+	
     if (money.mvalue.totalmoney>0) {
       if (!confirm('还需退还用户'+money.totalmoney)) {
         _this.set('disabled',false);

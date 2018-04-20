@@ -396,9 +396,11 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 		$arrApllyId=$_POST['apply_id'];
 		$objPayments=$this->app->model('payment_cfg');
 		$oRefaccept = &$this->app->model('refund_apply');
+		$objReship=app::get("ome")->model("reship");
+		$objOrder=app::get("ome")->model("orders");
 		$arrPayments=array();
 		foreach($arrApllyId as $id){
-			$arrPayments[]=$oRefaccept->db->select("SELECT r.apply_id,r.refund_apply_bn,r.BankName,r.BeneficiaryName,r.BeneficiaryBankName,r.pay_account,r.money,r.isk,r.iss,p.trade_no,o.order_bn,o.wx_order_bn,p.money AS p_money,o.pay_bn,o.ship_status FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments p ON p.order_id=r.order_id LEFT JOIN sdb_ome_orders o ON o.order_id=r.order_id WHERE r.apply_id='$id' AND r.status='2'");
+			$arrPayments[]=$oRefaccept->db->select("SELECT r.apply_id,r.refund_apply_bn,r.BankName,r.BeneficiaryName,r.BeneficiaryBankName,r.pay_account,r.money,r.isk,r.iss,p.trade_no,o.order_bn,o.wx_order_bn,p.money AS p_money,o.pay_bn,o.ship_status,o.createway,o.relate_order_bn FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments p ON p.order_id=r.order_id LEFT JOIN sdb_ome_orders o ON o.order_id=r.order_id WHERE r.apply_id='$id' AND r.status='2'");
 		}
 		$arrPayments=array_filter($arrPayments);
 		
@@ -406,6 +408,18 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 			foreach($vs as $k=>$v){
 				if($v['ship_status']=="1"){
 					echo "订单:".$v['order_bn']."已发货不可提交退款";exit();
+				}
+				//此订单如果有相关联的新换货订单 并且还未发货，阻止退款 为了开票不出错
+				$arrRelateOrder=array();
+				$arrRelateOrder=$objOrder->dump(array('relate_order_bn'=>$v['order_bn'],'ship_status'=>'0'),'order_id');
+				if(!empty($arrRelateOrder)){
+					echo "订单:".$v['order_bn']."有相关联的换货订单还未发货，无法提交退款";exit();
+				}
+				//售后生成的订单再去退款关联原始支付单号
+				if($v['createway']=="after"){
+					$original_trade_no=NULL;
+					$original_trade_no=$objReship->getOriginalTradeNo($v['relate_order_bn']);
+					$arrPayments[$ks][$k]['trade_no']=$original_trade_no;
 				}
 				if($v['pay_bn']=="cod"){
 					if($v['BeneficiaryName']==""||$v['BeneficiaryBankName']==""||$v['pay_account']==""){

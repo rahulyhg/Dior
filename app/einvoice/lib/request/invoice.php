@@ -73,6 +73,13 @@ class einvoice_request_invoice extends einvoice_request_abstract{
 		
 		$reship_info = $objReship->getList('reship_id,return_type',array('order_id'=>$order_id,'status'=>'succ'));
 		
+		//排除已经开过的
+		$arrInvoice=array();
+		$arrInvoice = $objInvoice->getList('*',array('order_id'=>$order_id,'invoice_type'=>'active'),0,1,'id desc');
+		if(!empty($arrInvoice)){
+			return false;
+		}
+		
 		//MCD
 		$mcdFlag=false;
 		if(!empty($reship_info)){
@@ -146,7 +153,7 @@ class einvoice_request_invoice extends einvoice_request_abstract{
 		if($mcdFlag===true){
 			
 			$arrRelateOrderBn=array();
-			$arrRelateOrderBn=$objOrders->getList("order_id,order_bn",array('relate_order_bn'=>$order_data['order_bn'],'createway'=>'after','is_mcd'=>'true','ship_status'=>'1'));
+			$arrRelateOrderBn=$objOrders->getList("order_id,order_bn",array('relate_order_bn'=>$order_data['order_bn'],'createway'=>'after','is_mcd'=>'true'));
 			
 			if(!empty($arrRelateOrderBn)){
 				foreach($arrRelateOrderBn as $relateOrder){

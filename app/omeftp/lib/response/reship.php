@@ -112,6 +112,7 @@ class omeftp_response_reship{
 		$mdl_order = app::get('ome')->model('orders');
 		$mdl_reship = app::get('ome')->model('reship');
 		$reship  = app::get('ome')->model('reship_items');
+		$objRefundApply=app::get('ome')->model('refund_apply');
 
 		$oProduct_pro = app::get('ome')->model('return_process');
         $oProduct = app::get('ome')->model('return_product');
@@ -132,7 +133,7 @@ class omeftp_response_reship{
 		$order_bn = $order_bn_arr[0];
 		$reship_index = str_replace('R','',$order_bn_arr[1]);
 		
-		$order_info = $mdl_order->getList('order_id',array('order_bn'=>$order_bn));
+		$order_info = $mdl_order->getList('order_id,createway,relate_order_bn',array('order_bn'=>$order_bn));
 		
 		$reships= $mdl_reship->getList('*',array('order_id'=>$order_info[0]['order_id']));
 		$reships = array_reverse($reships);
@@ -237,6 +238,14 @@ class omeftp_response_reship{
 		$_POST['por_id'] = $product_process['por_id'];//echo "<pre>";print_r($_POST);exit;
 		$sign = kernel::single('ome_return')->toQC($reship_id,$_POST,$msg);
 		if($sign){
+			$createway=$order_info[0]['createway'];
+			//售后生成的新订单
+			if($createway=="after"){
+				$arrOriginalOrder=$mdl_reship->getOriginalOrder($order_bn);
+				$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
+				$order_info[0]['order_id']=$arrOriginalOrder['relate_order_id'];//老订单ID
+			}
+				
 			if($row[0]['return_type']=='change'){//状态传给magento
 				$arrPostMagento=array();
 				$arrPostMagento['status']='exchanging';
@@ -244,6 +253,21 @@ class omeftp_response_reship{
 				$arrPostMagento['exchange_no']=$row[0]['m_reship_bn'];
 				kernel::single('omemagento_service_change')->updateStatus($arrPostMagento);
 			}
+			
+			if($row[0]['return_type']=='return'){
+				$magento_type=NULL;
+				$arrRefundApply=$arrOriginalOrder=array();
+				$arrRefundApply=$objRefundApply->dump(array('reship_id'=>$reship_id),'apply_id,payment,money');
+				if($arrRefundApply['payment']=="4"){
+					$magento_type='refund_required';
+				}else{
+					$magento_type='refunding';
+				}
+				
+				kernel::single('omemagento_service_order')->update_status($order_bn,$magento_type,'',time(),array('oms_rma_id'=>$reship_id));
+				app::get('ome')->model('refund_apply')->sendRefundToM($arrRefundApply['apply_id'],$order_bn,$arrRefundApply['money'],$reship_id);
+			}
+			
 			kernel::single('einvoice_request_invoice')->invoice_request($order_info[0]['order_id'],'getCancelInvoiceData');
 			return true;
 		}else{

@@ -9,6 +9,7 @@ class ome_cod_refund{
 		$objOrder = &app::get('ome')->model('orders');
 		$oRefund_apply = &$this->app->model('refund_apply');
 		$oShop = &app::get('ome')->model ( 'shop' );
+		$mdl_reship = app::get('ome')->model('reship');
 		$arrRefund=$arrRefund[0];
 		$data=array();
 		$refund_money=$arrRefund['money'];
@@ -17,7 +18,16 @@ class ome_cod_refund{
         $countPrice=$refund_money;
         $totalPrice=0;
         $totalPrice=$countPrice+$bcmoney;
-        $z_r_apply_bn=$objOrder->db->selectrow("SELECT payment_bn FROM sdb_ome_payments WHERE order_id='$order_id' AND status='succ'");
+		
+		//如果是MCD换货订单申请退款 关联原始支付单号
+		$relate_order_id=NULL;
+	    if($arrRefund['createway']=="after"){
+			$relate_order_id=$this->getOriginalOrderId($arrRefund['relate_order_bn']);
+		}else{
+		    $relate_order_id=$order_id;
+		}
+		
+        $z_r_apply_bn=$objOrder->db->selectrow("SELECT payment_bn FROM sdb_ome_payments WHERE order_id='$relate_order_id' AND status='succ'");
 	    $refund_apply_bn=$z_r_apply_bn['payment_bn'];
 	    $refund_apply_bn=$oRefund_apply->checkRefundApplyBn($refund_apply_bn);
         $source='local';
@@ -46,12 +56,18 @@ class ome_cod_refund{
 		//echo "<pre>";print_r($data);exit();
 		if($oRefund_apply->save($data)){
 			$z_refund_id=$data['apply_id'];
-			$z_order_bn=$arrRefund['order_bn'];
+			if($arrRefund['createway']=="after"){
+				$arrOriginalOrder=array();
+				$arrOriginalOrder=$mdl_reship->getOriginalOrder($arrRefund['order_bn']);
+				$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
+			}else{
+				$order_bn=$arrRefund['order_bn'];
+			}
 			$z_money=$totalPrice;
 			$z_refund_info[] = array('oms_rma_id'=>$arrRefund['reship_id']);
 			
-			kernel::single('omemagento_service_order')->update_status($z_order_bn,'refund_required','',time(),$z_refund_info);
-			app::get('ome')->model('refund_apply')->sendRefundToM($z_refund_id,$z_order_bn,$z_money,$arrRefund['reship_id']);
+			kernel::single('omemagento_service_order')->update_status($order_bn,'refund_required','',time(),$z_refund_info);
+			app::get('ome')->model('refund_apply')->sendRefundToM($z_refund_id,$order_bn,$z_money,$arrRefund['reship_id']);
 			return true;
 		}
 		return false;
@@ -112,20 +128,17 @@ class ome_cod_refund{
 					if($status=="交易成功"||$status=="银行已汇出"){
 						$objRefund->updateCodRefund($apply_id,$refundTime);
 					}else{//交易失败
-						$arrOrderBn=$objOrder->db->select("SELECT o.order_bn,a.reship_id,o.order_id,o.shop_id,a.money FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
+						$arrOrderBn=$objOrder->db->select("SELECT o.order_bn,a.reship_id,o.order_id,o.shop_id,o.createway,o.relate_order_bn,a.money FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
 						$objOrder->db->exec("UPDATE sdb_ome_refund_apply SET status='6' WHERE apply_id='$apply_id'");
-					    kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
-						$result=$this->app->model('refund_apply')->sendRefundStatus($apply_id,2);
-						$result=json_decode($result,true);
-						if($result['success']=="true"){
-						     if($this->autoRefund($arrOrderBn)){
-							     error_log('excel自动生成订单成功:'.$arrOrderBn[0]['order_bn'],3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');
-							 }else{
-								 error_log('excel自动生成订单失败:'.$arrOrderBn[0]['order_bn'],3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');
-							 }
+					    
+						$this->app->model('refund_apply')->sendMagentoAndEinvoiceData($arrOrderBn['0']['order_id'],$apply_id,2);
+						
+						if($this->autoRefund($arrOrderBn)){
+							error_log('excel自动生成订单成功:'.$arrOrderBn[0]['order_bn'],3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');
 						}else{
-							error_log('导入后m返回失败:'.$arrOrderBn[0]['order_bn'],3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');
-						}
+							error_log('excel自动生成订单失败:'.$arrOrderBn[0]['order_bn'],3,DATA_DIR.'/mrefund/'.date("Ymd").'zjrorder.txt');
+					    }
+						
 					}
 				}
 			}
