@@ -66,6 +66,11 @@ $db['reship']=array (
       'in_list' => false,
       'default_in_list' => false,
     ),
+	'relate_change_items' =>
+    array (
+      'type' => 'longtext',
+      'editable' => false,
+    ),
     'money' =>
     array (
       'type' => 'money',

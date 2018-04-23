@@ -963,6 +963,7 @@ class erpapi_oms_order
 		
 		//整理数组
 		$str_memo='';
+		$arrRelateChangeItems=array();
 		foreach($post['items'] as $k=>$items){
 			
 			$memo='';//兑换明细一对一
@@ -981,12 +982,17 @@ class erpapi_oms_order
 				}
 				$arrPost[$return_type][$product['bn']]['bn']=$product['bn'];
 				$arrPost[$return_type][$product['bn']]['price']=$product['price'];
+				
+				$arrRelateChangeItems['items'][$k]=array(
+					'sku'=>$items['return']['bn'],
+					'ex_sku'=>$items['change']['bn'],
+				);
 			}
 			
 			$str_memo.=$memo;
 		}
 		$post=array_merge($post,$arrPost);
-		
+		//echo "<pre>";print_r($arrRelateChangeItems);exit;
 		//判断是否能够申请
 		if(!$objReship->isCanAddMcdReship($order_id,'change',$msg)){
 			return $this->send_error($msg);
@@ -1098,6 +1104,7 @@ class erpapi_oms_order
 			
 			$refund['is_check']=1;
 			$refund['check_time']=time();
+			$refund['relate_change_items']=serialize($arrRelateChangeItems);
 			if(!$objReship->update($refund,array('reship_bn'=>$reship_bn))){
 				$db->rollBack();
 				return $this->send_error('System Error');

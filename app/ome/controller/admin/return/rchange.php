@@ -236,6 +236,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
             $refund['cost_freight_money'] = $money['cost_freight_money'];
 			//oms发起的换货单 前端单号等于oms换货单号
 			$refund['m_reship_bn']=$reship_bn;
+			$refund['relate_change_items']=serialize($arrPostMagento);
             $Oreship->update($refund,array('reship_bn'=>$reship_bn));
         }
 
@@ -503,7 +504,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 							foreach($arrChangeSku['items'] as $k=>$product){
 								$newItems[$key]['change'][$k]['bn']=$product['sku'];
 								$newItems[$key]['change'][$k]['name']=$product['name'];
-								$newItems[$key]['change'][$k]['price']=$product['price'];
+								$newItems[$key]['change'][$k]['price']=$product['price'];//$product['price'];
 								
 								$arrProduct=array();
 								$arrProduct=$objProducts->getList("product_id",array('bn'=>$product['sku']));
