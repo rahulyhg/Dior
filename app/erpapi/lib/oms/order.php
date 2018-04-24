@@ -1531,7 +1531,7 @@ class erpapi_oms_order
 		if($info['ship_status']=='1'){
 			kernel::single('einvoice_request_invoice')->invoice_request($info['order_id'],'getApplyInvoiceData');
 		}
-		if($info['ship_status']=='3'&&$info['pay_status']=='4'){
+		if(($info['ship_status']=='3'&&$info['pay_status']=='4')||($info['ship_status']=='3'&&$info['pay_status']=='3')){
 			kernel::single('einvoice_request_invoice')->invoice_request($info['order_id'],'getApplyInvoiceData');
 		}
 		 $res=$this->send_succ('申请成功');
