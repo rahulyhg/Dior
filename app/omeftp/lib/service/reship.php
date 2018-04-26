@@ -74,6 +74,11 @@ class omeftp_service_reship{
             $orderReship = app::get('ome')->model('reship_items');
 			$objReship=app::get("ome")->model("reship");
             
+			//如果是magento发起的 直接返回无需再走下去
+			if($return_type=="change"&&empty($change)){
+				return true;
+			}
+			
 			if($return_type=="change"){
 				kernel::single('omemagento_service_change')->sendChangeOrder($change);
 			}else{

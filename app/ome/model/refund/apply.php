@@ -559,7 +559,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 
 		$arrRefund=$this->db->select("SELECT o.trade_no,o.order_id,r.apply_id,r.wxpaybatchno FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE r.wxstatus='true' AND (r.status='5' OR r.status='6')");
 		
-		if(!empty($arrRefund[0]['trade_no'])){
+		if(!empty($arrRefund[0]['apply_id'])){
 		    foreach($arrRefund as $trade_no){
 				$processing=false;
 			    if(kernel::single('ome_wxpay_refund')->checkRefund($trade_no,$processing)){

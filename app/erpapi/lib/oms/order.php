@@ -1116,6 +1116,11 @@ class erpapi_oms_order
 		$reship_id=$objReship->getList("reship_id",array('reship_bn'=>$reship_bn));
 		$reship_id=$reship_id[0]['reship_id'];
 		kernel::single('console_reship')->change_freezeproduct($reship_id,'+');
+		//传给ax
+		$objDeliveryOrder = app::get('ome')->model('delivery_order');
+		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$order_id,'status'=>'succ'));
+		$delivery_id = array_reverse($delivery_id);
+		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship_id,'change');
 		
 		return $this->send_succ('succ');
 	}
