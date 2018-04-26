@@ -453,7 +453,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
                     $refund = $archive_ordObj->Get_refund_count ( $order_id, $v ['bn'] );
                     $items [$k] ['branch'] = $archive_ordObj->getBranchCodeByBnAndOd ( $v ['bn'], $order_id );
                 }else{
-                    $refund = $oReship_item->Get_refund_count ( $order_id, $v ['bn'], '', 'change');
+                    $refund = $oReship_item->Get_refund_count ( $order_id, $v ['bn'], '', $after_service);
                     $items [$k] ['branch'] = $oReship_item->getBranchCodeByBnAndOd ( $v ['bn'], $order_id );
                 }
                 
@@ -471,7 +471,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
             }
             $tmp_product[] = $items[$k]['product_id'];
         } 
-		//echo "<pre>";print_r($newItems);exit;
+		
 		//换货拆先拆明细
 		if($after_service=="change"){
 			foreach($newItems as $bn=>$v){
@@ -532,7 +532,6 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 			}
 		}
 		//echo "<pre>";print_r($after_service);print_r($newItems);exit;
-      
         $items = $newItems;
         if($type == 'return'){
             $this->pagedata['total_return_filter'] = implode(',',$tmp_product);

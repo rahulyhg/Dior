@@ -19,6 +19,11 @@ class ome_mdl_reship_items extends dbeav_model{
 			 $sql = "SELECT sum(i.num) as nums FROM sdb_ome_reship as r left join sdb_ome_reship_items as i on r.reship_id=i.reship_id WHERE i.return_type='return' AND r.order_id='".$order_id."' AND i.bn='".$bn."'";
 			 $change = $this->db->selectrow($sql);
 			 
+			 //相同SKU申请过，就无法申请另一个
+			 if($change['nums']>0){
+				 return 0;
+			 }
+			 
 			 return $order['count']-$change['nums'];
 		}
  
