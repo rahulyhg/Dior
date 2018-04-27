@@ -98,9 +98,11 @@ class console_reship{
             if ($type == '+') {
                 $oProducts->freez($product_id,$num);
                 $branch_productObj->freez($branch_id,$product_id,$num);
+				$branch_productObj->chg_store_freeze_change($branch_id,$product_id,$num,'+');
             }elseif ($type=='-') {
                 $oProducts->unfreez($branch_id,$product_id,$num);
                 $branch_productObj->unfreez($branch_id,$product_id,$num);    
+				$branch_productObj->chg_store_freeze_change($branch_id,$product_id,$num,'-');
             }
         }
     }
