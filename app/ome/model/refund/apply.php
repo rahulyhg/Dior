@@ -427,8 +427,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 		$oRefund = &$this->app->model('refunds');
         $oLoger = &$this->app->model('operation_log');
         $objShop = &$this->app->model('shop');
-		
-		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
+		$arrRefund=$this->db->select("SELECT apply_id FROM sdb_ome_refund_apply WHERE refund_apply_bn LIKE '$trade_no%' AND alipaybatchno='$batch_no' AND status='5'");
 		if(!empty($arrRefund['0']['apply_id'])){
 			foreach($arrRefund as $trade_no){
 				    $apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
@@ -560,7 +559,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 
 		$arrRefund=$this->db->select("SELECT o.trade_no,o.order_id,r.apply_id,r.wxpaybatchno FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE r.wxstatus='true' AND (r.status='5' OR r.status='6')");
 		
-		if(!empty($arrRefund[0]['trade_no'])){
+		if(!empty($arrRefund[0]['apply_id'])){
 		    foreach($arrRefund as $trade_no){
 				$processing=false;
 			    if(kernel::single('ome_wxpay_refund')->checkRefund($trade_no,$processing)){

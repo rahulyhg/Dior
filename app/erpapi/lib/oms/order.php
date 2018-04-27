@@ -963,6 +963,7 @@ class erpapi_oms_order
 		
 		//整理数组
 		$str_memo='';
+		$arrRelateChangeItems=array();
 		foreach($post['items'] as $k=>$items){
 			
 			$memo='';//兑换明细一对一
@@ -981,12 +982,17 @@ class erpapi_oms_order
 				}
 				$arrPost[$return_type][$product['bn']]['bn']=$product['bn'];
 				$arrPost[$return_type][$product['bn']]['price']=$product['price'];
+				
+				$arrRelateChangeItems['items'][$k]=array(
+					'sku'=>$items['return']['bn'],
+					'ex_sku'=>$items['change']['bn'],
+				);
 			}
 			
 			$str_memo.=$memo;
 		}
 		$post=array_merge($post,$arrPost);
-		
+		//echo "<pre>";print_r($arrRelateChangeItems);exit;
 		//判断是否能够申请
 		if(!$objReship->isCanAddMcdReship($order_id,'change',$msg)){
 			return $this->send_error($msg);
@@ -1098,6 +1104,7 @@ class erpapi_oms_order
 			
 			$refund['is_check']=1;
 			$refund['check_time']=time();
+			$refund['relate_change_items']=serialize($arrRelateChangeItems);
 			if(!$objReship->update($refund,array('reship_bn'=>$reship_bn))){
 				$db->rollBack();
 				return $this->send_error('System Error');
@@ -1109,6 +1116,11 @@ class erpapi_oms_order
 		$reship_id=$objReship->getList("reship_id",array('reship_bn'=>$reship_bn));
 		$reship_id=$reship_id[0]['reship_id'];
 		kernel::single('console_reship')->change_freezeproduct($reship_id,'+');
+		//传给ax
+		$objDeliveryOrder = app::get('ome')->model('delivery_order');
+		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$order_id,'status'=>'succ'));
+		$delivery_id = array_reverse($delivery_id);
+		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship_id,'change');
 		
 		return $this->send_succ('succ');
 	}
@@ -1524,7 +1536,7 @@ class erpapi_oms_order
 		if($info['ship_status']=='1'){
 			kernel::single('einvoice_request_invoice')->invoice_request($info['order_id'],'getApplyInvoiceData');
 		}
-		if($info['ship_status']=='3'&&$info['pay_status']=='4'){
+		if(($info['ship_status']=='3'&&$info['pay_status']=='4')||($info['ship_status']=='3'&&$info['pay_status']=='3')){
 			kernel::single('einvoice_request_invoice')->invoice_request($info['order_id'],'getApplyInvoiceData');
 		}
 		 $res=$this->send_succ('申请成功');

@@ -13,13 +13,19 @@ class ome_mdl_reship_items extends dbeav_model{
         $sql = "SELECT sum(nums) as count FROM sdb_ome_order_items WHERE order_id='".$order_id."' AND bn='".$bn."' AND `delete`='false' ";
 
         $order=$this->db->selectrow($sql);
-		
+
 		//MCD换货不管成功与否都无法再次申请
 		if($return_type=="change"){
-			 $sql = "SELECT sum(i.num) as nums FROM sdb_ome_reship as r left join sdb_ome_reship_items as i on r.reship_id=i.reship_id WHERE i.return_type='return' AND r.order_id='".$order_id."' AND i.bn='".$bn."'";
-			 $change = $this->db->selectrow($sql);
-			 
-			 return $order['count']-$change['nums'];
+			
+			$arrAfterSales=array();
+			$arrAfterSales=$this->db->select("SELECT r.return_type FROM sdb_ome_reship r LEFT JOIN sdb_ome_reship_items  i on r.reship_id=i.reship_id WHERE i.return_type='return' AND r.order_id='".$order_id."' AND i.bn='".$bn."'");
+			 //相同SKU申请过，就无法申请另一个
+			foreach($arrAfterSales as $after){
+			    if($after['return_type']=="change"){
+			 		return 0;
+				}
+			}
+			
 		}
  
         $sql = "SELECT sum(i.normal_num) as normal_count,sum(i.defective_num) as defective_count FROM sdb_ome_reship as r left join sdb_ome_reship_items as i on r.reship_id=i.reship_id WHERE i.return_type='return' AND r.is_check in ('11','7') AND r.order_id='".$order_id."' AND i.bn='".$bn."'";

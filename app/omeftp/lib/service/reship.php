@@ -74,6 +74,11 @@ class omeftp_service_reship{
             $orderReship = app::get('ome')->model('reship_items');
 			$objReship=app::get("ome")->model("reship");
             
+			//如果是magento发起的 直接返回无需再走下去
+			if($return_type=="change"&&empty($change)){
+				return true;
+			}
+			
 			if($return_type=="change"){
 				kernel::single('omemagento_service_change')->sendChangeOrder($change);
 			}else{
@@ -85,8 +90,26 @@ class omeftp_service_reship{
 					$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
 					$order_id=$arrOriginalOrder['order_id'];//新订单号
 					//新订单号即为reship表的p_order_id,来查询退了哪些
-					$arrReship=$objReship->getList("reship_id",array('p_order_id'=>$order_id));
+					$arrReship=$objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
 					$relate_reship_id=$arrReship[0]['reship_id'];
+					$relate_change_items=unserialize($arrReship[0]['relate_change_items']);
+					//查看当前退货单退的商品
+					$arrReshipItems=array();
+					$arrReshipItems = app::get('ome')->model('reship_items')->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
+					//当前退货单退的商品即使原始退货单所换的商品，关联原始退的商品数量
+					$arrRelateReturn=array();
+					foreach($arrReshipItems as $k=>$reship){
+						foreach($relate_change_items['items'] as $relate){
+							if($arrReshipItems[$k]['num']>0&&$relate['ex_sku']==$reship['bn']){
+								if(isset($arrRelateReturn[$relate['sku']])){
+									$arrRelateReturn[$relate['sku']]['nums']=$arrRelateReturn[$relate['sku']]['nums']+1;
+								}else{
+									$arrRelateReturn[$relate['sku']]['nums']=1;
+								}
+								$arrReshipItems[$k]['num']--;
+							}
+						}
+					}
 				}else{
 					$order_bn=$delivery['order']['order_bn'];
 					$relate_reship_id=$reship_id;
@@ -95,9 +118,15 @@ class omeftp_service_reship{
 				$reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
 				$refund_info = array();
 				foreach($reInfo as $reItem){
+					if($delivery['order']['createway']=="after"){
+						if(!isset($arrRelateReturn[$reItem['bn']]))continue;
+						$nums=$arrRelateReturn[$reItem['bn']]['nums'];
+					}else{
+						$nums=$reItem['num'];
+					}
 					$refund_info[] = array(
 							'sku'=>$reItem['bn'],
-							'nums'=>$reItem['num'],
+							'nums'=>$nums,
 							'price'=>$reItem['price'],
 							'oms_rma_id'=>$reship_id,//始终用新reship_id
 						);
