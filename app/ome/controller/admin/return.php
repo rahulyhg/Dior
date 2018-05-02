@@ -679,7 +679,7 @@ class ome_ctl_admin_return extends desktop_controller {
         $this->title = '订单查看';
         $source = trim($_GET['source']);
         if (in_array($source,array('archive'))) {
-            $base_filter = array('disabled'=>'false','is_fail'=>'false','ship_status'=>array('1','3'),'pay_status'=>array('1','4'));
+            $base_filter = array('disabled'=>'false','is_fail'=>'false','ship_status'=>array('1','3'),'pay_status'=>array('1','4','3'));
             if (in_array($_SERVER['SERVER_NAME'],array('bzclarks.erp.taoex.com'))) {
                     unset($base_filter['pay_status']);
                     $base_filter['pay_status'] = array('1','4','5','6');
@@ -703,7 +703,7 @@ class ome_ctl_admin_return extends desktop_controller {
 
            $this->finder('archive_mdl_orders',$params);
         }else{
-            $base_filter = array('disabled'=>'false','is_fail'=>'false','ship_status'=>array('1','3'),'pay_status'=>array('1','4'));
+            $base_filter = array('disabled'=>'false','is_fail'=>'false','ship_status'=>array('1','3'),'pay_status'=>array('1','4','3'));
         //$base_filter['order_confirm_filter'] = "(sdb_ome_orders.is_cod='true' OR sdb_ome_orders.pay_status='1' OR sdb_ome_orders.pay_status='4')";
 
         $params = array(

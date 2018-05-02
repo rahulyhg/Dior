@@ -1067,6 +1067,38 @@ $db['orders']=array (
 	  'default_in_list' => true,
       'label' => 'WelcomeCard',
     ),
+	'is_mcd' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      'in_list' => true,
+	  'default_in_list' => false,
+      'label' => 'MCD',
+    ),
+	'is_mcd_card' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      'in_list' => true,
+	  'default_in_list' => false,
+      'label' => 'MCD Card',
+    ),
+	'mcd_package_sku' =>
+    array (
+      'type' => 'varchar(50)',
+      'label' => 'MCD包装',
+      'comment' => 'MCD包装',
+      'editable' => false,
+      'width' =>110,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
     'logi_id' =>
     array (
       'type' => 'table:dly_corp@ome',

@@ -22,7 +22,7 @@ class omeftp_service_reship{
      * @access public
      * @param int $delivery_id 发货单ID
      */
-    public function delivery($delivery_id,$reship_id){
+    public function delivery($delivery_id,$reship_id,$return_type='return',$change=array()){
         $deliveryModel = app::get('ome')->model('delivery');
         $delivery = $deliveryModel->dump($delivery_id);
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
@@ -72,23 +72,72 @@ class omeftp_service_reship{
 			$ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
 
             $orderReship = app::get('ome')->model('reship_items');
-            $reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
-            $refund_info = array();
-            foreach($reInfo as $reItem){
-                $refund_info[] = array(
-                        'sku'=>$reItem['bn'],
-                        'nums'=>$reItem['num'],
-                        'price'=>$reItem['price'],
-                        'oms_rma_id'=>$reship_id,
-                    );
-            }
-            kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'return_required','',time(),$refund_info);
+			$objReship=app::get("ome")->model("reship");
+            
+			//如果是magento发起的 直接返回无需再走下去
+			if($return_type=="change"&&empty($change)){
+				return true;
+			}
+			
+			if($return_type=="change"){
+				kernel::single('omemagento_service_change')->sendChangeOrder($change);
+			}else{
+				//售后生成的新订单退货需传原始订单号,原始退的商品
+				$order_bn=$order_id=$relate_reship_id=NULL;
+				$arrOriginalOrder=$arrReship=array();
+				if($delivery['order']['createway']=="after"){
+					$arrOriginalOrder=$objReship->getOriginalOrder($delivery['order']['order_bn']);
+					$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
+					$order_id=$arrOriginalOrder['order_id'];//新订单号
+					//新订单号即为reship表的p_order_id,来查询退了哪些
+					$arrReship=$objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
+					$relate_reship_id=$arrReship[0]['reship_id'];
+					$relate_change_items=unserialize($arrReship[0]['relate_change_items']);
+					//查看当前退货单退的商品
+					$arrReshipItems=array();
+					$arrReshipItems = app::get('ome')->model('reship_items')->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
+					//当前退货单退的商品即使原始退货单所换的商品，关联原始退的商品数量
+					$arrRelateReturn=array();
+					foreach($arrReshipItems as $k=>$reship){
+						foreach($relate_change_items['items'] as $relate){
+							if($arrReshipItems[$k]['num']>0&&$relate['ex_sku']==$reship['bn']){
+								if(isset($arrRelateReturn[$relate['sku']])){
+									$arrRelateReturn[$relate['sku']]['nums']=$arrRelateReturn[$relate['sku']]['nums']+1;
+								}else{
+									$arrRelateReturn[$relate['sku']]['nums']=1;
+								}
+								$arrReshipItems[$k]['num']--;
+							}
+						}
+					}
+				}else{
+					$order_bn=$delivery['order']['order_bn'];
+					$relate_reship_id=$reship_id;
+				}
+				
+				$reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
+				$refund_info = array();
+				foreach($reInfo as $reItem){
+					if($delivery['order']['createway']=="after"){
+						if(!isset($arrRelateReturn[$reItem['bn']]))continue;
+						$nums=$arrRelateReturn[$reItem['bn']]['nums'];
+					}else{
+						$nums=$reItem['num'];
+					}
+					$refund_info[] = array(
+							'sku'=>$reItem['bn'],
+							'nums'=>$nums,
+							'price'=>$reItem['price'],
+							'oms_rma_id'=>$reship_id,//始终用新reship_id
+						);
+				}
+				kernel::single('omemagento_service_order')->update_status($order_bn,'return_required','',time(),$refund_info);
+			}
 
 		}else{
 			$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
 		}
     }
-
 	public function getContent($delivery,$file,$reship_id){
 		$ax_content_arr = array();
 		if(file_exists($file)){
@@ -308,7 +357,8 @@ class omeftp_service_reship{
 		
 		
 		$orderReship = app::get('ome')->model('reship_items');
-		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
+		//MCD去掉换货明细
+		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
 
 		$line = 0;
 		foreach($reInfo as $key=>$reship_items){

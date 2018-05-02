@@ -23,12 +23,17 @@ class omemagento_service_request{
 		}
 		
 		$log_id = $this->write_log($method,$params);
-		//$rs = $this->objBhc->post($url,json_encode($params));
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
+		//curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		//curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+		if($method=="getAllExchangeSku"){
+			curl_setopt($ch, CURLOPT_POSTFIELDS,$params);
+		}else{
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+		}
 		$rs = curl_exec($ch);
 		curl_close($ch);
 		
@@ -37,13 +42,18 @@ class omemagento_service_request{
 		}
 		
 		$info = json_decode($rs,1);
+		
 		if ($info['success'] == true) {
 			$logData = array(
 					'log_id'=>$log_id,
 					'status'=>'success',
 				);
 			$this->log_mdl->save($logData);
-			return  true;
+			if($method=="getAllExchangeSku"){
+				return $info;
+			}else{
+				return true;
+			}
 		}else{
 			$logData = array(
 					'log_id'=>$log_id,
@@ -105,6 +115,17 @@ class omemagento_service_request{
 		 }
 		 if($method=='refundlog'){
 			 $msg = '更新退款单状态';
+		 }
+		 if($method=='exchangeOrder'){
+			 $params['order_id']=$params['order_bn'];
+			 $msg = '更新换货单状态';
+		 }
+		 if($method=='getAllExchangeSku'){
+			 $msg = '获取可换货商品';
+		 }
+		 if($method=='exchange'){
+			 $msg = '新增换货单';
+			 $params['order_id']=$params['order_bn'];
 		 }
 		$log_data = array(
 				'original_bn'=>$params['order_id']?$params['order_id']:$params['sku'],

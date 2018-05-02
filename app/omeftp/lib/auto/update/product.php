@@ -103,13 +103,14 @@ class omeftp_auto_update_product{
 				$bn = $product['bn'];
 				if($file_all_products[$bn]){
 					$file_pinfo = $file_all_products[$bn];
-					$store_freeze = $this->branch_product_mdl->getList('store_freeze',array('product_id'=>$product['product_id'],'branch_id'=>1));
-					$store = $file_pinfo[14]+$store_freeze[0]['store_freeze'];
+					$store_freeze = $this->branch_product_mdl->getList('store_freeze,store_freeze_change',array('product_id'=>$product['product_id'],'branch_id'=>1));
+					$store = $file_pinfo[14]+$store_freeze[0]['store_freeze']-$store_freeze[0]['store_freeze_change'];
 					$re = $this->branch_product_mdl->change_store(1,$product['product_id'],$store);
 					if($re){
 
 						$hasUser = $this->getHasUseStore($product['bn']);
-						$magentoStore = $file_pinfo[14]-$hasUser;
+						//减去换货所预占的库存
+						$magentoStore = $file_pinfo[14]-$hasUser-$store_freeze[0]['store_freeze_change'];
 						if($magentoStore<0){
 							$magentoStore = 0;
 						}

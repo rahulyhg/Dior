@@ -38,11 +38,11 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
            $params['title'] = '退换货单';
            //$params['base_filter'] = array('status|noequal'=>'succ');
            $actions = array();
-           $actions[] =array(
+           /*$actions[] =array(
                     'label' => '新建退换货单',
                     'href' => 'index.php?app=ome&ctl=admin_return_rchange&act=rchange',
                     'target' => "dialog::{width:1200,height:546,title:'新建退换货单'}",
-                  );
+                  );*/
            if ($_GET['view'] == '2') {
                 $actions[] =array('label' => '发送至第三方',
                             'submit' => 'index.php?app=ome&ctl=admin_return_rchange&act=batch_sync', 
@@ -158,10 +158,12 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
     function rchange(){
         $return_type = array('return'=>'退货','change'=>'换货');
         if ($_GET['type']) {
+			//zjr写死
             if ($_GET['type'] =='change') {
-                $return_type = array('change'=>'换货','return'=>'退货');
-                
-            }
+                $return_type = array('change'=>'换货');
+            }else{
+				$return_type = array('return'=>'退货');
+			}
             $reship_data['return_type'] = $_GET['type'];
             $this->pagedata['reship_data'] = $reship_data;
         }
@@ -184,7 +186,6 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
     }
 
     function add_rchange(){
-
         $this->begin();
         $post = kernel::single('base_component_request')->get_params(true);
 		
@@ -195,6 +196,16 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
         $Oreship = $this->app->model('reship');
         $reshipinfo = $Oreship->dump($post['reship_id'],'is_check');
         $post['is_check'] = $reshipinfo['is_check'];
+		
+		//zjrMCD
+		$arrPostMagento=array();
+		if($post['return_type']=="change"){
+			$arr=$Oreship->getMcd($post,true);
+			$post['change']['product']=$arr['change']['product'];
+			$post['memo']=$arr['memo'];
+			$arrPostMagento=$arr['magento'];
+		}
+		
         if(!$Oreship->validate($post,$v_msg)){
             $this->end(false,$v_msg);
         }
@@ -204,6 +215,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
                  $this->end(false,'此单据已完成!');
              }
          }
+		// echo "<pre>";print_r($post);print_r($arrPostMagento);exit;
         # 生成退换货单
         $reship_bn = $Oreship->create_treship($post,$msg);
         
@@ -222,7 +234,9 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
             $refund['change_amount'] = $money['change_amount'];
             $refund['diff_order_bn'] = $post['diff_order_bn'] ? $post['diff_order_bn'] : '';
             $refund['cost_freight_money'] = $money['cost_freight_money'];
-
+			//oms发起的换货单 前端单号等于oms换货单号
+			$refund['m_reship_bn']=$reship_bn;
+			$refund['relate_change_items']=serialize($arrPostMagento);
             $Oreship->update($refund,array('reship_bn'=>$reship_bn));
         }
 
@@ -233,13 +247,40 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$post['order_id']));
 		//echo "<pre>";print_r($delivery_id);exit;
 		$delivery_id = array_reverse($delivery_id);
-		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id']);
+		
+		//换货发给magento
+		if($post['return_type']=="change"){
+			$arrPostMagento['order_id']=$post['order_id'];
+			$arrPostMagento['exchange_no']=$reship_bn;
+			//kernel::single('omemagento_service_change')->sendChangeOrder($arrPostMagento);
+		}
+		
+		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id'],$post['return_type'],$arrPostMagento);
 
         $params['reship_id'] = $reship[0]['reship_id'];
 
         $this->end(true,$msg,null,$params);
     }
-
+	
+	function getOrderReturnType(){
+		
+		$return_type=$_GET['get_return_type'];
+			
+		$objOrder = $this->app->model('orders');
+		$objReship = $this->app->model('reship');
+			
+		$res=array();
+		$res['status']='fail';
+			
+		if(!$objReship->isCanAddMcdReship($_GET['order_id'],$return_type,$msg)){
+			$res['msg']=$msg;
+		}else{
+			$res['status']='succ';
+		}
+	
+		echo json_encode($res);
+		
+	}
 
     /**
      * 根据order_bn快速获取订单信息
@@ -253,7 +294,8 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
         $source = trim($_GET['source']);
         if ($order_bn){
             //已支付部分退款并且已发货或部分退货的款到发货订单或货到付款已发货或部分退货的订单
-            $base_filter = array('disabled'=>'false','is_fail'=>'false','ship_status'=>array('1','3'),'pay_status'=>array('1','4'),'order_bn|has'=>$order_bn);
+			//MCD 新增 部分付款
+            $base_filter = array('disabled'=>'false','is_fail'=>'false','ship_status'=>array('1','3'),'pay_status'=>array('1','3','4'),'order_bn|has'=>$order_bn);
 
             $order = $this->app->model('orders');
             if ($source) {
@@ -312,9 +354,10 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
      * @author
      **/
     function ajax_getOrderinfo()
-    {
+    {	
         $json_data = array('rsp'=>'fail','msg'=>'');
         $post = kernel::single('base_component_request')->get_params(true);
+		
         $source = $_GET['source'];
         if ($source && in_array($source,array('archive'))) {
             $oOrders = app::get('archive')->model ( 'orders' );
@@ -354,7 +397,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
      * @param String $type 数据类型 return:退货、change:换货
      * @return void
      */
-    function get_data($order_id,$type,$source=''){
+    function get_data($order_id,$type,$source='',$after_service='return'){
         //获取仓库模式
         $newItems = array();
         $tmp_product = array();
@@ -367,6 +410,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
             $oOrders_item = &$this->app->model ( 'order_items' );
             $order_object = $this->app->model('order_objects')->getList('*',array('order_id'=>$order_id,'obj_type'=>'pkg'));
         }
+		$objProducts = &app::get('ome')->model('products');
         $archive_ordObj = app::get('archive')->model('orders');
         $oReship_item = &$this->app->model ( 'reship_items' );
         $items = $oOrders_item->getList ( '*', array ('order_id' => $order_id ),0,-1,'obj_id desc' );
@@ -379,7 +423,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
             $object['ref'] = $table;
             $oObject[$object['obj_id']] = $object;
         }
-
+		
         $color = array('red','blue');
         foreach ( $items as $k => $v ) {
              $str_spec_value = '';
@@ -409,7 +453,7 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
                     $refund = $archive_ordObj->Get_refund_count ( $order_id, $v ['bn'] );
                     $items [$k] ['branch'] = $archive_ordObj->getBranchCodeByBnAndOd ( $v ['bn'], $order_id );
                 }else{
-                    $refund = $oReship_item->Get_refund_count ( $order_id, $v ['bn'] );
+                    $refund = $oReship_item->Get_refund_count ( $order_id, $v ['bn'], '', $after_service);
                     $items [$k] ['branch'] = $oReship_item->getBranchCodeByBnAndOd ( $v ['bn'], $order_id );
                 }
                 
@@ -426,8 +470,68 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
                 $newItems[$v['bn']] = $items[$k];
             }
             $tmp_product[] = $items[$k]['product_id'];
-        }
-        
+        } 
+		
+		//换货拆先拆明细
+		if($after_service=="change"){
+			foreach($newItems as $bn=>$v){
+				$averageSalesPrice=$averageAmountPrice=0;
+				if($v['is_mcd_product']=="true"&&$v['nums']>=1){
+					$averageSalesPrice=$v['sale_price']/$v['nums'];
+					$averageAmountPrice=$v['amount']/$v['nums'];
+					$effective=$v['effective'];
+					 
+					for($i=0;$i<$v['nums'];$i++){
+						if($effective<=0){
+							break;
+						}
+						
+						$key=$bn."_".$i;
+						
+						$newItems[$key]=$newItems[$bn];
+						$newItems[$key]['sale_price']=$averageSalesPrice;
+						$newItems[$key]['amount']=$averageSalesPrice;
+						$newItems[$key]['nums']=1;
+						$newItems[$key]['sendnum']=1;
+						if($effective=="1"){
+							$newItems[$key]['effective']=$effective;
+						}else{
+							$newItems[$key]['effective']=$effective-1;
+						}
+						//通过接口获取可以换货的商品
+						$arrChangeSku=array();
+						if($arrChangeSku=kernel::single('omemagento_service_change')->getChangeSku($bn)){
+							foreach($arrChangeSku['items'] as $k=>$product){
+								$newItems[$key]['change'][$k]['bn']=$product['sku'];
+								$newItems[$key]['change'][$k]['name']=$product['name'];
+								$newItems[$key]['change'][$k]['price']=$product['price'];//$product['price'];
+								
+								$arrProduct=array();
+								$arrProduct=$objProducts->getList("product_id",array('bn'=>$product['sku']));
+								
+								$newItems[$key]['change'][$k]['sale_store']=$objProducts->get_product_store(1,$arrProduct[0]['product_id']);
+								$newItems[$key]['change'][$k]['product_id']=$arrProduct[0]['product_id'];
+							}
+						}
+						/*$newItems[$key]['change'][0]['bn']='F041542789';
+						$newItems[$key]['change'][0]['name']='真我';
+						$newItems[$key]['change'][0]['price']='100';
+						$newItems[$key]['change'][0]['sale_store']=$objProducts->get_product_store(1,'1661');
+						$newItems[$key]['change'][0]['product_id']='1661';
+							
+						$newItems[$key]['change'][1]['bn']='F001601009';
+						$newItems[$key]['change'][1]['name']='克丽丝汀迪奥真我香发喷雾';
+						$newItems[$key]['change'][1]['price']='100';
+						$newItems[$key]['change'][1]['sale_store']=$objProducts->get_product_store(1,'1444');
+						$newItems[$key]['change'][1]['product_id']='1444';*/
+						$effective--;
+					}
+					
+					unset($newItems[$bn]);
+				}
+			}
+		}
+		//echo "<pre>";print_r($after_service);print_r($newItems);exit;
         $items = $newItems;
         if($type == 'return'){
             $this->pagedata['total_return_filter'] = implode(',',$tmp_product);
@@ -438,7 +542,6 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
         $branch_mode = &app::get ( 'ome' )->getConf ( 'ome.branch.mode' );
         $this->pagedata ['branch_mode'] = $branch_mode;
         $this->pagedata ['items'] = $items;
-
     }
 
     /**
@@ -450,7 +553,9 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
     function ajax_getProductinfo_one(){
         $html = '';
         $source = trim($_GET['source']);
-        $this->get_data($_POST['order_id'],'return',$source);
+		$after_service=trim($_GET['after_service']);
+        $this->get_data($_POST['order_id'],'return',$source,$after_service);
+		$this->pagedata['return_type']=$after_service;
         $html = $this->fetch('admin/return_product/rchange/rc_html_t.html');
         echo $html;exit;
     }
@@ -1188,9 +1293,18 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
      * @author chenping<chenping@shopex.cn>
      **/
     public function calDiffAmount($reship_id,$return_type)
-    {
+    {	
         $post = kernel::single('base_component_request')->get_post();
         $is_check = $post['is_check'];
+		//zjrMCD换货
+		if($return_type=="change"){
+			$objReship = $this->app->model('reship');
+			//先无脑替换zjr
+			$arr=array();
+			$arr=$objReship->getMcd($post,false);
+			$post['change']['product']=$arr['change']['product'];
+		}
+		
         # 进行数量判断
         if (isset($post['return']['goods_bn']) && is_array($post['return']['goods_bn'])) {
             foreach ($post['return']['goods_bn'] as $pbn) {

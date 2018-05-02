@@ -403,29 +403,19 @@ class ome_mdl_refund_apply extends dbeav_model{
 						
 						kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
 						//传给买尽头
-						$objOrder = kernel::single("ome_mdl_orders");
-						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
-						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
-
-						kernel::single('einvoice_request_invoice')->invoice_request($apply_detail['order_id'],'getApplyInvoiceData');
-
-						//传给买尽头2
-						$this->sendRefundStatus($apply_id,1);
+						$this->sendMagentoAndEinvoiceData($apply_detail['order_id'],$apply_id);
 						return true;
-					
 					}//if	
 	}
 	
 	function updateAlipayRefundFail($batch_no,$trade_no,$money){
-		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
+		$arrRefund=$this->db->select("SELECT o.trade_no,o.order_id,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
 		if(!empty($arrRefund['0']['apply_id'])){
 			foreach($arrRefund as $trade_no){
 				$apply_id=$trade_no['apply_id'];
 				$this->db->exec("UPDATE sdb_ome_refund_apply SET status='2',apimsg='退款失败' WHERE apply_id='$apply_id'");
-				$arrOrderBn=$this->db->select("SELECT o.order_bn FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
-							//echo "<pre>";print_r($arrOrderBn);exit();
-				kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
-				$this->sendRefundStatus($apply_id,2);
+				
+				$this->sendMagentoAndEinvoiceData($trade_no['order_id'],$apply_id,2);
 			}
 		}
 	}
@@ -437,8 +427,7 @@ class ome_mdl_refund_apply extends dbeav_model{
 		$oRefund = &$this->app->model('refunds');
         $oLoger = &$this->app->model('operation_log');
         $objShop = &$this->app->model('shop');
-		
-		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
+		$arrRefund=$this->db->select("SELECT apply_id FROM sdb_ome_refund_apply WHERE refund_apply_bn LIKE '$trade_no%' AND alipaybatchno='$batch_no' AND status='5'");
 		if(!empty($arrRefund['0']['apply_id'])){
 			foreach($arrRefund as $trade_no){
 				    $apply_detail = $oRefaccept->refund_apply_detail($trade_no['apply_id']);
@@ -552,16 +541,8 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$db->commit($transaction_status);
 						
 						kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
-						//传给买尽头
-						$objOrder = kernel::single("ome_mdl_orders");
-						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
-						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
-
-						kernel::single('einvoice_request_invoice')->invoice_request($apply_detail['order_id'],'getApplyInvoiceData');
 						
-						//传给买尽头2
-						$this->sendRefundStatus($apply_id,1);
-					
+						$this->sendMagentoAndEinvoiceData($apply_detail['order_id'],$apply_id);
 					}//if			
 			}//foreach
 		}//if
@@ -576,9 +557,9 @@ class ome_mdl_refund_apply extends dbeav_model{
         $oLoger = &$this->app->model('operation_log');
         $objShop = &$this->app->model('shop');
 
-		$arrRefund=$this->db->select("SELECT o.trade_no,r.apply_id,r.wxpaybatchno FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE r.wxstatus='true' AND (r.status='5' OR r.status='6')");
+		$arrRefund=$this->db->select("SELECT o.trade_no,o.order_id,r.apply_id,r.wxpaybatchno FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE r.wxstatus='true' AND (r.status='5' OR r.status='6')");
 		
-		if(!empty($arrRefund[0]['trade_no'])){
+		if(!empty($arrRefund[0]['apply_id'])){
 		    foreach($arrRefund as $trade_no){
 				$processing=false;
 			    if(kernel::single('ome_wxpay_refund')->checkRefund($trade_no,$processing)){
@@ -697,26 +678,11 @@ class ome_mdl_refund_apply extends dbeav_model{
 						$db->commit($transaction_status);
 						
 						kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
-						//传给买尽头
-						$objOrder = kernel::single("ome_mdl_orders");
-						$arrOrderBn=$objOrder->getList('order_bn',array('order_id'=>$apply_detail['order_id']));
-						kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_complete');
-
-						kernel::single('einvoice_request_invoice')->invoice_request($apply_detail['order_id'],'getApplyInvoiceData');
 						
-						//传给买尽头2
-						$this->sendRefundStatus($apply_id,1);
-					
+						$this->sendMagentoAndEinvoiceData($apply_detail['order_id'],$apply_id);
 					}//if
-					//echo "<pre>2";print_r($apply_detail);print_r($refunddata);exit();
 				}else{//if失败
-					$apply_id=$trade_no['apply_id'];
-					//$this->db->exec("UPDATE sdb_ome_refund_apply SET status='2',apimsg='退款失败',wxstatus='false' WHERE apply_id='$apply_id'");
-					$arrOrderBn=$this->db->select("SELECT o.order_bn FROM sdb_ome_refund_apply a LEFT JOIN sdb_ome_orders o ON a.order_id=o.order_id where a.apply_id='$apply_id'");
-						//echo "<pre>";print_r($arrOrderBn);exit();
-				    kernel::single('omemagento_service_order')->update_status($arrOrderBn['0']['order_bn'],'refund_failed');
-					
-					$this->sendRefundStatus($apply_id,2);
+					$this->sendMagentoAndEinvoiceData($trade_no['order_id'],$trade_no['apply_id'],2);
 				}
 			}//foreach
 			 
@@ -843,6 +809,36 @@ class ome_mdl_refund_apply extends dbeav_model{
 			
 			kernel::single('ome_order_func')->update_order_pay_status($apply_detail['order_id']);
 		}
+	}
+	
+	function sendMagentoAndEinvoiceData($order_id,$apply_id,$type='1'){//type:1 succ 2 fail
+		
+		$objOrder = kernel::single("ome_mdl_orders");
+		$objReship=kernel::single("ome_mdl_reship");
+		$arrOrderBn=array();
+		$arrOrderBn=$objOrder->getList('order_bn,createway',array('order_id'=>$order_id));
+		$arrOrderBn=$arrOrderBn[0];
+		
+		$createway=$arrOrderBn['createway'];
+		$order_bn=$arrOrderBn['order_bn'];
+		
+		if($createway=="after"){
+			$arrOriginalOrder=$objReship->getOriginalOrder($order_bn);
+			$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
+			$order_id=$arrOriginalOrder['relate_order_id'];//老订单号
+		}
+		
+		$magento_type=NULL;
+		if($type=="1"){
+			$magento_type='refund_complete';
+			kernel::single('einvoice_request_invoice')->invoice_request($order_id,'getApplyInvoiceData');
+		}else{
+			$magento_type='refund_failed';
+			
+		}
+		kernel::single('omemagento_service_order')->update_status($order_bn,$magento_type);
+		$this->sendRefundStatus($apply_id,$type);
+		
 	}
 	
 	function sendRefundToM($refund_id,$order_id,$z_money,$oms_refund_rma_ids=''){

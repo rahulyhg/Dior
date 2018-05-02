@@ -98,7 +98,23 @@ class ome_mdl_branch_product extends dbeav_model{
           $pos = $obranch_pos->dump(array('branch_id'=>$branch_id,'store_position'=>$store_position),'pos_id');
           return $pos['pos_id'];
     }
-
+	//修改换货冻结库存
+	function chg_store_freeze_change($branch_id,$product_id,$num,$operator='+'){
+		$now = time();
+		switch($operator){
+            case "+":
+                $store_freeze_change = "store_freeze_change=IFNULL(store_freeze_change,0)+".$num.",";
+                $action = '增加';
+                break;
+            case "-":
+                $store_freeze_change = " store_freeze_change=IF((CAST(store_freeze_change AS SIGNED)-$num)>0,store_freeze_change-$num,0),";
+                $action = '扣减';
+                break;
+        }
+		$sql = 'UPDATE sdb_ome_branch_product SET '.$store_freeze_change.'last_modified='.$now.' WHERE product_id='.$product_id.' AND branch_id = '.$branch_id;
+       
+        $this->db->exec($sql);
+	}
     /*
      * 修改冻结库存
      */

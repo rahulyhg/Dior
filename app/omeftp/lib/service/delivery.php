@@ -22,7 +22,7 @@ class omeftp_service_delivery{
      * @access public
      * @param int $delivery_id 发货单ID
      */
-    public function delivery($delivery_id,$sync=false){
+	public function delivery($delivery_id,$sync=false){
         $deliveryModel = app::get('ome')->model('delivery');
         $delivery = $deliveryModel->dump($delivery_id);
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
@@ -433,14 +433,29 @@ class omeftp_service_delivery{
 		}
 		$key = $key+1;
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
-
-		if($delivery['order']['message1']||$delivery['order']['message2']||$delivery['order']['message3']||$delivery['order']['message4']||$delivery['order']['message5']||$delivery['order']['message6']){
-			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_setting['ax_sample_bn'].'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
+		
+		//礼品卡
+		$ax_gift_card_bn='';
+		$ax_card_flag=false;
+		if($delivery['order']['is_card']=="true"){
+			$ax_gift_card_bn=$ax_setting['ax_sample_bn'];
+			$ax_card_flag=true;
+		}else if($delivery['order']['is_mcd_card']=="true"){
+			$ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
+			$ax_card_flag=true;
+		}
+		if($ax_card_flag){
+			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
 			$key = $key+1;
 		}
 
 		if($delivery['order']['is_w_card']=='true'){
 			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+			$key = $key+1;
+		}
+		//MCD包装
+		if($delivery['order']['mcd_package_sku']=='MCD'){
+			$ax_l_str[] = 'L|GIFT_WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
 			$key = $key+1;
 		}
 		
@@ -521,7 +536,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku');
                 }
 
                 // 发货地址

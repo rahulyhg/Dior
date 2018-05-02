@@ -35,6 +35,15 @@ $db['branch_product']=array (
        'in_list' => true,
       'default_in_list' => true,
     ),
+	'store_freeze_change' =>
+    array (
+      'type' => 'number',
+      'editable' => false,
+      'label' => '换货冻结库存',
+      'default' => 0,
+       'in_list' => true,
+      'default_in_list' => true,
+    ),
     'last_modified' =>
     array (
       'type' => 'last_modify',
