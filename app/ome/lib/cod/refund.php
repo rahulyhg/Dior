@@ -22,7 +22,7 @@ class ome_cod_refund{
 		//如果是MCD换货订单申请退款 关联原始支付单号
 		$relate_order_id=NULL;
 	    if($arrRefund['createway']=="after"){
-			$relate_order_id=$this->getOriginalOrderId($arrRefund['relate_order_bn']);
+			$relate_order_id=$mdl_reship->getOriginalOrderId($arrRefund['relate_order_bn']);
 		}else{
 		    $relate_order_id=$order_id;
 		}

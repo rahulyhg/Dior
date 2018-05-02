@@ -199,7 +199,7 @@ class erpapi_oms_order
 							
 							$order_bn=$arrRoute[$intDeliveryId]['order_bn'];
 							error_log('logi_no'.$intDeliveryId.'订单Begin:'.json_encode($result['Response']['Body']['RouteResponse'][$k])."订单End".$order_bn,3,DATA_DIR.'/sfroute/'.date("Ymd").'zjrorder.txt');
-							if($arrRoute[$intDeliveryId]['pay_bn']=='cod'){//货到付款模拟支付
+							if($arrRoute[$intDeliveryId]['pay_bn']=='cod'&&$arrRoute[$intDeliveryId]['createway']!="after"){//货到付款模拟支付
 								$arrRoute[$intDeliveryId]['paytime']=time();
 								$arrRoute[$intDeliveryId]['payment']='货到付款';
 								$arrRoute[$intDeliveryId]['pay_id']='3';
