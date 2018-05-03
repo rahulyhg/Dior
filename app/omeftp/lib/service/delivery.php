@@ -455,7 +455,7 @@ class omeftp_service_delivery{
 		}
 		//MCD包装
 		if($delivery['order']['mcd_package_sku']=='MCD'){
-			$ax_l_str[] = 'L|GIFT_WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+			$ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
 			$key = $key+1;
 		}
 		
