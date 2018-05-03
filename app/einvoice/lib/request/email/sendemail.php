@@ -23,7 +23,7 @@ class einvoice_request_email_sendemail{
 			$mail->AddReplyTo("lvmh_einvoice@sina.com","GUE");//回复地址
 			$mail->From       = "lvmh_einvoice@sina.com";
 			$mail->FromName   = "lvmh_einvoice@sina.com";
-			$to = "jun.li@d1m.cn";//"jasmine.yu@d1m.cn";
+			$to = "jinrong.zhang@d1m.cn";//"jasmine.yu@d1m.cn";
 			$mail->AddAddress($to);
 			$mail->Subject  = '电子发票接口预警';
 			$mail->Body = $content;
