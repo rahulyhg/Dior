@@ -409,7 +409,8 @@ class ome_mdl_refund_apply extends dbeav_model{
 	}
 	
 	function updateAlipayRefundFail($batch_no,$trade_no,$money){
-		$arrRefund=$this->db->select("SELECT o.trade_no,o.order_id,r.apply_id FROM sdb_ome_refund_apply r LEFT JOIN sdb_ome_payments o ON r.order_id=o.order_id WHERE o.trade_no='$trade_no' AND r.alipaybatchno='$batch_no' AND r.status='5'");
+		$arrRefund=$this->db->select("SELECT apply_id,order_id FROM sdb_ome_refund_apply WHERE refund_apply_bn LIKE '$trade_no%' AND alipaybatchno='$batch_no' AND status='5'");
+		
 		if(!empty($arrRefund['0']['apply_id'])){
 			foreach($arrRefund as $trade_no){
 				$apply_id=$trade_no['apply_id'];
