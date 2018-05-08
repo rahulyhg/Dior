@@ -43,7 +43,7 @@ class omeftp_service_reship{
 
 		$file_params['method'] = 'a';
 		$file_params['data'] = $this->getContent($delivery,$file_params['file'],$reship_id);
-
+		
 		$file_log_data = array(
 				'content'=>$file_params['data']?$file_params['data']:'没有数据',
 				'io_type'=>'in',
@@ -203,8 +203,19 @@ class omeftp_service_reship{
 		$ax_h[] = $ax_h_sales_order_status?$ax_h_sales_order_status:'SEND_TO_ERP';// Sales order Status
 		
 
-		$reshipInfo = app::get('ome')->model('reship')->dump($reship_id,'memo,return_reason');
-		$ax_h[] = $reshipInfo['memo']; //Sales Description
+		$reshipInfo = app::get('ome')->model('reship')->dump($reship_id,'memo,return_reason,return_type,custom_mark');
+		if($reshipInfo['return_type']=="return"){
+			$ax_h[] = $reshipInfo['memo']; //Sales Description
+		}else{
+			$memo=unserialize($reshipInfo['custom_mark']);
+			$memo=$memo[0]['op_content'];
+			if(empty($memo)){
+				$ax_h[] = '';
+			}else{
+				$memo=str_replace("|","",$memo);
+				$ax_h[] = $memo; //Sales Description
+			}
+		}
 		
 		$ax_h_currency = app::get('omeftp')->getConf('ax_h_currency');
 		$ax_h[] = $ax_h_currency?$ax_h_currency:'CNY';// currency
@@ -216,9 +227,9 @@ class omeftp_service_reship{
 		$ax_h[] = '0.00'; //total discount amount  优惠金额
 
 		$ax_h[] = '';//total  discount %
-
+		//MCD去掉换货明细
 		$orderReship = app::get('ome')->model('reship_items');
-		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id));
+		$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
 		foreach($reInfo as $ri){
 			$itemNum += $ri['num'];
 		}
