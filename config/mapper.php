@@ -10,4 +10,5 @@
 $urlmap = array(
     '/'=> array('app'=>'desktop'),
     '/setup' => array('app'=>'setup'),
+    '/rpc' => array('app'=>'qmwms'),
 );
