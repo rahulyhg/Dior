@@ -1,6 +1,6 @@
 <div class="tableform">
 <div class="division">
-<form method="post" action="index.php?app=ome&ctl=admin_refund_apply&act=doRefund" id="zrefund" target="_blank">
+<form method="post" action="index.php?app=ome&ctl=admin_refund_apply&act=doRefund" target="_blank">
       <table width="100%" cellspacing="0" cellpadding="0" border="0" >
         <tbody>
        <tr>
@@ -25,7 +25,7 @@
 	   <{if $type=="3"}>
 	   	<{button label="下载" type="submit" name="submit"}>
 	   <{else}>
-	   <{button label="提交" type="submit" name="submit"}>
+	   <{button label="提交" type="submit" name="submit" id="zrefund"}>
 	   <{/if}>
       
       <{button label="取消" class="btn-secondary" isCloseDialogBtn="true"}>
@@ -34,11 +34,10 @@
   </div>
 </div>
 <script>
-   
-	//$('zrefund').onClick:function(){
-		//alert(111);
-			//if($('zrefund').getParent('.dialog'))
-			//$('zrefund').getParent('.dialog').retrieve('instance').close();
-		//}
+(function(){
+	 $('zrefund').addEvent('click', function(e){
+	 	$(this).setStyle('display','none');
+    });
+})();
 </script>
  
