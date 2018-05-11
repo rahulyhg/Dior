@@ -453,14 +453,22 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 		if(empty($p_type)||empty($arrTrade_no)){
 			echo "错误";exit();
 		}
+		
 		//再次判断是否已发货
 		$objOrder=$this->app->model("orders");
+		$oRefundApply =$this->app->model('refund_apply');
 		foreach($arrTrade_no as $key=>$data){
 			foreach($data as $order){
 				$isShip=array();
 				$isShip=$objOrder->getList("ship_status",array('order_bn'=>$order['order_bn']));
 				if($isShip['0']['ship_status']=="1"){//已发货不允许退款
 					echo "订单:".$order['order_bn']."已发货不可提交退款";exit();
+				}
+				
+				$isApply=array();
+				$isApply=$oRefundApply->getList("status",array('apply_id'=>$order['apply_id']));
+				if($isApply['0']['status']=="5"||$isApply['0']['status']=="4"){//
+					echo "订单:".$order['order_bn']."已申请退款或已退款成功，无法退款";exit();
 				}
 			}
 		}
