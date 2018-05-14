@@ -1,0 +1,13 @@
+<desktop> 
+    <permissions>
+       <permission id="emailsetting_setting">邮件配置</permission>
+	   <permission id="emailsetting_tmpl">发送设置</permission>
+    </permissions>
+    
+    <workground name="系统" id="setting_tools"  order="800">
+		<menugroup name="邮件配置">
+            <menu controller='admin_setting' action='index' permission='rolescfg' display='true' order='1000410'>邮件配置</menu>
+			<menu controller='admin_sendlist' action='index' permission='rolescfg' display='true' order='1000410'>发送设置</menu>
+        </menugroup>
+    </workground>
+</desktop>
