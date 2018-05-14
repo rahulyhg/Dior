@@ -377,7 +377,9 @@ class erpapi_oms_order
 			return $this->send_error('地区不正确');
 		}
 		
-		$post['consignee']['r_time']    = '任意日期 任意时间段';
+		if(empty($post['consignee']['r_time'])){
+			$post['consignee']['r_time']    = '任意日期 任意时间段';
+		}
         $post['consignee']['area']      = $post['address_id'];
 		
 		//商品处理

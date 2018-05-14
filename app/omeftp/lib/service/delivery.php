@@ -67,7 +67,7 @@ class omeftp_service_delivery{
 	
 		$file_params['method'] = 'a';
 		$file_params['data'] = $this->getContent($delivery,$file_params['file']);
-
+		
 		$file_log_data = array(
 				'content'=>$file_params['data']?$file_params['data']:'没有数据',
 				'io_type'=>'in',
@@ -259,15 +259,20 @@ class omeftp_service_delivery{
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 
 		$ax_d[] = 'D';
-
-		$ax_d[] = '';//Requested receipt Date
+		
+		$receipt_date=$receipt_time=NULL;
+		if(!empty($delivery['consignee']['r_time'])&&strpos($delivery['consignee']['r_time'],"_")!==false){
+			list($receipt_date,$receipt_time) = explode('_',$delivery['consignee']['r_time']);
+		}
+		
+		$ax_d[] = $receipt_date;//Requested receipt Date
 		$ax_d[] = '';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
 		$ax_d[] = '';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
-		$ax_d[] = '';//Condition of Delivery   set by AX
+		$ax_d[] = $receipt_time;//Condition of Delivery   set by AX
 		
 		$ax_d_mode_of_delivery = $ax_setting['ax_d_mode_of_delivery'];
 		if($delivery['consignee']['province']=='上海'||$delivery['consignee']['province']=='江苏省'||$delivery['consignee']['province']=='浙江省'||$delivery['consignee']['province']=='安徽省'||$delivery['consignee']['province']=='西藏自治区'){
