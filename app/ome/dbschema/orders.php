@@ -1275,6 +1275,13 @@ $db['orders']=array (
           0 => 'order_bn',
         ),
     ),
+	'ind_relate_order_bn' =>
+    array (
+        'columns' =>
+        array (
+          0 => 'relate_order_bn',
+        ),
+    ),
     'ind_archive' =>
     array (
       'columns' =>
