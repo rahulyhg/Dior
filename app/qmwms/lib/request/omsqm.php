@@ -1,5 +1,5 @@
 <?php
- 
+
 /**
  * 奇门标准化WMS流程（OMS->WMS）
  * 处理奇门接口返回信息，记录日志等
@@ -113,7 +113,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //库存查询
-    public function inventoryQuery($bn=array()){
+    public function inventoryQuery($bn=array(),$offset,$limit){
         $method = 'inventory.query';
         $msg = '库存查询';
         $body = $this->_inventoryQuery($bn);
@@ -123,7 +123,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
-            $res_data = $this->res_params($response,null,'inventoryQuery',null);
+            $res_data = $this->res_params($response,null,'inventoryQuery',null,$offset,$limit);
             if(empty($response)){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '库存更新失败';
@@ -168,7 +168,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //返回信息处理
-    public function res_params($response,$dj_id,$method,$memo){
+    public function res_params($response,$dj_id,$method,$memo,$offset=null,$limit=null){
         //把返回的xml解析成数组
         $_response = kernel::single('qmwms_response_qmoms')->xmlToArray($response);
         //根据不同接口类型进行不同的处理
@@ -193,7 +193,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                     break;
                 case 'inventoryQuery':
                     //更新系统库存
-                    $this->update_store_all($_response);
+                    $this->update_store_all($_response,$offset,$limit);
                     break;
                 default:
                     break;
@@ -249,10 +249,10 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
      * @param $res
      * 读取WMS库存 同步到Magento
      */
-    public function update_store_all($res){
+    public function update_store_all($res,$offset,$limit){
         $product_mdl = app::get('ome')->model('products');
         $branch_product = app::get('ome')->model('branch_product');
-        $all_product = $product_mdl->db->select("select p.product_id,p.bn from sdb_ome_products as p left join sdb_ome_goods as g on g.goods_id=p.goods_id where g.is_presell='false' ");
+        $all_product = $product_mdl->db->select("select p.product_id,p.bn from sdb_ome_products as p left join sdb_ome_goods as g on g.goods_id=p.goods_id where g.is_presell='false' order by p.product_id ASC limit $offset,$limit ");
 
         if(!$res['items']['item'][0]){
             $res['items']['item'] = array($res['items']['item']);
@@ -271,11 +271,11 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             if($wms_all_products[$bn]){
                 $wms_product = $wms_all_products[$bn];
                 $store_freeze = $branch_product->getList('store_freeze,safe_store',array('product_id'=>$product['product_id'],'branch_id'=>1));
-                $store = $wms_product['quantity'];
+                $store = $wms_product['quantity']+$store_freeze[0]['store_freeze'];
                 $re = $branch_product->change_store(1,$product['product_id'],$store);
                 if($re){
                     $hasUser = kernel::single('omeftp_auto_update_product')->getHasUseStore($product['bn']);
-                    $magentoStore = $wms_product['quantity']-$hasUser;
+                    $magentoStore = $wms_product['quantity']+$store_freeze[0]['store_freeze']-$hasUser;
                     if($magentoStore<0){
                         $magentoStore = 0;
                     }
@@ -303,7 +303,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $store_freeze = $branch_product->getList('store_freeze',array('product_id'=>$product['product_id'],'branch_id'=>1));
                 $store = $store_freeze[0]['store_freeze']?$store_freeze[0]['store_freeze']:0;
                 $branch_product->change_store(1,$product['product_id'],$store);
-                $magentoStore = 0;
+                $magentoStore = $store;
                 $all_store[] = array(
                     'bn'=>$bn,
                     'store'=>$magentoStore,
