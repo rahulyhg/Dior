@@ -54,7 +54,10 @@ class giftcard_report_onecenterror{
 		$arrEmail=array();
 		$arrEmail['FirstReport-'.date("Ymd").'.xls']=$urlFirstReport;
 		$arrEmail['SecondReport-'.date("Ymd").'.xls']=$urlSecondReport;
-		kernel::single("giftcard_email_sendemail")->sendEmail($arrEmail);
+		
+		$sender="jinrong.zhang@d1m.cn;jasmine.yu@d1m.cn;gigi.guo@d1m.cn;kathrine.zhou@d1m.cn;dealer.dai@d1m.cn";
+		
+		kernel::single("emailsetting_send")->send($sender,"【Dior】auto sender: GiftCard-".date("Ymd"),"Report",$arrEmail);
 	}
 	
 	function createFirstReportExcel($arrFirstReport){
