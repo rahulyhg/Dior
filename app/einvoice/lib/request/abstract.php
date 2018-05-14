@@ -181,7 +181,8 @@ class einvoice_request_abstract{
 			
 			$content = '订单：'.$order_info[0]['order_bn'].' 发票开票失败<br>'; 
 			$content .= '报错信息：'.$res['message'].','.$res['detail'];
-			kernel::single('einvoice_request_email_sendemail')->sendEmail($content);
+			//kernel::single('einvoice_request_email_sendemail')->sendEmail($content);
+			kernel::single("emailsetting_send")->send("jinrong.zhang@d1m.cn","Dior 发票异常",$content);
 		}
 
 		if($method=='cancelInvoice'){
@@ -200,9 +201,8 @@ class einvoice_request_abstract{
 			$content = '订单：'.$info[0]['order_bn'].' 发票红冲失败<br>';  
 			$content .= '报错信息：'.$res['message'].','.$res['detail'];
 
-
-
-			kernel::single('einvoice_request_email_sendemail')->sendEmail($content);
+			kernel::single("emailsetting_send")->send("jinrong.zhang@d1m.cn","Dior 发票异常",$content);
+			//kernel::single('einvoice_request_email_sendemail')->sendEmail($content);
 
 		}
 	}
