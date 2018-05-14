@@ -31,6 +31,8 @@ class qmwms_ctl_admin_qmsetting extends desktop_controller{
             $data['wms_code']    = $_POST['wms_code'];
             $data['gift_bn']     = $_POST['gift_bn'];
             $data['sample_bn']   = $_POST['sample_bn'];
+            $data['mcd_sample_bn']   = $_POST['mcd_sample_bn'];
+            $data['mcd_package_sku'] = $_POST['mcd_package_sku'];
             $_data['api_params'] = serialize($data);
             if(empty($apiData)){
                 $_data['createtime']    = time();

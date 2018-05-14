@@ -170,22 +170,12 @@ class qmwms_request_qimen{
 
         //订单列表信息
         $body['orderLines'] = array();
-
-        //Ribbon商品sku信息如下：
-        $ribbonBN = array(
-            'F814167818T',
-            'F814167817T',
-            'F814167816T',
-            'F814167815T',
-            'F814167813T',
-            'C600300100S',
-            'C800000024S'
-        );
-
-        $apiParams = app::get('qmwms')->model('qmwms_api')->getList('api_params',array());
-        $qmApiSetting = unserialize($apiParams['0']['api_params']);
-        $gift_bn   = $qmApiSetting['gift_bn'];//品牌礼品卡
-        $sample_bn = $qmApiSetting['sample_bn'];//礼品卡
+        $apiParams       = app::get('qmwms')->model('qmwms_api')->getList('api_params',array());
+        $qmApiSetting    = unserialize($apiParams['0']['api_params']);
+        $gift_bn         = $qmApiSetting['gift_bn'];//品牌礼品卡
+        $sample_bn       = $qmApiSetting['sample_bn'];//礼品卡
+        $mcd_sample_bn   = $qmApiSetting['mcd_sample_bn'];//MCD礼品卡
+        $mcd_package_sku = $qmApiSetting['mcd_package_sku'];//MCD包装
 
         $message = '';
         if($ordersData[0]['message1']||$ordersData[0]['message2']||$ordersData[0]['message3']||$ordersData[0]['message4']||$ordersData[0]['message5']||$ordersData[0]['message6']){
@@ -213,10 +203,6 @@ class qmwms_request_qimen{
                 'actualPrice'     => number_format($mx['true_price'],2,'.',''), //必须 实际成交价
                 'discountAmount'  =>number_format($mx['ax_pmt_price']/$mx['nums'],2,'.','')//单件商品折扣金额
             );
-            //Ribbon丝带
-            if(in_array($mx['bn'],$ribbonBN)){
-                $orderLine['extendProps'] = array('itemType'=>'Ribbon','itemMessage'=>$mx['name']);
-            }
 
             if(count($orderItemsData) <=1){
                 $body['orderLines']['orderLine'] = $orderLine;
@@ -227,19 +213,40 @@ class qmwms_request_qimen{
         }
 
         if(count($orderItemsData) <=1){
-            if($message || $ordersData[0]['is_w_card']){
+            if($ordersData[0]['is_card'] == 'true'){
+                $body['orderLines']['orderLine'] = array($body['orderLines']['orderLine']);
+            }
+            elseif($ordersData[0]['is_w_card'] == 'true'){
+                $body['orderLines']['orderLine'] = array($body['orderLines']['orderLine']);
+            }
+            elseif(!empty($ordersData[0]['ribbon_sku'])){
+                $body['orderLines']['orderLine'] = array($body['orderLines']['orderLine']);
+            }
+            elseif($ordersData[0]['is_mcd_card'] == 'true'){
+                $body['orderLines']['orderLine'] = array($body['orderLines']['orderLine']);
+            }
+            elseif($ordersData[0]['mcd_package_sku'] == 'MCD'){
                 $body['orderLines']['orderLine'] = array($body['orderLines']['orderLine']);
             }
         }
 
-        //礼品卡（留言卡）
-        if($message){
+        //礼品卡（留言卡）(普通留言卡与MCD留言卡只能有其中一种)
+        $card_flag=false;
+        if($ordersData[0]['is_card'] == 'true'){
+            $gift_card_bn = $sample_bn;
+            $card_flag=true;
+        }
+        elseif($ordersData[0]['is_mcd_card'] == 'true'){
+            $gift_card_bn = $mcd_sample_bn;
+            $card_flag=true;
+        }
+        if($card_flag){
             $itemId = $itemId + 1;
             $giftMessage = array(
                 'orderLineNo'     => $itemId,//单据行号
                 'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
-                'itemCode'        => $sample_bn,  // 必须 商品编码
-                'itemId'          => $sample_bn,//仓储系统商品编码 必须(文档标注)
+                'itemCode'        => $gift_card_bn,  // 必须 商品编码
+                'itemId'          => $gift_card_bn,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
                 'itemName'        => 'gift message',
                 'planQty'         => 1,
@@ -249,6 +256,25 @@ class qmwms_request_qimen{
                 'extendProps'     =>array('itemType'=>'Gift','itemMessage'=>$message),
             );
             $body['orderLines']['orderLine'][] = $giftMessage;
+        }
+
+        //MCD包装  $mcd_package_sku
+        if($ordersData[0]['mcd_package_sku'] == 'MCD'){
+            $itemId = $itemId + 1;
+            $mcdPackage = array(
+                'orderLineNo'     => $itemId,//单据行号
+                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'itemCode'        => $mcd_package_sku,  // 必须 商品编码
+                'itemId'          => $mcd_package_sku,//仓储系统商品编码 必须(文档标注)
+                'inventoryType'   => 'ZP',//库存类型
+                'itemName'        => 'MCD package',
+                'planQty'         => 1,
+                'retailPrice'     =>'0.00',//零售价(零售价=实际成交价+单件商品折扣金额) (取值不确定)
+                'actualPrice'     => '0.00', //必须 实际成交价
+                'discountAmount'  =>'0.00',//单件商品折扣金额
+                'extendProps'     =>array('itemType'=>'GIFT WRAP','itemMessage'=>'MCD package'),
+            );
+            $body['orderLines']['orderLine'][] = $mcdPackage;
         }
 
         //品牌礼品卡(WelcomeCard)
@@ -268,6 +294,28 @@ class qmwms_request_qimen{
                 'extendProps'     =>array('itemType'=>'Card','itemMessage'=>'WelcomeCard'),
             );
             $body['orderLines']['orderLine'][] = $welcomeCard;
+        }
+
+        //Ribbon丝带
+        if(!empty($ordersData[0]['ribbon_sku'])){
+            $itemId = $itemId + 1;
+            $ribbonData = kernel::single("ome_mdl_products")->getList('name',array('bn'=>$ordersData[0]['ribbon_sku']));
+            $itemName   = $ribbonData[0]['name'];
+            $ribbon_sku = $ordersData[0]['ribbon_sku'];
+            $ribbon = array(
+                'orderLineNo'     => $itemId,//单据行号
+                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'itemCode'        => $ribbon_sku,  // 必须 商品编码
+                'itemId'          => $ribbon_sku,//仓储系统商品编码 必须(文档标注)
+                'inventoryType'   => 'ZP',//库存类型
+                'itemName'        => $itemName,
+                'planQty'         => 1,
+                'retailPrice'     =>'0.00',//零售价(零售价=实际成交价+单件商品折扣金额) (取值不确定)
+                'actualPrice'     => '0.00', //必须 实际成交价
+                'discountAmount'  =>'0.00',//单件商品折扣金额
+                'extendProps'     =>array('itemType'=>'Ribbon','itemMessage'=>$itemName),
+            );
+            $body['orderLines']['orderLine'][] = $ribbon;
         }
 
         //返回xml格式数据

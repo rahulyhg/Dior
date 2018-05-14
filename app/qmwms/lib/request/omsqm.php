@@ -30,13 +30,16 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $res_data['res_msg'] = '单据创建失败';
             }
             $this->writeLog($res_data,$insert_id);
-            if($res_data['status']!='success'){
+
+            if($res_data['status']=='success'){
+                kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_wms');
+            }else{
                 //发送报警邮件
                 $original_params = htmlspecialchars($body);
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
-                $subject = '【Fresh-PROD】ByPass订单#'.$order_bn.'发货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
+                $subject = '【Dior-PROD】ByPass订单#'.$order_bn.'发货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
@@ -44,7 +47,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //退货入库单创建
-    public function returnOrderCreate($delivery_id,$reship_id){
+    public function returnOrderCreate($delivery_id,$reship_id,$return_type='return',$change=array()){
         $method = 'returnorder.create';
         $msg = '退货入库单创建';
         //组织请求数据体
@@ -64,13 +67,78 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $res_data['res_msg'] = '单据创建失败';
             }
             $this->writeLog($res_data,$insert_id);
-            if($res_data['status']!='success'){
+            if($res_data['status']=='success'){
+                $delivery = app::get('ome')->model('delivery')->dump($delivery_id);
+                $delivery = kernel::single('omeftp_service_reship')->format_delivery($delivery);
+
+                $orderReship = app::get('ome')->model('reship_items');
+                $objReship = app::get('ome')->model('reship');
+
+                //如果是magento发起的 直接返回无需再走下去
+                if($return_type=="change"&&empty($change)){
+                    return true;
+                }
+                if($return_type=="change"){
+                    kernel::single('omemagento_service_change')->sendChangeOrder($change);
+                }else{
+                    //售后生成的新订单退货需传原始订单号,原始退的商品
+                    $arrOriginalOrder=$arrReship=array();
+                    if($delivery['order']['createway']=="after"){
+                        $arrOriginalOrder=$objReship->getOriginalOrder($delivery['order']['order_bn']);
+                        $order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
+                        $order_id=$arrOriginalOrder['order_id'];//新订单号
+                        //新订单号即为reship表的p_order_id,来查询退了哪些
+                        $arrReship=$objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
+                        $relate_reship_id=$arrReship[0]['reship_id'];
+                        $relate_change_items=unserialize($arrReship[0]['relate_change_items']);
+                        //查看当前退货单退的商品
+                        $arrReshipItems=array();
+                        $arrReshipItems = app::get('ome')->model('reship_items')->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
+                        //当前退货单退的商品即使原始退货单所换的商品，关联原始退的商品数量
+                        $arrRelateReturn=array();
+                        foreach($arrReshipItems as $k=>$reship){
+                            foreach($relate_change_items['items'] as $relate){
+                                if($arrReshipItems[$k]['num']>0&&$relate['ex_sku']==$reship['bn']){
+                                    if(isset($arrRelateReturn[$relate['sku']])){
+                                        $arrRelateReturn[$relate['sku']]['nums']=$arrRelateReturn[$relate['sku']]['nums']+1;
+                                    }else{
+                                        $arrRelateReturn[$relate['sku']]['nums']=1;
+                                    }
+                                    $arrReshipItems[$k]['num']--;
+                                }
+                            }
+                        }
+                    }else{
+                        $order_bn=$delivery['order']['order_bn'];
+                        $relate_reship_id=$reship_id;
+                    }
+
+                    $reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
+                    $refund_info = array();
+                    foreach($reInfo as $reItem){
+                        if($delivery['order']['createway']=="after"){
+                            if(!isset($arrRelateReturn[$reItem['bn']]))continue;
+                            $nums=$arrRelateReturn[$reItem['bn']]['nums'];
+                        }else{
+                            $nums=$reItem['num'];
+                        }
+                        $refund_info[] = array(
+                            'sku'=>$reItem['bn'],
+                            'nums'=>$nums,
+                            'price'=>$reItem['price'],
+                            'oms_rma_id'=>$reship_id,//始终用新reship_id
+                        );
+                    }
+                    if(!empty($order_bn))kernel::single('omemagento_service_order')->update_status($order_bn,'return_required','',time(),$refund_info);
+                }
+
+            }else{
                 //发送报警邮件
                 $original_params = htmlspecialchars($body);
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
-                $subject = '【Fresh-PROD】ByPass退单#'.$reship_bn.'退货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
+                $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
@@ -104,7 +172,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
-                $subject = '【Fresh-PROD】ByPass订单#'.$dj_bn.'单据取消失败';//【ADP-PROD】ByPass订单#10008688发送失败
+                $subject = '【Dior-PROD】ByPass订单#'.$dj_bn.'单据取消失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
@@ -135,7 +203,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
-                $subject = '【Fresh-PROD】ByPass库存更新失败';//【ADP-PROD】ByPass订单#10008688发送失败
+                $subject = '【Dior-PROD】ByPass库存更新失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
@@ -180,13 +248,6 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                     if(!empty($ax_order_bn))kernel::database()->exec($sql);
                     break;
                 case 'returnOrderCreate':
-                    $ordersModel   = app::get('ome')->model('orders');
-                    $reshipModel   = app::get('ome')->model('reship');
-                    $orderId    = $reshipModel->dump(array('reship_id'=>$dj_id),'order_id');
-                    $orderData      = $ordersModel->dump(array('order_id'=>$orderId['order_id']),'order_bn');
-                    $order_bn = $orderData['order_bn'];
-                    //状态更新到dw
-                    kernel::single('omedw_dw_to_order')->send_return(array($order_bn));
                     break;
                 case 'orderCancel':
                     //$this->do_cancel($dj_id,$memo);
@@ -310,8 +371,6 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 );
             }
         }
-        //状态更新到dw
-        kernel::single('omedw_dw_to_product')->send_store($all_store);
     }
 
 
