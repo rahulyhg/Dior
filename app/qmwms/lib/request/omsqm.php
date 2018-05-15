@@ -313,7 +313,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     public function update_store_all($res,$offset,$limit){
         $product_mdl = app::get('ome')->model('products');
         $branch_product = app::get('ome')->model('branch_product');
-        $all_product = $product_mdl->db->select("select p.product_id,p.bn from sdb_ome_products as p left join sdb_ome_goods as g on g.goods_id=p.goods_id where g.is_presell='false' order by p.product_id ASC limit $offset,$limit ");
+        $all_product = $product_mdl->db->select("select p.product_id,p.bn from sdb_ome_products as p left join sdb_ome_goods as g on g.goods_id=p.goods_id where g.is_prepare='false' order by p.product_id ASC limit $offset,$limit ");
 
         if(!$res['items']['item'][0]){
             $res['items']['item'] = array($res['items']['item']);
