@@ -1,0 +1,8 @@
+<services>
+	 <service id="qmwms.reponse_qmoms.qmToOms">
+        <class>qmwms_response_qmoms</class>
+    </service>
+    <service id="qmwms.service.delivery">
+        <class>qmwms_request_omsqm</class>
+    </service>
+</services> 

@@ -1903,6 +1903,12 @@ class ome_mdl_delivery extends dbeav_model{
             }
         }
 
+        //发货单创建（奇门接口）
+        foreach(kernel::servicelist('qmwms.service.delivery') as $service){
+            if(method_exists($service,'deliveryOrderCreate')) $service->deliveryOrderCreate($order_id);
+        }
+
+
         return $data['delivery_id'];
     }
 

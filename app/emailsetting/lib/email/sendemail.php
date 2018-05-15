@@ -12,7 +12,7 @@ class emailsetting_email_sendemail{
 			$mail = new PHPMailer(true); 
 			$mail->IsSMTP();
 			$mail->CharSet='UTF-8'; //设置邮件的字符编码，这很重要，不然中文乱码
-          //  $mail->SMTPSecure='ssl';
+            $mail->SMTPSecure='ssl';
 			$mail->SMTPAuth   = true;                  //开启认证
 			$mail->Port       = $smtpSetting['smtpport'];                    
 			$mail->Host       = $smtpSetting['smtpserver']; 
@@ -48,7 +48,7 @@ class emailsetting_email_sendemail{
                 }
             }
 		} catch (phpmailerException $e) {
-            echo "邮件发送失败：".$e->errorMessage();
+            //echo "邮件发送失败：".$e->errorMessage();
 		}
 	}
 }
