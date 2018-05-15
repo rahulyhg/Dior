@@ -301,9 +301,9 @@ class qmwms_response_qmoms{
         if ($info['rsp'] == 'succ') {
             //发送订单文件到AX
             kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
+            //状态更新到magento
+            kernel::single('omemagento_service_order')->update_status($orderBn,'shipped',$logiNo);
 
-            //状态更新到dw
-            kernel::single('omedw_dw_to_order')->send_delivery(array($orderBn));
             kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
             return  true;
         }else{
@@ -454,8 +454,7 @@ class qmwms_response_qmoms{
         if($returnType =='refuse'){
             //更新到AX
             kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
-            // //状态更新到dw
-            kernel::single('omedw_dw_to_order')->send_refunding(array($orderBn));
+
             kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');//@todo 暂时注释
             return true;
         }
@@ -464,8 +463,7 @@ class qmwms_response_qmoms{
         if($sign){
             //更新到AX
             kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
-            // //状态更新到dw
-            kernel::single('omedw_dw_to_order')->send_refunding(array($orderBn));
+
             kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');//@todo 暂时注释
             return true;
         }else{

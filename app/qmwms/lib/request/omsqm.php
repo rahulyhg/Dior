@@ -326,7 +326,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             }
             $wms_all_products[$items['itemCode']] = $items;
         }
-        $all_store = array();
+
         foreach($all_product as $product){
             $bn = $product['bn'];
             if($wms_all_products[$bn]){
@@ -336,39 +336,19 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $re = $branch_product->change_store(1,$product['product_id'],$store);
                 if($re){
                     $hasUser = kernel::single('omeftp_auto_update_product')->getHasUseStore($product['bn']);
-                    $magentoStore = $wms_product['quantity']+$store_freeze[0]['store_freeze']-$hasUser;
+                    $magentoStore = $wms_product['quantity']-$hasUser;
                     if($magentoStore<0){
                         $magentoStore = 0;
                     }
+                    kernel::single('omemagento_service_product')->update_store($product['bn'],$magentoStore);
                 }
-                $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
-                $ax_safe_store = $ax_setting['ax_safe_store']?$ax_setting['ax_safe_store']:15;
-
-                if($store_freeze[0]['safe_store']>0){
-                    if(intval($wms_product['quantity'])>$store_freeze[0]['safe_store']){
-                        $all_store[] = array(
-                            'bn'=>$bn,
-                            'store'=>$magentoStore,
-                        );
-                    }
-                }else{
-                    if(intval($wms_product['quantity'])>$ax_safe_store){
-                        $all_store[] = array(
-                            'bn'=>$bn,
-                            'store'=>$magentoStore,
-                        );
-                    }
-                }
-
             }else{
                 $store_freeze = $branch_product->getList('store_freeze',array('product_id'=>$product['product_id'],'branch_id'=>1));
                 $store = $store_freeze[0]['store_freeze']?$store_freeze[0]['store_freeze']:0;
-                $branch_product->change_store(1,$product['product_id'],$store);
-                $magentoStore = $store;
-                $all_store[] = array(
-                    'bn'=>$bn,
-                    'store'=>$magentoStore,
-                );
+                $re = $branch_product->change_store(1,$product['product_id'],$store);
+                if($re){
+                    kernel::single('omemagento_service_product')->update_store($product['bn'],0);
+                }
             }
         }
     }
