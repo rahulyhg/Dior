@@ -161,11 +161,22 @@ class qmwms_request_qimen{
                 $extendPropsFapiao['fapiao_receiver_detailAddress'] = $ordersData[0]['invoice_addr'];
             }
         }
+        $comments = array();
+        if(!empty($op_content))$comments = array('comments'=>$op_content);
 
-        $comments = array('comments'=>$op_content);
-        $extendProps = array_merge($extendPropsFapiao,$comments);
+        //SF到货时间选择
+        $tDelivery = array();
+        if(!empty($ordersData[0]['ship_time'])){
+            $ship_time = $ordersData[0]['ship_time'];
+            $is_date = strstr($ship_time,'_');
+            if($is_date){
+                $arr = explode('_',$ship_time);
+                $tDelivery = array('tDeliveryDate'=>$arr[0],'tDelivery'=>$arr[1]);
+            }
+        }
+
+        $extendProps = array_merge($extendPropsFapiao,$comments,$tDelivery);
         $body['deliveryOrder']['extendProps'] = $extendProps;
-
 
         //订单列表信息
         $body['orderLines'] = array();
