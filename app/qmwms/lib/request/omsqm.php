@@ -32,7 +32,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $this->writeLog($res_data,$insert_id);
 
             if($res_data['status']=='success'){
-                kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_wms');
+                kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_ax');
             }else{
                 //发送报警邮件
                 $original_params = htmlspecialchars($body);

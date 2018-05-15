@@ -153,7 +153,7 @@ class omeftp_service_reship{
 		$ax_h = $this->get_ax_h($delivery,$reship_id);
 		$ax_content_arr [] = $ax_h;
 
-		$ax_d = $this->get_ax_d($delivery);
+		$ax_d = $this->get_ax_d($delivery,$reship_id);
 		$ax_content_arr [] = $ax_d;
 
 		$ax_i = $this->get_ax_i($delivery);
@@ -253,15 +253,19 @@ class omeftp_service_reship{
 		return implode('|',$ax_h);
 	}
 
-	public function get_ax_d($delivery){
+	public function get_ax_d($delivery,$reship_id){
 		$ax_d = array();
 		
 		$ax_d[] = 'D';
 
+		$objReship = app::get('ome')->model('reship');
+		$order_confirm_time = $objReship->getList('order_confirm_time',array('reship_id'=>$reship_id));
+		$order_confirm_time = date('Y-m-d H:i:s',$order_confirm_time[0]['order_confirm_time']);
+
 		$ax_d[] = '';//Requested receipt Date
-		$ax_d[] = '';//Requested Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
-		$ax_d[] = '';//Confirmed Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
