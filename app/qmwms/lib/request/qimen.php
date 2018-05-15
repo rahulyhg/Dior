@@ -42,17 +42,16 @@ class qmwms_request_qimen{
             $Engraving .= $item['message1'];
         }
 
-        //comment和remark信息
+        //comment和remark信息及刻字
         $mark_texts  = unserialize($ordersData[0]['mark_text']);
         $op_content    = '';
-        $en_op_content = '';
         if(!empty($ordersData[0]['mark_text'])){
             foreach($mark_texts as $text){
                 $op_content .= $text['op_content'].';';
             }
         }
 
-        if(!empty($Engraving)){
+        if($ordersData[0]['is_lettering'] == 'true'){
             $en_op_content = '刻字订单'.';'.$op_content;
         }else{
             $en_op_content = $op_content;

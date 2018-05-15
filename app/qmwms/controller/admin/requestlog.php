@@ -11,7 +11,8 @@ class qmwms_ctl_admin_requestlog extends desktop_controller{
             'use_buildin_set_tag'=>false,
             'use_buildin_recycle'=>false,
             'use_buildin_export'=>false,
-            'use_buildin_filter'=>true
+            'use_buildin_filter'=>true,
+            'orderBy' => 'last_modified  desc',
         ));
     }
 
