@@ -1,0 +1,16 @@
+<desktop>
+ 
+    <workground name="系统" id="setting_tools" order="800">
+        <menugroup name="奇门对接配置">
+            <menu controller='admin_qmsetting' action='index'  permission='qm_setting' display='true' order='3000200'>奇门接口设置</menu>
+            <menu controller='admin_requestlog' action='index'  permission='qm_setting' display='true' order='3000200'>接口请求日志</menu>
+        </menugroup>
+
+    </workground>
+
+    <permissions>
+        <permission id="qm_setting">奇门配置</permission>
+
+    </permissions>
+
+</desktop>

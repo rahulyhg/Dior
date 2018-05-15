@@ -268,7 +268,7 @@ class omeftp_service_delivery{
 		$ax_d[] = $receipt_date;//Requested receipt Date
 		$ax_d[] = '';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
-		$ax_d[] = '';//Confirmed Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
@@ -499,7 +499,7 @@ class omeftp_service_delivery{
                     $order_id = $deliOrder['order_id'];
                 }
 
-                $order = $orderModel->dump(array('order_id'=>$order_id),'order_bn,cost_payment,shop_id,invoice_name,createtime,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,is_delivery,is_w_card,mark_text,sync,welcomecard,tax_company,pmt_order,custom_mark,ship_area,order_id,self_delivery,createway');
+                $order = $orderModel->dump(array('order_id'=>$order_id),'order_bn,cost_payment,shop_id,invoice_name,createtime,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,is_delivery,is_w_card,mark_text,sync,welcomecard,tax_company,pmt_order,custom_mark,ship_area,order_id,self_delivery,createway,order_confirm_time');
 
                 // 发货人地址
                 $consignee_area = $delivery['consignee']['area'];
@@ -541,7 +541,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku,order_confirm_time');
                 }
 
                 // 发货地址

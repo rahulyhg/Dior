@@ -1476,7 +1476,7 @@ class erpapi_oms_order
 		
 		if(!empty($params['order_bn'])){
 			if($msg!='订单保存失败.请重试'){
-				kernel::single("erpapi_oms_email_sendemail")->sendEmail();
+				kernel::single("emailsetting_send")->send("jasmine.yu@d1m.cn",'Dior 订单错误',$msg);
 			}
 			error_log('订单:'.$params['order_bn']."错误:".$msg,3,DATA_DIR.'/magentoapi/'.date("Ymd").'zjrorder.txt');
 		}else{

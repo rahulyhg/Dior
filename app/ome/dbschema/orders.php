@@ -269,6 +269,14 @@ $db['orders']=array (
       'editable' => false,
       'in_list' => true,
     ),
+    'order_confirm_time' =>
+    array (
+        'type' => 'time',
+        'comment' => 'WMS发货确认时间',
+        'editable' => false,
+        'label' => 'WMS发货确认时间',
+        'in_list' => true,
+    ),
     'shop_id' =>
     array (
       'type' => 'table:shop@ome',
@@ -1273,6 +1281,13 @@ $db['orders']=array (
         'columns' =>
         array (
           0 => 'order_bn',
+        ),
+    ),
+	'ind_relate_order_bn' =>
+    array (
+        'columns' =>
+        array (
+          0 => 'relate_order_bn',
         ),
     ),
     'ind_archive' =>

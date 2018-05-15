@@ -132,57 +132,63 @@ class ome_ctl_admin_delivery extends desktop_controller{
 		if(is_array($delivery_id)){
 			$ome_delivery_id = $delivery_id[0];
 		}
-		kernel::single('omeftp_service_back')->delivery($ome_delivery_id,$memo);
-		
-        if ($delivery_id) {
-            if ($flag == 'OK') {//合单时拆分
-                foreach ($delivery_id as $deliveryid ) {
-                    $result = $Objdly->splitDelivery($deliveryid, $_POST['id'],$_POST['id']);
-      
-                    if ($result) {
-                        $Objdly->rebackDelivery($_POST['id'], $memo);
-                    }else{
-                       $rs = array('rsp'=>'fail','msg'=>'撤销失败');
+		//kernel::single('omeftp_service_back')->delivery($ome_delivery_id,$memo);
+
+        //触发奇门-WMS单据取消接口
+        $wms_res = kernel::single('qmwms_request_omsqm')->orderCancel($ome_delivery_id,$memo);
+        if(!empty($wms_res)&&$wms_res['status'] == 'success'){
+            if ($delivery_id) {
+                if ($flag == 'OK') {//合单时拆分
+                    foreach ($delivery_id as $deliveryid ) {
+                        $result = $Objdly->splitDelivery($deliveryid, $_POST['id'],$_POST['id']);
+
+                        if ($result) {
+                            $Objdly->rebackDelivery($_POST['id'], $memo);
+                        }else{
+                            $rs = array('rsp'=>'fail','msg'=>'撤销失败');
+                        }
+                    }
+                }else{
+                    $result = $Objdly->rebackDelivery($delivery_id, $memo);
+                    if (!$result) {
+                        $rs = array('rsp'=>'fail','msg'=>'撤销失败');
                     }
                 }
-            }else{
-                $result = $Objdly->rebackDelivery($delivery_id, $memo);
-                if (!$result) {
-                    $rs = array('rsp'=>'fail','msg'=>'撤销失败');
-                }
             }
+            $objDelOrder = app::get('ome')->model('delivery_order');
+            $objOrder = app::get('ome')->model('orders');
+            $objShop = app::get('ome')->model('shop');
+
+            $order_id = $objDelOrder->getList('*',array('delivery_id'=>$delivery_id));
+            $order_id = $order_id[0]['order_id'];
+            $orderInfo = $objOrder->dump($order_id);
+            if($orderInfo['shipping']['is_cod']=='true'){
+                define('FRST_TRIGGER_OBJECT_TYPE','订单：订单人工取消');
+                define('FRST_TRIGGER_ACTION_TYPE','ome_ctl_admin_order：do_cancel');
+                $memo = "订单被取消 发货拦截";
+                $mod = 'async';
+                $sync_rs = $objOrder->cancel($order_id,$memo,true,$mod);
+                $megentoInstance = kernel::service('service.magento_order');
+                $megentoInstance->update_status($orderInfo['order_bn'],'canceled');
+            }else{
+                $objpayemntCfg = app::get('ome')->model('payment_cfg');
+                $payment_id = $objpayemntCfg->getList('id',array('pay_bn'=>$orderInfo['pay_bn']));
+                $shop_id = $objShop->getList('shop_id');
+                $data = array(
+                    'order_id'=>$order_id,
+                    'shop_id'=>$shop[0]['shop_id'],
+                    'order_bn'=>$orderInfo['order_bn'],
+                    'pay_type'=>'online',
+                    'refund_money' => $orderInfo['payed'],
+                    'payment'=>$payment_id[0]['id'],
+                );
+                $return = kernel::single('ome_refund_apply')->refund_apply_add($data);
+                kernel::single('ome_order_func')->update_order_pay_status($_POST['order_id']);
+
+            }
+        }else{
+            $rs = array('rsp'=>'fail','msg'=>$wms_res['res_msg']);
         }
-		$objDelOrder = app::get('ome')->model('delivery_order');
-		$objOrder = app::get('ome')->model('orders');
-		$objShop = app::get('ome')->model('shop');
-
-		$order_id = $objDelOrder->getList('*',array('delivery_id'=>$delivery_id));
-		$order_id = $order_id[0]['order_id'];
-		$orderInfo = $objOrder->dump($order_id);
-		if($orderInfo['shipping']['is_cod']=='true'){
-			define('FRST_TRIGGER_OBJECT_TYPE','订单：订单人工取消');
-            define('FRST_TRIGGER_ACTION_TYPE','ome_ctl_admin_order：do_cancel');
-            $memo = "订单被取消 发货拦截";
-            $mod = 'async';
-			$sync_rs = $objOrder->cancel($order_id,$memo,true,$mod);
-			$megentoInstance = kernel::service('service.magento_order');
-			$megentoInstance->update_status($orderInfo['order_bn'],'canceled');
-		}else{
-			$objpayemntCfg = app::get('ome')->model('payment_cfg');
-			$payment_id = $objpayemntCfg->getList('id',array('pay_bn'=>$orderInfo['pay_bn']));
-			$shop_id = $objShop->getList('shop_id');
-			$data = array(
-					'order_id'=>$order_id,
-					'shop_id'=>$shop[0]['shop_id'],
-					'order_bn'=>$orderInfo['order_bn'],
-					'pay_type'=>'online',
-					'refund_money' => $orderInfo['payed'],
-					'payment'=>$payment_id[0]['id'],
-				);
-			$return = kernel::single('ome_refund_apply')->refund_apply_add($data);
-			kernel::single('ome_order_func')->update_order_pay_status($_POST['order_id']);
-
-		}
         
         echo json_encode($rs);
     }
