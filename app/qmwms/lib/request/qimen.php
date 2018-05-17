@@ -42,19 +42,13 @@ class qmwms_request_qimen{
             $Engraving .= $item['message1'];
         }
 
-        //comment和remark信息及刻字
-        $mark_texts  = unserialize($ordersData[0]['mark_text']);
+        //comment和remark信息及刻字信息,全部在custom_mark字段
+        $custom_mark = unserialize($ordersData[0]['custom_mark']);
         $op_content    = '';
-        if(!empty($ordersData[0]['mark_text'])){
-            foreach($mark_texts as $text){
+        if(!empty($ordersData[0]['custom_mark'])){
+            foreach($custom_mark as $text){
                 $op_content .= $text['op_content'].';';
             }
-        }
-
-        if($ordersData[0]['is_lettering'] == 'true'){
-            $en_op_content = '刻字订单'.';'.$op_content;
-        }else{
-            $en_op_content = $op_content;
         }
 
         $ship_area = $ordersData[0]['ship_area'];
@@ -137,7 +131,7 @@ class qmwms_request_qimen{
         $body['deliveryOrder']['receiverInfo']['city']        = $ordersData[0]['ship_city'];//
         $body['deliveryOrder']['receiverInfo']['area']        = $ordersData[0]['ship_district'];//
         $body['deliveryOrder']['receiverInfo']['detailAddress'] = $ordersData[0]['ship_addr'];//详细地址
-        $body['deliveryOrder']['remark'] =$en_op_content;
+        $body['deliveryOrder']['remark'] = $op_content;
 
         $extendPropsFapiao = array();
         if($ordersData[0]['is_einvoice'] == 'false'){

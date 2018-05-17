@@ -301,10 +301,27 @@ class qmwms_response_qmoms{
         if ($info['rsp'] == 'succ') {
             //发送订单文件到AX
             kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
-            //状态更新到magento
-            kernel::single('omemagento_service_order')->update_status($orderBn,'shipped',$logiNo);
 
-            kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
+            if($orderData[0]['is_mcd']=="true"&&$orderData[0]['createway']=="after"){
+                $post=$arrReship=$arrOrders=array();
+                $arrReship=$this->objectReship->getList("m_reship_bn,order_id",array('p_order_id'=>$orderData[0]['order_id']));
+
+                $post['order_bn']=$orderData[0]['relate_order_bn'];//老的订单号
+                $post['exchange_no']=$arrReship[0]['m_reship_bn'];
+                $post['status']='shipped';
+                $post['tracking_code']=$logiNo;
+                $post['shipped_at']=date('Y-m-d H:i:s',time());
+                kernel::single('omemagento_service_change')->updateStatus($post);
+                //换出来的MCD订单判断是否还有其余未发货，如果有等到最后一笔发货后再开
+                $arrOrders=$this->objectOrder->getList("order_id",array('relate_order_bn'=>$orderData[0]['relate_order_bn'],'ship_status'=>'0','is_mcd'=>'true','createway'=>'after'));
+                if(empty($arrOrders[0]['order_id'])){
+                    kernel::single('einvoice_request_invoice')->invoice_request($arrReship[0]['order_id'],'getApplyInvoiceData');
+                }
+            }else{
+                //状态更新到magento
+                kernel::single('omemagento_service_order')->update_status($orderBn,'shipped',$logiNo);
+                 kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
+            }
             return  true;
         }else{
             //error_log(var_export($info,true),3,__FILE__.'result.txt');
@@ -464,7 +481,38 @@ class qmwms_response_qmoms{
             //更新到AX
             kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
 
-            kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');//@todo 暂时注释
+            $createway=$orderData[0]['createway'];
+            //售后生成的新订单
+            if($createway=="after"){
+                $arrOriginalOrder=$this->objectReship->getOriginalOrder($orderBn);
+                $orderBn=$arrOriginalOrder['relate_order_bn'];//老订单号
+                $orderId=$arrOriginalOrder['relate_order_id'];//老订单ID
+            }
+
+            if($returnType=='change'){//状态传给magento
+                $arrPostMagento=array();
+                $arrPostMagento['status']='exchanging';
+                $arrPostMagento['order_bn']=$orderBn;
+                $arrPostMagento['exchange_no']=$reship['m_reship_bn'];
+                kernel::single('omemagento_service_change')->updateStatus($arrPostMagento);
+            }
+
+            if($returnType=='return'){
+                $magento_type=NULL;
+                $arrRefundApply=$arrOriginalOrder=array();
+                $objRefundApply = app::get('ome')->model('refund_apply');
+                $arrRefundApply=$objRefundApply->dump(array('reship_id'=>$reshipId),'apply_id,payment,money');
+                if($arrRefundApply['payment']=="4"){
+                    $magento_type='refund_required';
+                }else{
+                    $magento_type='refunding';
+                }
+
+                kernel::single('omemagento_service_order')->update_status($orderBn,$magento_type,'',time(),array('oms_rma_id'=>$reshipId));
+                app::get('ome')->model('refund_apply')->sendRefundToM($arrRefundApply['apply_id'],$orderBn,$arrRefundApply['money'],$reshipId);
+            }
+
+            kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');
             return true;
         }else{
             //error_log(var_export($reshipBn,true),3,__FILE__.'error.txt');//记录无法更新的退货单
