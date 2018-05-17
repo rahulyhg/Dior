@@ -112,7 +112,7 @@ class omeftp_service_delivery{
                 );
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
 
-            kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
+            //kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
 		}
     }
 
@@ -320,8 +320,9 @@ class omeftp_service_delivery{
 		$invoice_district = ome_func::strip_bom(trim($invoice_area[2]));
 
 		$ax_i[] = 'I';
-
-		$ax_i[] = $delivery['order']['invoice_name']?$delivery['order']['invoice_name']:'';//Invoice  Name//$delivery['member_id'];//Bill to customer
+		if($delivery['order']['is_tax']=='true'&&$delivery['order']['is_einvoice']=='false'){
+			$ax_i[] = $delivery['order']['invoice_name']?$delivery['order']['invoice_name']:'';//Invoice  Name//$delivery['member_id'];//Bill to customer
+		}
 		$ax_i[] = '';//Payment Term
 		if($delivery['order']['pay_bn']=='cod'){
 			 $pay_bn = 'COD';
@@ -366,8 +367,10 @@ class omeftp_service_delivery{
 		$ax_i[] = '';//Total Amount excl. Taxes
 
 		$ax_i[] = '';//Total Sales taxes
-		
-		$ax_i[] = $delivery['order']['taxpayer_identity_number'];
+
+		if($delivery['order']['is_tax']=='true'&&$delivery['order']['is_einvoice']=='false'){
+			$ax_i[] = $delivery['order']['taxpayer_identity_number'];
+		}
 		return implode('|',$ax_i);
 	}
 
