@@ -21,7 +21,7 @@ class omeftp_auto_upload_order{
             $params['local'] = $row['file_local_route'];
             $params['resume'] = 0;
             $orderStr = file_get_contents($params['local']);
-            $strCount = substr_count($orderStr,'ORDER_REG_DIOR');
+            $strCount = substr_count($orderStr,'HEADER');
             if($strCount==1){
                 $ftp_flag = $this->ftp_operate->push($params,$msg);
                 if($ftp_flag){
