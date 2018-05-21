@@ -200,7 +200,7 @@ class omeftp_service_reship{
 		$order_confirm_time = date('Y-m-d H:i:s',$order_confirm_time[0]['order_confirm_time']);
 
 		$ax_d[] = '';//Requested receipt Date
-		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
+		$ax_d[] = '';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
 		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
