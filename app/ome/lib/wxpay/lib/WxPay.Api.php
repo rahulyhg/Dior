@@ -216,15 +216,20 @@ class WxPayApi
 	public static function downloadBill($inputObj, $timeOut = 6)
 	{
 		$url = "https://api.mch.weixin.qq.com/pay/downloadbill";
-		//检测必填参数
+		// 检测必填参数
 		if(!$inputObj->IsBill_dateSet()) {
 			throw new WxPayException("对账单接口中，缺少必填参数bill_date！");
 		}
-		$inputObj->SetAppid(WxPayConfig::APPID);//公众账号ID
-		$inputObj->SetMch_id(WxPayConfig::MCHID);//商户号
-		$inputObj->SetNonce_str(self::getNonceStr());//随机字符串
-		
-		$inputObj->SetSign();//签名
+		// 检测是否启用小程序配置 august.yao
+		if(WxPayConfig::$enable){
+			$inputObj->SetAppid(WxPayConfig::XCX_APPID);  // 小程序ID
+			$inputObj->SetMch_id(WxPayConfig::XCX_MCHID); // 小程序商户号
+		}else{
+			$inputObj->SetAppid(WxPayConfig::APPID);  // 公众账号ID
+			$inputObj->SetMch_id(WxPayConfig::MCHID); // 商户号
+		}
+		$inputObj->SetNonce_str(self::getNonceStr()); // 随机字符串
+		$inputObj->SetSign(); // 签名
 		$xml = $inputObj->ToXml();
 		
 		$response = self::postXmlCurl($xml, $url, false, $timeOut);
