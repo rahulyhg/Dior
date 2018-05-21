@@ -223,7 +223,7 @@ class omeftp_service_delivery{
 		if(!empty($delivery['order']['ribbon_sku'])){
 			$itemNums +=1 ;
 		}
-		if($delivery['order']['mcd_package_sku'] == 'PCD'){
+		if($delivery['order']['mcd_package_sku'] == 'MCD'){
 			$itemNums +=1 ;
 		}
 
@@ -271,7 +271,7 @@ class omeftp_service_delivery{
 		$order_confirm_time = date('Y-m-d H:i:s',$delivery['order']['order_confirm_time']);
 		
 		$ax_d[] = $receipt_date;//Requested receipt Date
-		$ax_d[] = '';//Requested Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
 		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
