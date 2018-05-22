@@ -20,10 +20,15 @@ class omeftp_auto_upload_order{
             $params['remote'] = $this->file_obj->getFileName($row['file_ftp_route']);
             $params['local'] = $row['file_local_route'];
             $params['resume'] = 0;
-
-            $ftp_flag = $this->ftp_operate->push($params,$msg);
-            if($ftp_flag){
-                $this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$row['ftp_log_id'],'ftp');
+            $orderStr = file_get_contents($params['local']);
+            $strCount = substr_count($orderStr,'HEADER');
+            if($strCount==1){
+                $ftp_flag = $this->ftp_operate->push($params,$msg);
+                if($ftp_flag){
+                    $this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$row['ftp_log_id'],'ftp');
+                }
+            }else{
+                 $this->operate_log->update_log(array('status'=>'fail','lastmodify'=>time(),'memo'=>'文件内容异常'),$row['ftp_log_id'],'ftp');
             }
         }
     }

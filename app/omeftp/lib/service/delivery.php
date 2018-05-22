@@ -67,7 +67,7 @@ class omeftp_service_delivery{
 	
 		$file_params['method'] = 'a';
 		$file_params['data'] = $this->getContent($delivery,$file_params['file']);
-
+		
 		$file_log_data = array(
 				'content'=>$file_params['data']?$file_params['data']:'没有数据',
 				'io_type'=>'in',
@@ -112,7 +112,7 @@ class omeftp_service_delivery{
                 );
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
 
-            kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
+            //kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
 		}
     }
 
@@ -223,6 +223,9 @@ class omeftp_service_delivery{
 		if(!empty($delivery['order']['ribbon_sku'])){
 			$itemNums +=1 ;
 		}
+		if($delivery['order']['mcd_package_sku'] == 'MCD'){
+			$itemNums +=1 ;
+		}
 
 		$ax_h[] = intval($itemNums);//total quantity
 
@@ -259,15 +262,22 @@ class omeftp_service_delivery{
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 
 		$ax_d[] = 'D';
+		
+		$receipt_date=$receipt_time=NULL;
+		if(!empty($delivery['consignee']['r_time'])&&strpos($delivery['consignee']['r_time'],"_")!==false){
+			list($receipt_date,$receipt_time) = explode('_',$delivery['consignee']['r_time']);
+		}
 
-		$ax_d[] = '';//Requested receipt Date
-		$ax_d[] = '';//Requested Ship Date
+		$order_confirm_time = date('Y-m-d H:i:s',$delivery['order']['order_confirm_time']);
+		
+		$ax_d[] = $receipt_date;//Requested receipt Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
-		$ax_d[] = '';//Confirmed Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
-		$ax_d[] = '';//Condition of Delivery   set by AX
+		$ax_d[] = $receipt_time;//Condition of Delivery   set by AX
 		
 		$ax_d_mode_of_delivery = $ax_setting['ax_d_mode_of_delivery'];
 		if($delivery['consignee']['province']=='上海'||$delivery['consignee']['province']=='江苏省'||$delivery['consignee']['province']=='浙江省'||$delivery['consignee']['province']=='安徽省'||$delivery['consignee']['province']=='西藏自治区'){
@@ -315,8 +325,9 @@ class omeftp_service_delivery{
 		$invoice_district = ome_func::strip_bom(trim($invoice_area[2]));
 
 		$ax_i[] = 'I';
-
-		$ax_i[] = $delivery['order']['invoice_name']?$delivery['order']['invoice_name']:'';//Invoice  Name//$delivery['member_id'];//Bill to customer
+		if($delivery['order']['is_tax']=='true'&&$delivery['order']['is_einvoice']=='false'){
+			$ax_i[] = $delivery['order']['invoice_name']?$delivery['order']['invoice_name']:'';//Invoice  Name//$delivery['member_id'];//Bill to customer
+		}
 		$ax_i[] = '';//Payment Term
 		if($delivery['order']['pay_bn']=='cod'){
 			 $pay_bn = 'COD';
@@ -361,8 +372,10 @@ class omeftp_service_delivery{
 		$ax_i[] = '';//Total Amount excl. Taxes
 
 		$ax_i[] = '';//Total Sales taxes
-		
-		$ax_i[] = $delivery['order']['taxpayer_identity_number'];
+
+		if($delivery['order']['is_tax']=='true'&&$delivery['order']['is_einvoice']=='false'){
+			$ax_i[] = $delivery['order']['taxpayer_identity_number'];
+		}
 		return implode('|',$ax_i);
 	}
 
@@ -494,7 +507,7 @@ class omeftp_service_delivery{
                     $order_id = $deliOrder['order_id'];
                 }
 
-                $order = $orderModel->dump(array('order_id'=>$order_id),'order_bn,cost_payment,shop_id,invoice_name,createtime,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,is_delivery,is_w_card,mark_text,sync,welcomecard,tax_company,pmt_order,custom_mark,ship_area,order_id,self_delivery,createway');
+                $order = $orderModel->dump(array('order_id'=>$order_id),'order_bn,cost_payment,shop_id,invoice_name,createtime,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,is_delivery,is_w_card,mark_text,sync,welcomecard,tax_company,pmt_order,custom_mark,ship_area,order_id,self_delivery,createway,order_confirm_time');
 
                 // 发货人地址
                 $consignee_area = $delivery['consignee']['area'];
@@ -536,7 +549,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku,order_confirm_time');
                 }
 
                 // 发货地址

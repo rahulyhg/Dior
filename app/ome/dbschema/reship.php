@@ -486,6 +486,14 @@ $db['reship']=array (
       'label' => '单据审核时间',
       'in_list' => true,
     ),
+    'order_confirm_time' =>
+    array (
+        'type' => 'time',
+        'comment' => 'WMS退货确认时间',
+        'editable' => false,
+        'label' => 'WMS退货确认时间',
+        'in_list' => true,
+    ),
 	'qa_memo'=>array(
 		'type' => 'longtext',
 		'label' => '质检备注',

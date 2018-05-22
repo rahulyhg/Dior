@@ -1,0 +1,77 @@
+<form action="index.php?app=qmwms&ctl=admin_qmsetting&act=save" method="post" onsubmit="return isValid()">
+    <div style="text-align:right;padding:3px 30px"></div>
+    <h3>奇门接口配置信息</h3> 
+    <table class="tableform" width="100%" border="0" cellpadding="0" cellspacing="0" >
+        <tbody>
+            <tr>
+                <th>AppKey：</th>
+                <td><{input type="text" name="app_key" value=$qmwmsApi.app_key size="30" id="appkey"}>
+                    <span class="notice-inline">不能为空</span>
+                </td>
+            </tr>
+            <tr>
+                <th >AppSecret：</th>
+                <td><{input type="text" name="app_secret" value=$qmwmsApi.app_secret size="30" id="appsecret"}>
+                    <span class="notice-inline">不能为空</span>
+                </td>
+            </tr>
+            <tr>
+                <th >CustomerId：</th>
+                <td><{input type="text" name="customerId" value=$qmwmsApi.customerId size="30" id="customerId"}>
+                    <span class="notice-inline">不能为空</span>
+                </td>
+            </tr>
+            <tr>
+                <th >仓储系统API：</th>
+                <td><{input type="text" name="wms_api" value=$qmwmsApi.wms_api size="30" id="wms_api"}>
+                    <span class="notice-inline">不能为空</span>
+                </td>
+            </tr>
+            <tr>
+                <th >WmsCode：</th>
+                <td><{input type="text" name="wms_code" value=$qmwmsApi.wms_code size="30" id="wmsCode"}> </td>
+            </tr>
+            <tr>
+                <th>品牌礼品卡货号：</th>
+                <td><{input type="text" name="gift_bn" value=$qmwmsApi.gift_bn size="40" id="giftBn"}></td>
+            </tr>
+            <tr>
+                <th>礼品卡货号：</th>
+                <td><{input type="text" name="sample_bn" value=$qmwmsApi.sample_bn size="40" id="sampleBn"}></td>
+            </tr>
+            <tr>
+                <th>MCD礼品卡货号：</th>
+                <td><{input type="text" name="mcd_sample_bn" value=$qmwmsApi.mcd_sample_bn size="40" id="mcdSampleBn"}></td>
+            </tr>
+            <tr>
+                <th>MCD包装货号：</th>
+                <td><{input type="text" name="mcd_package_sku" value=$qmwmsApi.mcd_package_sku size="40" id="mcdPackageSku"}></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <td><{button type="submit" label="保存" }></td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+<script >
+    function isValid(){
+        var AppKey = document.getElementById('appkey').value;
+         var AppSecret = document.getElementById('appsecret').value;
+        var CustomerId = document.getElementById('customerId').value;
+        if(AppKey==''||AppKey==null){
+            //alert('AppKey can\'t be empty!');
+            return false;
+        }
+
+        if(AppSecret==''||AppSecret==null){
+            //alert('AppSecret can\'t be empty!');
+            return false;
+        }
+        if(CustomerId==''||CustomerId==null){
+            //alert('CustomerId can\'t be empty!');
+            return false;
+        }
+    }
+</script>
+

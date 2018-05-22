@@ -377,7 +377,9 @@ class erpapi_oms_order
 			return $this->send_error('地区不正确');
 		}
 		
-		$post['consignee']['r_time']    = '任意日期 任意时间段';
+		if(empty($post['consignee']['r_time'])){
+			$post['consignee']['r_time']    = '任意日期 任意时间段';
+		}
         $post['consignee']['area']      = $post['address_id'];
 		
 		//商品处理
@@ -1120,7 +1122,9 @@ class erpapi_oms_order
 		$objDeliveryOrder = app::get('ome')->model('delivery_order');
 		$delivery_id = $objDeliveryOrder->getList('*',array('order_id'=>$order_id,'status'=>'succ'));
 		$delivery_id = array_reverse($delivery_id);
-		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship_id,'change');
+		//kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship_id,'change');
+		//magento前端新建退换货单的时候调用奇门接口
+		kernel::single('qmwms_request_omsqm')->returnOrderCreate($delivery_id[0]['delivery_id'],$reship_id,'change');
 		
 		return $this->send_succ('succ');
 	}

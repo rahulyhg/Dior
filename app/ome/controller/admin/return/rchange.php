@@ -254,8 +254,10 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
 			$arrPostMagento['exchange_no']=$reship_bn;
 			//kernel::single('omemagento_service_change')->sendChangeOrder($arrPostMagento);
 		}
-		
-		kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id'],$post['return_type'],$arrPostMagento);
+        //kernel::single('omeftp_service_reship')->delivery($delivery_id[0]['delivery_id'],$reship[0]['reship_id'],$post['return_type'],$arrPostMagento);
+
+        //奇门退单创建
+        kernel::single('qmwms_request_omsqm')->returnOrderCreate($delivery_id[0]['delivery_id'],$reship[0]['reship_id'],$post['return_type'],$arrPostMagento);
 
         $params['reship_id'] = $reship[0]['reship_id'];
 

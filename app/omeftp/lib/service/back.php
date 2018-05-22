@@ -22,7 +22,7 @@ class omeftp_service_back{
      * @access public
      * @param int $delivery_id 发货单ID
      */
-    public function delivery($delivery_id,$memo=''){
+    public function delivery($delivery_id,$memo='',$reship_id){
         $deliveryModel = app::get('ome')->model('delivery');
         $delivery = $deliveryModel->dump($delivery_id);
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
@@ -33,24 +33,14 @@ class omeftp_service_back{
 		$file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
 		$file_name = implode('_',$file_arr);
 
-		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.$file_name.'.dat';
-
-		/*if($sync){
-			if(AX_DIR){
-				$file_params['file'] = AX_DIR.'/'.$file_prefix.date('YmdHis',time()).'.csv';
-			}else{
-				$file_params['file'] = PUBLIC_DIR.'/ax/'.$file_prefix.date('YmdHis',time()).'.csv';
-			}
-		}else{
-			if(AX_DIR){
-				$file_params['file'] = AX_DIR.'/'.'CN_DI_'.date('Ymd',time()).'.csv';
-			}else{
-				$file_params['file'] = PUBLIC_DIR.'/ax/'.'CN_DI_'.date('Ymd',time()).'.csv';
-			}
-		}*/
+		if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+			mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+			chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+		}
+		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
 	
 		$file_params['method'] = 'a';
-		$file_params['data'] = $this->getContent($delivery,$file_params['file'],$memo);
+		$file_params['data'] = $this->getContent($delivery,$file_params['file'],$memo,$reship_id);
 
 		$file_log_data = array(
 				'content'=>$file_params['data']?$file_params['data']:'没有数据',
@@ -64,39 +54,29 @@ class omeftp_service_back{
 
 		$flag = $this->file_obj->toWrite($file_params,$msg);
 		if($flag){
-
 			$this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time()),$file_log_id,'file');
-			//error_log(var_export($sync,true),3,'f:/cc.txt');
-			if(true){
-				//$ftp_operate = kernel::single('omeftp_ftp_operate');
-				$params['remote'] = $this->file_obj->getFileName($file_params['file']);
-				$params['local'] = $file_params['file'];
-				$params['resume'] = 0;
+			//$ftp_operate = kernel::single('omeftp_ftp_operate');
+			$params['remote'] = $this->file_obj->getFileName($file_params['file']);
+			$params['local'] = $file_params['file'];
+			$params['resume'] = 0;
 
-				$ftp_log_data = array(
-						'io_type'=>'out',
-						'work_type'=>'delivery',
-						'createtime'=>time(),
-						'status'=>'prepare',
-						'file_local_route'=>$file_params['file'],
-						'file_ftp_route'=>$params['remote'],
-					);
-				$ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
-			//	error_log(var_export($ftp_log_id,true),3,'f:/cc.txt');
-				$ftp_flag = $this->ftp_operate->push($params,$msg);
-				if($ftp_flag){
-					$this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
-				}else{
-					$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-				}
-			}
+			$ftp_log_data = array(
+					'io_type'=>'out',
+					'work_type'=>'delivery',
+					'createtime'=>time(),
+					'status'=>'prepare',
+					'file_local_route'=>$file_params['file'],
+					'file_ftp_route'=>$params['remote'],
+				);
+			$ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
+
 		}else{
 			
 			$this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
 		}
     }
 
-	public function getContent($delivery,$file,$memo){
+	public function getContent($delivery,$file,$memo,$reship_id){
 		//error_log(var_export($delivery,true),3,'f:/order.txt');
 		$ax_content_arr = array();
 		if(file_exists($file)){
@@ -112,7 +92,7 @@ class omeftp_service_back{
 		$ax_h = $this->get_ax_h($delivery,$memo);
 		$ax_content_arr [] = $ax_h;
 
-		$ax_d = $this->get_ax_d($delivery);
+		$ax_d = $this->get_ax_d($delivery,$reship_id);
 		$ax_content_arr [] = $ax_d;
 
 		$ax_i = $this->get_ax_i($delivery);
@@ -198,16 +178,20 @@ class omeftp_service_back{
 		return implode('|',$ax_h);
 	}
 
-	public function get_ax_d($delivery){
+	public function get_ax_d($delivery,$reship_id){
 		$ax_d = array();
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 
 		$ax_d[] = 'D';
 
+		$objReship = app::get('ome')->model('reship');
+		$order_confirm_time = $objReship->getList('order_confirm_time',array('reship_id'=>$reship_id));
+		$order_confirm_time = date('Y-m-d H:i:s',$order_confirm_time[0]['order_confirm_time']);
+
 		$ax_d[] = '';//Requested receipt Date
-		$ax_d[] = '';//Requested Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
-		$ax_d[] = '';//Confirmed Ship Date
+		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
