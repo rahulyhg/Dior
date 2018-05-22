@@ -331,12 +331,12 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $bn = $product['bn'];
             if($wms_all_products[$bn]){
                 $wms_product = $wms_all_products[$bn];
-                $store_freeze = $branch_product->getList('store_freeze,safe_store',array('product_id'=>$product['product_id'],'branch_id'=>1));
-                $store = $wms_product['quantity']+$store_freeze[0]['store_freeze'];
+                $store_freeze = $branch_product->getList('store_freeze,safe_store,store_freeze_change',array('product_id'=>$product['product_id'],'branch_id'=>1));
+                $store = $wms_product['quantity']+$store_freeze[0]['store_freeze']-$store_freeze[0]['store_freeze_change'];
                 $re = $branch_product->change_store(1,$product['product_id'],$store);
                 if($re){
                     $hasUser = kernel::single('omeftp_auto_update_product')->getHasUseStore($product['bn']);
-                    $magentoStore = $wms_product['quantity']-$hasUser;
+                    $magentoStore = $wms_product['quantity']-$hasUser-$store_freeze[0]['store_freeze_change'];
                     if($magentoStore<0){
                         $magentoStore = 0;
                     }
