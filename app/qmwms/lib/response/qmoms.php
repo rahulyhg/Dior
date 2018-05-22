@@ -364,6 +364,20 @@ class qmwms_response_qmoms{
         $deliveryOrder = $this->deliveryOrder->getList('*',array('order_id'=>$orderId));
         $deliveryId = $deliveryOrder[0]['delivery_id'];
 
+        //单据确认时间
+        $order_confirm_time = strtotime($reshipConfirm['returnOrder']['orderConfirmTime']);
+        $sql_time = 'update sdb_ome_reship set order_confirm_time="'.$order_confirm_time.'" where reship_bn="'.$reshipBn.'"';
+        if(!empty($order_confirm_time)) kernel::database()->exec($sql_time);
+
+        //退货回传判断如果是 拒收直接返回成功  并生成SO文件
+        if($returnType =='refuse'){
+            //更新到AX
+            kernel::single('omeftp_service_back')->delivery($deliveryId,'拒收',$reshipId);
+
+            kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');//@todo 暂时注释
+            return true;
+        }
+
         if(!in_array($isCheck,array('1','3','13'))){
             error_log(var_export($reshipBn,true),3,__FILE__.'error.txt');//记录无法更新的退货单
             throw new Exception('INVALID_CHECK_STATUS');
@@ -462,19 +476,6 @@ class qmwms_response_qmoms{
         $_POST['check_type'] = 'bn';
         $_POST['reship_id'] = $reshipId;
         $_POST['por_id'] = $product_process['por_id'];
-
-        $order_confirm_time = strtotime($reshipConfirm['returnOrder']['orderConfirmTime']);
-        $sql_time = 'update sdb_ome_reship set order_confirm_time="'.$order_confirm_time.'" where reship_bn="'.$reshipBn.'"';
-        if(!empty($order_confirm_time)) kernel::database()->exec($sql_time);
-
-        //退货回传判断如果是 拒收直接返回成功  并生成SO文件
-        if($returnType =='refuse'){
-            //更新到AX
-            kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
-
-            kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');//@todo 暂时注释
-            return true;
-        }
 
         $sign = kernel::single('ome_return')->toQC($reshipId,$_POST,$msg);
         if($sign){
