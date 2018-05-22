@@ -124,6 +124,10 @@ class ome_cod_refund{
 				$status=$value['18'];
 				$refundTime=$value['refundTime'];
 				if(!empty($apply_id)){//updateCodRefund
+				
+					if($status=="复核中"){
+						continue;
+					}
 					
 					if($status=="交易成功"||$status=="银行已汇出"){
 						$objRefund->updateCodRefund($apply_id,$refundTime);
