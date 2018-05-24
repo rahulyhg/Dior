@@ -42,19 +42,16 @@ class ome_alipay_alipayapi{
 		require_once("lib/alipay_submit.class.php");
 /**************************请求参数**************************/
 		$batch_no=$this->checkbatchno();
+		
+		$notify_url = app::get('ome')->getConf('ome.alipay.url');
+		
         //服务器异步通知页面路径
-		if(defined("ALIPAYNOTIFYURL")){
-			$notify_url=ALIPAYNOTIFYURL;
-		}else{
-			//$notify_url='http://oms-preprod.dior.cn/app/ome/alipay/doNotify.php';
-			$notify_url='http://oms-pcd.t.d1m.cn/app/ome/alipay/doNotify.php';
+		if(empty($notify_url)){
+			$notify_url='http://ec-oms.dior.cn/app/ome/alipay/doNotify.php';
 		}
-       // $notify_url =ALIPAYNOTIFYURL;//"http://erp-preprod.guerlain.d1m.cn/app/ome/alipay/doNotify.php";// "http://dior.t.d1m.cn/app/ome/alipay/doNotify.php";
-        //需http://格式的完整路径，不允许加?id=123这类自定义参数
         //卖家支付宝帐户
         $seller_email ='zfbdior@cn.lvmh-pc.com';// 'allen.yao@d1miao.com';$seller_email ='zfbguerlain@cn.lvmh-pc.com';// 'allen.yao@d1miao.com';
         //必填
-
         //退款当天日期
         $refund_date = date("Y-m-d H:i:s");
         //必填，格式：年[4位]-月[2位]-日[2位] 小时[2位 24小时制]:分[2位]:秒[2位]，如：2007-10-01 13:13:13

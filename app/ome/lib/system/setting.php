@@ -89,6 +89,7 @@ class ome_system_setting{
             'ome.order.is_auto_combine',//是否开启系统自动审核
             'ome.order.is_merge_order',//是否忽略可合并的订单
             'ome.apifail.retry',
+			'ome.alipay.url',
         );
         return $all_settings;
     }
