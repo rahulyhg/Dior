@@ -26,9 +26,27 @@ class omeftp_auto_upload_order{
                 $ftp_flag = $this->ftp_operate->push($params,$msg);
                 if($ftp_flag){
                     $this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$row['ftp_log_id'],'ftp');
+                }else{
+                    //发送报警邮件
+                    $file_name = $params['remote'];
+                    $file_route = $params['local'];
+
+                    $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
+                    $subject = '【Dior-PROD】ByPass SO文件'.$file_name.'上传失败';//【ADP-PROD】ByPass订单#10008688发送失败
+                    $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>$msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+                    kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
                 }
             }else{
                  $this->operate_log->update_log(array('status'=>'fail','lastmodify'=>time(),'memo'=>'文件内容异常'),$row['ftp_log_id'],'ftp');
+
+                //发送报警邮件
+                $file_name = $params['remote'];
+                $file_route = $params['local'];
+
+                $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
+                $subject = '【Dior-PROD】ByPass SO文件'.$file_name.'上传失败';//【ADP-PROD】ByPass订单#10008688发送失败
+                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>文件内容异常<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+                kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
     }
