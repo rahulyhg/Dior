@@ -225,13 +225,16 @@ class ome_auto_fileHandle{
                     break;
                 }
             }
+
+            // 判断文件是否含有中文
+            if(preg_match('/[^\x00-\x80]/',$v)){
+                $v = iconv("utf-8","gb2312",$v);
+            }
+
             // 跳过txt、汇总、业务明细文件
             if($pathInfo['extension'] == 'txt' || strpos($pathInfo['filename'],'汇总') || strpos($pathInfo['filename'],'业务明细')){
-                // 判断文件是否含有中文
-                if(preg_match('/[^\x00-\x80]/',$v)){
-                    $vv = iconv("utf-8","gb2312",$v);
-                }
-                unlink($vv);    // 删除文件
+                $backupDir = ROOT_DIR . '/data/bill_data/backup/aliPay_data/'; // 备份目录
+                $this->csv_backup($v, $backupDir, $fileName);
                 continue;
             }
             // 判断文件格式
@@ -241,10 +244,6 @@ class ome_auto_fileHandle{
             // 数据内容
             $contents = array();
             try {
-                // 判断文件是否含有中文
-                if(preg_match('/[^\x00-\x80]/',$v)){
-                    $v = iconv("utf-8","gb2312",$v);
-                }
                 // 条数限制
                 $sheetInfo = $oImportType->listWorksheetInfo($v);
                 if ((int)$sheetInfo['totalRows'] > $oImportType->limitRow ) {
