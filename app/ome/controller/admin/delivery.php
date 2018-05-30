@@ -183,6 +183,9 @@ class ome_ctl_admin_delivery extends desktop_controller{
                     'payment'=>$payment_id[0]['id'],
                 );
                 $return = kernel::single('ome_refund_apply')->refund_apply_add($data);
+                if(!$return['result']){
+                    $rs = array('rsp'=>'fail','msg'=>$return['msg']);
+                }
                 kernel::single('ome_order_func')->update_order_pay_status($_POST['order_id']);
 
             }
