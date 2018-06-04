@@ -219,6 +219,7 @@ class omeftp_service_back{
 		$ax_d[] = '';//Shipping Tracking URL
 		$ax_d[] = '';//Shipping tracking ID
 
+		/*
 		$ax_d[] = $delivery['consignee']['name'];//Delivery Name
 		$ax_d[] = $delivery['consignee']['district'].'==CR=='.$delivery['consignee']['addr'];//Delivery Street name
 		$ax_d[] = $delivery['consignee']['zip'];//Delivery ZIP 
@@ -226,6 +227,17 @@ class omeftp_service_back{
 		$ax_d[] = $delivery['consignee']['province'];//Delivery State ID
 		$ax_d[] = 'CN';//Delivery Country/Region
 		$ax_d[] = $delivery['consignee']['mobile'];//Delivery Contact
+		$ax_d[] = '';//Order Total Weight
+		*/
+
+		//收货信息
+		$ax_d[] = '';//Delivery Name
+		$ax_d[] = '';//Delivery Street name
+		$ax_d[] = '';//Delivery ZIP
+		$ax_d[] = '';//Delivery City
+		$ax_d[] = '';//Delivery State ID
+		$ax_d[] = '';//Delivery Country/Region
+		$ax_d[] = '';//Delivery Contact
 		$ax_d[] = '';//Order Total Weight
 
 		$ax_d[] = '';//3rd Party Id
