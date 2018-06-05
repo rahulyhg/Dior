@@ -26,7 +26,16 @@ class WxPayConfig
 	const MCHID = '1243729402';//'1240454602';
 	const KEY ='zy9Hl2Pp6GgKwBRcbxRTkh7CkkBBWmRg';// 'D3JS8UDJS9JJDNSKSO098JSDDSACCC32';
 	//const APPSECRET = '81b5ffddca70cb97fd13e1ddf1e9182a';//'01c6d59a3f9024db6336662ac95c8e74';
-	
+
+    ### 是否启用小程序配置 august.yao ###
+    static public $enable = false;
+    ### end ###
+    ### 小程序的配置信息 august.yao ###
+    const XCX_APPID = '';
+    const XCX_MCHID = '';
+    const XCX_KEY   = '';
+    ### end ###
+
 	//=======【证书路径设置】=====================================
 	/**
 	 * TODO：设置商户证书路径

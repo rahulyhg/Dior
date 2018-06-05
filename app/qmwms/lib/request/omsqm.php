@@ -22,10 +22,12 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $data = $this->pre_params($order_bn,$order_id,$method,$msg,$body);
         $insert_id = $this->writeLog($data);
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //检查接口string返回是否是XML
+        $is_xml = $this->check_xml($response);
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$order_id,'deliveryOrderCreate',null);
-            if(empty($response)){
+            if(empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据创建失败';
             }
@@ -35,12 +37,13 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_ax');
             }else{
                 //发送报警邮件
+                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
                 $original_params = htmlspecialchars($body);
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
                 $subject = '【Dior-PROD】ByPass订单#'.$order_bn.'发货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
@@ -59,10 +62,12 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $data = $this->pre_params($reship_bn,$reship_id,$method,$msg,$body);
         $insert_id = $this->writeLog($data);
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //检查接口string返回是否是XML
+        $is_xml = $this->check_xml($response);
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$reship_id,'returnOrderCreate',null);
-            if(empty($response)){
+            if(empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据创建失败';
             }
@@ -134,12 +139,13 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
 
             }else{
                 //发送报警邮件
+                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
                 $original_params = htmlspecialchars($body);
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
                 $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
@@ -157,10 +163,12 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $data = $this->pre_params($dj_bn,$delivery_id,$method,$msg,$body);
         $insert_id = $this->writeLog($data);
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //检查接口string返回是否是XML
+        $is_xml = $this->check_xml($response);
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$delivery_id,'orderCancel',$memo);
-            if(empty($response)){
+            if(empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据取消失败';
             }
@@ -168,12 +176,13 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $this->writeLog($res_data,$insert_id);
             //发送报警邮件
             if($res_data['status'] != 'success'){
+                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
                 $original_params = htmlspecialchars($body);
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
                 $subject = '【Dior-PROD】ByPass订单#'.$dj_bn.'单据取消失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+                $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
@@ -189,22 +198,25 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $data = $this->pre_params('','',$method,$msg,$body);
         $insert_id = $this->writeLog($data);
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //检查接口string返回是否是XML
+        $is_xml = $this->check_xml($response);
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,null,'inventoryQuery',null,$offset,$limit);
-            if(empty($response)){
+            if(empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '库存更新失败';
             }
             $this->writeLog($res_data,$insert_id);
             //发送报警邮件
             if($res_data['status'] != 'success'){
+                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
                 $original_params = htmlspecialchars($body);
                 $response_params = htmlspecialchars($response);
                 $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 
                 $subject = '【Dior-PROD】ByPass库存更新失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>{$res_data['res_msg']}<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+                $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
                 kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
@@ -351,6 +363,21 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 }
             }
         }
+    }
+
+    /**
+     * @param $response
+     * @return bool
+     * 检查string是否是xml
+     */
+    public function check_xml($response){
+        $is_xml = true;
+        $xml_parser = xml_parser_create();
+        if(!xml_parse($xml_parser,$response,true)){
+            xml_parser_free($xml_parser);
+            $is_xml = false;
+        }
+        return $is_xml;
     }
 
 

@@ -113,6 +113,15 @@ class omeftp_service_delivery{
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
 
             //kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
+		}else{
+			$order_bn = $delivery['order']['order_bn'];
+			$ax_content = $file_log_data['content'];
+			$file_route = $file_log_data['file_route'];
+			//发送报警邮件
+			$acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
+			$subject = '【Dior-PROD】ByPass订单#'.$order_bn.'发货SO文件生成失败';//【ADP-PROD】ByPass订单#10008688发送失败
+			$bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是SO文件内容和错误信息。<br>SO文件内容：<br>$ax_content<br/><br>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>$msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+			kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
 		}
     }
 
@@ -292,6 +301,7 @@ class omeftp_service_delivery{
 		$ax_d[] = '';//Shipping Tracking URL
 		$ax_d[] = '';//Shipping tracking ID
 
+		/*
 		$ax_d[] = $delivery['consignee']['name'];//Delivery Name
 		$ax_d[] = $delivery['consignee']['district'].'==CR=='.$delivery['consignee']['addr'];//Delivery Street name
 		$ax_d[] = substr($delivery['consignee']['zip'],0,10);//Delivery ZIP 
@@ -299,6 +309,17 @@ class omeftp_service_delivery{
 		$ax_d[] = $delivery['consignee']['province'];//Delivery State ID
 		$ax_d[] = 'CN';//Delivery Country/Region
 		$ax_d[] = $delivery['consignee']['mobile'];//Delivery Contact
+		$ax_d[] = '';//Order Total Weight
+		*/
+
+		//收货信息
+		$ax_d[] = '';//Delivery Name
+		$ax_d[] = '';//Delivery Street name
+		$ax_d[] = '';//Delivery ZIP
+		$ax_d[] = '';//Delivery City
+		$ax_d[] = '';//Delivery State ID
+		$ax_d[] = '';//Delivery Country/Region
+		$ax_d[] = '';//Delivery Contact
 		$ax_d[] = '';//Order Total Weight
 
 		$ax_d[] = '';//3rd Party Id

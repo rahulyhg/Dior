@@ -277,10 +277,7 @@ class ome_ctl_admin_delivery_back extends desktop_controller {
                 $this->end(false, app::get('base')->_('发货拒收确认失败'));
             }
         }
-        if($orderdata['shipping']['is_cod']!='true'){
-            //货到付款订单拒收不生成SO文件
-            kernel::single('omeftp_service_back')->delivery($delivery_id,'拒收');
-        }
+
         //奇门退货创建接口
         kernel::single('qmwms_request_omsqm')->returnOrderCreate($delivery_id,$reshipData['reship_id']);
 
