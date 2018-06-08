@@ -142,7 +142,6 @@ class omeftp_auto_update_product{
 
 	public function update_price(){
 		$file_arr = $this->getFtpFile('Tariff_10_CN_ZTT');
-		//echo "<pre>";print_r($file_arr);exit;
 		$objUpdatePrice = app::get('omemagento')->model('update_price');
 
 		if(!$file_arr){
@@ -156,6 +155,7 @@ class omeftp_auto_update_product{
 			if(strpos($filename,'bal')){
 				continue;
 			}
+			$arrProducts=array();
 			$info = kernel::single('omeftp_type_txt')->toRead(array('file'=>$filename),$msg);
 			$charset[1] = substr($info, 0, 1);
 			$charset[2] = substr($info, 1, 1);
@@ -177,33 +177,66 @@ class omeftp_auto_update_product{
 				if(empty($product_id[0])){
 					continue;
 				}
-
-				$upDate = array();
-				$upDate = array(
-						'product_bn'=>$pinfo[5],
-						'start_time'=>strtotime($pinfo[14]),
-						'end_time'=>strtotime($pinfo[15]),
-						'price'=>$pinfo[19],
-						'discount_precent1'=>$pinfo[20],
-						'discount_precent2'=>$pinfo[21],
-						'discount_amount'=>$pinfo[22],
-						'createtime'=>time(),
-					);
-				if($upDate['start_time']<time()&&$upDate['end_time']>time()){
-					$this->product_mdl->update(array('price'=>$upDate['price']),array('product_id'=>$product_id[0]['product_id']));
-					$this->goods_mdl->update(array('price'=>$upDate['price']),array('goods_id'=>$product_id[0]['goods_id']));
-					kernel::single('omemagento_service_product')->update_price($upDate['product_bn'],$upDate['price']);
-				}else{
-					if($upDate['start_time']>time()){
-						$objUpdatePrice->insert($upDate);
-					}
-				}
 				
-				/*$data = array();
-				$data['price'] = $pinfo[18];
-				$data['product_id'] = $product_id[0]['product_id'];
-				$this->product_mdl->save($data);*/
+				$pinfo['product_id']=$product_id[0]['product_id'];
+				$pinfo['goods_id']=$product_id[0]['goods_id'];
+				$arrProducts[]=$pinfo;
 			}
+			
+			$total_bn_nums=$total_loop=0;
+			$total_bn_nums=count($arrProducts);
+			
+			if($total_bn_nums<=0)continue;
+			
+			$limit = 25;//每次同步25个
+			$total_loop = ceil($total_bn_nums/$limit);
+			
+			for($i=0; $i<$total_loop;$i++) {
+				$this->sendPriceToMagento(array_slice($arrProducts,$i*$limit,$limit));
+				sleep(1);
+			}
+		}
+	}
+	
+	public function sendPriceToMagento($arrProducts=array()){
+		$objUpdatePrice = app::get('omemagento')->model('update_price');
+		$arrPrice=array();
+		
+		if(empty($arrProducts))return true;
+		
+		foreach($arrProducts as $pinfo){
+			
+			if(empty($pinfo[19]))continue;
+			
+			$upDate =array();
+			$upDate = array(
+				'product_bn'=>$pinfo[5],
+				'start_time'=>strtotime($pinfo[14]),
+				'end_time'=>strtotime($pinfo[15]),
+				'price'=>$pinfo[19],
+				'discount_precent1'=>$pinfo[20],
+				'discount_precent2'=>$pinfo[21],
+				'discount_amount'=>$pinfo[22],
+				'createtime'=>time(),
+			);
+			if($upDate['start_time']<time()&&$upDate['end_time']>time()){
+				$this->product_mdl->update(array('price'=>$upDate['price']),array('product_id'=>$pinfo['product_id']));
+				$this->goods_mdl->update(array('price'=>$upDate['price']),array('goods_id'=>$pinfo['goods_id']));
+				
+				$arrPrice[]=array(
+					'sku'=>$pinfo[5],
+					'price'=>$upDate['price'],
+				);
+				//kernel::single('omemagento_service_product')->update_price($upDate['product_bn'],$upDate['price']);
+			}else{
+				if($upDate['start_time']>time()){
+					$objUpdatePrice->insert($upDate);
+				}
+			}
+		}
+		
+		if(!empty($arrPrice)){
+			kernel::single('omemagento_service_product')->update_price($arrPrice);
 		}
 	}
 
