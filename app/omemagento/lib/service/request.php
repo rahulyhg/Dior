@@ -43,6 +43,28 @@ class omemagento_service_request{
 		
 		$info = json_decode($rs,1);
 		
+		if($method=="price"||$method=="stock"){
+			foreach($info as $return){
+				$sku=$return_status=array();
+				$status='fail';
+				
+				$sku=array_keys($return);
+				$return_status=array_values($return);
+				
+				if($return_status[0]=="1"){
+					$status='success';
+				}else{
+					$status='fail';
+				}
+				$logData = array(
+					'log_id'=>$log_id[$sku[0]],
+					'status'=>$status,
+				);
+				$this->log_mdl->save($logData);
+			}
+			return true;
+		}
+		
 		if ($info['success'] == true) {
 			$logData = array(
 					'log_id'=>$log_id,
@@ -84,6 +106,27 @@ class omemagento_service_request{
 	//	echo "<pre>";print_r($params);
 		$info = json_decode($rs,1);
 	//	echo "<pre>";print_r($info);exit;
+		if($method=="price"||$method=="stock"){
+			$return_status=array_values($info[0]);
+			if($return_status[0]=="1"){
+				$logData = array(
+					'log_id'=>$log_id,
+					'status'=>'success',
+				);
+				$this->log_mdl->save($logData);
+				return true;
+			}else{
+				$logData = array(
+					'log_id'=>$log_id,
+					'status'=>'fail',
+					'retry'=>$retry_nums+1,
+					'msg'=>'error',
+				);
+				$this->log_mdl->save($logData);
+				return false;
+			}
+		}
+		
 		if ($info['success'] == true) {
 			$logData = array(
 					'log_id'=>$log_id,
@@ -127,6 +170,42 @@ class omemagento_service_request{
 			 $msg = '新增换货单';
 			 $params['order_id']=$params['order_bn'];
 		 }
+		 
+		if($method=="price"||$method=="stock"){
+			$arrStoreLogsId=array();
+			foreach($params as $k=>$sku){
+				$log_data=$arrSaveLog=array();
+				
+				$arrSaveLog[]=$sku;
+				
+				$log_data = array(
+					'original_bn'=>$sku['sku'],
+					'task_name'=>$msg,
+					'status'=>'running',
+					'worker'=>'omemagento_service_request',
+					'original_params'=>array_merge($arrSaveLog,array('method'=>$method)),
+					'sync'=>'true',
+					//'msg'=>$params['order_id'],
+					'log_type'=>'发起请求',
+					'retry'=>0,
+					'createtime'=>time(),
+				);
+				$log_id = $this->log_mdl->getList('log_id',array('original_bn'=>$sku['sku'],'task_name'=>$msg));
+				
+				if($log_id){
+					$log_data['log_id'] = $log_id[0]['log_id'];
+					$this->log_mdl->save($log_data);
+					$log_id = $log_id[0]['log_id'];
+				}else{
+					$log_id = $this->log_mdl->insert($log_data);
+				}
+				
+				$arrStoreLogsId[$sku['sku']]=$log_id;
+			}
+			
+			return $arrStoreLogsId;
+		}
+		
 		$log_data = array(
 				'original_bn'=>$params['order_id']?$params['order_id']:$params['sku'],
 				'task_name'=>$msg,
@@ -139,19 +218,9 @@ class omemagento_service_request{
 				'retry'=>0,
 				'createtime'=>time(),
 			);
+		
+		$log_id = $this->log_mdl->insert($log_data);
 
-		if($method=='order'){
-			$log_id = $this->log_mdl->insert($log_data);
-		}else{
-			$log_id = $this->log_mdl->getList('log_id',array('original_bn'=>$params['sku'],'task_name'=>$msg));
-			if($log_id){
-				$log_data['log_id'] = $log_id[0]['log_id'];
-				$this->log_mdl->save($log_data);
-				$log_id = $log_id[0]['log_id'];
-			}else{
-				$log_id = $this->log_mdl->insert($log_data);
-			}
-		}
 		return $log_id;
 	 }
 
