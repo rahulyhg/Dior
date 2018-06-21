@@ -338,8 +338,10 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             }
             $wms_all_products[$items['itemCode']] = $items;
         }
-
-        foreach($all_product as $product){
+		
+		$arrStock=array();
+        
+		foreach($all_product as $product){
             $bn = $product['bn'];
             if($wms_all_products[$bn]){
                 $wms_product = $wms_all_products[$bn];
@@ -352,17 +354,28 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                     if($magentoStore<0){
                         $magentoStore = 0;
                     }
-                    kernel::single('omemagento_service_product')->update_store($product['bn'],$magentoStore);
+					
+					$arrStock[]=array(
+						'sku'=>$product['bn'],
+						'number'=>$magentoStore,
+					);
                 }
             }else{
                 $store_freeze = $branch_product->getList('store_freeze',array('product_id'=>$product['product_id'],'branch_id'=>1));
                 $store = $store_freeze[0]['store_freeze']?$store_freeze[0]['store_freeze']:0;
                 $re = $branch_product->change_store(1,$product['product_id'],$store);
                 if($re){
-                    kernel::single('omemagento_service_product')->update_store($product['bn'],0);
+                    $arrStock[]=array(
+						'sku'=>$product['bn'],
+						'number'=>0,
+					);
                 }
             }
         }
+		
+		if(!empty($arrStock)){
+			kernel::single('omemagento_service_product')->update_store($arrStock);
+		}
     }
 
     /**

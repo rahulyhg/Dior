@@ -168,7 +168,7 @@ class qmwms_response_qmoms{
         if($method == 'deliveryOrderConfirm'){//发货单确认
             $deliveryConfirm = $this->xmlToArray($content);
             $orderBn = $deliveryConfirm['deliveryOrder']['deliveryOrderCode'];
-            $subject = '【Fresh-PROD】ByPass订单#'.$orderBn.'发货确认失败';
+            $subject = '【Dior-PROD】ByPass订单#'.$orderBn.'发货确认失败';
         }
         elseif($method == 'returnOrderConfirm'){//退货入库单确认
             $reshipConfirm = $this->xmlToArray($content);
@@ -187,7 +187,7 @@ class qmwms_response_qmoms{
             $reship     = $reshipData[$nums-1];
             $reship_bn = $reship['reship_bn'];
 
-            $subject = '【Fresh-PROD】ByPass退单#'.$reship_bn.'退货确认失败';
+            $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货确认失败';
         }
 
         $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>WMS请求XML：<br>$original_params<br/><br>OMS响应XML：<br>$response_params<br/><br>失败信息：<br>$res_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";

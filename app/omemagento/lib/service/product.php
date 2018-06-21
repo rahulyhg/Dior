@@ -13,13 +13,11 @@ class omemagento_service_product{
 		$this->request = kernel::single('omemagento_service_request');
     }
 
-	public function update_store($sku,$num){
-		$params = array('sku'=>$sku,'number'=>$num);
-		$this->request->do_request('stock',$params);
+	public function update_store($params){
+	    $this->request->do_request('stock',$params);
 	}
 
-	public function update_price($sku,$price){
-		$params = array('sku'=>$sku,'price'=>$price);
+	public function update_price($params){
 		$this->request->do_request('price',$params);
 	}
 
