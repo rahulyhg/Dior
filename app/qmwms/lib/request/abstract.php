@@ -61,9 +61,9 @@ class qmwms_request_abstract{
         //初始化curl
         $ch = curl_init();
         //执行超时时间
-        curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 100);
         //连接超时时间
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 50);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 100);
 
         curl_setopt($ch, CURLOPT_URL, $url);
         //是否启用SSL验证
