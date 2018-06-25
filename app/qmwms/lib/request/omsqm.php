@@ -27,7 +27,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$order_id,'deliveryOrderCreate',null);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据创建失败';
             }
@@ -67,7 +67,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$reship_id,'returnOrderCreate',null);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据创建失败';
             }
@@ -168,7 +168,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$delivery_id,'orderCancel',$memo);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据取消失败';
             }
@@ -203,7 +203,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,null,'inventoryQuery',null,$offset,$limit);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '库存更新失败';
             }
