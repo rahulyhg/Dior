@@ -147,7 +147,7 @@ class qmwms_response_qmoms{
                 $this->writeLog($log_id, $result, $res);
             }
             //发送报警邮件
-            $this->send_erro_email($this->method[$method],$content,$log_id);
+            //$this->send_erro_email($this->method[$method],$content,$log_id);
         }
         //error_log(date('Y-m-d H:i:s').'############$res返回##########:'."\r\n".var_export($res,true)."\r\n", 3, ROOT_DIR.'/data/logs/wmstoms'.date('Y-m-d').'.xml');
         return $res;
@@ -243,7 +243,7 @@ class qmwms_response_qmoms{
         $deliveryData = $this->objectDelivery->getList('*',array('delivery_id'=>$deliveryId),0,-1);
 
         if($orderData[0]['ship_status'] == 1){
-            throw new Exception('ORDER_ALREADY_SHIPPED');
+           return true;
         }
 
         $status = 'delivery';
@@ -324,8 +324,7 @@ class qmwms_response_qmoms{
             }
             return  true;
         }else{
-            //error_log(var_export($info,true),3,__FILE__.'result.txt');
-            error_log(date('Y-m-d H:i:s').'订单'.$orderBn.'返回:'."\r\n".var_export($info,true)."\r\n", 3, __FILE__.'fail.txt');
+            //error_log(date('Y-m-d H:i:s').'订单'.$orderBn.'返回:'."\r\n".var_export($info,true)."\r\n", 3, __FILE__.'fail.txt');
             throw new Exception('Order：'.$orderBn.' '.$info['msg']);
         }
     }

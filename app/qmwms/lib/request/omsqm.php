@@ -27,7 +27,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$order_id,'deliveryOrderCreate',null);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据创建失败';
             }
@@ -44,7 +44,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
 
                 $subject = '【Dior-PROD】ByPass订单#'.$order_bn.'发货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-                kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+                //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);//关闭即时触发邮件
             }
         }
     }
@@ -67,7 +67,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$reship_id,'returnOrderCreate',null);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据创建失败';
             }
@@ -146,7 +146,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
 
                 $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-                kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+                //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
 
@@ -168,7 +168,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,$delivery_id,'orderCancel',$memo);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据取消失败';
             }
@@ -183,7 +183,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
 
                 $subject = '【Dior-PROD】ByPass订单#'.$dj_bn.'单据取消失败';//【ADP-PROD】ByPass订单#10008688发送失败
                 $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-                kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+                //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
         return $res_data;
@@ -203,7 +203,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
             $res_data = $this->res_params($response,null,'inventoryQuery',null,$offset,$limit);
-            if(empty($response) || !$is_xml){
+            if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '库存更新失败';
             }

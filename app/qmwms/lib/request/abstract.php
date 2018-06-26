@@ -3,7 +3,6 @@ class qmwms_request_abstract{
 
     private $param  = array(
       // 按接口提供的逐一填写
-      "customerId"     => 'LVMH_FSH_OMS',
       "format"         => 'xml',
       "sign_method"    => 'md5',
       "v"              => '2.4',
@@ -41,6 +40,7 @@ class qmwms_request_abstract{
         $secret  = $apiParam['app_secret'];
 
         $this->param['app_key']   = $apiParam['app_key'];
+        $this->param['customerId']   = $apiParam['customerId'];
         $this->param['method']    = $method;// 调用方法
         $this->param['timestamp'] = date("Y-m-d H:i:s");// 时间
         $this->param['sign']      = $this->sign($secret, $this->param , $body);// 签名
@@ -61,9 +61,9 @@ class qmwms_request_abstract{
         //初始化curl
         $ch = curl_init();
         //执行超时时间
-        curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 100);
         //连接超时时间
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 50);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 100);
 
         curl_setopt($ch, CURLOPT_URL, $url);
         //是否启用SSL验证
