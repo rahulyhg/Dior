@@ -348,6 +348,8 @@ class omeftp_service_delivery{
 		$ax_i[] = 'I';
 		if($delivery['order']['is_tax']=='true'&&$delivery['order']['is_einvoice']=='false'){
 			$ax_i[] = $delivery['order']['invoice_name']?$delivery['order']['invoice_name']:'';//Invoice  Name//$delivery['member_id'];//Bill to customer
+		}else{
+			$ax_i[] = '';//Bill to customer
 		}
 		$ax_i[] = '';//Payment Term
 		if($delivery['order']['pay_bn']=='cod'){
