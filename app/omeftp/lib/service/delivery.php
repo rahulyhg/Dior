@@ -235,6 +235,9 @@ class omeftp_service_delivery{
 		if($delivery['order']['mcd_package_sku'] == 'MCD'){
 			$itemNums +=1 ;
 		}
+        if($delivery['order']['is_cvd']=='true'){
+			$itemNums +=1 ;
+		}
 
 		$ax_h[] = intval($itemNums);//total quantity
 
@@ -492,6 +495,11 @@ class omeftp_service_delivery{
 			$ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
 			$key = $key+1;
 		}
+        //cvd
+        if($delivery['order']['is_cvd']=='true'){
+			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+			$key = $key+1;
+		}
 		
 		if(!empty($delivery['order']['ribbon_sku'])){
 			$arrRibbon=array();
@@ -570,7 +578,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku,order_confirm_time');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku,order_confirm_time,is_cvd');
                 }
 
                 // 发货地址
