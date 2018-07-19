@@ -60,7 +60,7 @@ $db['qmrequest_log']=array (
         'editable' => false,
         'filtertype' => 'normal',
         'filterdefault' => true,
-        'searchtype' => 'has',
+        //'searchtype' => 'has',
         'label' => '状态',
         'width' => 60,
     ),
@@ -127,12 +127,19 @@ $db['qmrequest_log']=array (
         'in_list' => true,
         'default_in_list' => true,
     ),
-    'param_sx'=>
+    'param1'=>
     array(
-        'type' =>'varchar(50)',
+        'type' =>'varchar(255)',
         'default' => '',
         'editable' => false,
-        'label' => '附加属性'
+        'label' => '附加属性1'
+    ),
+    'param2'=>
+    array(
+        'type' =>'varchar(255)',
+        'default' => '',
+        'editable' => false,
+        'label' => '附加属性2'
     ),
     ),
     'comment' => 'qimen请求日志',
