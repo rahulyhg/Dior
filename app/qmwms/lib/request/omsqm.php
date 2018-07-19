@@ -57,9 +57,9 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $res  = $this->_returnOrderCreate($reship_id);
         $body = $res['body'];
         $reship_bn = $res['reship_bn'];
-        //return $body;
+
         //记录ERP请求日志
-        $data = $this->pre_params($reship_bn,$reship_id,$method,$msg,$body);
+        $data = $this->pre_params($reship_bn,$reship_id,$method,$msg,$body,$return_type,$change);
         $insert_id = $this->writeLog($data);
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
         //检查接口string返回是否是XML
@@ -153,7 +153,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //单据取消
-    public function orderCancel($delivery_id,$memo){
+    public function orderCancel($delivery_id,$memo=null){
         $method = 'order.cancel';
         $msg = '单据取消';
         $res = $this->_orderCancel($delivery_id,$memo);
@@ -172,7 +172,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据取消失败';
             }
-            $res_data['param_sx'] = $memo;
+            $res_data['param1'] = $memo;
             $this->writeLog($res_data,$insert_id);
             //发送报警邮件
             if($res_data['status'] != 'success'){
@@ -234,7 +234,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //请求信息处理
-    protected function pre_params($bn,$id,$method,$msg,$body){
+    protected function pre_params($bn,$id,$method,$msg,$body,$param1=null,$param2=null){
         $data = array(
             'original_bn'=> $bn,
             'original_id'=> $id,
@@ -242,7 +242,9 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             'original_params'=>$body,
             'log_type'=>'向奇门发起请求',
             'msg'=>$msg,
-            'createtime'=>time()
+            'createtime'=>time(),
+            'param1'=>$param1,
+            'param2'=>empty($param2) ? '' : serialize($param2)
         );
         return $data;
     }
