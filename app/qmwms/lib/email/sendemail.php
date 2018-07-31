@@ -26,8 +26,11 @@ class qmwms_email_sendemail{
         $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
         $subject = '【Dior-PROD】ByPass订单接口失败信息';
         $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>失败订单信息如下：<br>$erroString<br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-        kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
-
+        $return = kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+        if(!$return){
+            $erroString = str_replace('<br>',"\r\n",$erroString);
+            error_log(date('Y-m-d H:i:s').'邮件发送失败,邮件主要内容如下:'."\r\n".var_export($erroString,true)."\r\n", 3, ROOT_DIR.'/data/logs/sendemail'.date('Y-m-d').'.xml');
+        }
 
     }
 }
