@@ -4,8 +4,8 @@
         <menugroup name="奇门对接配置">
             <menu controller='admin_qmsetting' action='index'  permission='qm_setting' display='true' order='3000200'>奇门接口设置</menu>
             <menu controller='admin_requestlog' action='index'  permission='qm_setting' display='true' order='3000200'>接口请求日志</menu>
+            <menu controller='admin_failurelist' action='index'  permission='qm_setting' display='true' order='3000200'>请求失败列表</menu>
         </menugroup>
-
     </workground>
 
     <permissions>

@@ -239,7 +239,8 @@ class qmwms_response_qmoms{
         $orderId = $orderData[0]['order_id'];
 
         $deOrder = $this->deliveryOrder->getList('delivery_id',array('order_id'=>$orderId));
-        $deliveryId = $deOrder[0]['delivery_id'];
+        $num = count($deOrder);
+        $deliveryId = $deOrder[$num-1]['delivery_id'];
         $deliveryData = $this->objectDelivery->getList('*',array('delivery_id'=>$deliveryId),0,-1);
 
         if($orderData[0]['ship_status'] == 1){
