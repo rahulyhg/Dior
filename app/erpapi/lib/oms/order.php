@@ -846,16 +846,11 @@ class erpapi_oms_order
 			$order_id = $oObj->getList('order_id',array('order_bn'=>$post['order_bn']));
 			if($order_id){
 				$data = array(
-					'order_id' => $order_id[0]['order_id'],
-					'order_bn' => $post['order_bn'],
-					'invoice_id' => $res['id'],
-					'invoiceCode' => $res['invoiceCode'],
-					'invoiceNo' => $res['invoiceNo'],
-					'invoiceTime' => $res['invoiceTime'],
-					'pdfUrl' => $res['pdfUrl'],
-					'invoice_type' => 'ready',
-				);
-				$objInvoice = $this->app->model('invoice');
+                    'order_id' => $order_id[0]['order_id'],
+                    'order_bn' => $post['order_bn'],
+                    'invoice_type' => 'ready',
+                );
+                $objInvoice = kernel::single("einvoice_mdl_invoice");
 				$objInvoice->insert($data);
 			}
 		}
