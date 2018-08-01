@@ -852,7 +852,7 @@ class erpapi_oms_order
                     'order_bn' => $post['order_bn'],
                     'invoice_type' => 'ready',
                 );
-                $objInvoice = kernel::single("einvoice_mdl_invoice");
+                $objInvoice = app::get('einvoice')->model('invoice');
                 $objInvoice->insert($data);
             }
         }
