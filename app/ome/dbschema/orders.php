@@ -1107,6 +1107,17 @@ $db['orders']=array (
       'in_list' => true,
       'default_in_list' => false,
     ),
+     'is_cvd' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      'in_list' => true,
+	  'default_in_list' => false,
+      'label' => 'CVD Card',
+    ),
     'logi_id' =>
     array (
       'type' => 'table:dly_corp@ome',

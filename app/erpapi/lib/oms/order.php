@@ -706,6 +706,8 @@ class erpapi_oms_order
         //mcd
         $iorder['is_mcd'] = $post['is_mcd'];
         $iorder['mcd_package_sku'] = $post['mcd_package_sku'];
+        //is_cvd
+        $iorder['is_cvd'] = $post['is_cvd'];
 
         foreach($post['giftmessage'] as $message){
             if(!empty($message)){

@@ -180,6 +180,7 @@ class qmwms_request_qimen{
         $sample_bn       = $qmApiSetting['sample_bn'];//礼品卡
         $mcd_sample_bn   = $qmApiSetting['mcd_sample_bn'];//MCD礼品卡
         $mcd_package_sku = $qmApiSetting['mcd_package_sku'];//MCD包装
+        $cvd_sample_bn = $qmApiSetting['cvd_sample_bn'];//cvd礼品卡
 
         $message = '';
         if($ordersData[0]['message1']||$ordersData[0]['message2']||$ordersData[0]['message3']||$ordersData[0]['message4']||$ordersData[0]['message5']||$ordersData[0]['message6']){
@@ -260,6 +261,25 @@ class qmwms_request_qimen{
                 'extendProps'     =>array('itemType'=>'Gift','itemMessage'=>$message),
             );
             $body['orderLines']['orderLine'][] = $giftMessage;
+        }
+        
+        //CVD
+        if($ordersData[0]['is_cvd'] == 'true'){
+            $itemId = $itemId + 1;
+            $giftCvd = array(
+                'orderLineNo'     => $itemId,//单据行号
+                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'itemCode'        => $cvd_sample_bn,  // 必须 商品编码
+                'itemId'          => $cvd_sample_bn,//仓储系统商品编码 必须(文档标注)
+                'inventoryType'   => 'ZP',//库存类型
+                'itemName'        => 'CVD Secret Message Cards',
+                'planQty'         => 1,
+                'retailPrice'     =>'0.00',//零售价(零售价=实际成交价+单件商品折扣金额) (取值不确定)
+                'actualPrice'     => '0.00', //必须 实际成交价
+                'discountAmount'  =>'0.00',//单件商品折扣金额
+                'extendProps'     =>array('itemType'=>'Card'),
+            );
+            $body['orderLines']['orderLine'][] = $giftCvd;
         }
 
         //MCD包装  $mcd_package_sku
