@@ -497,7 +497,7 @@ class omeftp_service_delivery{
 		}
         //cvd
         if($delivery['order']['is_cvd']=='true'){
-			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
 			$key = $key+1;
 		}
 		

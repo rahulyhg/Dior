@@ -272,12 +272,12 @@ class qmwms_request_qimen{
                 'itemCode'        => $cvd_sample_bn,  // 必须 商品编码
                 'itemId'          => $cvd_sample_bn,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
-                'itemName'        => 'gift message',
+                'itemName'        => 'CVD Secret Message Cards',
                 'planQty'         => 1,
                 'retailPrice'     =>'0.00',//零售价(零售价=实际成交价+单件商品折扣金额) (取值不确定)
                 'actualPrice'     => '0.00', //必须 实际成交价
                 'discountAmount'  =>'0.00',//单件商品折扣金额
-                'extendProps'     =>array('itemType'=>'Gift'),
+                'extendProps'     =>array('itemType'=>'Card'),
             );
             $body['orderLines']['orderLine'][] = $giftCvd;
         }
