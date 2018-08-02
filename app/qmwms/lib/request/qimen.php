@@ -277,7 +277,7 @@ class qmwms_request_qimen{
                 'retailPrice'     =>'0.00',//零售价(零售价=实际成交价+单件商品折扣金额) (取值不确定)
                 'actualPrice'     => '0.00', //必须 实际成交价
                 'discountAmount'  =>'0.00',//单件商品折扣金额
-                'extendProps'     =>array('itemType'=>'Card'),
+               // 'extendProps'     =>array('itemType'=>'Card'),
             );
             $body['orderLines']['orderLine'][] = $giftCvd;
         }
