@@ -441,13 +441,15 @@ class erpapi_oms_order
             }
         }
         
-        //echo "<pre>";print_r($post['products']);exit();
         $h=0;
         foreach($post['products'] as $product){
             $bn=$product['bn'];
             $isBn=$pObj->getList('bn,product_id,price',array('bn'=>$bn));
             if(empty($isBn['0']['bn'])){
-                return $this->send_error('不存在的货号');
+                $isBn = $pObj->getList('bn,product_id,price',array('short_bn'=>$bn));
+                if(empty($isBn['0']['bn'])){
+                    return $this->send_error('不存在的货号');
+                }
             } 
             $mprice=$mathLib->number_plus(array($product['price'],0));
             $eprice=$mathLib->number_plus(array($isBn['0']['price'],0));
@@ -524,7 +526,7 @@ class erpapi_oms_order
             $member['contact']['name']=$post['account']['name'];
             $member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']=$post['account']['gender'];
+            $member['profile']['gender']='male';//$post['account']['gender'];
                 //echo "<pre>"; print_r($member);exit();
             if (!$mObj->save($member)){
                 return $this->send_error('会员更新失败 请重试');
