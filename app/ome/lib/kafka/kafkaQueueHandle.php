@@ -40,20 +40,19 @@ class ome_kafka_kafkaQueueHandle{
     }
 
     /**
-     * 订单历史状态
+     * 订单历史状态excel-导出效果不理想
      * @param $startTime
      * @param $endTime
      * @return bool
      */
-    public function order_history_xls($startTime, $endTime){
+    public function order_history_xls($timeStart, $timeEnd){
         // 设置配置项
-        ini_set('max_execution_time',0);
         ini_set('memory_limit', '2048M');
         set_time_limit(0);
         ignore_user_abort(true); // 客户端断开后,仍然继续运行
         // 时间文本转成时间戳
-        $startTime = strtotime($startTime);
-        $endTime   = strtotime($endTime);
+        $startTime = strtotime($timeStart);
+        $endTime   = strtotime($timeEnd);
         // 参数判断
         if(!is_numeric($startTime) || !is_numeric($endTime) || ($endTime <= $startTime)){
             return false;
@@ -70,8 +69,8 @@ class ome_kafka_kafkaQueueHandle{
         require_once PHPEXCEL_ROOT . '/PHPExcel.php';
         require_once PHPEXCEL_ROOT . '/PHPExcel/Writer/Excel5.php';
 
-        $kafkaDir= ROOT_DIR . '/data/kafka_order_history/'; // 文件保存目录
-        $fileLog = ROOT_DIR . '/data/kafka_order_history/kafka_file_log.txt'; // log日志文件
+        $kafkaDir= ROOT_DIR . '/data/kafka_history_excel/'; // 文件保存目录
+        $fileLog = ROOT_DIR . '/data/kafka_history_excel/kafka_file_log'.$timeStart.'_'.$timeEnd.'.txt'; // log日志文件
         // 判断目录是否存在
         if (!file_exists($kafkaDir)) {
             $u_mask = umask(0);	            // 处理umask情况
@@ -88,7 +87,7 @@ class ome_kafka_kafkaQueueHandle{
         foreach ($monthList as $key=>$val){
 
             $page  = 0;     // 页码
-            $limit = 7000;  // 分批次处理 每次处理1000条数据
+            $limit = 1000;  // 分批次处理 每次处理1000条数据
 
             // 判断目录是否存在
             if (!file_exists($kafkaDir . $key . '/')) {
@@ -397,8 +396,6 @@ class ome_kafka_kafkaQueueHandle{
                         unset($orderList);
                     }
                     $page++;
-
-                    sleep(2);   // 休眠2秒
                 }
             }
         }
@@ -566,8 +563,8 @@ class ome_kafka_kafkaQueueHandle{
         }
         // 引入model
         $orderModel = app::get('ome')->model('orders');
-        $kafkaDir= ROOT_DIR . '/data/kafka_order_history/'; // 文件保存目录
-        $fileLog = ROOT_DIR . '/data/kafka_order_history/kafka_file_log.txt'; // log日志文件
+        $kafkaDir= ROOT_DIR . '/data/kafka_status_history/'; // 文件保存目录
+        $fileLog = ROOT_DIR . '/data/kafka_status_history/kafka_file_log'.$timeStart.'_'.$timeEnd.'.txt'; // log日志文件
         // 判断目录是否存在
         if (!file_exists($kafkaDir)) {
             $u_mask = umask(0);	            // 处理umask情况
@@ -600,7 +597,7 @@ class ome_kafka_kafkaQueueHandle{
             header('Expires: 0');
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
-            $fp = fopen('php://output', 'w'); // 打开output流
+            $fp = fopen('php://output', 'a'); // 打开output流
             mb_convert_variables('GBK', 'UTF-8', $columns);
             fputcsv($fp, $columns); // 将数据格式化为CSV格式并写入到output流中
 
@@ -777,19 +774,12 @@ class ome_kafka_kafkaQueueHandle{
                 ob_flush(); // 刷新输出缓冲到浏览器
                 flush();    // 必须同时使用 ob_flush() 和flush() 函数来刷新输出缓冲。
             }
-            // 打开文件
-            $fOpen = fopen($kafkaDir . $mKey . '.csv', 'wb');
-            if (!$fOpen) {
-                return false;
-            }
-            fwrite($fOpen, $fp);
-            fclose($fOpen);
             fclose($fp);
         }
-        exit();
     }
 
     /**
+     * 导出订单历史状态数据-csv文件
      * @param $timeStart
      * @param $timeEnd
      * @return bool
@@ -809,7 +799,7 @@ class ome_kafka_kafkaQueueHandle{
         // 引入model
         $orderModel = app::get('ome')->model('orders');
         $kafkaDir= ROOT_DIR . '/data/kafka_order_history/'; // 文件保存目录
-        $fileLog = ROOT_DIR . '/data/kafka_order_history/kafka_file_log.txt'; // log日志文件
+        $fileLog = ROOT_DIR . '/data/kafka_order_history/kafka_file_log'.$timeStart.'_'.$timeEnd.'.txt'; // log日志文件
         // 判断目录是否存在
         if (!file_exists($kafkaDir)) {
             $u_mask = umask(0);	            // 处理umask情况
@@ -822,11 +812,6 @@ class ome_kafka_kafkaQueueHandle{
             fopen($fileLog, "a+");  // 创建log日志
             umask($u_mask);
         }
-        // excel字段信息
-        $columns = array(
-            'order_bn','brand','Channel','status','createtime','Status_change_time','logi_bn','sku','num','bn','money'
-            //'order_bn','brand','Channel','status','createtime','Status_change_time','logi_bn(物流单号)','sku(商品sku)','num(商品数量)','bn(退款单号)','money(退款金额)'
-        );
 
         // 时间处理
         $monthList = $this->monthList($startTime, $endTime);
@@ -835,9 +820,10 @@ class ome_kafka_kafkaQueueHandle{
 
             // 打开文件
             $fOpen = fopen($kafkaDir . $mKey . '.csv', 'wb');
-            if (!$fOpen) {
-                return false;
-            }
+            // excel字段信息
+            $columns = array(
+                'order_bn','brand','Channel','status','createtime','Status_change_time','logi_bn(物流单号)','sku(商品sku)','num(商品数量)','bn(退款单号)','money(退款金额)'
+            );
             mb_convert_variables('GBK', 'UTF-8', $columns);
             fputcsv($fOpen, $columns);
 
@@ -847,7 +833,7 @@ class ome_kafka_kafkaQueueHandle{
 
             $numRes = $orderModel->db->select($sql);
 
-            $limit = 1000;  // 每次查询的条数
+            $limit = 600;  // 每次查询的条数
             $pages = ceil($numRes[0]['num'] / $limit); // 总页码
 
             for($i = 0; $i < $pages; $i++) {
