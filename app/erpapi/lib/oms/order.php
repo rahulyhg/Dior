@@ -266,6 +266,11 @@ class erpapi_oms_order
             $msg='SignError 40001';
             return false;
         }
+        
+        if(strpos($params['order'], ' ') !== false) {
+            $params['order'] = str_replace(' ', '+', $params['order']);
+        }
+        
         error_log('订单中间:'.base64_decode($params['order']),3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
         $this->params=base64_decode($params['order']);
         
@@ -510,7 +515,6 @@ class erpapi_oms_order
             }
             
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']='male';
             
             if (!$mObj->save($member)){ 
                 return $this->send_error('会员更新失败 请重试');
@@ -524,8 +528,7 @@ class erpapi_oms_order
             $member['contact']['name']=$post['account']['name'];
             $member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']=$post['account']['gender'];
-                //echo "<pre>"; print_r($member);exit();
+            
             if (!$mObj->save($member)){
                 return $this->send_error('会员更新失败 请重试');
             }
