@@ -16,7 +16,7 @@ class qmwms_queue{
     }
     
     public function doQueue()
-    {
+    {   
         $datas = $this->_queue->getList('*', array('status'=>0), 0, $this->_limit);
         if(empty($datas)) {
             return true;
@@ -24,11 +24,13 @@ class qmwms_queue{
         
         $objQm = kernel::single('qmwms_response_qmoms');
         
+        foreach($datas as $ids) {
+            $this->begin($ids['id']);
+        }
+        
         foreach($datas as $data) {
             $id = $data['id'];
             $method = $data['api_method'];
-            
-            $this->begin($id);
             
             if(!isset($this->_method[$method])) {
                 $this->end($id, 3);
