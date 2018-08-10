@@ -3,6 +3,8 @@ class qmwms_queue{
     
     private $_queue;
     
+    private $_limit = 1000;
+    
     private $_method = array(
         'deliveryOrderConfirm' => 'do_delivery',
         'returnOrderConfirm' => 'do_finish',
@@ -15,7 +17,7 @@ class qmwms_queue{
     
     public function doQueue()
     {
-        $datas = $this->_queue->getList('*', array('status'=>0));
+        $datas = $this->_queue->getList('*', array('status'=>0), 0, $this->_limit);
         if(empty($datas)) {
             return true;
         }
