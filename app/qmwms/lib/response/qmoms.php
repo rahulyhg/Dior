@@ -200,28 +200,12 @@ class qmwms_response_qmoms{
      * WMS—>OMS接口请求数据处理
      */
     public function handle_wms_request($method,$content){
-
-        switch($method){
-            case 'deliveryOrderConfirm'://发货单确认
-                $this->do_delivery($content);
-                break;
-            case 'returnOrderConfirm'://退货入库单确认
-                $this->do_finish($content);
-                break;
-            case 'orderProcessReport'://订单流水通知
-
-                break;
-            case 'itemLackReport'://发货单缺货通知
-
-                break;
-            default:
-                break;
-
-        }
-
-
+        $queue = app::get('qmwms')->model('queue');
+        $param['api_method'] = $method;
+        $param['api_params'] = $content;
+        $param['createtime'] = time();
+        $queue->save($param);
     }
-
     /**
      * @param $content
      * @对发货单确认信息的处理
