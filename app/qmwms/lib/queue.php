@@ -28,6 +28,8 @@ class qmwms_queue{
             
             $this->begin($id);
             
+            if(!isset($this->_method[$method]))continue;
+            
             try{
                 if(! $objQm->{$this->_method[$method]}($data['api_params'])) {
                     $this->end($id, 2);    
