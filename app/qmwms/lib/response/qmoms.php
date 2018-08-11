@@ -500,6 +500,9 @@ class qmwms_response_qmoms{
             kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');
             return true;
         }else{
+            if(kernel::database()->_in_transaction) {
+                kernel::database()->rollBack();
+            }
             //error_log(var_export($reshipBn,true),3,__FILE__.'error.txt');//记录无法更新的退货单
             error_log(date('Y-m-d H:i:s').$reshipBn.'质检失败:'."\r\n".var_export($msg,true)."\r\n", 3, __FILE__.'fail.txt');
             throw new Exception('TO_QC_FAILED');
