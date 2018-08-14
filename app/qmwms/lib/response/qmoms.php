@@ -443,25 +443,25 @@ class qmwms_response_qmoms{
                 'num'=>$item['actualQty'],
             );
         }
-
+        $returnItems = array();
         foreach($items as $val){
-            $_POST['bn_'.$val['product_bn']] = $val['product_bn'];
+            $returnItems['bn_'.$val['product_bn']] = $val['product_bn'];
         }
         foreach($product_process['items'] as $key=>$val){
             foreach($val['itemIds'] as $itemId){
-                $_POST['instock_branch'][$key.$itemId] = 1;
-                $_POST['process_id'][$itemId] = $key;
-                $_POST['memo'][$key.$itemId] = '自动质检';
-                $_POST['store_type'][$key.$itemId] = 0;
-                $_POST['check_num'][$key.$itemId] = 1;
+                $returnItems['instock_branch'][$key.$itemId] = 1;
+                $returnItems['process_id'][$itemId] = $key;
+                $returnItems['memo'][$key.$itemId] = '自动质检';
+                $returnItems['store_type'][$key.$itemId] = 0;
+                $returnItems['check_num'][$key.$itemId] = 1;
             }
         }
 
-        $_POST['check_type'] = 'bn';
-        $_POST['reship_id'] = $reshipId;
-        $_POST['por_id'] = $product_process['por_id'];
+        $returnItems['check_type'] = 'bn';
+        $returnItems['reship_id'] = $reshipId;
+        $returnItems['por_id'] = $product_process['por_id'];
 
-        $sign = kernel::single('ome_return')->toQC($reshipId,$_POST,$msg);
+        $sign = kernel::single('ome_return')->toQC($reshipId,$returnItems,$msg);
         if($sign){
             //更新到AX
             kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
