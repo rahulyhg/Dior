@@ -15,7 +15,6 @@ class ome_ctl_admin_kafka_log extends desktop_controller
 //        $obj_work->getExcel('2017-03','2018-02');
 //        $obj_work->getExcel('2018-03','2018-08');
 //        $obj_work->getExcel('2018-07','2018-08');
-//        $obj_work->order_history_xls('2018-07','2018-08');
 //        $obj_work->orderStatusExcel('2018-07','2018-08');
 //        die;
         
@@ -74,5 +73,41 @@ class ome_ctl_admin_kafka_log extends desktop_controller
         }else{
             $this->end(true, '请求失败:' . $response['msg']);    // todo:如果有错误信息
         }
+    }
+
+    /**
+     * 导出功能
+     */
+    public function order_status_export(){
+
+        if(empty($_POST)){  // 默认给3天的时间
+            $date  = date("Y-m-d", time());
+            $this->pagedata['time_from'] = strtotime("$date -3 day");
+            $this->pagedata['time_to']   = strtotime($date);
+        }else{
+            $this->pagedata['time_from'] = strtotime($_POST['time_from']);
+            $this->pagedata['time_to']   = strtotime($_POST['time_to']);
+        }
+
+        $this->pagedata['form_action'] = 'index.php?app=ome&ctl=admin_kafka_log&act=do_order_status_export';
+        $this->pagedata['path']        = '订单历史状态';
+        $this->page("admin/kafka/order_status.html");
+    }
+
+    public function do_order_status_export(){
+        $this->begin();
+        // 判断请求数据
+        if(!isset($_GET['time_from']) || !isset($_GET['time_to'])){
+            $this->end(false, '请提交查询日期');
+        }
+        if($_GET['time_from'] > $_GET['time_to']){
+            $this->end(false, '开始时间不能大于结束时间');
+        }
+        // 执行导出任务
+        kernel::single('ome_kafka_kafkaQueueHandle')->orderStatusExcel($_GET['time_from'], $_GET['time_to']);
+        // csv格式
+//        kernel::single('ome_kafka_kafkaQueueHandle')->orderStatusExcel('2018-7-11', '2018-7-14');
+        // excel格式
+//        kernel::single('ome_kafka_kafkaQueueHandle')->order_history_status_xls('2018-7-11', '2018-7-14');
     }
 }

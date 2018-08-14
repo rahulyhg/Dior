@@ -115,7 +115,7 @@ class ome_kafka_api extends ome_kafka_request{
      * @return mixed
      */
     private function build_request_url(){
-        return 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/10002';
+        return 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method;
     }
 
     /**
@@ -181,7 +181,7 @@ class ome_kafka_api extends ome_kafka_request{
             $shop_bn  = app::get('ome')->model('shop')->dump(array('shop_id' => $shopId), 'shop_bn');
             $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
             $subject  = '【' . strtoupper($shop_bn['shop_bn']) . '】订单#' . $order_bn . '状态回传kafka失败';
-            $bodys    = '订单号为[' . $order_bn . ']的订单状态回传kafka失败,请求原始数据为<br/>' . serialize($update_data) . '<br/>,错误信息为:[' . $response_data['message'] . ']';
+            $bodys    = '订单号为[' . $order_bn . ']的订单状态回传kafka失败,请求原始数据为<br/>' . serialize($update_data) . '<br/>,错误信息为:[' . $response_data['message'] . ']，如已处理请忽略！';
             kernel::single('emailsetting_send')->send($acceptor, $subject, $bodys);
 
             return array('success'=>false, 'msg'=>$response_data['message'] ? $response_data['message'] : '订单状态推送kafka失败');
@@ -214,7 +214,7 @@ class ome_kafka_api extends ome_kafka_request{
             $shop_bn  = app::get('ome')->model('shop')->dump(array('shop_id' => $shopId), 'shop_bn');
             $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
             $subject  = '【' . strtoupper($shop_bn['shop_bn']) . '】订单#' . $order_bn . '推送kafka失败';
-            $bodys    = '订单号为[' . $order_bn . ']推送kafka失败,请求原始数据为<br/>' . serialize($data['createOrder']) . '<br/>,错误信息为:[' . $response_data['message'] . ']';
+            $bodys    = '订单号为[' . $order_bn . ']推送kafka失败,请求原始数据为<br/>' . serialize($data['createOrder']) . '<br/>,错误信息为:[' . $response_data['message'] . ']，如已处理请忽略！';
             kernel::single('emailsetting_send')->send($acceptor, $subject, $bodys);
 
             return array('success'=>false, 'msg'=>$response_data['message'] ? $response_data['message'] : '订单推送kafka失败');

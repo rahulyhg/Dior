@@ -40,370 +40,6 @@ class ome_kafka_kafkaQueueHandle{
     }
 
     /**
-     * 订单历史状态excel-导出效果不理想
-     * @param $startTime
-     * @param $endTime
-     * @return bool
-     */
-    public function order_history_xls($timeStart, $timeEnd){
-        // 设置配置项
-        ini_set('memory_limit', '2048M');
-        set_time_limit(0);
-        ignore_user_abort(true); // 客户端断开后,仍然继续运行
-        // 时间文本转成时间戳
-        $startTime = strtotime($timeStart);
-        $endTime   = strtotime($timeEnd);
-        // 参数判断
-        if(!is_numeric($startTime) || !is_numeric($endTime) || ($endTime <= $startTime)){
-            return false;
-        }
-        // 引入model
-        $orderModel = app::get('ome')->model('orders');
-        // 时间处理
-        $monthList = $this->monthList($startTime, $endTime);
-
-        if(!$monthList){
-            return false;
-        }
-        // 引入excel处理类
-        require_once PHPEXCEL_ROOT . '/PHPExcel.php';
-        require_once PHPEXCEL_ROOT . '/PHPExcel/Writer/Excel5.php';
-
-        $kafkaDir= ROOT_DIR . '/data/kafka_history_excel/'; // 文件保存目录
-        $fileLog = ROOT_DIR . '/data/kafka_history_excel/kafka_file_log'.$timeStart.'_'.$timeEnd.'.txt'; // log日志文件
-        // 判断目录是否存在
-        if (!file_exists($kafkaDir)) {
-            $u_mask = umask(0);	            // 处理umask情况
-            mkdir($kafkaDir, 0777, true);   // 创建解压目录 recursive参数表示是否创建多重目录 true/false
-            umask($u_mask);
-        }
-        // 判断log文件是否存在
-        if(!file_exists($fileLog)){
-            $u_mask = umask(0);	    // 处理umask情况
-            fopen($fileLog, "a+");  // 创建log日志
-            umask($u_mask);
-        }
-
-        foreach ($monthList as $key=>$val){
-
-            $page  = 0;     // 页码
-            $limit = 1000;  // 分批次处理 每次处理1000条数据
-
-            // 判断目录是否存在
-            if (!file_exists($kafkaDir . $key . '/')) {
-                $u_mask = umask(0);	            // 处理umask情况
-                mkdir($kafkaDir . $key . '/', 0777, true);   // 创建解压目录 recursive参数表示是否创建多重目录 true/false
-                umask($u_mask);
-            }
-
-            while(1){
-                $i = 1;     // 插入数据初始值
-                // 偏移量
-                $offset = $page * $limit;
-
-                $orderSql = "SELECT order_bn,order_id,createtime,logi_no,paytime,last_modified,status,pay_status,ship_status,route_status,
-                        routetime,order_confirm_time,process_status 
-                        FROM sdb_ome_orders 
-                        where createtime >= '{$val['start']}' and createtime < '{$val['end']}' and pay_status not in ('0','8') 
-                        limit $offset, $limit";
-
-                ##记录日志##
-                $myFile = fopen($fileLog, 'a+');
-                $res = $orderSql . "\n";
-                fwrite($myFile, $res);
-                fclose($myFile);
-                ##记录日志##
-
-                // 查询数据
-                $orderList = $orderModel->db->select($orderSql);
-
-                if(count($orderList)){
-                    // 实例化PHPExcel
-                    $objExcel  = new PHPExcel();
-                    $objWriter = new PHPExcel_Writer_Excel5($objExcel);
-
-                    $objProps = $objExcel->getProperties();
-                    $objProps->setCreator('order_history' . $offset); // 设置文档属性
-                    $objExcel->setActiveSheetIndex(0);          // 操作第一个工作表
-                    $objActSheet = $objExcel->getActiveSheet();
-                    $objActSheet->setTitle($key . '订单');      // 设置标题
-                    // 设置字段信息
-                    $objActSheet->setCellValue('A1', 'order_bn');
-                    $objActSheet->setCellValue('B1', 'brand');
-                    $objActSheet->setCellValue('C1', 'Channel');
-                    $objActSheet->setCellValue('D1', 'status');
-                    $objActSheet->setCellValue('E1', 'createtime');
-                    $objActSheet->setCellValue('F1', 'Status_change_time');
-                    $objActSheet->setCellValue('G1', 'logi_bn(物流单号)');
-                    $objActSheet->setCellValue('H1', 'sku(商品sku)');
-                    $objActSheet->setCellValue('I1', 'num(商品数量)');
-                    $objActSheet->setCellValue('J1', 'bn(退款单号)');
-                    $objActSheet->setCellValue('K1', 'money(退款金额)');
-
-//                'paid'=>'已支付',
-//                'synced'=>'已审核',
-//                'shipped'=>'已发货',
-//                'completed'=>'已完成',
-//                'reshipping'=>'退货申请中',
-//                'reshipped'=>'已退货',
-//                'refunding'=>'退款申请中',
-//                'refunded'=>'已退款',
-//                'cancel'=>'已取消'
-
-                    // 订单状态处理
-                    foreach ($orderList as $k=>$v){
-                        // 已支付状态
-                        //if(!in_array($v['pay_status'], array(0,8))){
-                        ## 推送已支付 paid ##
-                        $i++;
-                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                        $objActSheet->setCellValue('B' . $i, 'Dior');
-                        $objActSheet->setCellValue('C' . $i, 'DMALL');
-                        $objActSheet->setCellValue('D' . $i, 'paid');
-                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                        $objActSheet->setCellValue('F' . $i, $v['paytime']);
-                        $objActSheet->setCellValue('G' . $i, '');
-                        $objActSheet->setCellValue('H' . $i, '');
-                        $objActSheet->setCellValue('I' . $i, '');
-                        $objActSheet->setCellValue('J' . $i, '');
-                        $objActSheet->setCellValue('K' . $i, '');
-                        //}
-                        // 判断订单是否发货--推送已审核、已发货、退货申请中、已退货
-                        if($v['ship_status'] == '0'){
-                            if($v['process_status'] == 'splited'){
-                                ## 推送已审核 synced ##
-                                $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
-                                $i++;
-                                $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                $objActSheet->setCellValue('B' . $i, 'Dior');
-                                $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                $objActSheet->setCellValue('D' . $i, 'synced');
-                                $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                $objActSheet->setCellValue('F' . $i, $syncedTime);
-                                $objActSheet->setCellValue('G' . $i, '');
-                                $objActSheet->setCellValue('H' . $i, '');
-                                $objActSheet->setCellValue('I' . $i, '');
-                                $objActSheet->setCellValue('J' . $i, '');
-                                $objActSheet->setCellValue('K' . $i, '');
-                            }
-                        }else{
-                            // 判断订单是否发货 推送已审核、已发货
-                            if(in_array($v['ship_status'], array(1,2))){
-                                ## 推送已审核 synced ##
-                                $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
-                                $i++;
-                                $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                $objActSheet->setCellValue('B' . $i, 'Dior');
-                                $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                $objActSheet->setCellValue('D' . $i, 'synced');
-                                $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                $objActSheet->setCellValue('F' . $i, $syncedTime);
-                                $objActSheet->setCellValue('G' . $i, '');
-                                $objActSheet->setCellValue('H' . $i, '');
-                                $objActSheet->setCellValue('I' . $i, '');
-                                $objActSheet->setCellValue('J' . $i, '');
-                                $objActSheet->setCellValue('K' . $i, '');
-
-                                ## 推送已发货 shipped ##
-                                $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
-                                $orderItem = $this->getOrderItem($v['order_id']); // 获取订单商品信息
-                                foreach ($orderItem as $itemKey=>$itemValue){
-                                    $i++;
-                                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                    $objActSheet->setCellValue('B' . $i, 'Dior');
-                                    $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                    $objActSheet->setCellValue('D' . $i, 'shipped');
-                                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                    $objActSheet->setCellValue('F' . $i, $shippedTime);
-                                    $objActSheet->setCellValue('G' . $i, "\t" . $v['logi_no'] . "\t");
-                                    $objActSheet->setCellValue('H' . $i, "\t" . $itemValue['bn'] . "\t");
-                                    $objActSheet->setCellValue('I' . $i, $itemValue['nums']);
-                                    $objActSheet->setCellValue('J' . $i, '');
-                                    $objActSheet->setCellValue('K' . $i, '');
-                                }
-                            }
-                            // 判断订单是否发生退货 推送已审核、已发货、退货申请中、已退货
-                            if(in_array($v['ship_status'], array(3,4))){
-                                ## 推送已审核 synced ##
-                                $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
-                                $i++;
-                                $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                $objActSheet->setCellValue('B' . $i, 'Dior');
-                                $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                $objActSheet->setCellValue('D' . $i, 'synced');
-                                $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                $objActSheet->setCellValue('F' . $i, $syncedTime);
-                                $objActSheet->setCellValue('G' . $i, '');
-                                $objActSheet->setCellValue('H' . $i, '');
-                                $objActSheet->setCellValue('I' . $i, '');
-                                $objActSheet->setCellValue('J' . $i, '');
-                                $objActSheet->setCellValue('K' . $i, '');
-
-                                ## 推送已发货 shipped ##
-                                $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
-                                $orderItem = $this->getOrderItem($v['order_id']); // 获取订单商品信息
-                                foreach ($orderItem as $itemKey=>$itemValue){
-                                    $i++;
-                                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                    $objActSheet->setCellValue('B' . $i, 'Dior');
-                                    $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                    $objActSheet->setCellValue('D' . $i, 'shipped');
-                                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                    $objActSheet->setCellValue('F' . $i, $shippedTime);
-                                    $objActSheet->setCellValue('G' . $i, "\t" . $v['logi_no'] . "\t");
-                                    $objActSheet->setCellValue('H' . $i, "\t" . $itemValue['bn'] . "\t");
-                                    $objActSheet->setCellValue('I' . $i, $itemValue['nums']);
-                                    $objActSheet->setCellValue('J' . $i, '');
-                                    $objActSheet->setCellValue('K' . $i, '');
-                                }
-
-                                ## 推送退货申请中 reshipping ##
-                                $reshippingTime = $this->getReshipTime($v['order_id'], 'reshipping'); // 获取退货申请中时间
-                                $i++;
-                                $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                $objActSheet->setCellValue('B' . $i, 'Dior');
-                                $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                $objActSheet->setCellValue('D' . $i, 'reshipping');
-                                $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                $objActSheet->setCellValue('F' . $i, $reshippingTime);
-                                $objActSheet->setCellValue('G' . $i, '');
-                                $objActSheet->setCellValue('H' . $i, '');
-                                $objActSheet->setCellValue('I' . $i, '');
-                                $objActSheet->setCellValue('J' . $i, '');
-                                $objActSheet->setCellValue('K' . $i, '');
-
-                                ## 推送已退货 reshipped ##
-                                $reshippedTime = $this->getReshipTime($v['order_id'], 'reshipped'); // 获取已退货时间
-                                $reshipItem = $this->getReshipItem($v['order_id']); // 获取退货商品
-                                foreach ($reshipItem as $reshipKey=>$reshipValue){
-                                    $i++;
-                                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                    $objActSheet->setCellValue('B' . $i, 'Dior');
-                                    $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                    $objActSheet->setCellValue('D' . $i, 'reshipped');
-                                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                    $objActSheet->setCellValue('F' . $i, $reshippedTime);
-                                    $objActSheet->setCellValue('G' . $i, '');
-                                    $objActSheet->setCellValue('H' . $i, "\t" . $reshipValue['bn'] . "\t");
-                                    $objActSheet->setCellValue('I' . $i, $reshipValue['num']);
-                                    $objActSheet->setCellValue('J' . $i, '');
-                                    $objActSheet->setCellValue('K' . $i, '');
-                                }
-                            }
-                        }
-                        // 退款单--推送已退款、退款申请中
-                        if(in_array($v['pay_status'], array(4,5))){
-                            ## 推送退款申请中 refunding ##
-                            $refundingTime = $this->getRefundingTime($v['order_id']);
-                            $i++;
-                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                            $objActSheet->setCellValue('B' . $i, 'Dior');
-                            $objActSheet->setCellValue('C' . $i, 'DMALL');
-                            $objActSheet->setCellValue('D' . $i, 'refunding');
-                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                            $objActSheet->setCellValue('F' . $i, $refundingTime);
-                            $objActSheet->setCellValue('G' . $i, '');
-                            $objActSheet->setCellValue('H' . $i, '');
-                            $objActSheet->setCellValue('I' . $i, '');
-                            $objActSheet->setCellValue('J' . $i, '');
-                            $objActSheet->setCellValue('K' . $i, '');
-
-                            ## 推送已退款 refunded ##
-                            $refunded = $this->getRefunded($v['order_id']); // 获取退款单信息
-                            $i++;
-                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                            $objActSheet->setCellValue('B' . $i, 'Dior');
-                            $objActSheet->setCellValue('C' . $i, 'DMALL');
-                            $objActSheet->setCellValue('D' . $i, 'refunded');
-                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                            $objActSheet->setCellValue('F' . $i, $refunded['t_sent']);
-                            $objActSheet->setCellValue('G' . $i, '');
-                            $objActSheet->setCellValue('H' . $i, '');
-                            $objActSheet->setCellValue('I' . $i, '');
-                            $objActSheet->setCellValue('J' . $i, "\t" . $refunded['refund_bn'] . "\t");
-                            $objActSheet->setCellValue('K' . $i, $refunded['money']);
-
-                        }else{
-                            // 退款申请中---在sdb_ome_refund_apply表中存在数据并且状态不为0、1
-                            $sql = "select apply_id from sdb_ome_refund_apply where `status` not in ('0','1') and order_id='{$v['order_id']}'";
-                            $refunding = $orderModel->db->select($sql);
-                            if($refunding){
-                                ## 推送退款申请中 refunding ##
-                                $refundingTime = $this->getRefundingTime($v['order_id']);
-                                $i++;
-                                $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                                $objActSheet->setCellValue('B' . $i, 'Dior');
-                                $objActSheet->setCellValue('C' . $i, 'DMALL');
-                                $objActSheet->setCellValue('D' . $i, 'refunding');
-                                $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                                $objActSheet->setCellValue('F' . $i, $refundingTime);
-                                $objActSheet->setCellValue('G' . $i, '');
-                                $objActSheet->setCellValue('H' . $i, '');
-                                $objActSheet->setCellValue('I' . $i, '');
-                                $objActSheet->setCellValue('J' . $i, '');
-                                $objActSheet->setCellValue('K' . $i, '');
-                            }
-                        }
-                        // 已完成
-                        if($v['route_status'] == '1' && $v['ship_status'] == '1'){
-                            ## 推送已完成 completed ##
-                            $i++;
-                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                            $objActSheet->setCellValue('B' . $i, 'Dior');
-                            $objActSheet->setCellValue('C' . $i, 'DMALL');
-                            $objActSheet->setCellValue('D' . $i, 'completed');
-                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                            $objActSheet->setCellValue('F' . $i, $v['last_modified']);
-                            $objActSheet->setCellValue('G' . $i, '');
-                            $objActSheet->setCellValue('H' . $i, '');
-                            $objActSheet->setCellValue('I' . $i, '');
-                            $objActSheet->setCellValue('J' . $i, '');
-                            $objActSheet->setCellValue('K' . $i, '');
-                        }
-                        // 已取消订单
-                        if($v['status'] == 'dead' && $v['process_status'] == 'cancel'){
-                            ## 推送已取消 cancel ##
-                            $i++;
-                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
-                            $objActSheet->setCellValue('B' . $i, 'Dior');
-                            $objActSheet->setCellValue('C' . $i, 'DMALL');
-                            $objActSheet->setCellValue('D' . $i, 'cancel');
-                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
-                            $objActSheet->setCellValue('F' . $i, $v['last_modified']);
-                            $objActSheet->setCellValue('G' . $i, '');
-                            $objActSheet->setCellValue('H' . $i, '');
-                            $objActSheet->setCellValue('I' . $i, '');
-                            $objActSheet->setCellValue('J' . $i, '');
-                            $objActSheet->setCellValue('K' . $i, '');
-                        }
-                        // 销毁临时变量
-                        unset($sql,$syncedTime,$shippedTime,$orderItem,$reshippingTime,$reshippedTime,$reshipItem,$refundingTime,$refunded,$refunding);
-                    }
-                    // 保存文件
-                    $filename = $kafkaDir . $key . '/' . 'order_history' . '_' . $offset . '.xls';
-                    $objWriter->save($filename);
-
-                    // 销毁临时变量
-                    unset($objExcel,$objWriter,$orderSql,$filename);
-
-                    // 是否跳出循环
-                    if(count($orderList) < $limit){
-                        // 销毁临时变量
-                        unset($orderList);
-                        break;
-                    }else{
-                        // 销毁临时变量
-                        unset($orderList);
-                    }
-                    $page++;
-                }
-            }
-        }
-        // 销毁临时变量
-        unset($monthList,$orderModel,$startTime,$endTime,$kafkaDir,$fileLog);
-    }
-
-    /**
      * 生成从开始月份到结束月份的月份数组
      * @param int $start 开始时间戳
      * @param int $end 结束时间戳
@@ -543,7 +179,7 @@ class ome_kafka_kafkaQueueHandle{
     }
 
     /**
-     * 订单历史状态数据
+     * 订单历史状态数据-通过浏览器下载
      * 下载的文件通常很大, 所以先设置csv相关的Header头, 然后打开
      * PHP output流, 渐进式的往output流中写入数据, 写到一定量后将系统缓冲冲刷到响应中
      * 避免缓冲溢出
@@ -556,7 +192,7 @@ class ome_kafka_kafkaQueueHandle{
         ini_set('memory_limit', '2048M'); // 运行内存
         // 时间文本转成时间戳
         $startTime = strtotime($timeStart);
-        $endTime   = strtotime($timeEnd);
+        $endTime   = strtotime("$timeEnd +1 day");
         // 参数判断
         if(!is_numeric($startTime) || !is_numeric($endTime) || ($endTime <= $startTime)){
             return false;
@@ -579,144 +215,169 @@ class ome_kafka_kafkaQueueHandle{
         }
         // excel字段信息
         $columns = array(
-            'order_bn','brand','Channel','status','createtime','Status_change_time','logi_bn','sku','num','bn','money'
-            //'order_bn','brand','Channel','status','createtime','Status_change_time','logi_bn(物流单号)','sku(商品sku)','num(商品数量)','bn(退款单号)','money(退款金额)'
+            'order_bn','brand','Channel','status','createtime','Status_change_time','logi_bn(物流单号)','sku(商品sku)','num(商品数量)','bn(退款单号)','money(退款金额)'
         );
+        // 文件民
+        $fileName =  $timeStart . '_' . $timeEnd . '.csv';
 
-        // 时间处理
-        $monthList = $this->monthList($startTime, $endTime);
+        // 设置好告诉浏览器要下载excel文件的headers
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="'. $fileName .'"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        $fp = fopen('php://output', 'a'); // 打开output流
+        mb_convert_variables('GBK', 'UTF-8', $columns);
+        fputcsv($fp, $columns); // 将数据格式化为CSV格式并写入到output流中
 
-        foreach ($monthList as $mKey=>$mValue){
+        // 获取订单数据量
+        $sql = "SELECT count(order_id) num FROM sdb_ome_orders 
+                where createtime >= '$startTime' and createtime < '$endTime' and pay_status not in ('0','8')";
 
-            $fileName =  $mKey . 'xlsx';
+        $numRes = $orderModel->db->select($sql);
 
-            // 设置好告诉浏览器要下载excel文件的headers
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/vnd.ms-excel');
-            header('Content-Disposition: attachment; filename="'. $fileName .'"');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            $fp = fopen('php://output', 'a'); // 打开output流
-            mb_convert_variables('GBK', 'UTF-8', $columns);
-            fputcsv($fp, $columns); // 将数据格式化为CSV格式并写入到output流中
+        $limit = 1000;  // 每次查询的条数
+        $pages = ceil($numRes[0]['num'] / $limit); // 总页码
 
-            // 获取订单数据量
-            $sql = "SELECT count(order_id) num FROM sdb_ome_orders 
-                    where createtime >= '{$mValue['start']}' and createtime < '{$mValue['end']}' and pay_status not in ('0','8')";
+        for($i = 0; $i < $pages; $i++) {
 
-            $numRes = $orderModel->db->select($sql);
+            $offset = $i * $limit;  // 偏移量
 
-            $limit = 1000;  // 每次查询的条数
-            $pages = ceil($numRes[0]['num'] / $limit); // 总页码
+            $sql = "SELECT order_bn,order_id,createtime,logi_no,paytime,last_modified,status,pay_status,ship_status,route_status,
+                    routetime,order_confirm_time,process_status 
+                    FROM sdb_ome_orders 
+                    where createtime >= '$startTime' and createtime < '$endTime' and pay_status not in ('0','8') 
+                    limit $offset, $limit";
 
-            for($i = 0; $i < $pages; $i++) {
+            ##记录日志##
+            $myFile = fopen($fileLog, 'a+');
+            $res = $sql . "\n";
+            fwrite($myFile, $res);
+            fclose($myFile);
+            ##记录日志##
 
-                $offset = $i * $limit;  // 偏移量
+            // 查询数据
+            $orderList = $orderModel->db->select($sql);
 
-                $sql = "SELECT order_bn,order_id,createtime,logi_no,paytime,last_modified,status,pay_status,ship_status,route_status,
-                        routetime,order_confirm_time,process_status 
-                        FROM sdb_ome_orders 
-                        where createtime >= '{$mValue['start']}' and createtime < '{$mValue['end']}' and pay_status not in ('0','8') 
-                        limit $offset, $limit";
+            // 订单状态处理
+            foreach ($orderList as $k=>$v){
+                // 已支付状态
+                ## 推送已支付 paid ##
+                $rowData = array(
+                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','paid',$v['createtime'],$v['paytime'],'','','','',''
+                );
+                mb_convert_variables('GBK', 'UTF-8', $rowData);
+                fputcsv($fp, $rowData);
 
-                ##记录日志##
-                $myFile = fopen($fileLog, 'a+');
-                $res = $sql . "\n";
-                fwrite($myFile, $res);
-                fclose($myFile);
-                ##记录日志##
+                // 判断订单是否发货--推送已审核、已发货、退货申请中、已退货
+                if($v['ship_status'] == '0'){
+                    if($v['process_status'] == 'splited'){
+                        ## 推送已审核 synced ##
+                        $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
+                        $rowData = array(
+                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','synced',$v['createtime'],$syncedTime,'','','','',''
+                        );
+                        mb_convert_variables('GBK', 'UTF-8', $rowData);
+                        fputcsv($fp, $rowData);
+                    }
+                }else{
+                    // 判断订单是否发货 推送已审核、已发货
+                    if(in_array($v['ship_status'], array(1,2))){
+                        ## 推送已审核 synced ##
+                        $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
+                        $rowData = array(
+                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','synced',$v['createtime'],$syncedTime,'','','','',''
+                        );
+                        mb_convert_variables('GBK', 'UTF-8', $rowData);
+                        fputcsv($fp, $rowData);
 
-                // 查询数据
-                $orderList = $orderModel->db->select($sql);
+                        ## 推送已发货 shipped ##
+                        $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
+//                        $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
+//                        foreach ($orderItem as $itemKey=>$itemValue){
+//                            $rowData = array(
+//                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
+//                            );
+//                            mb_convert_variables('GBK', 'UTF-8', $rowData);
+//                            fputcsv($fp, $rowData);
+//                        }
+                        $rowData = array(
+                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t",'','','',''
+                        );
+                        mb_convert_variables('GBK', 'UTF-8', $rowData);
+                        fputcsv($fp, $rowData);
+                    }
+                    // 判断订单是否发生退货 推送已审核、已发货、退货申请中、已退货
+                    if(in_array($v['ship_status'], array(3,4))){
+                        ## 推送已审核 synced ##
+                        $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
+                        $rowData = array(
+                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','synced',$v['createtime'],$syncedTime,'','','','',''
+                        );
+                        mb_convert_variables('GBK', 'UTF-8', $rowData);
+                        fputcsv($fp, $rowData);
 
-                // 订单状态处理
-                foreach ($orderList as $k=>$v){
-                    // 已支付状态
-                    ## 推送已支付 paid ##
+                        ## 推送已发货 shipped ##
+                        $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
+//                        $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
+//                        foreach ($orderItem as $itemKey=>$itemValue){
+//                            $rowData = array(
+//                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
+//                            );
+//                            mb_convert_variables('GBK', 'UTF-8', $rowData);
+//                            fputcsv($fp, $rowData);
+//                        }
+                        $rowData = array(
+                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t",'','','',''
+                        );
+                        mb_convert_variables('GBK', 'UTF-8', $rowData);
+                        fputcsv($fp, $rowData);
+
+                        ## 推送退货申请中 reshipping ##
+                        $reshippingTime = $this->getReshipTime($v['order_id'], 'reshipping'); // 获取退货申请中时间
+                        $rowData = array(
+                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','reshipping',$v['createtime'],$reshippingTime,'','','','',''
+                        );
+                        mb_convert_variables('GBK', 'UTF-8', $rowData);
+                        fputcsv($fp, $rowData);
+
+                        ## 推送已退货 reshipped ##
+                        $reshippedTime = $this->getReshipTime($v['order_id'], 'reshipped'); // 获取已退货时间
+                        $reshipItem    = $this->getReshipItem($v['order_id']); // 获取退货商品
+                        foreach ($reshipItem as $reshipKey=>$reshipValue){
+                            $rowData = array(
+                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','reshipped',$v['createtime'],$reshippedTime,'',"\t" . $reshipValue['bn'] . "\t",$reshipValue['num'],'',''
+                            );
+                            mb_convert_variables('GBK', 'UTF-8', $rowData);
+                            fputcsv($fp, $rowData);
+                        }
+                    }
+                }
+
+                // 退款单--推送已退款、退款申请中
+                if(in_array($v['pay_status'], array(4,5))){
+                    ## 推送退款申请中 refunding ##
+                    $refundingTime = $this->getRefundingTime($v['order_id']);
                     $rowData = array(
-                        "\t" . $v['order_bn'] . "\t",'Dior','DMALL','paid',$v['createtime'],$v['paytime'],'','','','',''
+                        "\t" . $v['order_bn'] . "\t",'Dior','DMALL','refunding',$v['createtime'],$refundingTime,'','','','',''
                     );
                     mb_convert_variables('GBK', 'UTF-8', $rowData);
                     fputcsv($fp, $rowData);
 
-                    // 判断订单是否发货--推送已审核、已发货、退货申请中、已退货
-                    if($v['ship_status'] == '0'){
-                        if($v['process_status'] == 'splited'){
-                            ## 推送已审核 synced ##
-                            $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
-                            $rowData = array(
-                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','synced',$v['createtime'],$syncedTime,'','','','',''
-                            );
-                            mb_convert_variables('GBK', 'UTF-8', $rowData);
-                            fputcsv($fp, $rowData);
-                        }
-                    }else{
-                        // 判断订单是否发货 推送已审核、已发货
-                        if(in_array($v['ship_status'], array(1,2))){
-                            ## 推送已审核 synced ##
-                            $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
-                            $rowData = array(
-                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','synced',$v['createtime'],$syncedTime,'','','','',''
-                            );
-                            mb_convert_variables('GBK', 'UTF-8', $rowData);
-                            fputcsv($fp, $rowData);
+                    ## 推送已退款 refunded ##
+                    $refunded = $this->getRefunded($v['order_id']); // 获取退款单信息
+                    $rowData = array(
+                        "\t" . $v['order_bn'] . "\t",'Dior','DMALL','refunded',$v['createtime'],$refunded['t_sent'],'','','',"\t" . $refunded['refund_bn'] . "\t",$refunded['money']
+                    );
+                    mb_convert_variables('GBK', 'UTF-8', $rowData);
+                    fputcsv($fp, $rowData);
 
-                            ## 推送已发货 shipped ##
-                            $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
-                            $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
-                            foreach ($orderItem as $itemKey=>$itemValue){
-                                $rowData = array(
-                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
-                                );
-                                mb_convert_variables('GBK', 'UTF-8', $rowData);
-                                fputcsv($fp, $rowData);
-                            }
-                        }
-                        // 判断订单是否发生退货 推送已审核、已发货、退货申请中、已退货
-                        if(in_array($v['ship_status'], array(3,4))){
-                            ## 推送已审核 synced ##
-                            $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
-                            $rowData = array(
-                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','synced',$v['createtime'],$syncedTime,'','','','',''
-                            );
-                            mb_convert_variables('GBK', 'UTF-8', $rowData);
-                            fputcsv($fp, $rowData);
-
-                            ## 推送已发货 shipped ##
-                            $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
-                            $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
-                            foreach ($orderItem as $itemKey=>$itemValue){
-                                $rowData = array(
-                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
-                                );
-                                mb_convert_variables('GBK', 'UTF-8', $rowData);
-                                fputcsv($fp, $rowData);
-                            }
-
-                            ## 推送退货申请中 reshipping ##
-                            $reshippingTime = $this->getReshipTime($v['order_id'], 'reshipping'); // 获取退货申请中时间
-                            $rowData = array(
-                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','reshipping',$v['createtime'],$reshippingTime,'','','','',''
-                            );
-                            mb_convert_variables('GBK', 'UTF-8', $rowData);
-                            fputcsv($fp, $rowData);
-
-                            ## 推送已退货 reshipped ##
-                            $reshippedTime = $this->getReshipTime($v['order_id'], 'reshipped'); // 获取已退货时间
-                            $reshipItem    = $this->getReshipItem($v['order_id']); // 获取退货商品
-                            foreach ($reshipItem as $reshipKey=>$reshipValue){
-                                $rowData = array(
-                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','reshipped',$v['createtime'],$reshippedTime,'',"\t" . $reshipValue['bn'] . "\t",$reshipValue['num'],'',''
-                                );
-                                mb_convert_variables('GBK', 'UTF-8', $rowData);
-                                fputcsv($fp, $rowData);
-                            }
-                        }
-                    }
-
-                    // 退款单--推送已退款、退款申请中
-                    if(in_array($v['pay_status'], array(4,5))){
+                }else{
+                    // 退款申请中---在sdb_ome_refund_apply表中存在数据并且状态不为0、1
+                    $sql = "select apply_id from sdb_ome_refund_apply where `status` not in ('0','1') and order_id='{$v['order_id']}'";
+                    $refunding = $orderModel->db->select($sql);
+                    if($refunding){
                         ## 推送退款申请中 refunding ##
                         $refundingTime = $this->getRefundingTime($v['order_id']);
                         $rowData = array(
@@ -724,58 +385,36 @@ class ome_kafka_kafkaQueueHandle{
                         );
                         mb_convert_variables('GBK', 'UTF-8', $rowData);
                         fputcsv($fp, $rowData);
-
-                        ## 推送已退款 refunded ##
-                        $refunded = $this->getRefunded($v['order_id']); // 获取退款单信息
-                        $rowData = array(
-                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','refunded',$v['createtime'],$refunded['t_sent'],'','','',"\t" . $refunded['refund_bn'] . "\t",$refunded['money']
-                        );
-                        mb_convert_variables('GBK', 'UTF-8', $rowData);
-                        fputcsv($fp, $rowData);
-
-                    }else{
-                        // 退款申请中---在sdb_ome_refund_apply表中存在数据并且状态不为0、1
-                        $sql = "select apply_id from sdb_ome_refund_apply where `status` not in ('0','1') and order_id='{$v['order_id']}'";
-                        $refunding = $orderModel->db->select($sql);
-                        if($refunding){
-                            ## 推送退款申请中 refunding ##
-                            $refundingTime = $this->getRefundingTime($v['order_id']);
-                            $rowData = array(
-                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','refunding',$v['createtime'],$refundingTime,'','','','',''
-                            );
-                            mb_convert_variables('GBK', 'UTF-8', $rowData);
-                            fputcsv($fp, $rowData);
-                        }
                     }
-                    // 已完成
-                    if($v['route_status'] == '1' && $v['ship_status'] == '1'){
-                        ## 推送已完成 completed ##
-                        $rowData = array(
-                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','completed',$v['createtime'],$v['last_modified'],'','','','',''
-                        );
-                        mb_convert_variables('GBK', 'UTF-8', $rowData);
-                        fputcsv($fp, $rowData);
-                    }
-                    // 已取消订单
-                    if($v['status'] == 'dead' && $v['process_status'] == 'cancel'){
-                        ## 推送已取消 cancel ##
-                        $rowData = array(
-                            "\t" . $v['order_bn'] . "\t",'Dior','DMALL','cancel',$v['createtime'],$v['last_modified'],'','','','',''
-                        );
-                        mb_convert_variables('GBK', 'UTF-8', $rowData);
-                        fputcsv($fp, $rowData);
-                    }
-                    // 销毁临时变量
-                    unset($sql,$syncedTime,$shippedTime,$orderItem,$reshippingTime,$reshippedTime,$reshipItem,$refundingTime,$refunded,$refunding);
                 }
-
-                unset($orderList,$sql); // 释放变量的内存
-
-                ob_flush(); // 刷新输出缓冲到浏览器
-                flush();    // 必须同时使用 ob_flush() 和flush() 函数来刷新输出缓冲。
+                // 已完成
+                if($v['route_status'] == '1' && $v['ship_status'] == '1'){
+                    ## 推送已完成 completed ##
+                    $rowData = array(
+                        "\t" . $v['order_bn'] . "\t",'Dior','DMALL','completed',$v['createtime'],$v['last_modified'],'','','','',''
+                    );
+                    mb_convert_variables('GBK', 'UTF-8', $rowData);
+                    fputcsv($fp, $rowData);
+                }
+                // 已取消订单
+                if($v['status'] == 'dead' && $v['process_status'] == 'cancel'){
+                    ## 推送已取消 cancel ##
+                    $rowData = array(
+                        "\t" . $v['order_bn'] . "\t",'Dior','DMALL','cancel',$v['createtime'],$v['last_modified'],'','','','',''
+                    );
+                    mb_convert_variables('GBK', 'UTF-8', $rowData);
+                    fputcsv($fp, $rowData);
+                }
+                // 销毁临时变量
+                unset($sql,$syncedTime,$shippedTime,$orderItem,$reshippingTime,$reshippedTime,$reshipItem,$refundingTime,$refunded,$refunding);
             }
-            fclose($fp);
+
+            unset($orderList,$sql); // 释放变量的内存
+
+            ob_flush(); // 刷新输出缓冲到浏览器
+            flush();    // 必须同时使用 ob_flush() 和flush() 函数来刷新输出缓冲。
         }
+        fclose($fp);
     }
 
     /**
@@ -890,14 +529,19 @@ class ome_kafka_kafkaQueueHandle{
 
                             ## 推送已发货 shipped ##
                             $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
-                            $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
-                            foreach ($orderItem as $itemKey=>$itemValue){
-                                $rowData = array(
-                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
-                                );
-                                mb_convert_variables('GBK', 'UTF-8', $rowData);
-                                fputcsv($fOpen, $rowData);
-                            }
+//                            $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
+//                            foreach ($orderItem as $itemKey=>$itemValue){
+//                                $rowData = array(
+//                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
+//                                );
+//                                mb_convert_variables('GBK', 'UTF-8', $rowData);
+//                                fputcsv($fOpen, $rowData);
+//                            }
+                            $rowData = array(
+                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t",'','','',''
+                            );
+                            mb_convert_variables('GBK', 'UTF-8', $rowData);
+                            fputcsv($fOpen, $rowData);
                         }
                         // 判断订单是否发生退货 推送已审核、已发货、退货申请中、已退货
                         if(in_array($v['ship_status'], array(3,4))){
@@ -911,14 +555,19 @@ class ome_kafka_kafkaQueueHandle{
 
                             ## 推送已发货 shipped ##
                             $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
-                            $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
-                            foreach ($orderItem as $itemKey=>$itemValue){
-                                $rowData = array(
-                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
-                                );
-                                mb_convert_variables('GBK', 'UTF-8', $rowData);
-                                fputcsv($fOpen, $rowData);
-                            }
+//                            $orderItem   = $this->getOrderItem($v['order_id']); // 获取订单商品信息
+//                            foreach ($orderItem as $itemKey=>$itemValue){
+//                                $rowData = array(
+//                                    "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t","\t" . $itemValue['bn'] . "\t",$itemValue['nums'],'',''
+//                                );
+//                                mb_convert_variables('GBK', 'UTF-8', $rowData);
+//                                fputcsv($fOpen, $rowData);
+//                            }
+                            $rowData = array(
+                                "\t" . $v['order_bn'] . "\t",'Dior','DMALL','shipped',$v['createtime'],$shippedTime,"\t" . $v['logi_no'] . "\t",'','','',''
+                            );
+                            mb_convert_variables('GBK', 'UTF-8', $rowData);
+                            fputcsv($fOpen, $rowData);
 
                             ## 推送退货申请中 reshipping ##
                             $reshippingTime = $this->getReshipTime($v['order_id'], 'reshipping'); // 获取退货申请中时间
@@ -998,6 +647,377 @@ class ome_kafka_kafkaQueueHandle{
             }
             fclose($fOpen);
         }
+    }
+
+    /**
+     * 订单历史状态excel-通过浏览器下载
+     * @param $startTime
+     * @param $endTime
+     * @return bool
+     */
+    public function order_history_status_xls($timeStart, $timeEnd){
+        // 设置配置项
+        ini_set('memory_limit', '2048M');
+        set_time_limit(0);
+        ignore_user_abort(true); // 客户端断开后,仍然继续运行
+        // 时间文本转成时间戳
+        $startTime = strtotime($timeStart);
+        $endTime   = strtotime("$timeEnd +1 day");
+        // 参数判断
+        if(!is_numeric($startTime) || !is_numeric($endTime) || ($endTime <= $startTime)){
+            return false;
+        }
+        // 引入model
+        $orderModel = app::get('ome')->model('orders');
+        // 引入excel处理类
+        require_once PHPEXCEL_ROOT . '/PHPExcel.php';
+        require_once PHPEXCEL_ROOT . '/PHPExcel/Writer/Excel5.php';
+
+        $kafkaDir= ROOT_DIR . '/data/kafka_history_excel/'; // 文件保存目录
+        $fileLog = ROOT_DIR . '/data/kafka_history_excel/kafka_file_log'.$timeStart.'_'.$timeEnd.'.txt'; // log日志文件
+        // 判断目录是否存在
+        if (!file_exists($kafkaDir)) {
+            $u_mask = umask(0);	            // 处理umask情况
+            mkdir($kafkaDir, 0777, true);   // 创建解压目录 recursive参数表示是否创建多重目录 true/false
+            umask($u_mask);
+        }
+        // 判断log文件是否存在
+        if(!file_exists($fileLog)){
+            $u_mask = umask(0);	    // 处理umask情况
+            fopen($fileLog, "a+");  // 创建log日志
+            umask($u_mask);
+        }
+
+        // 实例化PHPExcel
+        $objExcel  = new PHPExcel();
+        $objWriter = new PHPExcel_Writer_Excel5($objExcel);
+
+        $objProps = $objExcel->getProperties();
+        $objProps->setCreator('order_history'); // 设置文档属性
+        $objExcel->setActiveSheetIndex(0);          // 操作第一个工作表
+        $objActSheet = $objExcel->getActiveSheet();
+        $objActSheet->setTitle($timeStart . '_' . $timeEnd . '订单');      // 设置标题
+        // 设置字段信息
+        $objActSheet->setCellValue('A1', 'order_bn');
+        $objActSheet->setCellValue('B1', 'brand');
+        $objActSheet->setCellValue('C1', 'Channel');
+        $objActSheet->setCellValue('D1', 'status');
+        $objActSheet->setCellValue('E1', 'createtime');
+        $objActSheet->setCellValue('F1', 'Status_change_time');
+        $objActSheet->setCellValue('G1', 'logi_bn(物流单号)');
+        $objActSheet->setCellValue('H1', 'sku(商品sku)');
+        $objActSheet->setCellValue('I1', 'num(商品数量)');
+        $objActSheet->setCellValue('J1', 'bn(退款单号)');
+        $objActSheet->setCellValue('K1', 'money(退款金额)');
+
+        $i     = 1;     // 插入数据初始值
+        $page  = 0;     // 页码
+        $limit = 1000;  // 分批次处理 每次处理1000条数据
+        while(1){
+            // 偏移量
+            $offset = $page * $limit;
+
+            $orderSql = "SELECT order_bn,order_id,createtime,logi_no,paytime,last_modified,status,pay_status,ship_status,route_status,
+                    routetime,order_confirm_time,process_status 
+                    FROM sdb_ome_orders 
+                    where createtime >= '$startTime' and createtime < '$endTime' and pay_status not in ('0','8') 
+                    limit $offset, $limit";
+
+            ##记录日志##
+            $myFile = fopen($fileLog, 'a+');
+            $res = $orderSql . "\n";
+            fwrite($myFile, $res);
+            fclose($myFile);
+            ##记录日志##
+
+            // 查询数据
+            $orderList = $orderModel->db->select($orderSql);
+
+//                'paid'=>'已支付',
+//                'synced'=>'已审核',
+//                'shipped'=>'已发货',
+//                'completed'=>'已完成',
+//                'reshipping'=>'退货申请中',
+//                'reshipped'=>'已退货',
+//                'refunding'=>'退款申请中',
+//                'refunded'=>'已退款',
+//                'cancel'=>'已取消'
+
+            // 订单状态处理
+            foreach ($orderList as $k=>$v){
+                // 已支付状态
+                //if(!in_array($v['pay_status'], array(0,8))){
+                ## 推送已支付 paid ##
+                $i++;
+                $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                $objActSheet->setCellValue('B' . $i, 'Dior');
+                $objActSheet->setCellValue('C' . $i, 'DMALL');
+                $objActSheet->setCellValue('D' . $i, 'paid');
+                $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                $objActSheet->setCellValue('F' . $i, $v['paytime']);
+                $objActSheet->setCellValue('G' . $i, '');
+                $objActSheet->setCellValue('H' . $i, '');
+                $objActSheet->setCellValue('I' . $i, '');
+                $objActSheet->setCellValue('J' . $i, '');
+                $objActSheet->setCellValue('K' . $i, '');
+                //}
+                // 判断订单是否发货--推送已审核、已发货、退货申请中、已退货
+                if($v['ship_status'] == '0'){
+                    if($v['process_status'] == 'splited'){
+                        ## 推送已审核 synced ##
+                        $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'synced');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $syncedTime);
+                        $objActSheet->setCellValue('G' . $i, '');
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+                    }
+                }else{
+                    // 判断订单是否发货 推送已审核、已发货
+                    if(in_array($v['ship_status'], array(1,2))){
+                        ## 推送已审核 synced ##
+                        $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'synced');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $syncedTime);
+                        $objActSheet->setCellValue('G' . $i, '');
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+
+                        ## 推送已发货 shipped ##
+                        $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
+//                        $orderItem = $this->getOrderItem($v['order_id']); // 获取订单商品信息
+//                        foreach ($orderItem as $itemKey=>$itemValue){
+//                            $i++;
+//                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+//                            $objActSheet->setCellValue('B' . $i, 'Dior');
+//                            $objActSheet->setCellValue('C' . $i, 'DMALL');
+//                            $objActSheet->setCellValue('D' . $i, 'shipped');
+//                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
+//                            $objActSheet->setCellValue('F' . $i, $shippedTime);
+//                            $objActSheet->setCellValue('G' . $i, "\t" . $v['logi_no'] . "\t");
+//                            $objActSheet->setCellValue('H' . $i, "\t" . $itemValue['bn'] . "\t");
+//                            $objActSheet->setCellValue('I' . $i, $itemValue['nums']);
+//                            $objActSheet->setCellValue('J' . $i, '');
+//                            $objActSheet->setCellValue('K' . $i, '');
+//                        }
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'shipped');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $shippedTime);
+                        $objActSheet->setCellValue('G' . $i, "\t" . $v['logi_no'] . "\t");
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+                    }
+                    // 判断订单是否发生退货 推送已审核、已发货、退货申请中、已退货
+                    if(in_array($v['ship_status'], array(3,4))){
+                        ## 推送已审核 synced ##
+                        $syncedTime = $this->getDeliveryTime($v['order_id'], 'synced'); // 获取已审核时间
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'synced');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $syncedTime);
+                        $objActSheet->setCellValue('G' . $i, '');
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+
+                        ## 推送已发货 shipped ##
+                        $shippedTime = $this->getDeliveryTime($v['order_id'], 'shipped'); // 获取发货时间
+//                        $orderItem = $this->getOrderItem($v['order_id']); // 获取订单商品信息
+//                        foreach ($orderItem as $itemKey=>$itemValue){
+//                            $i++;
+//                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+//                            $objActSheet->setCellValue('B' . $i, 'Dior');
+//                            $objActSheet->setCellValue('C' . $i, 'DMALL');
+//                            $objActSheet->setCellValue('D' . $i, 'shipped');
+//                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
+//                            $objActSheet->setCellValue('F' . $i, $shippedTime);
+//                            $objActSheet->setCellValue('G' . $i, "\t" . $v['logi_no'] . "\t");
+//                            $objActSheet->setCellValue('H' . $i, "\t" . $itemValue['bn'] . "\t");
+//                            $objActSheet->setCellValue('I' . $i, $itemValue['nums']);
+//                            $objActSheet->setCellValue('J' . $i, '');
+//                            $objActSheet->setCellValue('K' . $i, '');
+//                        }
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'shipped');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $shippedTime);
+                        $objActSheet->setCellValue('G' . $i, "\t" . $v['logi_no'] . "\t");
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+
+                        ## 推送退货申请中 reshipping ##
+                        $reshippingTime = $this->getReshipTime($v['order_id'], 'reshipping'); // 获取退货申请中时间
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'reshipping');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $reshippingTime);
+                        $objActSheet->setCellValue('G' . $i, '');
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+
+                        ## 推送已退货 reshipped ##
+                        $reshippedTime = $this->getReshipTime($v['order_id'], 'reshipped'); // 获取已退货时间
+                        $reshipItem = $this->getReshipItem($v['order_id']); // 获取退货商品
+                        foreach ($reshipItem as $reshipKey=>$reshipValue){
+                            $i++;
+                            $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                            $objActSheet->setCellValue('B' . $i, 'Dior');
+                            $objActSheet->setCellValue('C' . $i, 'DMALL');
+                            $objActSheet->setCellValue('D' . $i, 'reshipped');
+                            $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                            $objActSheet->setCellValue('F' . $i, $reshippedTime);
+                            $objActSheet->setCellValue('G' . $i, '');
+                            $objActSheet->setCellValue('H' . $i, "\t" . $reshipValue['bn'] . "\t");
+                            $objActSheet->setCellValue('I' . $i, $reshipValue['num']);
+                            $objActSheet->setCellValue('J' . $i, '');
+                            $objActSheet->setCellValue('K' . $i, '');
+                        }
+                    }
+                }
+                // 退款单--推送已退款、退款申请中
+                if(in_array($v['pay_status'], array(4,5))){
+                    ## 推送退款申请中 refunding ##
+                    $refundingTime = $this->getRefundingTime($v['order_id']);
+                    $i++;
+                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                    $objActSheet->setCellValue('B' . $i, 'Dior');
+                    $objActSheet->setCellValue('C' . $i, 'DMALL');
+                    $objActSheet->setCellValue('D' . $i, 'refunding');
+                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                    $objActSheet->setCellValue('F' . $i, $refundingTime);
+                    $objActSheet->setCellValue('G' . $i, '');
+                    $objActSheet->setCellValue('H' . $i, '');
+                    $objActSheet->setCellValue('I' . $i, '');
+                    $objActSheet->setCellValue('J' . $i, '');
+                    $objActSheet->setCellValue('K' . $i, '');
+
+                    ## 推送已退款 refunded ##
+                    $refunded = $this->getRefunded($v['order_id']); // 获取退款单信息
+                    $i++;
+                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                    $objActSheet->setCellValue('B' . $i, 'Dior');
+                    $objActSheet->setCellValue('C' . $i, 'DMALL');
+                    $objActSheet->setCellValue('D' . $i, 'refunded');
+                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                    $objActSheet->setCellValue('F' . $i, $refunded['t_sent']);
+                    $objActSheet->setCellValue('G' . $i, '');
+                    $objActSheet->setCellValue('H' . $i, '');
+                    $objActSheet->setCellValue('I' . $i, '');
+                    $objActSheet->setCellValue('J' . $i, "\t" . $refunded['refund_bn'] . "\t");
+                    $objActSheet->setCellValue('K' . $i, $refunded['money']);
+
+                }else{
+                    // 退款申请中---在sdb_ome_refund_apply表中存在数据并且状态不为0、1
+                    $sql = "select apply_id from sdb_ome_refund_apply where `status` not in ('0','1') and order_id='{$v['order_id']}'";
+                    $refunding = $orderModel->db->select($sql);
+                    if($refunding){
+                        ## 推送退款申请中 refunding ##
+                        $refundingTime = $this->getRefundingTime($v['order_id']);
+                        $i++;
+                        $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                        $objActSheet->setCellValue('B' . $i, 'Dior');
+                        $objActSheet->setCellValue('C' . $i, 'DMALL');
+                        $objActSheet->setCellValue('D' . $i, 'refunding');
+                        $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                        $objActSheet->setCellValue('F' . $i, $refundingTime);
+                        $objActSheet->setCellValue('G' . $i, '');
+                        $objActSheet->setCellValue('H' . $i, '');
+                        $objActSheet->setCellValue('I' . $i, '');
+                        $objActSheet->setCellValue('J' . $i, '');
+                        $objActSheet->setCellValue('K' . $i, '');
+                    }
+                }
+                // 已完成
+                if($v['route_status'] == '1' && $v['ship_status'] == '1'){
+                    ## 推送已完成 completed ##
+                    $i++;
+                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                    $objActSheet->setCellValue('B' . $i, 'Dior');
+                    $objActSheet->setCellValue('C' . $i, 'DMALL');
+                    $objActSheet->setCellValue('D' . $i, 'completed');
+                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                    $objActSheet->setCellValue('F' . $i, $v['last_modified']);
+                    $objActSheet->setCellValue('G' . $i, '');
+                    $objActSheet->setCellValue('H' . $i, '');
+                    $objActSheet->setCellValue('I' . $i, '');
+                    $objActSheet->setCellValue('J' . $i, '');
+                    $objActSheet->setCellValue('K' . $i, '');
+                }
+                // 已取消订单
+                if($v['status'] == 'dead' && $v['process_status'] == 'cancel'){
+                    ## 推送已取消 cancel ##
+                    $i++;
+                    $objActSheet->setCellValue('A' . $i, "\t" . $v['order_bn'] . "\t");
+                    $objActSheet->setCellValue('B' . $i, 'Dior');
+                    $objActSheet->setCellValue('C' . $i, 'DMALL');
+                    $objActSheet->setCellValue('D' . $i, 'cancel');
+                    $objActSheet->setCellValue('E' . $i, $v['createtime']);
+                    $objActSheet->setCellValue('F' . $i, $v['last_modified']);
+                    $objActSheet->setCellValue('G' . $i, '');
+                    $objActSheet->setCellValue('H' . $i, '');
+                    $objActSheet->setCellValue('I' . $i, '');
+                    $objActSheet->setCellValue('J' . $i, '');
+                    $objActSheet->setCellValue('K' . $i, '');
+                }
+                // 销毁临时变量
+                unset($sql,$syncedTime,$shippedTime,$orderItem,$reshippingTime,$reshippedTime,$reshipItem,$refundingTime,$refunded,$refunding);
+            }
+
+            // 是否跳出循环
+            if(count($orderList) < $limit){
+                break;
+            }
+            // 销毁临时变量
+            unset($orderList,$orderSql);
+            $page++;
+        }
+        // 销毁临时变量
+        unset($orderModel,$startTime,$endTime,$fileLog);
+        // 保存文件
+//        $filename = $kafkaDir . '/' . $timeStart . '_' . $timeEnd . '.xls';
+//        $objWriter->save($filename);
+
+        // 生成文件供浏览器下载
+        $filename = $timeStart . '_' . $timeEnd . '.xls';
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
+        header('Cache-Control: max-age=0');
+        $objWriter->save('php://output');
+        exit;
     }
 }
 
