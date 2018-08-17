@@ -22,10 +22,17 @@ class creditorderapi_ctl_admin_apiconfig extends desktop_controller{
         $apiconfig = app::get('creditorderapi')->model('apiconfig')->getList('*',array('ax_id' => $ax_id));
         $apiconfigInfo = json_decode($apiconfig[0]['ax_setting_info'],1);
 
+
         $this->pagedata['apiconfig'] = $apiconfig[0];
         $this->pagedata['apiconfigInfo'] = $apiconfigInfo;
         //绑定店铺信息
         $shopInfo = app::get('ome')->model('shop')->getList('shop_id,name');
+        $apiconfig[0]['shop_id'] = unserialize($apiconfig[0]['shop_id']);
+        foreach ($shopInfo as $key=>$shop){
+            if(in_array($shop['shop_id'],$apiconfig['0']['shop_id'])){
+                $shopInfo[$key]['select'] = '1';
+            }
+        }
         $this->pagedata['shops'] = $shopInfo;
 
         $this->singlepage('admin/ax/detail.html');
