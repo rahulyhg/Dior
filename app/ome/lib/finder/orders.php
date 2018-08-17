@@ -234,6 +234,7 @@ class ome_finder_orders{
 					$pkg[$pkg_id]['order_items'][$i]['sendnum']=$item['sendnum'];
 					$pkg[$pkg_id]['order_items'][$i]['return_num']=$item['return_num'];
 					$pkg[$pkg_id]['order_items'][$i]['message1']=$item['message1'];
+                    $pkg[$pkg_id]['order_items'][$i]['lettering_type']=$item['lettering_type'];
 					$i++;
 				}
 			}
