@@ -266,6 +266,11 @@ class erpapi_oms_order
             $msg='SignError 40001';
             return false;
         }
+        
+        if(strpos($params['order'], ' ') !== false) {
+            $params['order'] = str_replace(' ', '+', $params['order']);
+        }
+        
         error_log('订单中间:'.base64_decode($params['order']),3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
         $this->params=base64_decode($params['order']);
         
@@ -417,14 +422,19 @@ class erpapi_oms_order
                     if(!empty($v['lettering'])){
                         $post['products'][$k]['lettering']=$v['lettering']."。".$arrLin[$v['type']][$v['bn']]['lettering'];
                         $arrLin[$v['type']][$v['bn']]['lettering']=$post['products'][$k]['lettering'];
+                        
+                        $post['products'][$k]['lettering_type']=$v['lettering_type']."。".$arrLin[$v['type']][$v['bn']]['lettering_type'];
+                        $arrLin[$v['type']][$v['bn']]['lettering_type']=$post['products'][$k]['lettering_type'];
                     }else{
                         $post['products'][$k]['lettering']=$arrLin[$v['type']][$v['bn']]['lettering'];
+                        $post['products'][$k]['lettering_type']=$arrLin[$v['type']][$v['bn']]['lettering_type'];
                     }
                     $post['products'][$k]['num']=$post['products'][$k]['num']+$arrLin[$v['type']][$v['bn']]['num'];
                     unset($post['products'][$arrLin[$v['type']][$v['bn']]['key']]);
                 }else{
                     $post['products'][$k]['num']=$v['num'];
                     $arrLin[$v['type']][$v['bn']]['lettering']=$v['lettering'];
+                    $arrLin[$v['type']][$v['bn']]['lettering_type']=$v['lettering_type'];
                 }
                 
                 $arrLin[$v['type']][$v['bn']]['num']=$post['products'][$k]['num'];
@@ -467,6 +477,7 @@ class erpapi_oms_order
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_name']=$product['pkg_name'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['name']=$product['name'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['message1']=$product['lettering'];
+                $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['lettering_type']=$product['lettering_type'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_id']=$product['pkg_id'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_bn']=$product['pkg_bn'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_price']=$product['pkg_price'];
@@ -493,6 +504,7 @@ class erpapi_oms_order
                     $post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
                     $post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
                     $post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
+                    $post['num'][$isBn['0']['product_id']]['lettering_type']=$product['lettering_type'];
                     $post['price'][$isBn['0']['product_id']]=$mprice;
                     
                     $post['true_price'][$isBn['0']['product_id']]=$true_price;
@@ -512,7 +524,6 @@ class erpapi_oms_order
             }
             
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']='male';
             
             if (!$mObj->save($member)){ 
                 return $this->send_error('会员更新失败 请重试');
@@ -526,8 +537,7 @@ class erpapi_oms_order
             $member['contact']['name']=$post['account']['name'];
             $member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']='male';//$post['account']['gender'];
-                //echo "<pre>"; print_r($member);exit();
+            
             if (!$mObj->save($member)){
                 return $this->send_error('会员更新失败 请重试');
             }
@@ -654,7 +664,7 @@ class erpapi_oms_order
                         'sendnum' => 0,
                         'item_type' => $z_p_tpye,
                         'message1' => $i['message1'],
-                        'message2' => $i['message2'],
+                        'lettering_type' => $i['lettering_type'],
                         'message3' => $i['message3'],
                         'message4' => $i['message4'],
                     )
