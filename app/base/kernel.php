@@ -65,7 +65,7 @@ class kernel{
             }else{
                 $part = '/';
             }
-         
+
             if($part=='/api'){
                 cachemgr::init();
                if(isset($_POST['method']) && substr($_POST['method'],0,4) == 'wms.'){
@@ -92,6 +92,8 @@ class kernel{
             }elseif($part=='/app-doc'){
                 cachemgr::init();
                 return kernel::single('base_misc_doc')->display($pathinfo);
+            }elseif ($part=='/creditorderadd'){
+                return kernel::single('creditorderapi_service')->process($pathinfo);
             }
 
             if(isset(self::$url_app_map[$part])){
