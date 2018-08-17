@@ -33,6 +33,21 @@ $db['users']=array (
       'in_list' => true,
       'default_in_list' => true,
     ),
+
+	'sys_type' => 
+    array (
+      'type' => array(
+	  	  'local'=>'本系统',
+		  'custom'=>'客服系统',
+	  ),
+      'default' => '0',
+      'label' => app::get('desktop')->_('所属系统'),
+      'width' => 100,
+      'required' => true,
+      'editable' => true,
+      'in_list' => true,
+      'default_in_list' => true,
+    ),
     'name' => 
     array (
       'type' => 'varchar(30)',
