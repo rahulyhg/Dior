@@ -180,9 +180,9 @@ $db['order_items']=array (
       'type' => 'varchar(200)',
       'editable' => false,
     ),
-	'message2' => 
+	'lettering_type' =>
     array (
-      'type' => 'varchar(200)',
+      'type' => 'varchar(100)',
       'editable' => false,
     ),
 	'message3' => 
