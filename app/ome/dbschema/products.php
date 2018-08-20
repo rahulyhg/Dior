@@ -41,6 +41,18 @@ $db['products']=array (
       'in_list' => true,
       'default_in_list' => true,
     ),
+    'short_bn' =>
+    array (
+      'type' => 'varchar(30)',
+      'label' => '短号',
+      'width' => 150,
+      'searchtype' => 'has',
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+      'editable' => false,
+      'in_list' => true,
+      'default_in_list' => false,
+    ),
     'name' =>
     array (
       'type' => 'varchar(200)',

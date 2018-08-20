@@ -1,0 +1,14 @@
+<desktop>
+    <permissions>
+
+        <permission id="setting_apiconfig">同步日志管理</permission>
+    </permissions>
+    <workground name="系统集成" id="channel_center" order="1100">
+        <menugroup name="积分订单接口管理">
+            <menu controller='admin_apiconfig' action='index' permission='setting_apiconfig' display='true'>积分订单接口</menu>
+        </menugroup>
+        <menugroup name="API日志管理">
+            <menu controller='admin_api_log' action='index' permission='setting_api_log' display='true'>API日志</menu>
+        </menugroup>
+    </workground>
+</desktop>

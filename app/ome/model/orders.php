@@ -3939,6 +3939,7 @@ class ome_mdl_orders extends dbeav_model{
 								$orderObjRow['*:商品类型'] = '';
 								$orderObjRow['*:商品品牌'] = '';
 								$orderObjRow['*:刻字内容'] = mb_convert_encoding($itemv['message1'], 'GBK', 'UTF-8');
+                                $orderObjRow['*:刻字类型'] = mb_convert_encoding($itemv['lettering_type'], 'GBK', 'UTF-8');
 
                                 $data[$row_num] = implode(',', $orderObjRow );
                                 $row_num++;
@@ -3975,6 +3976,7 @@ class ome_mdl_orders extends dbeav_model{
                             $orderObjRow['*:商品类型'] = mb_convert_encoding($_typeName['type_name'], 'GBK', 'UTF-8');
                             $orderObjRow['*:商品品牌'] = mb_convert_encoding($_typeName['brand_name'], 'GBK', 'UTF-8');
 							$orderObjRow['*:刻字内容'] = mb_convert_encoding($itemv['message1'], 'GBK', 'UTF-8');
+                            $orderObjRow['*:刻字类型'] = mb_convert_encoding($itemv['lettering_type'], 'GBK', 'UTF-8');
                             
 
                             $data[$row_num] = implode(',', $orderObjRow );
@@ -4000,6 +4002,7 @@ class ome_mdl_orders extends dbeav_model{
                 '*:商品类型',
                 '*:商品品牌',
 				'*:刻字内容',
+                '*:刻字类型',
             );
 
             foreach ((array)$title as $key => $value) {
