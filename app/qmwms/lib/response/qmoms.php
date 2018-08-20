@@ -200,25 +200,12 @@ class qmwms_response_qmoms{
      * WMS—>OMS接口请求数据处理
      */
     public function handle_wms_request($method,$content){
-
-        switch($method){
-            case 'deliveryOrderConfirm'://发货单确认
-                $this->do_delivery($content);
-                break;
-            case 'returnOrderConfirm'://退货入库单确认
-                $this->do_finish($content);
-                break;
-            case 'orderProcessReport'://订单流水通知
-
-                break;
-            case 'itemLackReport'://发货单缺货通知
-
-                break;
-            default:
-                break;
-        }
+        $queue = app::get('qmwms')->model('queue');
+        $param['api_method'] = $method;
+        $param['api_params'] = $content;
+        $param['createtime'] = time();
+        $queue->save($param);
     }
-
     /**
      * @param $content
      * @对发货单确认信息的处理
@@ -236,7 +223,8 @@ class qmwms_response_qmoms{
         $orderId = $orderData[0]['order_id'];
 
         $deOrder = $this->deliveryOrder->getList('delivery_id',array('order_id'=>$orderId));
-        $deliveryId = $deOrder[0]['delivery_id'];
+        $num = count($deOrder);
+        $deliveryId = $deOrder[$num-1]['delivery_id'];
         $deliveryData = $this->objectDelivery->getList('*',array('delivery_id'=>$deliveryId),0,-1);
 
         if($orderData[0]['ship_status'] == 1){
@@ -482,25 +470,25 @@ class qmwms_response_qmoms{
                 'num' => $item['actualQty'],
             );
         }
-
+        $returnItems = array();
         foreach($items as $val){
-            $_POST['bn_'.$val['product_bn']] = $val['product_bn'];
+            $returnItems['bn_'.$val['product_bn']] = $val['product_bn'];
         }
         foreach($product_process['items'] as $key=>$val){
             foreach($val['itemIds'] as $itemId){
-                $_POST['instock_branch'][$key.$itemId] = 1;
-                $_POST['process_id'][$itemId] = $key;
-                $_POST['memo'][$key.$itemId] = '自动质检';
-                $_POST['store_type'][$key.$itemId] = 0;
-                $_POST['check_num'][$key.$itemId] = 1;
+                $returnItems['instock_branch'][$key.$itemId] = 1;
+                $returnItems['process_id'][$itemId] = $key;
+                $returnItems['memo'][$key.$itemId] = '自动质检';
+                $returnItems['store_type'][$key.$itemId] = 0;
+                $returnItems['check_num'][$key.$itemId] = 1;
             }
         }
 
-        $_POST['check_type'] = 'bn';
-        $_POST['reship_id'] = $reshipId;
-        $_POST['por_id'] = $product_process['por_id'];
+        $returnItems['check_type'] = 'bn';
+        $returnItems['reship_id'] = $reshipId;
+        $returnItems['por_id'] = $product_process['por_id'];
 
-        $sign = kernel::single('ome_return')->toQC($reshipId,$_POST,$msg);
+        $sign = kernel::single('ome_return')->toQC($reshipId,$returnItems,$msg);
         if($sign){
             //更新到AX
             kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
@@ -576,6 +564,9 @@ class qmwms_response_qmoms{
 
             return true;
         }else{
+            if(kernel::database()->_in_transaction) {
+                kernel::database()->rollBack();
+            }
             //error_log(var_export($reshipBn,true),3,__FILE__.'error.txt');//记录无法更新的退货单
             error_log(date('Y-m-d H:i:s').$reshipBn.'质检失败:'."\r\n".var_export($msg,true)."\r\n", 3, __FILE__.'fail.txt');
             throw new Exception('TO_QC_FAILED');

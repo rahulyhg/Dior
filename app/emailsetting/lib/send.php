@@ -17,8 +17,8 @@ class emailsetting_send{
             $senders = explode(';',$senders);
         }
        // echo "<pre>";print_r($senders);exit;
-        kernel::single('emailsetting_email_sendemail')->sendEmail($this->smtpSetting,$senders,$subject,$body,$files);
-        
+        $return = kernel::single('emailsetting_email_sendemail')->sendEmail($this->smtpSetting,$senders,$subject,$body,$files);
+        return $return;
     }
 
 }

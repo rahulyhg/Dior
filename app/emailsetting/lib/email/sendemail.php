@@ -47,8 +47,9 @@ class emailsetting_email_sendemail{
                     }
                 }
             }
+			return true;
 		} catch (phpmailerException $e) {
-            //echo "邮件发送失败：".$e->errorMessage();
+            return false;
 		}
 	}
 }

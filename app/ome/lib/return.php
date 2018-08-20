@@ -97,7 +97,7 @@ class ome_return
     function toQC($reship_id,$data,&$msg)
     {
         set_time_limit(0);
-		kernel::database()->exec('begin');
+		kernel::database()->beginTransaction();
         $_POST = $data;
 
         $oProduct_pro = &$this->app->model('return_process');
