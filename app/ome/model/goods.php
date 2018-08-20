@@ -665,6 +665,7 @@ class ome_mdl_goods extends dbeav_model{
         $pk = $data['product_id'];
         $visibility = "'".$data['visibility']."',";
         $bn = "'".$data['bn']."',";
+        $short_bn = "'".$data['short_bn']."',";
         $spec_desc = "'".$data['spec_desc']."',";
         $picurl = "'".$data['picurl']."',";
         $barcode = "'".$data['barcode']."',";
@@ -682,6 +683,7 @@ class ome_mdl_goods extends dbeav_model{
             $sql = 'insert into sdb_ome_products(
                 `visibility`,
                 `bn`,
+                `short_bn`,
                 `spec_desc`,
                 `picurl`,
                 `barcode`,
@@ -698,6 +700,7 @@ class ome_mdl_goods extends dbeav_model{
         )values('.
                 $visibility.
                 $bn.
+                $short_bn.
                 $spec_desc.
                 $picurl.
                 $barcode.
@@ -715,6 +718,7 @@ class ome_mdl_goods extends dbeav_model{
             $sql = "update sdb_ome_products set
                 `visibility`=$visibility
                 `bn`=$bn
+                `short_bn`=$short_bn
                 `spec_desc`=$spec_desc
                 `picurl`=$picurl
                 `barcode`=$barcode
