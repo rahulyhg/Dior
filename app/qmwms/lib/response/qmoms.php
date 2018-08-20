@@ -260,6 +260,7 @@ class qmwms_response_qmoms{
             'operate_time'=>time(),
         );
         $items = array();
+        $item_info = array();
         if(empty($packages['items']['item'][0])){
             $packages['items']['item'] = array($packages['items']['item']);
         }
@@ -267,6 +268,10 @@ class qmwms_response_qmoms{
             $items[] = array(
                 'product_bn'=>$item['itemCode'],
                 'nums'=>$item['quantity'],
+            );
+            $item_info[] = array(
+                'sku' => $item['itemCode'],
+                'num' => $item['quantity'],
             );
         }
         error_log(date('Y-m-d H:i:s').'订单'.$orderBn.'返回:'."\r\n".var_export($items,true)."\r\n", 3, __FILE__.'requestitems.txt');
@@ -305,8 +310,25 @@ class qmwms_response_qmoms{
             }else{
                 //状态更新到magento
                 kernel::single('omemagento_service_order')->update_status($orderBn,'shipped',$logiNo);
-                 kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
+                kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
             }
+            ### 订单状态回传kafka august.yao 已发货 start ###
+            $kafkaQueue  = app::get('ome')->model('kafka_queue');
+            $queueData = array(
+                'queue_title' => '订单已发货状态推送',
+                'worker'      => 'ome_kafka_api.sendOrderStatus',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'   => 'shipped',
+                    'order_bn' => $orderBn,
+                    'logi_bn'  => $logiNo,
+                    'shop_id'  => $orderData[0]['shop_id'],
+                    'item_info'=> $item_info,
+                    'bill_info'=> array(),
+                ),
+            );
+            $kafkaQueue->save($queueData);
+            ### 订单状态回传kafka august.yao 已发货 end ###
             return  true;
         }else{
             //error_log(date('Y-m-d H:i:s').'订单'.$orderBn.'返回:'."\r\n".var_export($info,true)."\r\n", 3, __FILE__.'fail.txt');
@@ -431,7 +453,8 @@ class qmwms_response_qmoms{
             $product_process['por_id'] = $val['por_id'];
         }
 
-        $items = array();
+        $items     = array();
+        $item_info = array();   // 退货明细
         if($reshipConfirm['orderLines']['orderLine'][0]){
         }else{
             $reshipConfirm['orderLines']['orderLine']= array($reshipConfirm['orderLines']['orderLine']);
@@ -441,6 +464,10 @@ class qmwms_response_qmoms{
             $items[] = array(
                 'product_bn'=>$item['itemCode'],
                 'num'=>$item['actualQty'],
+            );
+            $item_info[] = array(
+                'sku' => $item['itemCode'],
+                'num' => $item['actualQty'],
             );
         }
         $returnItems = array();
@@ -498,6 +525,43 @@ class qmwms_response_qmoms{
             }
 
             kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');
+
+            ### 订单状态回传kafka august.yao 已退货&退款申请中 start ###
+            $kafkaQueue  = app::get('ome')->model('kafka_queue');
+            $queueData = array(
+                'queue_title' => '订单已退货状态推送',
+                'worker'      => 'ome_kafka_api.sendOrderStatus',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'   => 'reshipped',
+                    'order_bn' => $orderBn,
+                    'logi_bn'  => '',
+                    'shop_id'  => $orderData[0]['shop_id'],
+                    'item_info'=> $item_info,
+                    'bill_info'=> array(),
+                ),
+            );
+            $kafkaQueue->save($queueData);
+
+            // 判单是否有退款金额
+            if($reship['totalmoney'] > 0){
+                $queueData = array(
+                    'queue_title' => '订单退款申请中状态推送',
+                    'worker'      => 'ome_kafka_api.sendOrderStatus',
+                    'start_time'  => time(),
+                    'params'      => array(
+                        'status'   => 'refunding',
+                        'order_bn' => $orderBn,
+                        'logi_bn'  => '',
+                        'shop_id'  => $orderData[0]['shop_id'],
+                        'item_info'=> array(),
+                        'bill_info'=> array(),
+                    ),
+                );
+                $kafkaQueue->save($queueData);
+            }
+            ### 订单状态回传kafka august.yao 已退货&退款申请中 end ###
+
             return true;
         }else{
             if(kernel::database()->_in_transaction) {

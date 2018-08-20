@@ -1169,6 +1169,7 @@ class ome_mdl_reship extends dbeav_model{
         $totalmoney = (float)$reshipinfo['totalmoney']; # 实际需要退款的金额
 
       $memo = '';
+
       # 换货处理
       if($reshipinfo['return_type'] =='change'){
         $reship_items = $oReship_items->getList('*',array('reship_id'=>$reship_id));
@@ -1178,8 +1179,10 @@ class ome_mdl_reship extends dbeav_model{
 
         define('FRST_TRIGGER_OBJECT_TYPE','订单：售后申请换货生成新订单');
         define('FRST_TRIGGER_ACTION_TYPE','ome_mdl_return_product：saveinfo');
-        $change_order_sdf=$this->create_order($reshipinfo,$reship_items);
-        
+        $change_order_sdf=$this->create_order($reshipinfo,$reship_items);   // 创建新订单 august.yao 2018/08/03
+
+          $kafkaOrder = array();
+
         if ($change_order_sdf) {
           $memo .=' 生成了1张换货订单【'.$change_order_sdf['order_bn'].'】';
             kernel::single('console_reship')->change_freezeproduct($reship_id,'-');//生成订单后释放库存
@@ -1197,6 +1200,51 @@ class ome_mdl_reship extends dbeav_model{
           $change_total_amount = $change_order_sdf['total_amount'];
           # 换出的订单ID
           $neworderid = $change_order_sdf['order_id'];
+
+            $kafkaOrder = array(
+                'order_bn'      => $change_order_sdf['order_bn'],  // 订单编号
+                'shop_id'       => $change_order_sdf['shop_id'],   // 来源店铺
+                'createtime'    => $change_order_sdf['createtime'],// 下单时间
+                'paytime'       => '', // 支付时间
+                'pay_bn'        => $change_order_sdf['pay_bn'],    // 支付方式
+                'pmt_order'     => '0',  // 订单优惠总金额
+                'pay'           => $change_order_sdf['total_amount'],  // 订单支付金额
+                'trade_no'      => '',  // 支付交易流水号 支付网关的内部交易单号，默认为空
+                'cost_shipping' => $change_order_sdf['shipping']['cost_shipping'],  // 运费
+                'order_memo'    => '',  // 订单备注
+                'address_id'    => $change_order_sdf['consignee']['addr'],  // 收货地区
+                'order_refer_source' => 'pc', // 订单来源平台
+                'is_card'       => $orders['is_card'],  // 是否礼品卡
+                'is_letter'     => $orders['is_lettering'],  // 是否刻字
+                'is_w_card'     => $orders['is_w_card'],  // 是否是欢迎卡
+                'is_wechat'     => $orders['is_wechat'],  // 是否是微信商城
+                'welcomecard'   => $orders['welcomecard'],  // 欢迎卡信息
+                'wechat_openid' => $orders['wechat_openid'],  // 微信openid
+                'is_tax'        => $orders['is_tax'],  // 是否开票
+                'consignee'     => array(
+                    'addr'          => $change_order_sdf['consignee']['addr'],  // 收货地址
+                    'name'          => $change_order_sdf['consignee']['name'],  // 收货人姓名
+                    'zip'           => $change_order_sdf['consignee']['zip'],  // 邮编
+                    'mobile'        => $change_order_sdf['consignee']['mobile'],  // 收货人手机号
+                    'email'         => $change_order_sdf['consignee']['email'],  // 收货人邮箱
+                ),
+                'account'         => array(
+                    'name'          => $change_order_sdf['consignee']['name'],   // 购买人会员姓名
+                    'mobile'        => $change_order_sdf['consignee']['mobile'],   // 会员手机号
+                    'email'         => $change_order_sdf['consignee']['email'],   // 会员邮箱
+                ),
+            );
+
+            foreach ($change_order_sdf['order_objects'] as $kk=>$vv){
+                $kafkaOrder['products'][] = array(
+                    'bn'            => $vv['bn'],  // 商品sku
+                    'num'           => $vv['quantity'],  // 数量
+                    'name'          => $vv['name'],  // 商品名称
+                    'price'         => $vv['price'],  // 商品单价
+                    'sale_price'    => $vv['sale_price'],  // 商品销售金额
+                    'pmt_price'     => $vv['pmt_price'],  // sku总优惠金额
+                );
+            }
         }
 
         # 如果实际退款金额为零,无需退款与支付
@@ -1289,6 +1337,41 @@ class ome_mdl_reship extends dbeav_model{
           $reshipLib->payChangeOrder($order);
 		  //MCD reship中记录新订单order_id
 		  $Oreship->update(array('p_order_id'=>$neworderid),array('reship_id'=>$reship_id));
+
+            ###### 订单状态回传kafka august.yao 已支付 start ####
+            $kafkaQueue = app::get('ome')->model('kafka_queue');
+            $queueData = array(
+                'queue_title' => '订单已支付状态推送',
+                'worker'      => 'ome_kafka_api.sendOrderStatus',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'   => 'paid',
+                    'order_bn' => $change_order_sdf['order_bn'],
+                    'logi_bn'  => '',
+                    'shop_id'  => $shop_id,
+                    'item_info'=> array(),
+                    'bill_info'=> array(),
+                ),
+            );
+            $kafkaQueue->save($queueData);
+            ###### 订单状态回传kafka august.yao 已支付 end ####
+
+            ###### 订单状态回传kafka august.yao 创建订单 start ####
+            $kafkaOrder['paytime'] = time();
+            $kafkaQueue = app::get('ome')->model('kafka_queue');
+            $queueData = array(
+                'queue_title' => '订单创建推送',
+                'worker'      => 'ome_kafka_api.createOrder',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'      => 'create',
+                    'order_bn'    => $change_order_sdf['order_bn'],
+                    'shop_id'     => $shop_id,
+                    'createOrder' => $kafkaOrder,
+                ),
+            );
+            $kafkaQueue->save($queueData);
+            ###### 订单状态回传kafka august.yao 创建订单 end ####
         }
 
       }elseif($reshipinfo['return_type'] =='return'){
