@@ -40,7 +40,7 @@ $db['users']=array (
 	  	  'local'=>'本系统',
 		  'custom'=>'客服系统',
 	  ),
-      'default' => '0',
+      'default' => 'local',
       'label' => app::get('desktop')->_('所属系统'),
       'width' => 100,
       'required' => true,

@@ -5,14 +5,14 @@
  * Date: 2018/03/13
  * Time: 14:20
  */
-class sso_ctl_service{
+class sso_ctl_service extends base_controller{
 
     public function index(){
 		$params = $_GET;
 		if($params['userName']&&$params['timestamp']&&$params['sign']){
 			
 			if(date('Ymd',time())!=date('Ymd',$params['timestamp'])){
-				echo json_encode(array('status'=>'fail','msg'=>'请求以超时'));exit;
+				$this->errorPage('请求已超时');
 			}
 
 			 $rows = app::get('pam')->model('account')->getList('*',array(
@@ -22,7 +22,7 @@ class sso_ctl_service{
 				),0,1);
 
 			 if($rows){
-				 $sign = strtoupper(md5('test001&userName='.$params['userName'].'&timestamp='.$params['timestamp'].'&test001'));
+				 $sign = strtoupper(md5($rows[0]['login_password'].'&userName='.$params['userName'].'&timestamp='.$params['timestamp'].'&'.$rows[0]['login_password']));
 				 //echo "<pre>";print_r($sign);exit;
 				 if($sign==$params['sign']){
 
@@ -32,29 +32,34 @@ class sso_ctl_service{
 					$_SESSION['type'] = 'shopadmin';
                     $_SESSION['login_time'] = time();
 
-					$url =  kernel::base_url();
+					$url =  kernel::base_url(true);
 
 					header('Location:'.$url);
 				 }else{
-					 echo json_encode(array('status'=>'fail','msg'=>'验证失败'));exit;
+					 $this->errorPage('验证失败');
 				 }
 			 }else{
-				 echo json_encode(array('status'=>'fail','msg'=>'userName 不存在'));exit;
+				 $this->errorPage('userName 不存在');
 			 }
 
 		}else{
 			if(!$params['userName']){
-				echo json_encode(array('status'=>'fail','msg'=>'缺少必要参数：userName'));exit;
+				$this->errorPage('缺少必要参数：userName');
 			}
 
 			if(!$params['timestamp']){
-				echo json_encode(array('status'=>'fail','msg'=>'缺少必要参数：timestamp'));exit;
+				$this->errorPage('缺少必要参数：timestamp');
 			}
 
 			if(!$params['sign']){
-				echo json_encode(array('status'=>'fail','msg'=>'缺少必要参数：sign'));exit;
+				$this->errorPage('缺少必要参数：sign');
 			}
 		}
-		echo "<pre>";print_r($params);exit;
     }
+
+
+	function errorPage($msg){
+		$this->pagedata['msg'] = $msg;
+		$this->display('error.html');
+	}
 }
