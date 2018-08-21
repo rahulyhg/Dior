@@ -1,0 +1,17 @@
+<app>
+    <name>creditorderapi系统集成应用</name>
+    <description>creditorderapi系统集成应用</description>
+
+    <author>
+        <name>D1M开发团队</name>
+        <email>zhehai.zheng@d1m.cn</email>
+        <url>http://www.d1m.cn</url>
+    </author>
+
+    <version>1.0</version>
+    <license>d1m license</license>
+    <depends>
+        <app>desktop</app>
+        <app>ome</app>
+    </depends>
+</app>

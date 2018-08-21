@@ -72,6 +72,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 $res_data['res_msg'] = '单据创建失败';
             }
             $this->writeLog($res_data,$insert_id);
+
             if($res_data['status']=='success'){
                 $delivery = app::get('ome')->model('delivery')->dump($delivery_id);
                 $delivery = kernel::single('omeftp_service_reship')->format_delivery($delivery);
@@ -86,21 +87,21 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 if($return_type=="change"){
                     kernel::single('omemagento_service_change')->sendChangeOrder($change);
                 }else{
-                    //售后生成的新订单退货需传原始订单号,原始退的商品
-                    $arrOriginalOrder=$arrReship=array();
-                    if($delivery['order']['createway']=="after"){
-                        $arrOriginalOrder=$objReship->getOriginalOrder($delivery['order']['order_bn']);
-                        $order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
-                        $order_id=$arrOriginalOrder['order_id'];//新订单号
-                        //新订单号即为reship表的p_order_id,来查询退了哪些
-                        $arrReship=$objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
-                        $relate_reship_id=$arrReship[0]['reship_id'];
-                        $relate_change_items=unserialize($arrReship[0]['relate_change_items']);
-                        //查看当前退货单退的商品
-                        $arrReshipItems=array();
+
+                    // 售后生成的新订单退货需传原始订单号,原始退的商品
+                    $arrOriginalOrder = $arrReship = array();
+                    if($delivery['order']['createway'] == "after"){
+                        $arrOriginalOrder = $objReship->getOriginalOrder($delivery['order']['order_bn']);
+                        $order_bn = $arrOriginalOrder['relate_order_bn']; // 老订单号
+                        $order_id = $arrOriginalOrder['order_id']; // 新订单号
+                        // 新订单号即为reship表的p_order_id,来查询退了哪些
+                        $arrReship = $objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
+                        $relate_reship_id = $arrReship[0]['reship_id'];
+                        $relate_change_items = unserialize($arrReship[0]['relate_change_items']);
+                        // 查看当前退货单退的商品
                         $arrReshipItems = app::get('ome')->model('reship_items')->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
                         //当前退货单退的商品即使原始退货单所换的商品，关联原始退的商品数量
-                        $arrRelateReturn=array();
+                        $arrRelateReturn = array();
                         foreach($arrReshipItems as $k=>$reship){
                             foreach($relate_change_items['items'] as $relate){
                                 if($arrReshipItems[$k]['num']>0&&$relate['ex_sku']==$reship['bn']){
@@ -117,6 +118,25 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                         $order_bn=$delivery['order']['order_bn'];
                         $relate_reship_id=$reship_id;
                     }
+
+                    ###### 订单状态回传kafka august.yao 退货申请中 start####
+                    $orderData  = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$delivery['order']['order_bn']));
+                    $kafkaQueue = app::get('ome')->model('kafka_queue');
+                    $queueData = array(
+                        'queue_title' => '订单退货申请中状态推送',
+                        'worker'      => 'ome_kafka_api.sendOrderStatus',
+                        'start_time'  => time(),
+                        'params'      => array(
+                            'status'   => 'reshipping',
+                            'order_bn' => $order_bn,
+                            'logi_bn'  => '',
+                            'shop_id'  => $orderData[0]['shop_id'],
+                            'item_info'=> array(),
+                            'bill_info'=> array(),
+                        ),
+                    );
+                    $kafkaQueue->save($queueData);
+                    ###### 订单状态回传kafka august.yao 退货申请中 end ####
 
                     $reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
                     $refund_info = array();
@@ -149,14 +169,13 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
             }
         }
-
     }
 
     //单据取消
     public function orderCancel($delivery_id,$memo=null){
         $method = 'order.cancel';
-        $msg = '单据取消';
-        $res = $this->_orderCancel($delivery_id,$memo);
+        $msg   = '单据取消';
+        $res   = $this->_orderCancel($delivery_id,$memo);
         $body  = $res['body'];
         $dj_bn = $res['order_bn'];
         //记录ERP请求日志
@@ -174,6 +193,26 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             }
             $res_data['param1'] = $memo;
             $this->writeLog($res_data,$insert_id);
+
+            ###### 订单状态回传kafka august.yao 已取消 start####
+            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
+            $kafkaQueue  = app::get('ome')->model('kafka_queue');
+            $queueData = array(
+                'queue_title' => '订单已取消状态推送',
+                'worker'      => 'ome_kafka_api.sendOrderStatus',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'   => 'cancel',
+                    'order_bn' => $orderData[0]['order_bn'],
+                    'logi_bn'  => '',
+                    'shop_id'  => $orderData[0]['shop_id'],
+                    'item_info'=> array(),
+                    'bill_info'=> array(),
+                ),
+            );
+            $kafkaQueue->save($queueData);
+            ###### 订单状态回传kafka august.yao 已取消 end ####
+
             //发送报警邮件
             if($res_data['status'] != 'success'){
                 $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;

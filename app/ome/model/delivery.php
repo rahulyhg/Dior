@@ -873,7 +873,7 @@ class ome_mdl_delivery extends dbeav_model{
         return $dly_orderObj->insertParentOrderByItems($parent_id, $items);
     }
 
-    function insertParentItemDetailByItemsDetail($parent_id, $items){
+    function insertParentItemDetailByItemsDetail($parennt_id, $items){
         $didObj = &$this->app->model('delivery_items_detail');
         return $didObj->insertParentItemDetailByItemsDetail($parent_id, $items);
     }
@@ -1908,6 +1908,23 @@ class ome_mdl_delivery extends dbeav_model{
             if(method_exists($service,'deliveryOrderCreate')) $service->deliveryOrderCreate($order_id);
         }
 
+        ### 订单状态回传kafka august.yao 已审核(自动审核触发) start ###
+        $kafkaQueue  = app::get('ome')->model('kafka_queue');
+        $queueData = array(
+            'queue_title' => '订单已审核状态推送',
+            'worker'      => 'ome_kafka_api.sendOrderStatus',
+            'start_time'  => time(),
+            'params'      => array(
+                'status'   => 'synced',
+                'order_bn' => $order['order_bn'],
+                'logi_bn'  => '',
+                'shop_id'  => $order['shop_id'],
+                'item_info'=> array(),
+                'bill_info'=> array(),
+            ),
+        );
+        $kafkaQueue->save($queueData);
+        ### 订单状态回传kafka august.yao 已审核(自动审核触发) end ###
 
         return $data['delivery_id'];
     }

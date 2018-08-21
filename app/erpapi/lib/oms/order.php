@@ -84,9 +84,10 @@ class erpapi_oms_order
         $twoweek=strtotime(date("Y-m-d H:i:s",strtotime("-3 week")));
         $objOrder = kernel::single("ome_mdl_orders");
         $mdl_reship=kernel::single("ome_mdl_reship");
-        
+        // Dior卡夫卡队列表 august.yao
+        $kafkaQueue = app::get('ome')->model('kafka_queue');
         if(!empty($params)){
-            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment FROM sdb_ome_orders WHERE process_status='splited' AND order_bn='$params'";
+            $sql="SELECT shop_id,logi_no,order_id,pay_bn,total_amount,payment FROM sdb_ome_orders WHERE process_status='splited' AND order_bn='$params'";
             $arrDelivery=$objOrder->db->select($sql);
             $arrRoute['order_id']=$arrDelivery[0]['order_id'];
             if(!empty($arrRoute['order_id'])){//echo 1111111;
@@ -99,10 +100,26 @@ class erpapi_oms_order
                 $accept_time=time();
                 $objOrder->db->exec("UPDATE sdb_ome_orders SET route_status='1',routetime='$accept_time' WHERE order_bn='$params'");
                 kernel::single('omemagento_service_order')->update_status($params,'complete','',$accept_time);
+		### 订单状态回传kafka august.yao 已完成 starts ###
+                $queueData = array(
+                    'queue_title' => '订单已完成状态推送',
+                    'worker'      => 'ome_kafka_api.sendOrderStatus',
+                    'start_time'  => time(),
+                    'params'      => array(
+                        'status'   => 'completed',
+                        'order_bn' => $params,
+                        'logi_bn'  => '',
+                        'shop_id'  => $arrDelivery[0]['shop_id'],
+                        'item_info'=> array(),
+                        'bill_info'=> array(),
+                    ),
+                );
+                $kafkaQueue->save($queueData);
+                ### 订单状态回传kafka august.yao 已完成 end ###
             }
             return true;
         }else{
-            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
+            $sql="SELECT shop_id,logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
             //$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn FROM sdb_ome_orders WHERE order_bn='500000472'";
         }
         $arrDelivery=$objOrder->db->select($sql);
@@ -129,6 +146,7 @@ class erpapi_oms_order
                 $arrRoute[$value['logi_no']]['shop_type']=$value['shop_type'];
                 $arrRoute[$value['logi_no']]['total_amount']=$value['total_amount'];
                 $arrRoute[$value['logi_no']]['payment']=$value['payment'];
+		$arrRoute[$value['logi_no']]['shop_id']=$value['shop_id'];
                 //mcd
                 $arrRoute[$value['logi_no']]['is_mcd']=$value['is_mcd'];
                 $arrRoute[$value['logi_no']]['createway']=$value['createway'];
@@ -221,6 +239,22 @@ class erpapi_oms_order
                                 kernel::single('omemagento_service_order')->update_status($order_bn,'complete','',$accept_time);
                             }
                             
+			                ### 订单状态回传kafka august.yao 已完成 start ###
+                            $queueData = array(
+                                'queue_title' => '订单已完成状态推送',
+                                'worker'      => 'ome_kafka_api.sendOrderStatus',
+                                'start_time'  => time(),
+                                'params'      => array(
+                                    'status'   => 'completed',
+                                    'order_bn' => $arrRoute[$intDeliveryId]['order_bn'],
+                                    'logi_bn'  => '',
+                                    'shop_id'  => $arrRoute[$intDeliveryId]['shop_id'],
+                                    'item_info'=> array(),
+                                    'bill_info'=> array(),
+                                ),
+                            );
+                            $kafkaQueue->save($queueData);
+                            ### 订单状态回传kafka august.yao 已完成 end ###
                         }
                         $order_id=NULL;
                     }
@@ -266,6 +300,11 @@ class erpapi_oms_order
             $msg='SignError 40001';
             return false;
         }
+        
+        if(strpos($params['order'], ' ') !== false) {
+            $params['order'] = str_replace(' ', '+', $params['order']);
+        }
+        
         error_log('订单中间:'.base64_decode($params['order']),3,DATA_DIR.'/orderadd/'.date("Ymd").'zjrorder.txt');
         $this->params=base64_decode($params['order']);
         
@@ -417,14 +456,19 @@ class erpapi_oms_order
                     if(!empty($v['lettering'])){
                         $post['products'][$k]['lettering']=$v['lettering']."。".$arrLin[$v['type']][$v['bn']]['lettering'];
                         $arrLin[$v['type']][$v['bn']]['lettering']=$post['products'][$k]['lettering'];
+                        
+                        $post['products'][$k]['lettering_type']=$v['lettering_type']."。".$arrLin[$v['type']][$v['bn']]['lettering_type'];
+                        $arrLin[$v['type']][$v['bn']]['lettering_type']=$post['products'][$k]['lettering_type'];
                     }else{
                         $post['products'][$k]['lettering']=$arrLin[$v['type']][$v['bn']]['lettering'];
+                        $post['products'][$k]['lettering_type']=$arrLin[$v['type']][$v['bn']]['lettering_type'];
                     }
                     $post['products'][$k]['num']=$post['products'][$k]['num']+$arrLin[$v['type']][$v['bn']]['num'];
                     unset($post['products'][$arrLin[$v['type']][$v['bn']]['key']]);
                 }else{
                     $post['products'][$k]['num']=$v['num'];
                     $arrLin[$v['type']][$v['bn']]['lettering']=$v['lettering'];
+                    $arrLin[$v['type']][$v['bn']]['lettering_type']=$v['lettering_type'];
                 }
                 
                 $arrLin[$v['type']][$v['bn']]['num']=$post['products'][$k]['num'];
@@ -441,13 +485,15 @@ class erpapi_oms_order
             }
         }
         
-        //echo "<pre>";print_r($post['products']);exit();
         $h=0;
         foreach($post['products'] as $product){
             $bn=$product['bn'];
             $isBn=$pObj->getList('bn,product_id,price',array('bn'=>$bn));
             if(empty($isBn['0']['bn'])){
-                return $this->send_error('不存在的货号');
+                $isBn = $pObj->getList('bn,product_id,price',array('short_bn'=>$bn));
+                if(empty($isBn['0']['bn'])){
+                    return $this->send_error('不存在的货号');
+                }
             } 
             $mprice=$mathLib->number_plus(array($product['price'],0));
             $eprice=$mathLib->number_plus(array($isBn['0']['price'],0));
@@ -465,6 +511,7 @@ class erpapi_oms_order
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_name']=$product['pkg_name'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['name']=$product['name'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['message1']=$product['lettering'];
+                $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['lettering_type']=$product['lettering_type'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_id']=$product['pkg_id'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_bn']=$product['pkg_bn'];
                 $post['num'][$isBn['0']['product_id'].'_pkg'.$h]['pkg_price']=$product['pkg_price'];
@@ -491,6 +538,7 @@ class erpapi_oms_order
                     $post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
                     $post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
                     $post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
+                    $post['num'][$isBn['0']['product_id']]['lettering_type']=$product['lettering_type'];
                     $post['price'][$isBn['0']['product_id']]=$mprice;
                     
                     $post['true_price'][$isBn['0']['product_id']]=$true_price;
@@ -510,7 +558,6 @@ class erpapi_oms_order
             }
             
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']='male';
             
             if (!$mObj->save($member)){ 
                 return $this->send_error('会员更新失败 请重试');
@@ -524,8 +571,7 @@ class erpapi_oms_order
             $member['contact']['name']=$post['account']['name'];
             $member['contact']['phone']['mobile']=empty($post['account']['mobile'])?$post['consignee']['mobile']:$post['account']['mobile'];
             $member['contact']['area']=$post['address_id'];
-            $member['profile']['gender']=$post['account']['gender'];
-                //echo "<pre>"; print_r($member);exit();
+            
             if (!$mObj->save($member)){
                 return $this->send_error('会员更新失败 请重试');
             }
@@ -652,7 +698,7 @@ class erpapi_oms_order
                         'sendnum' => 0,
                         'item_type' => $z_p_tpye,
                         'message1' => $i['message1'],
-                        'message2' => $i['message2'],
+                        'lettering_type' => $i['lettering_type'],
                         'message3' => $i['message3'],
                         'message4' => $i['message4'],
                     )
@@ -844,6 +890,23 @@ class erpapi_oms_order
             
         }
         
+	#### 订单状态回传kafka august.yao 已支付 start ####
+        $kafkaQueue = app::get('ome')->model('kafka_queue'); // 引入kafka接口操作类
+        $queueData = array(
+            'queue_title' => '订单已支付状态推送',
+            'worker'      => 'ome_kafka_api.sendOrderStatus',
+            'start_time'  => time(),
+            'params'      => array(
+                'status'   => 'paid',
+                'order_bn' => $iorder['order_bn'],
+                'logi_bn'  => '',
+                'shop_id'  => $iorder['shop_id'],
+                'item_info'=> array(),
+                'bill_info'=> array(),
+            ),
+        );
+        $kafkaQueue->save($queueData);
+        #### 订单状态回传kafka august.yao 已支付 end ####
         if($post['is_tax'] == 'true'){
             $order_id = $oObj->getList('order_id',array('order_bn'=>$post['order_bn']));
             if($order_id){

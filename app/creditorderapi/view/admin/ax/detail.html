@@ -1,0 +1,124 @@
+<form id="brandForm" action="index.php?app=creditorderapi&ctl=admin_apiconfig&act=save"  method="post">
+    <input type="hidden" name="ax_id" value="<{$apiconfig.ax_id}>">
+    <div class="tableform">
+        <div class="division">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <th><{t}>店铺名称：<{/t}></th>
+                    <td>
+                        <{if $shops}>
+                        <{foreach from=$shops item=shop}>
+                        <input type="checkbox" value="<{$shop.shop_id}>" name="shop_id[]" <{if $shop.select=='1'}>checked="checked"<{/if}>/>
+                        <{$shop.name}><br/>
+                        <{/foreach}>
+                        <{else}>
+                        <span style="color:red;">请为该账号添加店铺！</span>
+                        <{/if}>
+                    </td>
+                </tr>
+                <!--<tr>
+                    <th><{t}>店铺code：<{/t}></th>
+                    <td>
+                        <{input name="brand_code" value=$apiconfig.brand_code id="brand_code" }>
+                    </td>
+                </tr>-->
+                <tr>
+                    <th><{t}>secret_key：<{/t}></th>
+                    <td><{input type="text" name='secret_key' value=$apiconfig.secret_key size="40"}>
+                        <span class="notice-inline">secret_key</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>crm_api_requesturl：<{/t}></th>
+                    <td><{input type="text" name='crm_api_requesturl' value=$apiconfig.crm_api_requesturl size="40"}>
+                        <span class="notice-inline">请求CRM的接口地址</span>
+                    </td>
+                </tr>
+                <!--AX信息相关--->
+                <tr>
+                    <th><{t}>AX_header：<{/t}></th>
+                    <td><{input type="text" name='ax_header' value=$apiconfigInfo.ax_header size="40"}>
+                        <span class="notice-inline">AX文件第一行数据</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H：<{/t}></th>
+                    <td><{input type="text" name='ax_h' value=$apiconfigInfo.ax_h size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_sales_country_code：<{/t}></th>
+                    <td><{input type="text" name='ax_h_sales_country_code' value=$apiconfigInfo.ax_h_sales_country_code size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_salas_division：<{/t}></th>
+                    <td><{input type="text" name='ax_h_salas_division' value=$apiconfigInfo.ax_h_salas_division size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_sales_organization：<{/t}></th>
+                    <td><{input type="text" name='ax_h_sales_organization' value=$apiconfigInfo.ax_h_sales_organization size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_plant：<{/t}></th>
+                    <td><{input type="text" name='ax_h_plant' value=$apiconfigInfo.ax_h_plant size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_customer_account：<{/t}></th>
+                    <td><{input type="text" name='ax_h_customer_account' value=$apiconfigInfo.ax_h_customer_account size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_invoice_ccount：<{/t}></th>
+                    <td><{input type="text" name='ax_h_invoice_ccount' value=$apiconfigInfo.ax_h_invoice_ccount size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_sales_order_status：<{/t}></th>
+                    <td><{input type="text" name='ax_h_sales_order_status' value=$apiconfigInfo.ax_h_sales_order_status size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_H_currency：<{/t}></th>
+                    <td><{input type="text" name='ax_h_currency' value=$apiconfigInfo.ax_h_currency size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_D_mode_of_delivery：<{/t}></th>
+                    <td><{input type="text" name='ax_d_mode_of_delivery' value=$apiconfigInfo.ax_d_mode_of_delivery size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX_file_brand：<{/t}></th>
+                    <td><{input type="text" name='ax_file_brand' value=$apiconfigInfo.ax_file_brand size="40"}></td>
+                </tr>
+                <tr>
+                    <th><{t}>AX文件前缀：<{/t}></th>
+                    <td><{input type="text" name='ax_file_prefix' value=$apiconfig.ax_file_prefix size="40"}></td>
+                </tr>
+            </table>
+        </div>
+        <div class="table-action">
+            <{button type="submit" id="btn-brand"  label="保存"}>
+        </div>
+
+</form>
+<script>
+
+    $('brandForm').store('target',{
+        onRequest:function(){
+            $('btn-brand').set('disabled', 'true');
+        },
+        onComplete:function(jsontext){
+            var json = Json.evaluate(jsontext);
+            if (typeof(json.error) != 'undefined'){
+                $('btn-brand').set('disabled', '');
+            }else{
+                $('btn-brand').set('disabled', 'true');
+                if(opener && opener.finderGroup && opener.finderGroup['<{$env.get.finder_id}>']){
+                    opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(400,opener.finderGroup['<{$env.get.finder_id}>']);
+                    window.close();
+                }
+            }
+        }
+    });
+
+    <{if $env.get._finder_name}>
+    $('brandForm').store('target',{
+        update:'messagebox'
+    });
+    <{/if}>
+</script>
