@@ -34,7 +34,7 @@ class ome_kafka_kafkaQueueHandle{
                 }else{
                     $kafkaQueue->db->exec("update sdb_ome_kafka_queue set status='failure',errmsg='{$response['msg']}' where queue_id='{$val['queue_id']}'");    // todo:如果有错误信息
                 }
-                sleep(2);   // 延迟2秒
+                // sleep(2);   // 延迟2秒
             }
         }
     }
