@@ -25,7 +25,7 @@ class ome_kafka_kafkaQueueHandle{
                 list($worker, $method) = explode('.', $val['worker']);
                 $errMsg   = null;
                 $obj_work = kernel::single($worker);
-                $params   = unserialize($val['params']);
+                $params   = $val['params'];
                 
                 $response = call_user_func_array(array($obj_work, $method), array($params['order_bn'], $params['status'], $params, $params['shop_id']));
                 
