@@ -1908,7 +1908,7 @@ class ome_mdl_delivery extends dbeav_model{
             if(method_exists($service,'deliveryOrderCreate')) $service->deliveryOrderCreate($order_id);
         }
 
-        ### 订单状态回传kafka august.yao 已审核(自动审核触发) start ###
+        ### 订单状态回传kafka august.yao 已审核 start ###
         $kafkaQueue  = app::get('ome')->model('kafka_queue');
         $queueData = array(
             'queue_title' => '订单已审核状态推送',
@@ -1924,7 +1924,7 @@ class ome_mdl_delivery extends dbeav_model{
             ),
         );
         $kafkaQueue->save($queueData);
-        ### 订单状态回传kafka august.yao 已审核(自动审核触发) end ###
+        ### 订单状态回传kafka august.yao 已审核 end ###
 
         return $data['delivery_id'];
     }

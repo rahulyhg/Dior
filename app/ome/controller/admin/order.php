@@ -2080,8 +2080,6 @@ class ome_ctl_admin_order extends desktop_controller{
                     }
                     #全链路 已财审
                     $orderLib    = kernel::single("ome_order");
-                    //$kafkaApiObj = kernel::single('ome_kafka_api');
-                    $kafkaQueue  = app::get('ome')->model('kafka_queue');
                     
                     foreach ($orders as $useOrderId) {
                         #已财审
@@ -2090,23 +2088,6 @@ class ome_ctl_admin_order extends desktop_controller{
                         $orderLib->sendMessageProduce(3, $useOrderId);
                         #待配货
                         $orderLib->sendMessageProduce(4, $useOrderId);
-                        ### 订单状态回传kafka august.yao 已审核 start ###
-                        $queueData = array(
-                            'queue_title' => '订单已审核状态推送',
-                            'worker'      => 'ome_kafka_api.sendOrderStatus',
-                            'start_time'  => time(),
-                            'params'      => array(
-                                'status'   => 'synced',
-                                'order_bn' => $orderBn_list[$useOrderId]['order_bn'],
-                                'logi_bn'  => '',
-                                'shop_id'  => $orderBn_list[$useOrderId]['shop_id'],
-                                'item_info'=> array(),
-                                'bill_info'=> array(),
-                            ),
-                        );
-                        $kafkaQueue->save($queueData);
-                        //$kafkaApiObj->sendOrderStatus($orderBn_list[$useOrderId]['order_bn'], 'synced', array(), $orderBn_list[$useOrderId]['shop_id']);
-                        ### 订单状态回传kafka august.yao 已审核 end ###
                     }
                     
                     break;
