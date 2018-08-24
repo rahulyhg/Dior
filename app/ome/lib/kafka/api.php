@@ -145,8 +145,9 @@ class ome_kafka_api extends ome_kafka_request{
         $this->api_method = '10002';    // 接口名称
 
         $update_data = array(
-            'order_bn' => $order_bn,
-            'status'   => $status,
+            'order_bn'   => $order_bn,
+            'status'     => $status,
+            'createtime' => $data['createtime'],
         );
 
 //        'paid'=>'已支付',

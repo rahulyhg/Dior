@@ -26,7 +26,8 @@ class ome_kafka_kafkaQueueHandle{
                 $errMsg   = null;
                 $obj_work = kernel::single($worker);
                 $params   = $val['params'];
-                
+                $params['createtime'] = $val['start_time'];
+
                 $response = call_user_func_array(array($obj_work, $method), array($params['order_bn'], $params['status'], $params, $params['shop_id']));
                 
                 if($response['success']){
