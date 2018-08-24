@@ -68,8 +68,6 @@ class ome_ctl_admin_batch_order extends desktop_controller{
             
         }
         unset($rows);
-        // 引入kafka接口操作类 august.yao
-        $kafkaQueue = app::get('ome')->model('kafka_queue');
         foreach ( $orders as $order ) {
             $order_id = $order['order_id'];
             $result['total'] ++;
@@ -84,22 +82,6 @@ class ome_ctl_admin_batch_order extends desktop_controller{
             
                 if ($deliveryresult) {
                     $result['succ'] ++;
-                    #### 订单状态回传kafka august.yao 已审核 start ####
-                    $queueData = array(
-                        'queue_title' => '订单已审核状态推送',
-                        'worker'      => 'ome_kafka_api.sendOrderStatus',
-                        'start_time'  => time(),
-                        'params'      => array(
-                            'status'   => 'synced',
-                            'order_bn' => $order['order_bn'],
-                            'logi_bn'  => '',
-                            'shop_id'  => $order['shop_id'],
-                            'item_info'=> array(),
-                            'bill_info'=> array(),
-                        ),
-                    );
-                    $kafkaQueue->save($queueData);
-                    #### 订单状态回传kafka august.yao 已审核 end ####
                 }else{
                     $result['fail']++;
                 }

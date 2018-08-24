@@ -51,7 +51,7 @@ class ome_kafka_request{
             'http_response_status' => $this->http_code,
             'http_url'             => $request['url'],
             'http_request_data'    => is_array($request['data']) ? $request['data'] : htmlspecialchars($request['data']),
-            'http_response_data'   => $result,
+            'http_response_data'   => $result ? $result : $response_data,
             'sys_error_data'       => 'NULL'
         );
 
@@ -115,6 +115,9 @@ class ome_kafka_request{
             "Accept: application/json","Cache-Control: no-cache",
             "Pragma: no-cache",
         );
+
+        // 因为请求数据request下的data->params已经是json需要处理
+        $request['data']['params'] = json_decode($request['data']['params'], true);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $request['url']);

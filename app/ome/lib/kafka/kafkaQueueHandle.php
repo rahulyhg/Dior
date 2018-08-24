@@ -25,8 +25,9 @@ class ome_kafka_kafkaQueueHandle{
                 list($worker, $method) = explode('.', $val['worker']);
                 $errMsg   = null;
                 $obj_work = kernel::single($worker);
-                $params   = unserialize($val['params']);
-                
+                $params   = $val['params'];
+                $params['createtime'] = $val['start_time'];
+
                 $response = call_user_func_array(array($obj_work, $method), array($params['order_bn'], $params['status'], $params, $params['shop_id']));
                 
                 if($response['success']){
@@ -34,7 +35,7 @@ class ome_kafka_kafkaQueueHandle{
                 }else{
                     $kafkaQueue->db->exec("update sdb_ome_kafka_queue set status='failure',errmsg='{$response['msg']}' where queue_id='{$val['queue_id']}'");    // todo:如果有错误信息
                 }
-                sleep(2);   // 延迟2秒
+                // sleep(2);   // 延迟2秒
             }
         }
     }
