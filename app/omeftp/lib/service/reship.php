@@ -99,15 +99,12 @@ class omeftp_service_reship{
     }
 	public function getContent($delivery,$file,$reship_id){
 		$ax_content_arr = array();
-		if(file_exists($file)){
-            $ax_content_arr [] = '';
-		}else{
-			$ax_header = app::get('omeftp')->getConf('AX_Header');
-			$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
-			$file_brand = $ax_setting['ax_file_brand'];
-			$str = 'ORDER_RET_DIOR';
-			$ax_content_arr[] = $ax_header.$str;
-		}
+
+		$ax_header = app::get('omeftp')->getConf('AX_Header');
+		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+		$file_brand = $ax_setting['ax_file_brand'];
+		$str = 'ORDER_RET_DIOR';
+		$ax_content_arr[] = $ax_header.$str;
 		
 		$ax_h = $this->get_ax_h($delivery,$reship_id);
 		$ax_content_arr [] = $ax_h;
