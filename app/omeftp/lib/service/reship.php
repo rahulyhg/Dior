@@ -40,7 +40,19 @@ class omeftp_service_reship{
 			chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
 		}
 		$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+        
+        while(file_exists($file_params['file'])){
+			sleep(1);
+			$file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
+			$file_name = implode('_',$file_arr);
 
+			if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+				mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+				chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+			}
+			$file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+		}
+        
 		$file_params['method'] = 'a';
 		$file_params['data'] = $this->getContent($delivery,$file_params['file'],$reship_id);
 		
@@ -87,15 +99,12 @@ class omeftp_service_reship{
     }
 	public function getContent($delivery,$file,$reship_id){
 		$ax_content_arr = array();
-		if(file_exists($file)){
 
-		}else{
-			$ax_header = app::get('omeftp')->getConf('AX_Header');
-			$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
-			$file_brand = $ax_setting['ax_file_brand'];
-			$str = 'ORDER_RET_DIOR';
-			$ax_content_arr[] = $ax_header.$str;
-		}
+		$ax_header = app::get('omeftp')->getConf('AX_Header');
+		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+		$file_brand = $ax_setting['ax_file_brand'];
+		$str = 'ORDER_RET_DIOR';
+		$ax_content_arr[] = $ax_header.$str;
 		
 		$ax_h = $this->get_ax_h($delivery,$reship_id);
 		$ax_content_arr [] = $ax_h;
