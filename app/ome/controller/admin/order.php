@@ -1336,6 +1336,9 @@ class ome_ctl_admin_order extends desktop_controller{
     function do_cancel($order_id) {
         $oOrder = &$this->app->model('orders');
         $orderdata = $oOrder->dump($order_id);
+        if($orderdata['process_status'] == 'splited') {
+            echo '已发送仓库的订单无法取消,请做发货拦截';exit;
+        }
         if ($_POST) {
             //danny_freeze_stock_log
             define('FRST_TRIGGER_OBJECT_TYPE','订单：订单人工取消');
