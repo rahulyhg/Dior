@@ -5,7 +5,7 @@
  * Date: 2018/07/13
  * Time: 18:19
  */
-class creditorderapi_api_givsite extends creditorderapi_api_site{
+class creditorderapi_api_diorsite extends creditorderapi_api_site{
 
     // 状态错误信息
     public $code_msg = array(
@@ -63,11 +63,11 @@ class creditorderapi_api_givsite extends creditorderapi_api_site{
 
         if(!$this->check_api_status($response_data)){
             // 请求失败发送邮件提醒
-            $shop_bn  = app::get('ome')->model('shop')->dump(array('shop_id'=>$shop_id), 'shop_bn');
+            /*$shop_bn  = app::get('ome')->model('shop')->dump(array('shop_id'=>$shop_id), 'shop_bn');
             $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
             $subject  = '【' . strtoupper($shop_bn['shop_bn']) . '-PROD】订单#' . $order_bn . '签收状态回传前端失败';
             $bodys    = '订单号为[' . $order_bn . ']的订单更新状态失败,请求原始数据为<br/>' . serialize($update_data) . '<br/>,错误信息为:[' . $this->code_msg[$response_data['StatusCode']] . ']';
-            kernel::single('emailsetting_send')->send($acceptor, $subject, $bodys);
+            kernel::single('emailsetting_send')->send($acceptor, $subject, $bodys);*/
             return false;
         }
         return true;
@@ -112,7 +112,7 @@ class creditorderapi_api_givsite extends creditorderapi_api_site{
         $shop_id   = $order_data[0]['shop_id'];
 
         // 已发货和已退货状态读取明细列表
-        if($status == 'shipped'){
+        if(($status == 'shipped')||($status=='complete')){
             $item_info = app::get('ome')->model('delivery_items')->db->select("SELECT i.bn AS sku,i.number AS num
                                                                             FROM sdb_ome_delivery_items i
                                                                             LEFT JOIN sdb_ome_delivery d ON d.delivery_id = i.delivery_id
@@ -166,17 +166,25 @@ class creditorderapi_api_givsite extends creditorderapi_api_site{
             'ReferenceNumber' => $logi_bn,
         );
 
-        $data          = array('params'=>json_encode($update_data));
-        $request_data  = $this->build_request($data, $shop_id, 'GET');
-        $response_data = $this->rpc($request_data, 'xml');
+        $data = array('params'=>json_encode($update_data));
 
+        if($status=='completed'){
+            $urlType = 'crm_api_receiveurl';
+        }elseif($status=='shipped'){
+            $urlType = 'crm_api_shipurl';
+        }
+        //$request_data  = $this->build_request($data, $shop_id, 'GET');
+        $request_data  = $this->build_request2($data, $shop_id,$urlType, 'GET');
+        $response_data = $this->rpc($request_data, 'xml');
+        //echo '<pre>d';print_r($response_data);exit;
         if(!$this->check_api_status($response_data)){
             // 请求失败发送邮件提醒
-            $shop_bn  = app::get('ome')->model('shop')->getList('shop_bn',array('shop_id'=>$shop_id));
+            /*$shop_bn  = app::get('ome')->model('shop')->getList('shop_bn',array('shop_id'=>$shop_id));
             $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
             $subject  = '【' . strtoupper($shop_bn[0]['shop_bn']) . '-PROD】订单#' . $order_bn . '发货状态回传前端失败';
             $bodys    = '订单号为[' . $order_bn . ']的订单新增失败,请求原始数据为<br/>' . serialize($update_data) . '<br/>,错误信息为:[' . $this->code_msg[$response_data['StatusCode']] . ']';
-            //kernel::single('emailsetting_send')->send($acceptor, $subject, $bodys);
+            //kernel::single('emailsetting_send')->send($acceptor, $subject, $bodys);*/
+            
             return false;
         }
         return true;
@@ -278,7 +286,7 @@ class creditorderapi_api_givsite extends creditorderapi_api_site{
             return false;
         }
 
-        // 查看giv店铺是否配置同步接口
+        // 查看dior店铺是否配置同步接口
         $shop_res = app::get('ome')->model('shop')->dump(array('shop_id'=>$shop_id),'shop_bn,stock_url');
 
         if(!$shop_res){
@@ -347,7 +355,7 @@ class creditorderapi_api_givsite extends creditorderapi_api_site{
 
         $this->api_method = 'creditorderapi.site.sync.goods.price';
 
-        // 查看giv店铺是否配置同步接口
+        // 查看dior店铺是否配置同步接口
         $shop_res = app::get('ome')->model('shop')->dump(array('shop_id'=>$shop_id),'shop_bn,price_url');
 
         if(!$shop_res){

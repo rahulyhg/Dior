@@ -25,13 +25,53 @@ $db['apiconfig']=array (
             'default_in_list' => true,
             'label' => '接口参数secret_key',
         ),
-	'crm_api_requesturl'=>
+    'warehouseCode'=>
+    array(
+        'type' => 'varchar(30)',
+        //'required' => true,
+        'in_list' => true,
+        'default_in_list' => true,
+        'label' => '仓库编码(奇门)',
+    ),
+    'ownerCode'=>
+    array(
+        'type' => 'varchar(30)',
+        //'required' => true,
+        'in_list' => true,
+        'default_in_list' => true,
+        'label' => '货主编码(奇门)',
+    ),
+    'shopNick'=>
+    array(
+        'type' => 'varchar(50)',
+        //'required' => true,
+        'in_list' => true,
+        'default_in_list' => true,
+        'label' => '店铺名称(奇门)',
+    ),
+    'sourcePlatformName'=>
+    array(
+        'type' => 'varchar(50)',
+        //'required' => true,
+        'in_list' => true,
+        'default_in_list' => true,
+        'label' => '订单来源平台名称(奇门)',
+    ),
+	'crm_api_shipurl'=>
         array(
             'type' => 'varchar(255)',
             'required' => true,
             'in_list' => true,
             'default_in_list' => true,
-            'label' => 'CRM接口请求地址',
+            'label' => 'CRM发货请求地址',
+        ),
+	'crm_api_receiveurl'=>
+        array(
+            'type' => 'varchar(255)',
+            'required' => true,
+            'in_list' => true,
+            'default_in_list' => true,
+            'label' => 'CRM签收请求地址',
         ),
     'ax_file_prefix' =>
         array (

@@ -303,9 +303,14 @@ class qmwms_response_qmoms{
                     kernel::single('einvoice_request_invoice')->invoice_request($arrReship[0]['order_id'],'getApplyInvoiceData');
                 }
             }else{
-                //状态更新到magento
-                kernel::single('omemagento_service_order')->update_status($orderBn,'shipped',$logiNo);
-                 kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
+
+                 if($orderData['0']['is_creditOrder']=='1'){//积分订单传给CRM
+                     kernel::single('creditorderapi_api_diorsite')->update_order_status($orderData[0]['order_id'],'shipped');
+                 }else{//普通订单状态更新到magento
+                     kernel::single('omemagento_service_order')->update_status($orderBn,'shipped',$logiNo);
+                     kernel::single('einvoice_request_invoice')->invoice_request($orderData[0]['order_id'],'getApplyInvoiceData');
+                 }
+
             }
             return  true;
         }else{

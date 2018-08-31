@@ -64,19 +64,19 @@ class creditorderapi_ctl_admin_apiconfig extends desktop_controller{
             }
         }
         $ax_info = array(
-           'ax_header' =>$_POST['ax_header'],
-           'ax_h' =>$_POST['ax_h'],//2
-           'ax_h_sales_country_code' =>$_POST['ax_h_sales_country_code'],
-           'ax_h_salas_division' =>$_POST['ax_h_salas_division'],//4
-           'ax_h_sales_organization' =>$_POST['ax_h_sales_organization'],
-           'ax_h_plant'=>$_POST['ax_h_plant'],//6
-           'ax_h_customer_account'=>$_POST['ax_h_customer_account'],
-           'ax_h_invoice_ccount'=>$_POST['ax_h_invoice_ccount'],//8
-           'ax_h_sales_order_status'=>$_POST['ax_h_sales_order_status'],
-           'ax_h_currency'=>$_POST['ax_h_currency'],//10
-           'ax_d_mode_of_delivery'=>$_POST['ax_d_mode_of_delivery'],
-           'ax_file_brand'=>$_POST['ax_file_brand'],
-            );
+            'ax_header' =>$_POST['ax_header'],
+            'ax_h' =>$_POST['ax_h'],//2
+            'ax_h_sales_country_code' =>$_POST['ax_h_sales_country_code'],
+            'ax_h_salas_division' =>$_POST['ax_h_salas_division'],//4
+            'ax_h_sales_organization' =>$_POST['ax_h_sales_organization'],
+            'ax_h_plant'=>$_POST['ax_h_plant'],//6
+            'ax_h_customer_account'=>$_POST['ax_h_customer_account'],
+            'ax_h_invoice_ccount'=>$_POST['ax_h_invoice_ccount'],//8
+            'ax_h_sales_order_status'=>$_POST['ax_h_sales_order_status'],
+            'ax_h_currency'=>$_POST['ax_h_currency'],//10
+            'ax_d_mode_of_delivery'=>$_POST['ax_d_mode_of_delivery'],
+            'ax_file_brand'=>$_POST['ax_file_brand'],
+        );
 
         $ax_setting_info = json_encode($ax_info);
         $arrAxSet = array(
@@ -88,7 +88,12 @@ class creditorderapi_ctl_admin_apiconfig extends desktop_controller{
             'ax_file_prefix'=>$_POST['ax_file_prefix'],
             'ax_setting_info'=>$ax_setting_info,
             'secret_key' => $_POST['secret_key'],
-            'crm_api_requesturl' => $_POST['crm_api_requesturl'],
+            'crm_api_shipurl' => $_POST['crm_api_shipurl'],
+            'crm_api_receiveurl' => $_POST['crm_api_receiveurl'],
+            'warehouseCode'=>$_POST['warehouseCode'],
+            'ownerCode'=>$_POST['ownerCode'],
+            'shopNick'=>$_POST['shopNick'],
+            'sourcePlatformName'=>$_POST['sourcePlatformName'],
         );
 
         $this->end($apiconfig->save($arrAxSet),app::get('base')->_('信息保存成功'));

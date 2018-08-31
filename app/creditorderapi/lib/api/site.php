@@ -396,7 +396,14 @@ class creditorderapi_api_site extends creditorderapi_api{
             'data'   => $this->build_request_data($params),
         );
     }
-
+    protected function build_request2($params, $shop_id,$urlType, $method = 'POST'){
+        $params = $this->get_request_params($params,$shop_id);
+        return array(
+            'method' => $method,
+            'url'    => $this->build_request_url($shop_id,$urlType),
+            'data'   => $this->build_request_data($params),
+        );
+    }
     /**
      * 处理接口公共请求参数
      * @param $params
@@ -467,13 +474,13 @@ class creditorderapi_api_site extends creditorderapi_api{
      * @param $shop_id
      * @return mixed
      */
-    private function build_request_url($shop_id){
+    private function build_request_url($shop_id,$urlType){
         $api_name = explode('.', $this->api_method);
         //$url_name = end($api_name) . '_url';    // 获取数组最后一个元素的值
         //$url = app::get('ome')->model('shop')->getList($url_name,array('shop_id'=>$shop_id));
-        $sql="SELECT * FROM sdb_creditorderapi_apicinfig WHERE shop_id LIKE '%".$shop_id."%'";
+        $sql="SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
         $url = app::get('creditorderapi')->model('apiconfig')->db->select($sql);
-        return $url[0]['crm_api_requesturl'];
+        return $url[0][$urlType];
         //return $url[0][$url_name];
     }
 

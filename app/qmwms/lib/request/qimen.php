@@ -21,6 +21,7 @@ class qmwms_request_qimen{
         $paymentObj = app::get('ome')->model('payments');
         $memberObj = app::get('ome')->model('members');
         $shopObj = app::get('ome')->model('shop');
+        $apiConfigObj = app::get('creditorderapi')->model('apiconfig'); 
 
         $delivery_id = $deliveryOrder->dump(array('order_id'=>$order_id),'delivery_id');
         if(empty($delivery_id)){
@@ -31,10 +32,18 @@ class qmwms_request_qimen{
 
         $paymentData = $paymentObj->getList('payment_bn,trade_no',array('order_id'=>$order_id),0,1);
         $membersData = $memberObj->getList('name,uname',array('member_id'=>$ordersData[0]['member_id']),0,1);
-
         $shop_id = $ordersData[0]['shop_id'];
-        $shopData = $shopObj->getList('*',array('shop_id'=>$shop_id));
-        $shopNick = $shopData[0]['name'];
+
+
+        //接口配置信息
+        $apiSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
+        $apiConfig = $apiConfigObj->db->select($apiSql);
+        if(empty($apiConfig)){
+            return false;
+        }
+        //$shopNick = $shopData[0]['name'];
+        $shopNick = $apiConfig[0]['shopNick'];
+
 
         $orderItemsData  = $orderItems->getList('*',array('order_id'=>$order_id),0,-1);
         $Engraving = '';
@@ -71,18 +80,20 @@ class qmwms_request_qimen{
         $body['deliveryOrder']['preDeliveryOrderCode'] = $ordersData[0]['order_bn'];//原出库单号(ERP分配)
         $body['deliveryOrder']['preDeliveryOrderId']   = $ordersData[0]['order_bn'];//原出库单号(WMS分配)
         $body['deliveryOrder']['orderType']            = 'JYCK';//必须 出库单类型：JYCK 一般交易出库单;
-        $body['deliveryOrder']['warehouseCode']        = 'LVMH_DMALL';//必须 仓库编码
+        $body['deliveryOrder']['warehouseCode']        = $apiConfig[0]['warehouseCode'];//必须 仓库编码
         $body['deliveryOrder']['orderFlag']            = strtoupper($ordersData[0]['pay_bn']);//订单标记
         if($ordersData[0]['is_cod'] == 'true')$body['deliveryOrder']['orderFlag'] = 'COD';//订单标记
         $body['deliveryOrder']['sourcePlatformCode'] = 'OTHER';//订单来源平台
-        $body['deliveryOrder']['sourcePlatformName'] = 'DIOR官方商城';//订单来源平台名称
+        //$body['deliveryOrder']['sourcePlatformName'] = 'DIOR官方商城';//订单来源平台名称
+        $body['deliveryOrder']['sourcePlatformName'] = $apiConfig[0]['sourcePlatformName'];//订单来源平台名称
         $body['deliveryOrder']['createTime']     = date('Y-m-d H:i:s', $deliveryData[0]['create_time']);//必须 发货单创建时间
         $body['deliveryOrder']['placeOrderTime'] = date('Y-m-d H:i:s',$ordersData[0]['createtime']);//必须 下单时间
         $body['deliveryOrder']['payNo']          = isset($paymentData[0]['trade_no'])?$paymentData[0]['trade_no']:$paymentData[0]['payment_bn'];//支付平台交易号
         $body['deliveryOrder']['payTime']        = !empty($ordersData[0]['paytime'])?date('Y-m-d H:i:s',$ordersData[0]['paytime']):'';//订单支付时间
         $body['deliveryOrder']['operatorName']   = $deliveryData[0]['op_name'];//操作员(审核员)名称
         $body['deliveryOrder']['operateTime']    = date('Y-m-d H:i:s');//必须 操作(审核)时间(YYYY-MM-DD HH:MM:SS)
-        $body['deliveryOrder']['shopNick']       = 'DIOR官方商城';//必须 店铺名称
+        //$body['deliveryOrder']['shopNick']       = 'DIOR官方商城';//必须 店铺名称
+        $body['deliveryOrder']['shopNick']       = $shopNick;//必须 店铺名称
         //$body['deliveryOrder']['buyerNick']    = $membersData[0]['name'];//买家昵称  (取值情况不确定)
         $body['deliveryOrder']['totalAmount']    = number_format($ordersData[0]['total_amount'],2,'.','');//订单总金额
         $body['deliveryOrder']['itemAmount']     = number_format($ordersData[0]['cost_item'],2,'.','');//商品总金额
@@ -198,7 +209,8 @@ class qmwms_request_qimen{
             $itemId = $itemId + 1;
             $orderLine = array(
                 'orderLineNo'     => $itemId,//单据行号
-                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                //'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'ownerCode'	      =>    $apiConfig[0]['ownerCode'],
                 'itemCode'        => $mx['bn'],  // 必须 商品编码
                 'itemId'          => $mx['bn'],//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
@@ -249,7 +261,8 @@ class qmwms_request_qimen{
             $itemId = $itemId + 1;
             $giftMessage = array(
                 'orderLineNo'     => $itemId,//单据行号
-                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                //'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'ownerCode'	      =>    $apiConfig[0]['ownerCode'],
                 'itemCode'        => $gift_card_bn,  // 必须 商品编码
                 'itemId'          => $gift_card_bn,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
@@ -268,7 +281,8 @@ class qmwms_request_qimen{
             $itemId = $itemId + 1;
             $giftCvd = array(
                 'orderLineNo'     => $itemId,//单据行号
-                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                //'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'ownerCode'	      =>    $apiConfig[0]['ownerCode'],
                 'itemCode'        => $cvd_sample_bn,  // 必须 商品编码
                 'itemId'          => $cvd_sample_bn,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
@@ -287,7 +301,8 @@ class qmwms_request_qimen{
             $itemId = $itemId + 1;
             $mcdPackage = array(
                 'orderLineNo'     => $itemId,//单据行号
-                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                //'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'ownerCode'	      =>    $apiConfig[0]['ownerCode'],
                 'itemCode'        => $mcd_package_sku,  // 必须 商品编码
                 'itemId'          => $mcd_package_sku,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
@@ -306,7 +321,8 @@ class qmwms_request_qimen{
             $itemId = $itemId + 1;
             $welcomeCard = array(
                 'orderLineNo'     => $itemId,//单据行号
-                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                //'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'ownerCode'	      =>    $apiConfig[0]['ownerCode'],
                 'itemCode'        => $gift_bn,  // 必须 商品编码
                 'itemId'          => $gift_bn,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
@@ -328,7 +344,8 @@ class qmwms_request_qimen{
             $ribbon_sku = $ordersData[0]['ribbon_sku'];
             $ribbon = array(
                 'orderLineNo'     => $itemId,//单据行号
-                'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                //'ownerCode'	      => 'LVMH_PCD_OMS',  //必须 货主编码
+                'ownerCode'	      =>    $apiConfig[0]['ownerCode'],
                 'itemCode'        => $ribbon_sku,  // 必须 商品编码
                 'itemId'          => $ribbon_sku,//仓储系统商品编码 必须(文档标注)
                 'inventoryType'   => 'ZP',//库存类型
@@ -343,7 +360,7 @@ class qmwms_request_qimen{
         }
 
         //返回xml格式数据
-        $return = array();
+        $return = array();//echo '<pre>rrr3';print_r($body);exit;
         $return['body'] =  kernel::single('qmwms_request_xml')->data_encode($body);
         //$return['body'] =  $this->array2xml($body,'request');
         $return['order_bn']   = $ordersData[0]['order_bn'];
