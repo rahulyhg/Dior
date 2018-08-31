@@ -489,8 +489,11 @@ class omeftp_service_delivery{
 			$ax_l_str[$key] = implode('|',$ax_l[$key]);
 		}
 		$key = $key+1;
-		$creditOrderApi    = app::get('omeftp')->getConf('AX_SETTING');
-		
+		//$creditOrderApi    = app::get('omeftp')->getConf('AX_SETTING');
+        $shop_id = $delivery['shop_id'];
+        $apiconfigSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
+        $creditOrderApi = app::get('creditorderapi')->model('apiconfig')->db->select($apiconfigSql);
+        $creditOrderApi = json_decode($creditOrderApi[0]['ax_setting_info'],true);
 		//礼品卡
 		$ax_gift_card_bn='';
 		$ax_card_flag=false;
