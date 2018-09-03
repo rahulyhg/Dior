@@ -50,8 +50,8 @@ class ome_ctl_admin_batch_order extends desktop_controller{
      * @access  public
      * @author sunjing@shopex.cn
      */
-    function ajaxDoAuto()
-    {
+    public function ajaxDoAuto(){
+
         $combineObj = kernel::single('omeauto_auto_combine');
         $oOrder = app::get('ome')->model('orders');
         $batch_orderObj = kernel::single('ome_batch_order');
@@ -91,7 +91,6 @@ class ome_ctl_admin_batch_order extends desktop_controller{
                     $msgFlag[] =$orders['auto_status'];
                 }
                 
-                
                 if (!$arrived) {
                     $msgFlag[] = omeauto_auto_const::_LOGIST_ARRIVED;
                 }
@@ -99,12 +98,11 @@ class ome_ctl_admin_batch_order extends desktop_controller{
                     $msgFlag[] = omeauto_auto_const::__STORE_CODE;
                 }
                 
-                $auto_status =implode('|',$msgFlag);
+                $auto_status = implode('|',$msgFlag);
 
                 $oOrder->db->exec("UPDATE sdb_ome_orders SET auto_status='".$auto_status."' WHERE order_id=".$order_id);
                 $result['fail']++;
             }
-            
         }
         echo json_encode($result,true);
     }

@@ -166,7 +166,7 @@ class ome_refund_apply
             $oLoger = &app::get('ome')->model('operation_log');
             $oShop = &app::get('ome')->model ( 'shop' );
 			$order_id=$data['order_id'];
-			$arrOrderBn=$objOrder->db->select("SELECT o.pay_bn,p.trade_no,o.order_bn,o.wx_order_bn FROM sdb_ome_orders o LEFT JOIN sdb_ome_payments p ON o.order_id=p.order_id WHERE o.order_id='$order_id'");			
+			$arrOrderBn=$objOrder->db->select("SELECT o.pay_bn,p.trade_no,o.order_bn,o.wx_order_bn,o.shop_id FROM sdb_ome_orders o LEFT JOIN sdb_ome_payments p ON o.order_id=p.order_id WHERE o.order_id='$order_id'");
             $bcmoney = $mathLib->getOperationNumber($data['bcmoney']);//补偿费用
             $countPrice=0;
             $countPrice=$data['refund_money'];
@@ -261,15 +261,34 @@ class ome_refund_apply
 				app::get('ome')->model('refund_apply')->sendRefundToM($z_refund_id,$z_order_bn,$totalPrice);
                 
 			    kernel::single('ome_order_func')->update_order_pay_status($data['order_id']);
-                 /*if ($data['return_id'])
-                 {
+
+                /*if ($data['return_id']){
                      //插入return_refund_apply
                      $oreturn_refund_apply = &app::get('ome')->model('return_refund_apply');
                      $return_ref_data = array('refund_apply_id'=>$data['apply_id'],'return_id'=>$data['return_id']);
                      $oreturn_refund_apply->save($return_ref_data);
-                 }*/
-                 $oLoger->write_log('refund_apply@ome',$data['apply_id'],'申请退款成功');
-                 return $msg;
+                }*/
+
+                ### 订单状态回传kafka august.yao 退款申请中 start ###
+                $kafkaQueue  = app::get('ome')->model('kafka_queue');
+                $queueData = array(
+                    'queue_title' => '订单退款申请中状态推送',
+                    'worker'      => 'ome_kafka_api.sendOrderStatus',
+                    'start_time'  => time(),
+                    'params'      => array(
+                        'status'   => 'refunding',
+                        'order_bn' => $z_order_bn,
+                        'logi_bn'  => '',
+                        'shop_id'  => $arrOrderBn['0']['shop_id'],
+                        'item_info'=> array(),
+                        'bill_info'=> array(),
+                    ),
+                );
+                $kafkaQueue->save($queueData);
+                ### 订单状态回传kafka august.yao 退款申请中 end ###
+                
+                $oLoger->write_log('refund_apply@ome',$data['apply_id'],'申请退款成功');
+                return $msg;
             }
         }
     }

@@ -814,32 +814,66 @@ class ome_mdl_refund_apply extends dbeav_model{
 	
 	function sendMagentoAndEinvoiceData($order_id,$apply_id,$type='1'){//type:1 succ 2 fail
 		
-		$objOrder = kernel::single("ome_mdl_orders");
-		$objReship=kernel::single("ome_mdl_reship");
-		$arrOrderBn=array();
-		$arrOrderBn=$objOrder->getList('order_bn,createway',array('order_id'=>$order_id));
-		$arrOrderBn=$arrOrderBn[0];
+		$objOrder  = kernel::single("ome_mdl_orders");
+		$objReship = kernel::single("ome_mdl_reship");
+
+		$arrOrderBn = $objOrder->getList('order_bn,createway,shop_id,ship_status',array('order_id'=>$order_id));
+		$arrOrderBn = $arrOrderBn[0];
 		
-		$createway=$arrOrderBn['createway'];
-		$order_bn=$arrOrderBn['order_bn'];
+		$createway = $arrOrderBn['createway'];
+		$order_bn  = $arrOrderBn['order_bn'];
 		
-		if($createway=="after"){
-			$arrOriginalOrder=$objReship->getOriginalOrder($order_bn);
-			$order_bn=$arrOriginalOrder['relate_order_bn'];//老订单号
-			$order_id=$arrOriginalOrder['relate_order_id'];//老订单号
+		if($createway == "after"){
+			$arrOriginalOrder = $objReship->getOriginalOrder($order_bn);
+			$order_bn = $arrOriginalOrder['relate_order_bn']; // 老订单号
+			$order_id = $arrOriginalOrder['relate_order_id']; // 老订单号
 		}
 		
-		$magento_type=NULL;
-		if($type=="1"){
-			$magento_type='refund_complete';
+		$magento_type = NULL;
+
+		if($type == "1"){
+			$magento_type = 'refund_complete';
 			kernel::single('einvoice_request_invoice')->invoice_request($order_id,'getApplyInvoiceData');
+
+            ###### 订单状态回传kafka august.yao 已退款/已取消 start####
+
+            // 判断订单是否发货----已支付未发货订单退款完成推送已取消状态
+            if($arrOrderBn['ship_status'] == '0'){
+                $status      = 'cancel';
+                $queue_title = '订单已取消状态推送';
+            }else{
+                $status      = 'refunded';
+                $queue_title = '订单已退款状态推送';
+            }
+
+            $kafkaQueue = app::get('ome')->model('kafka_queue');
+            $moneyRes   = app::get('ome')->model('refunds')->dump(array('order_id'=>$order_id),'refund_bn,money');
+            $queueData = array(
+                'queue_title' => $queue_title,
+                'worker'      => 'ome_kafka_api.sendOrderStatus',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'   => $status,
+                    'order_bn' => $order_bn,
+                    'logi_bn'  => '',
+                    'shop_id'  => $arrOrderBn['shop_id'],
+                    'item_info'=> array(),
+                    'bill_info'=> array(
+                        array(
+                            'bn'    => $moneyRes['bn'],
+                            'money' => $moneyRes['money'],
+                        ),
+                    ),
+                ),
+            );
+            $kafkaQueue->save($queueData);
+            ###### 订单状态回传kafka august.yao 已退款/已取消 end ####
+
 		}else{
-			$magento_type='refund_failed';
-			
+			$magento_type = 'refund_failed';
 		}
-		kernel::single('omemagento_service_order')->update_status($order_bn,$magento_type);
-		$this->sendRefundStatus($apply_id,$type);
-		
+		kernel::single('omemagento_service_order')->update_status($order_bn, $magento_type);
+		$this->sendRefundStatus($apply_id, $type);
 	}
 	
 	function sendRefundToM($refund_id,$order_id,$z_money,$oms_refund_rma_ids=''){
