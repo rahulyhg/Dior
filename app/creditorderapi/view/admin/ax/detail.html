@@ -23,15 +23,45 @@
                     </td>
                 </tr>-->
                 <tr>
+                    <th><{t}>仓库编码(奇门)：<{/t}></th>
+                    <td><{input type="text" name='warehouseCode' value=$apiconfig.warehouseCode size="40"}>
+                        <span class="notice-inline">warehouseCode</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>货主编码(奇门)：<{/t}></th>
+                    <td><{input type="text" name='ownerCode' value=$apiconfig.ownerCode size="40"}>
+                        <span class="notice-inline">ownerCode</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>shopNick(奇门)：<{/t}></th>
+                    <td><{input type="text" name='shopNick' value=$apiconfig.shopNick size="40"}>
+                        <span class="notice-inline">shopNick</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>订单来源平台名称(奇门)：<{/t}></th>
+                    <td><{input type="text" name='sourcePlatformName' value=$apiconfig.sourcePlatformName size="40"}>
+                        <span class="notice-inline">sourcePlatformName</span>
+                    </td>
+                </tr>
+                <tr>
                     <th><{t}>secret_key：<{/t}></th>
                     <td><{input type="text" name='secret_key' value=$apiconfig.secret_key size="40"}>
                         <span class="notice-inline">secret_key</span>
                     </td>
                 </tr>
                 <tr>
-                    <th><{t}>crm_api_requesturl：<{/t}></th>
-                    <td><{input type="text" name='crm_api_requesturl' value=$apiconfig.crm_api_requesturl size="40"}>
-                        <span class="notice-inline">请求CRM的接口地址</span>
+                    <th><{t}>crm_api_shipurl：<{/t}></th>
+                    <td><{input type="text" name='crm_api_shipurl' value=$apiconfig.crm_api_shipurl size="40"}>
+                        <span class="notice-inline">CRM发货请求地址</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><{t}>crm_api_receiveurl：<{/t}></th>
+                    <td><{input type="text" name='crm_api_receiveurl' value=$apiconfig.crm_api_receiveurl size="40"}>
+                        <span class="notice-inline">CRM签收请求地址</span>
                     </td>
                 </tr>
                 <!--AX信息相关--->

@@ -119,7 +119,7 @@ class erpapi_oms_order
             }
             return true;
         }else{
-            $sql="SELECT shop_id,logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
+            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
             //$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn FROM sdb_ome_orders WHERE order_bn='500000472'";
         }
         $arrDelivery=$objOrder->db->select($sql);
@@ -151,6 +151,7 @@ class erpapi_oms_order
                 $arrRoute[$value['logi_no']]['is_mcd']=$value['is_mcd'];
                 $arrRoute[$value['logi_no']]['createway']=$value['createway'];
                 $arrRoute[$value['logi_no']]['relate_order_bn']=$value['relate_order_bn'];
+                $arrRoute[$value['logi_no']]['is_creditOrder']=$value['is_creditOrder'];
             }
         }
         $strRoute=substr($strRoute,0,-1);
@@ -236,7 +237,12 @@ class erpapi_oms_order
                                 $post['event_time']=date('Y-m-d H:i:s',$accept_time);
                                 kernel::single('omemagento_service_change')->updateStatus($post);
                             }else{
-                                kernel::single('omemagento_service_order')->update_status($order_bn,'complete','',$accept_time);
+                                if($arrRoute[$intDeliveryId]['is_creditOrder']=='1'){//积分订单
+                                    kernel::single('creditorderapi_api_diorsite')->update_order_status($order_id,'completed');
+                                }else{
+                                    kernel::single('omemagento_service_order')->update_status($order_bn,'complete','',$accept_time);
+                                }
+
                             }
                             
 			                ### 订单状态回传kafka august.yao 已完成 start ###

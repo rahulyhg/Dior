@@ -56,7 +56,8 @@ class creditorderapi_service_site
         $arrOrders['consignee']=$order['consignee'];
         $arrOrders['consignee']['r_time']='任意日期 任意时间段';
         $arrOrders['consignee']['area']=$address_id;
-
+        //该接口默认属于积分订单
+        $arrOrders['is_creditOrder']='1';
         $iorder=array();
         $totalNums=0;
         $cost_item=0;
@@ -127,7 +128,10 @@ class creditorderapi_service_site
         $arrOrders['pmt_order']=$order['pmt_order']-$total_goods_pmt;
 
         //店铺
-        app::get('ome')->model('shop')->getList('shop_type',array('shop_id'=>$order['shop_id']));
+        $shopInfo = $sObj->getList('shop_type',array('shop_id'=>$order['shop_id']));
+        if(empty($shopInfo)){
+            return array('status'=>'fail','msg'=>'店铺不存在');exit();
+        }
         $arrOrders['shop_id']=$order['shop_id'];
         $arrOrders['shop_type']='magento';
         $arrOrders['createtime']=$order['createtime'];
