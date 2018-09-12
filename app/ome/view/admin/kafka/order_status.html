@@ -1,0 +1,85 @@
+<style>
+    .jianli_apply {
+        display: block;
+        width: 60px;
+        height: 30px;
+        border: 1px solid #CCC;
+        background: #069CBC;
+        margin-top: 20px;
+        text-align:center;
+        border-radius: 5px 5px 5px 5px;
+    }
+
+    .jianli_apply a {
+        font-size: 20px;
+        padding: 2px 6px;
+        display: block;
+        color: #ffffff;
+        text-decoration:none;
+    }
+</style>
+
+<{capture name="header"}>
+    <{css app="ome" src="ome.css"}>
+    <link href="statics/singlepage.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<div style="padding-left: 80px;padding-top: 30px; font-size: 2.5em;font-weight: 700;">
+    历史订单状态导出
+</div>
+
+<div style="padding-left: 80px;padding-top: 30px;" class="title_right" id="dataAction">
+    <form action="<{$form_action}>" method="post" id="filter_form">
+        <div class="date_date_cx">
+            <{input type="date" vtype="date" name="time_from" style="margin-top: 10px;border: 2px solid #CCCCCC;border-radius: 8px 8px 8px 8px;color: #069CBC;font-size: 18px;height: 20px;line-height: 20px;margin-bottom: 10px;padding-left: 19px;width: 100px;" value=$time_from}>
+            <span>至</span>
+            <{input type="date" vtype="date" name="time_to" style="margin-top: 10px;border: 2px solid #CCCCCC;border-radius: 8px 8px 8px 8px;color: #069CBC;font-size: 18px;height: 20px;line-height: 20px;margin-bottom: 10px;padding-left: 19px;width: 100px;" value=$time_to}>
+            <!--{button class="filterBtn btn-thirdly" label="导出"}-->
+            <a href="javascript:void(0);" onclick="js_method()"></a>
+            <!--div class="jianli_apply"><a class="filterBtn" target="_blank" href="<{$form_action}>">导出</a></div-->
+            <div class="jianli_apply"><a class="filterBtn" href="javascript:void(0);" onclick="setChartData()">导出</a></div>
+        </div>
+    </form>
+</div>
+<script>
+    (function(){
+        var dataAction = $('dataAction');
+        var from = dataAction.getElement('input[name=time_from]');
+        var to = dataAction.getElement('input[name=time_to]');
+        // 检测日期
+        function setChartData(flag,e){
+            if(from && to){
+                if(!check_data(from,to))return;
+                // 获取a标签
+                var el = dataAction.getElement('.filterBtn');
+                el.target = '_blank'; // 指定在新窗口打开
+                el.href = "<{$form_action}>" + '&time_from=' + from.value + '&time_to=' + to.value;
+                el.click(); // 触发打开事件
+            }
+            new MessageBox('<{t}>请录入日期格式yyyy-mm-dd<{/t}>',{type:'error',autohide:true});
+            return false;
+        }
+        // 给按钮添加点击事件
+        dataAction.getElement('.filterBtn').addEvent('click',function(e){setChartData(true);});
+        // 检测时间方法
+        function check_data(from,to){
+            var data = [];
+            var _return = [from,to].every(function(el){
+                    if(!/^(19|20)[0-9]{2}-([1-9]|0[1-9]|1[012])-([1-9]|0[1-9]|[12][0-9]|3[01])+$/.test(el.value)){
+                        new MessageBox('<{t}>请录入日期格式yyyy-mm-dd<{/t}>',{type:'error',autohide:true});
+                        el.focus();
+                        return false;
+                    }
+                    data.push(Date.parse(el.value.replace(/-/gi,"/")));
+                    return true;
+                });
+
+            if(!_return)return null;
+            if(data[1] < data[0]){
+                return MessageBox.error('<{t}>选择开始时间必须早于结束时间<{/t}>');
+            }
+            return _return;
+        }
+
+    })();
+</script>

@@ -1334,8 +1334,12 @@ class ome_ctl_admin_order extends desktop_controller{
     }
 
     function do_cancel($order_id) {
+
         $oOrder = &$this->app->model('orders');
         $orderdata = $oOrder->dump($order_id);
+        if($orderdata['process_status'] == 'splited') {
+            echo '已发送仓库的订单无法取消,请做发货拦截';exit;
+        }
         if ($_POST) {
             //danny_freeze_stock_log
             define('FRST_TRIGGER_OBJECT_TYPE','订单：订单人工取消');
@@ -1363,6 +1367,27 @@ class ome_ctl_admin_order extends desktop_controller{
 					$megentoInstance = kernel::service('service.magento_order');
 					$megentoInstance->update_status($orderdata['order_bn'],'canceled');
 				}
+
+                ### 订单状态回传kafka august.yao 已取消 start ###
+                if($orderdata['pay_bn'] == 'cod'){
+                    $kafkaQueue = app::get('ome')->model('kafka_queue');
+                    $queueData = array(
+                        'queue_title' => '订单已取消状态推送',
+                        'worker'      => 'ome_kafka_api.sendOrderStatus',
+                        'start_time'  => time(),
+                        'params'      => array(
+                            'status'   => 'cancel',
+                            'order_bn' => $orderdata['order_bn'],
+                            'logi_bn'  => '',
+                            'shop_id'  => $orderdata['shop_id'],
+                            'item_info'=> array(),
+                            'bill_info'=> array(),
+                        ),
+                    );
+                    $kafkaQueue->save($queueData);
+                }
+                ### 订单状态回传kafka august.yao 已取消 end ###
+
                 echo "<script>alert('订单取消成功');</script>";
             }else{
                 echo "<script>alert('订单取消失败,原因是:".$sync_rs['msg']."');</script>";
@@ -1943,6 +1968,7 @@ class ome_ctl_admin_order extends desktop_controller{
      * @return void
      */
     function finish_combine() {
+
         $this->begin("index.php?app=ome&ctl=admin_order&act=do_confirm&p[0]=" . $_POST['order_id']);
 
         $act = $_POST['do_action'];
@@ -2032,10 +2058,11 @@ class ome_ctl_admin_order extends desktop_controller{
                     $oOperation_log = &$this->app->model('operation_log');
                     $oOrder = $this->app->model('orders');
                     $oOrder_items = $this->app->model('order_items');
+                    $orderBn_list = array();
                     foreach ($orders as $orderId) {
                         $oldOrder= $oOrder->dump($orderId,"*",array("order_objects"=>array("*",array("order_items"=>array('*')))));
                         $consignee_diff = array_diff_assoc($_POST['consignee'],$oldOrder['consignee']);
-                        
+                        $orderBn_list[$orderId] = array('order_bn'=>$oldOrder['order_bn'], 'shop_id'=>$oldOrder['shop_id']);
                         if ($consignee_diff) {
                             #修改订单地址
                             $new_order['order_id']   = $orderId;
@@ -2048,7 +2075,6 @@ class ome_ctl_admin_order extends desktop_controller{
                             $oOrder->write_log_detail($log_id,$oldOrder);
                             //更新收货地址
                             kernel::single('ome_service_order')->update_shippinginfo($orderId);
-                            
                         }
                     }
                    
@@ -2056,7 +2082,7 @@ class ome_ctl_admin_order extends desktop_controller{
                         $this->end(false, '有订单状态发生变化无法完成此操作');
                     }
                     #全链路 已财审
-                    $orderLib = kernel::single("ome_order");
+                    $orderLib    = kernel::single("ome_order");
                     
                     foreach ($orders as $useOrderId) {
                         #已财审

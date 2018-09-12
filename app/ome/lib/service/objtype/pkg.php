@@ -30,6 +30,7 @@ class ome_service_objtype_pkg {
             $items['price']     = $obj['price'];
             $items['sale_price'] = $obj['sale_price'];
             $items['message1'] = $item['message1'];
+            $items['lettering_type'] = $item['lettering_type'];
 			
             return array($items);
         }
