@@ -74,6 +74,10 @@ class creditorderapi_service{
         }
         list($public_params,$user_params)=$this->split_service_params($params);
         list($api_name,$api_method)=$this->build_service_method($public_params);
+        
+        if(strpos($api_name,'lvmh')!==false){
+            $api_name = str_replace('lvmh','creditorderapi',$api_name);
+        }
         $object=kernel::service($api_name);
         if(!is_object($object)){
             $this->error('404');
