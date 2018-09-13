@@ -149,7 +149,14 @@ class omeftp_service_delivery{
             $creditOrderApi = json_decode($creditOrderApi[0]['ax_setting_info'],true);
 			$file_brand = $creditOrderApi['ax_file_brand'];
             $ax_header = $creditOrderApi['ax_header'];
-			$str = 'ORDER_REG_DIOR';
+            $orderMdl = app::get("ome")->model('orders');
+            $orderInfo =$orderMdl->getList("*",array('order_bn'=>$delivery['order']['order_bn']),0,1);
+            if($orderInfo['is_creditOrder']=='1'){//积分订单
+                $str = 'ORDER_CRM_DIOR';
+            }else{
+                $str = 'ORDER_REG_DIOR';
+            }
+
 			$ax_content_arr[] = $ax_header.$str;
 		}
 		
