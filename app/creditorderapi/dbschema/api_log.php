@@ -10,7 +10,6 @@ $db['api_log'] = array(
         array(
             'id' => array(
                 'type' => 'number',
-                'required' => true,
                 'pkey' => true,
                 'extra' => 'auto_increment',
                 'label' => '请求ID',
@@ -21,7 +20,6 @@ $db['api_log'] = array(
                     'response' => '应答'
                 ),
                 'default' => 'request',
-                'required' => true,
                 'label' => 'API动作',
                 'in_list' => true,
                 'default_in_list' => true,
@@ -30,7 +28,6 @@ $db['api_log'] = array(
             ),
             'api_name' => array(
                 'type' => 'varchar(50)',
-                'required' => true,
                 'label' => 'API名称',
                 'in_list' => true,
                 'default_in_list' => true,
@@ -40,7 +37,6 @@ $db['api_log'] = array(
             ),
             'api_request_time' => array(
                 'type' => 'time',
-                'required' => true,
                 'label' => '请求时间',
                 'in_list' => true,
                 'default_in_list' => true,
@@ -48,16 +44,13 @@ $db['api_log'] = array(
                 'filterdefault' => true,
             ),
             'api_check_time' => array(
-
                 'type' => 'varchar(30)',
-                'required' => true,
                 'label' => '校验时间戳',
                 'filtertype' => 'yes',
                 'filterdefault' => true,
             ),
             'api_status' => array(
                 'type' => array('-' => '-', 'fail' => '失败', 'success' => '成功'),
-                'required' => true,
                 'label' => 'API返回状态',
                 'in_list' => true,
                 'default_in_list' => true,
@@ -72,7 +65,6 @@ $db['api_log'] = array(
             ),
             'http_method' => array(
                 'type' => array('GET' => 'GET', 'POST' => 'POST','WebService'=>'WebService'),
-                'required' => true,
                 'label' => '请求类型',
                 'in_list' => true,
                 'default_in_list' => true,
@@ -81,7 +73,6 @@ $db['api_log'] = array(
             ),
             'http_url' => array(
                 'type' => 'text',
-                'required' => true,
                 'label' => '请求地址',
             ),
             'http_request_data' => array(
@@ -90,18 +81,15 @@ $db['api_log'] = array(
             ),
             'http_response_status' => array(
                 'type' => 'int',
-                'required' => true,
                 'label' => '返回状态',
                 'in_list' => true,
             ),
             'http_response_data' => array(
                 'type' => 'serialize',
-                'required' => true,
                 'label' => '返回结果',
             ),
             'sys_error_data' => array(
                 'type' => 'serialize',
-                'required' => true,
                 'label' => 'API ERROR',
             )
         ),
