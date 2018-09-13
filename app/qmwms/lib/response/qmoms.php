@@ -94,9 +94,11 @@ class qmwms_response_qmoms{
             $qmwmsApi = app::get('qmwms')->model('qmwms_api');
             $apiData = $qmwmsApi->getList('*',array(),0,1);
             $apiParams = unserialize($apiData[0]['api_params']);
+            
 
             $is_valid = false;
-            if(!empty($apiParams) && isset($apiParams['app_key']) && $apiParams['app_key'] == $params['app_key'] && isset($apiParams['customerId']) && $apiParams['customerId'] == $params['customerId']){
+            //if(!empty($apiParams) && isset($apiParams['app_key']) && $apiParams['app_key'] == $params['app_key'] && isset($apiParams['customerId']) && $apiParams['customerId'] == $params['customerId']){
+            if(!empty($apiParams) && isset($apiParams['app_key']) && $apiParams['app_key'] == $params['app_key'] && isset($apiParams['customerId']) ){
                 $is_valid = true;
             }
 
