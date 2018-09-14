@@ -430,117 +430,114 @@ class omeftp_service_delivery{
 		return implode('|',$ax_i);
 	}
 
-	public function get_ax_l($delivery){
-		$ax_l = array();
-		$orderObjModel = app::get('ome')->model('order_objects');
-		foreach($delivery['delivery_items'] as $key=>$delivery_items){
-			$order_obj_items = $orderObjModel->dump($delivery_items['obj_id']);
+    public function get_ax_l($delivery){
+        $ax_l = array();
+        $orderObjModel = app::get('ome')->model('order_objects');
+        foreach($delivery['delivery_items'] as $key=>$delivery_items){
+            $order_obj_items = $orderObjModel->dump($delivery_items['obj_id']);
 
-			$ax_l[$key][] = 'L';
-			if($order_obj_items['obj_type']=='goods'){
-				$ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
-			}elseif($order_obj_items['obj_type']=='gift'){
-				$ax_l[$key][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
-			}elseif($order_obj_items['obj_type']=='sample'){
-				$ax_l[$key][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
-			}else{
-				$ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
-			}
+            $ax_l[$key][] = 'L';
+            if($order_obj_items['obj_type']=='goods'){
+                $ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($order_obj_items['obj_type']=='gift'){
+                $ax_l[$key][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($order_obj_items['obj_type']=='sample'){
+                $ax_l[$key][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
+            }else{
+                $ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }
 
-			$ax_l[$key][] = '';//AX SO line number
-			$ax_l[$key][] = $key+1;//External SO line number
-			$ax_l[$key][] = $delivery_items['bn'];//Item Number
+            $ax_l[$key][] = '';//AX SO line number
+            $ax_l[$key][] = $key+1;//External SO line number
+            $ax_l[$key][] = $delivery_items['bn'];//Item Number
 
-			$ax_l[$key][] = '';//Text Detailled description of the item 
-			$ax_l[$key][] = $delivery_items['name'];//Item description
-			$ax_l[$key][] = $delivery_items['item_id'];//External Item Code
-			$ax_l[$key][] = '';//Bar code of the salable item  //条形码
-			if($order_obj_items['obj_type']=='sample'){
-				$ax_l[$key][] = $delivery_items['message1'];//First line of the gift message
-				$ax_l[$key][] = $delivery_items['message2'];//Second line of the gift message
-				$ax_l[$key][] = $delivery_items['message3'];//Third line of the gift message
-				$ax_l[$key][] = $delivery_items['message4'];//Fourth line of the gift message
-			}else{
-				$ax_l[$key][] = '';//First line of the gift message
-				$ax_l[$key][] = '';//Second line of the gift message
-				$ax_l[$key][] = '';//Third line of the gift message
-				$ax_l[$key][] = '';//Fourth line of the gift message
-			}
+            $ax_l[$key][] = '';//Text Detailled description of the item
+            $ax_l[$key][] = $delivery_items['name'];//Item description
+            $ax_l[$key][] = $delivery_items['item_id'];//External Item Code
+            $ax_l[$key][] = '';//Bar code of the salable item  //条形码
+            if($order_obj_items['obj_type']=='sample'){
+                $ax_l[$key][] = $delivery_items['message1'];//First line of the gift message
+                $ax_l[$key][] = $delivery_items['message2'];//Second line of the gift message
+                $ax_l[$key][] = $delivery_items['message3'];//Third line of the gift message
+                $ax_l[$key][] = $delivery_items['message4'];//Fourth line of the gift message
+            }else{
+                $ax_l[$key][] = '';//First line of the gift message
+                $ax_l[$key][] = '';//Second line of the gift message
+                $ax_l[$key][] = '';//Third line of the gift message
+                $ax_l[$key][] = '';//Fourth line of the gift message
+            }
 
-			$ax_l[$key][] = intval($order_obj_items['quantity']);//Ordered quantity  Sales ordered quantity
-			$ax_l[$key][] = $this->math->number_plus(array($order_obj_items['price'],0));//Sales Retail Price  Unit price on of the Sales Order Line
-			$ax_l[$key][] = '';//Price unit  Price Unit of the Sales order Line
+            $ax_l[$key][] = intval($order_obj_items['quantity']);//Ordered quantity  Sales ordered quantity
+            $ax_l[$key][] = $this->math->number_plus(array($order_obj_items['price'],0));//Sales Retail Price  Unit price on of the Sales Order Line
+            $ax_l[$key][] = '';//Price unit  Price Unit of the Sales order Line
 
-			$ax_pmt_price = $delivery_items['ax_pmt_price']/intval($order_obj_items['quantity']);
-			$ax_l[$key][] = $this->math->number_plus(array($ax_pmt_price,0));//Discount amount
-			$ax_l[$key][] = $this->math->number_plus(array($delivery_items['ax_pmt_percent'],0));//Discount % 
-			$ax_l[$key][] = '';//Discount % Level 1
-			$ax_l[$key][] = '';//Discount % Level 2
-			$ax_l[$key][] = '';//Discount % Level 3
-			$ax_l[$key][] = '';//Shipped Qty
+            $ax_pmt_price = $delivery_items['ax_pmt_price']/intval($order_obj_items['quantity']);
+            $ax_l[$key][] = $this->math->number_plus(array($ax_pmt_price,0));//Discount amount
+            $ax_l[$key][] = $this->math->number_plus(array($delivery_items['ax_pmt_percent'],0));//Discount %
+            $ax_l[$key][] = '';//Discount % Level 1
+            $ax_l[$key][] = '';//Discount % Level 2
+            $ax_l[$key][] = '';//Discount % Level 3
+            $ax_l[$key][] = '';//Shipped Qty
 
-			$ax_l[$key][] = '';//Invoiced Qty
-			$ax_l[$key][] = '';//Picking in progress Qty
-			$ax_l[$key][] = '';//Picked Qty
-			$ax_l[$key][] = 'Ea';//Item Sales Unit
-			$ax_l[$key][] = '';//Total Discount Amount excl. Tax
-			$ax_l[$key][] = '';//Discount label
-			$ax_l[$key][] = '';//Line amount excl. Taxes
-			$ax_l[$key][] = '';//Item Sales Tax Group
-			$ax_l[$key][] = '';//Sales Tax rate
-			$ax_l[$key][] = '';//Sales Tax amount
-			$ax_l[$key][] = '';//Line amount incl. Taxes
+            $ax_l[$key][] = '';//Invoiced Qty
+            $ax_l[$key][] = '';//Picking in progress Qty
+            $ax_l[$key][] = '';//Picked Qty
+            $ax_l[$key][] = 'Ea';//Item Sales Unit
+            $ax_l[$key][] = '';//Total Discount Amount excl. Tax
+            $ax_l[$key][] = '';//Discount label
+            $ax_l[$key][] = '';//Line amount excl. Taxes
+            $ax_l[$key][] = '';//Item Sales Tax Group
+            $ax_l[$key][] = '';//Sales Tax rate
+            $ax_l[$key][] = '';//Sales Tax amount
+            $ax_l[$key][] = '';//Line amount incl. Taxes
 
-			$ax_l[$key][] = '';//Batch Number
+            $ax_l[$key][] = '';//Batch Number
 
-			$ax_l_str[$key] = implode('|',$ax_l[$key]);
-		}
-		$key = $key+1;
-		//$creditOrderApi    = app::get('omeftp')->getConf('AX_SETTING');
-        $shop_id = $delivery['shop_id'];
-        $apiconfigSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
-        $creditOrderApi = app::get('creditorderapi')->model('apiconfig')->db->select($apiconfigSql);
-        $creditOrderApi = json_decode($creditOrderApi[0]['ax_setting_info'],true);
-		//礼品卡
-		$ax_gift_card_bn='';
-		$ax_card_flag=false;
-		if($delivery['order']['is_card']=="true"){
-			$ax_gift_card_bn=$creditOrderApi['ax_sample_bn'];
-			$ax_card_flag=true;
-		}else if($delivery['order']['is_mcd_card']=="true"){
-			$ax_gift_card_bn=$creditOrderApi['ax_mcd_sample_bn'];
-			$ax_card_flag=true;
-		}
-		if($ax_card_flag){
-			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
+            $ax_l_str[$key] = implode('|',$ax_l[$key]);
+        }
+        $key = $key+1;
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 
-		if($delivery['order']['is_w_card']=='true'){
-			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$creditOrderApi['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
-		//MCD包装
-		if($delivery['order']['mcd_package_sku']=='MCD'){
-			$ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$creditOrderApi['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
+        //礼品卡
+        $ax_gift_card_bn='';
+        $ax_card_flag=false;
+        if($delivery['order']['is_card']=="true"){
+            $ax_gift_card_bn=$ax_setting['ax_sample_bn'];
+            $ax_card_flag=true;
+        }else if($delivery['order']['is_mcd_card']=="true"){
+            $ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
+            $ax_card_flag=true;
+        }
+        if($ax_card_flag){
+            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
+
+        if($delivery['order']['is_w_card']=='true'){
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
+        //MCD包装
+        if($delivery['order']['mcd_package_sku']=='MCD'){
+            $ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
         //cvd
         if($delivery['order']['is_cvd']=='true'){
-			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$creditOrderApi['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
-		
-		if(!empty($delivery['order']['ribbon_sku'])){
-			$arrRibbon=array();
-			$arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
-			$arrRibbon=$arrRibbon[0];
-			
-			$ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||';
-		}
-		
-		return implode("\n",$ax_l_str);
-	}
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
+
+        if(!empty($delivery['order']['ribbon_sku'])){
+            $arrRibbon=array();
+            $arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
+            $arrRibbon=$arrRibbon[0];
+
+            $ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||';
+        }
+
+        return implode("\n",$ax_l_str);
+    }
 
 	
 	/**
