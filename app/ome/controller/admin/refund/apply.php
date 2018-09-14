@@ -404,8 +404,14 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 		}
 		$arrPayments=array_filter($arrPayments);
 		
+        $repeatOrders = array();
 		foreach($arrPayments as $ks=>$vs){
 			foreach($vs as $k=>$v){
+                if(isset($repeatOrders[$v['order_bn']])) {
+                    unset($arrPayments[$ks]);
+                    continue;
+                }
+                
 				if($v['ship_status']=="1"){
 					echo "订单:".$v['order_bn']."已发货不可提交退款";exit();
 				}
@@ -434,6 +440,8 @@ class ome_ctl_admin_refund_apply extends desktop_controller{
 					$arrPayments[$ks][$k]['BeneficiaryName']=trim(str_replace(" ","",$arrPayments[$ks][$k]['BeneficiaryName']));
 					$arrPayments[$ks][$k]['BeneficiaryBankName']=trim(str_replace(" ","",$arrPayments[$ks][$k]['BeneficiaryBankName']));
 				}
+                
+                $repeatOrders[$v['order_bn']] = $v['order_bn'];
 			}
 		}
 		
