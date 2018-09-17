@@ -97,8 +97,10 @@ class ome_kafka_api extends ome_kafka_request{
      * @return string
      */
     private function get_app_key(){
-        //return 'DIOR_DMALL'; // 测试环境
-        return 'Diro_DMALL'; // 正式环境
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $KafkaConf = unserialize($KafkaConf);
+        return $KafkaConf['app_key'];
     }
 
     /**
@@ -106,8 +108,10 @@ class ome_kafka_api extends ome_kafka_request{
      * @return string
      */
     private function get_secret_key(){
-        //return '228287BBAFF8A8BA4B2FB2CE90E0CC2D'; // 测试环境
-        return 'F15E87E63D64A01C2359682D24F477F2'; // 正式环境
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $KafkaConf = unserialize($KafkaConf);
+        return $KafkaConf['secret_key'];
     }
 
     /**
@@ -116,8 +120,12 @@ class ome_kafka_api extends ome_kafka_request{
      * @return mixed
      */
     private function build_request_url(){
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $KafkaConf = unserialize($KafkaConf);
+        return $KafkaConf['api_url'] . $this->api_method;
         //return 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 测试环境
-        return 'http://kafkagw.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 正式环境
+        //return 'http://kafkagw.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 正式环境
     }
 
     /**

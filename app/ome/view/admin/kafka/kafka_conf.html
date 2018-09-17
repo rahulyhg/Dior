@@ -1,0 +1,65 @@
+<{capture name="header"}>
+    <link href="../apps/ome/statics/ome.css" rel="stylesheet" type="text/css">
+<{/capture}>
+
+<h4 class="head-title">kafka配置</h4>
+
+<div class="tableform">
+    <div class="division">
+        <form method="post" action="<{$form_action}>" id="terminal">
+            <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+            <tbody>
+            <tr>
+                <th><em class="c-red">*</em> Kafka APP KEY：</th>
+                <td>
+                    <{input type="text" size='80' name="app_key" value=$conf.app_key}>
+                    <{help}><{t}>Kafka接口调用的APP KEY<{/t}><{/help}>
+                </td>
+            </tr>
+            <tr>
+                <th ><em class="c-red">*</em> Kafka SECRET KEY：</th>
+                <td>
+                    <{input type="text" size='80' name="secret_key" value=$conf.secret_key}>
+                    <{help}><{t}>Kafka接口调用的SECRET KEY<{/t}><{/help}>
+                </td>
+            </tr>
+		    <tr>
+                <th><em class="c-red">*</em> Kafka API 地址：</th>
+                <td>
+                    <{input type="text" size='80' name="api_url" value=$conf.api_url }>
+                    <{help}><{t}>Kafka接口地址<{/t}><{/help}>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+            <div class="table-action">
+                <{button class="btn-primary" type="button" id="saveterminal" name="submit" label="提交"}>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+$('saveterminal').addEvent('click',function(event){
+    $('terminal').fireEvent('submit',new Event(event));
+});
+
+$('terminal').store('target',{
+    onRequest:function(){
+        $('saveterminal').set('disabled', 'true');
+    },
+    onComplete:function(jsontext){
+        //alert(jsontext);
+        var json = Json.evaluate(jsontext);
+        if (json.splash == 'false'){
+            $('saveterminal').set('disabled', '');
+            MessageBox.error('保存失败');return;
+        }else{
+            $('saveterminal').set('disabled', 'true');
+            MessageBox.success('保存成功');return;
+        }
+    }
+});
+
+</script>

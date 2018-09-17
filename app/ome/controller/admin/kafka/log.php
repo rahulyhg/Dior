@@ -110,4 +110,45 @@ class ome_ctl_admin_kafka_log extends desktop_controller
         // excel格式
 //        kernel::single('ome_kafka_kafkaQueueHandle')->order_history_status_xls('2018-7-11', '2018-7-14');
     }
+
+    public function set_conf(){
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $this->pagedata['form_action'] = 'index.php?app=ome&ctl=admin_kafka_log&act=do_set_conf';
+        $this->pagedata['path']        = 'Kafka配置';
+        $this->pagedata['conf']        = unserialize($KafkaConf);
+        $this->page("admin/kafka/kafka_conf.html");
+    }
+
+    public function do_set_conf(){
+        
+        if(!$_POST){
+            $this->splash(false, $this->_action_url, '保存失败-数据有误', 'redirect');
+        }
+        
+        if(empty($_POST['app_key'])){
+            $this->splash(false, $this->_action_url, 'app_key不能为空', 'redirect');
+        }
+
+        if(empty($_POST['secret_key'])){
+            $this->splash(false, $this->_action_url, 'secret_key不能为空', 'redirect');
+        }
+
+        if(empty($_POST['api_url'])){
+            $this->splash(false, $this->_action_url, '接口地址不能为空', 'redirect');
+        }
+        $confData = array(
+            'app_key'    => $_POST['app_key'],
+            'secret_key' => $_POST['secret_key'],
+            'api_url'    => $_POST['api_url'],
+        );
+        // 存入缓存
+        $res = app::get('ome')->setConf('KafkaConf', serialize($confData));
+
+        if($res){
+            $this->splash(true, $this->_action_url, '保存成功', 'redirect');
+        }else{
+            $this->splash(false, $this->_action_url, '保存失败', 'redirect');
+        }
+    }
 }
