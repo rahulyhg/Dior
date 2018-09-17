@@ -14,6 +14,15 @@ class ome_kafka_kafkaQueueHandle{
      */
     public function worker(){
 
+        // 查看当前脚本是否在执行
+        $kafkaQueueIsTrue = app::get('ome')->getConf('kafkaQueueIsTrue');
+        if($kafkaQueueIsTrue && $kafkaQueueIsTrue == 'isTrue'){
+            return true;
+        }else{
+            // 设置执行标志
+            app::get('ome')->setConf('kafkaQueueIsTrue', 'isTrue');
+        }
+
         set_time_limit(0); // 设置脚本执行时间
         // 获取需要执行的任务
         $kafkaQueue = app::get('ome')->model('kafka_queue');
@@ -38,6 +47,8 @@ class ome_kafka_kafkaQueueHandle{
                 // sleep(2);   // 延迟2秒
             }
         }
+        // 设置执行标志
+        app::get('ome')->setConf('kafkaQueueIsTrue', 'isFalse');
     }
 
     /**
