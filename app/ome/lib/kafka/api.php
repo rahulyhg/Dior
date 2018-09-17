@@ -21,7 +21,6 @@ class ome_kafka_api extends ome_kafka_request{
         set_time_limit(0);
         ini_set("memory_limit", "128M");
         ini_set("max_execution_time", 0);
-        $this->api_name = 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/';
     }
 
     /**
@@ -118,7 +117,7 @@ class ome_kafka_api extends ome_kafka_request{
      */
     private function build_request_url(){
         //return 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 测试环境
-        return 'http://kafka.chinaeast.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 正式环境
+        return 'http://kafkagw.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 正式环境
     }
 
     /**
