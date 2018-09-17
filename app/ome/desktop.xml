@@ -407,6 +407,7 @@
     </workground>-->
     <workground name="系统集成" id="channel_center" order="1100">
         <menugroup name="API日志管理">
+            <menu controller='admin_kafka_log' action='set_conf' permission='setting_api_log' display='true'>Kafka基本配置</menu>
             <menu controller='admin_kafka_log' action='index' permission='setting_api_log' display='true'>Kafka API日志</menu>
             <menu controller='admin_kafka_log' action='order_status_export' permission='setting_api_log' display='true'>订单历史数据导出</menu>
         </menugroup>
