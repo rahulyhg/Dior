@@ -249,7 +249,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
      * @param int $timeout
      * @return bool|mixed
      */
-    public function action($request, $retry = 3, $timeout = 30){
+    public function action($request, $retry = 3, $timeout = 300){
 
         // 组合URL
         $data = json_decode($request['data']['params'], true);
