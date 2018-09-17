@@ -282,14 +282,14 @@ class omeftp_service_delivery{
 
 		$order_confirm_time = date('Y-m-d H:i:s',$delivery['order']['order_confirm_time']);
 		
-		$ax_d[] = $receipt_date;//Requested receipt Date
+		$ax_d[] = '';//Requested receipt Date
 		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
 		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
-		$ax_d[] = $receipt_time;//Condition of Delivery   set by AX
+		$ax_d[] = '';//Condition of Delivery   set by AX
 		
 		$ax_d_mode_of_delivery = $ax_setting['ax_d_mode_of_delivery'];
 		if($delivery['consignee']['province']=='上海'||$delivery['consignee']['province']=='江苏省'||$delivery['consignee']['province']=='浙江省'||$delivery['consignee']['province']=='安徽省'||$delivery['consignee']['province']=='西藏自治区'){
