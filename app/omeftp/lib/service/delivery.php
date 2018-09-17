@@ -25,11 +25,22 @@ class omeftp_service_delivery{
 	public function delivery($delivery_id,$sync=false){
         $deliveryModel = app::get('ome')->model('delivery');
         $delivery = $deliveryModel->dump($delivery_id);
-		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+		//$creditOrderApi    = app::get('omeftp')->getConf('AX_SETTING');
+        $shop_id = $delivery['shop_id'];
+        $apiconfigSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
+        $creditOrderApi = app::get('creditorderapi')->model('apiconfig')->db->select($apiconfigSql);
 
-		$delivery = $this->format_delivery($delivery);
-		$file_brand = $ax_setting['ax_file_brand'];
-		$file_prefix = $ax_setting['ax_file_prefix'];
+        $ax_file_prefix = $creditOrderApi[0]['ax_file_prefix'];
+        $creditOrderApi = json_decode($creditOrderApi[0]['ax_setting_info'],true);
+
+        if(empty($creditOrderApi)){
+            return false;
+        }
+		
+        $delivery = $this->format_delivery($delivery);
+		$file_brand = $creditOrderApi['ax_file_brand'];
+		//$file_prefix = $creditOrderApi['ax_file_prefix'];
+        $file_prefix = $ax_file_prefix;
 		$file_arr = array($file_prefix,$file_brand,'ORDER',date('YmdHis',time()));
 		$file_name = implode('_',$file_arr);
 
@@ -114,14 +125,14 @@ class omeftp_service_delivery{
 
             //kernel::single('omemagento_service_order')->update_status($delivery['order']['order_bn'],'sent_to_ax');
 		}else{
-			$order_bn = $delivery['order']['order_bn'];
+			/*$order_bn = $delivery['order']['order_bn'];
 			$ax_content = $file_log_data['content'];
 			$file_route = $file_log_data['file_route'];
 			//发送报警邮件
 			$acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
 			$subject = '【Dior-PROD】ByPass订单#'.$order_bn.'发货SO文件生成失败';//【ADP-PROD】ByPass订单#10008688发送失败
 			$bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是SO文件内容和错误信息。<br>SO文件内容：<br>$ax_content<br/><br>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>$msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-			kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+			kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);*/
 		}
     }
 
@@ -131,10 +142,21 @@ class omeftp_service_delivery{
 		if(file_exists($file)){
 
 		}else{
-			$ax_header = app::get('omeftp')->getConf('AX_Header');
-			$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
-			$file_brand = $ax_setting['ax_file_brand'];
-			$str = 'ORDER_REG_DIOR';
+			//$ax_header = app::get('omeftp')->getConf('AX_Header');
+            $shop_id = $delivery['shop_id'];
+            $apiconfigSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
+            $creditOrderApi = app::get('creditorderapi')->model('apiconfig')->db->select($apiconfigSql);
+            $creditOrderApi = json_decode($creditOrderApi[0]['ax_setting_info'],true);
+			$file_brand = $creditOrderApi['ax_file_brand'];
+            $ax_header = $creditOrderApi['ax_header'];
+            $orderMdl = app::get("ome")->model('orders');
+            $orderInfo =$orderMdl->getList("*",array('order_bn'=>$delivery['order']['order_bn']),0,1);
+            if($orderInfo['0']['is_creditOrder']=='1'){//积分订单
+                $str = 'ORDER_CRM_DIOR';
+            }else{
+                $str = 'ORDER_REG_DIOR';
+            }
+
 			$ax_content_arr[] = $ax_header.$str;
 		}
 		
@@ -159,34 +181,37 @@ class omeftp_service_delivery{
 
 	public function get_ax_h($delivery){
 		$ax_h = array();
-		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $shop_id = $delivery['shop_id'];
+        $apiconfigSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
+        $creditOrderApi = app::get('creditorderapi')->model('apiconfig')->db->select($apiconfigSql);
+        $creditOrderApi = json_decode($creditOrderApi[0]['ax_setting_info'],true);
 
-		$ax_h_h = $ax_setting['ax_h'];
+		$ax_h_h = $creditOrderApi['ax_h'];
 		$ax_h[] = $ax_h_h?$ax_h_h:'H';
 		
-		$ax_h_sales_country_code = $ax_setting['ax_h_sales_country_code'];
+		$ax_h_sales_country_code = $creditOrderApi['ax_h_sales_country_code'];
 		$ax_h[] = $ax_h_sales_country_code?$ax_h_sales_country_code:'CN';
 		
-		$ax_h_salas_division = $ax_setting['ax_h_salas_division'];
+		$ax_h_salas_division = $creditOrderApi['ax_h_salas_division'];
 		$ax_h[] = $ax_h_salas_division?$ax_h_salas_division:'01';
 		
-		$ax_h_sales_organization = $ax_setting['ax_h_sales_organization'];
+		$ax_h_sales_organization = $creditOrderApi['ax_h_sales_organization'];
 		$ax_h[] = $ax_h_sales_organization?$ax_h_sales_organization:'2920';
 
-		$ax_h_plant = $ax_setting['ax_h_plant'];
+		$ax_h_plant = $creditOrderApi['ax_h_plant'];
 		$ax_h[] = $ax_h_plant?$ax_h_plant:'1190';
 
 		$ax_h[] = $delivery['order']['order_bn'];//字段意思不明确，待定
 
 		$ax_h[] = '';//AX SO number
 		
-		$ax_h_customer_account = $ax_setting['ax_h_customer_account'];
+		$ax_h_customer_account = $creditOrderApi['ax_h_customer_account'];
 		$ax_h[] = $ax_h_customer_account?$ax_h_customer_account:'C4010P1';// 固定参数  值待定
 		
-		$ax_h_invoice_ccount = $ax_setting['ax_h_invoice_ccount'];
+		$ax_h_invoice_ccount = $creditOrderApi['ax_h_invoice_ccount'];
 		$ax_h[] = $ax_h_invoice_ccount?$ax_h_invoice_ccount:'C4010P1';//固定参数  值待定
 		
-		$ax_h_sales_order_status = $ax_setting['ax_h_sales_order_status'];
+		$ax_h_sales_order_status = $creditOrderApi['ax_h_sales_order_status'];
 		$ax_h[] = $ax_h_sales_order_status?$ax_h_sales_order_status:'SEND_TO_ERP';// Sales order Status
 		
 		$custom_mark = unserialize($delivery['order']['custom_mark']);
@@ -204,7 +229,7 @@ class omeftp_service_delivery{
 		}
 
 		
-		$ax_h_currency = $ax_setting['ax_h_currency'];
+		$ax_h_currency = $creditOrderApi['ax_h_currency'];
 		$ax_h[] = $ax_h_currency?$ax_h_currency:'CNY';// currency
 
 		if($delivery['order']['shipping']['cost_shipping']>$delivery['order']['pmt_cost_shipping']){
@@ -271,7 +296,7 @@ class omeftp_service_delivery{
 
 	public function get_ax_d($delivery){
 		$ax_d = array();
-		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+		//$creditOrderApi    = app::get('omeftp')->getConf('AX_SETTING');
 
 		$ax_d[] = 'D';
 		
@@ -282,16 +307,16 @@ class omeftp_service_delivery{
 
 		$order_confirm_time = date('Y-m-d H:i:s',$delivery['order']['order_confirm_time']);
 		
-		$ax_d[] = $receipt_date;//Requested receipt Date
+		$ax_d[] = '';//Requested receipt Date
 		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
 		$ax_d[] = '';//Confirmed receipt Date
 		$ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
 
 		$ax_d[] = '';//配送时间  暂时留空
 
-		$ax_d[] = $receipt_time;//Condition of Delivery   set by AX
+		$ax_d[] = '';//Condition of Delivery   set by AX
 		
-		$ax_d_mode_of_delivery = $ax_setting['ax_d_mode_of_delivery'];
+		//$ax_d_mode_of_delivery = $creditOrderApi['ax_d_mode_of_delivery'];
 		if($delivery['consignee']['province']=='上海'||$delivery['consignee']['province']=='江苏省'||$delivery['consignee']['province']=='浙江省'||$delivery['consignee']['province']=='安徽省'||$delivery['consignee']['province']=='西藏自治区'){
 			$ax_d[] = 'SF_STD';//
 		}else{
@@ -405,114 +430,114 @@ class omeftp_service_delivery{
 		return implode('|',$ax_i);
 	}
 
-	public function get_ax_l($delivery){
-		$ax_l = array();
-		$orderObjModel = app::get('ome')->model('order_objects');
-		foreach($delivery['delivery_items'] as $key=>$delivery_items){
-			$order_obj_items = $orderObjModel->dump($delivery_items['obj_id']);
+    public function get_ax_l($delivery){
+        $ax_l = array();
+        $orderObjModel = app::get('ome')->model('order_objects');
+        foreach($delivery['delivery_items'] as $key=>$delivery_items){
+            $order_obj_items = $orderObjModel->dump($delivery_items['obj_id']);
 
-			$ax_l[$key][] = 'L';
-			if($order_obj_items['obj_type']=='goods'){
-				$ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
-			}elseif($order_obj_items['obj_type']=='gift'){
-				$ax_l[$key][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
-			}elseif($order_obj_items['obj_type']=='sample'){
-				$ax_l[$key][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
-			}else{
-				$ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
-			}
+            $ax_l[$key][] = 'L';
+            if($order_obj_items['obj_type']=='goods'){
+                $ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($order_obj_items['obj_type']=='gift'){
+                $ax_l[$key][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($order_obj_items['obj_type']=='sample'){
+                $ax_l[$key][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
+            }else{
+                $ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }
 
-			$ax_l[$key][] = '';//AX SO line number
-			$ax_l[$key][] = $key+1;//External SO line number
-			$ax_l[$key][] = $delivery_items['bn'];//Item Number
+            $ax_l[$key][] = '';//AX SO line number
+            $ax_l[$key][] = $key+1;//External SO line number
+            $ax_l[$key][] = $delivery_items['bn'];//Item Number
 
-			$ax_l[$key][] = '';//Text Detailled description of the item 
-			$ax_l[$key][] = $delivery_items['name'];//Item description
-			$ax_l[$key][] = $delivery_items['item_id'];//External Item Code
-			$ax_l[$key][] = '';//Bar code of the salable item  //条形码
-			if($order_obj_items['obj_type']=='sample'){
-				$ax_l[$key][] = $delivery_items['message1'];//First line of the gift message
-				$ax_l[$key][] = $delivery_items['message2'];//Second line of the gift message
-				$ax_l[$key][] = $delivery_items['message3'];//Third line of the gift message
-				$ax_l[$key][] = $delivery_items['message4'];//Fourth line of the gift message
-			}else{
-				$ax_l[$key][] = '';//First line of the gift message
-				$ax_l[$key][] = '';//Second line of the gift message
-				$ax_l[$key][] = '';//Third line of the gift message
-				$ax_l[$key][] = '';//Fourth line of the gift message
-			}
+            $ax_l[$key][] = '';//Text Detailled description of the item
+            $ax_l[$key][] = $delivery_items['name'];//Item description
+            $ax_l[$key][] = $delivery_items['item_id'];//External Item Code
+            $ax_l[$key][] = '';//Bar code of the salable item  //条形码
+            if($order_obj_items['obj_type']=='sample'){
+                $ax_l[$key][] = $delivery_items['message1'];//First line of the gift message
+                $ax_l[$key][] = $delivery_items['message2'];//Second line of the gift message
+                $ax_l[$key][] = $delivery_items['message3'];//Third line of the gift message
+                $ax_l[$key][] = $delivery_items['message4'];//Fourth line of the gift message
+            }else{
+                $ax_l[$key][] = '';//First line of the gift message
+                $ax_l[$key][] = '';//Second line of the gift message
+                $ax_l[$key][] = '';//Third line of the gift message
+                $ax_l[$key][] = '';//Fourth line of the gift message
+            }
 
-			$ax_l[$key][] = intval($order_obj_items['quantity']);//Ordered quantity  Sales ordered quantity
-			$ax_l[$key][] = $this->math->number_plus(array($order_obj_items['price'],0));//Sales Retail Price  Unit price on of the Sales Order Line
-			$ax_l[$key][] = '';//Price unit  Price Unit of the Sales order Line
+            $ax_l[$key][] = intval($order_obj_items['quantity']);//Ordered quantity  Sales ordered quantity
+            $ax_l[$key][] = $this->math->number_plus(array($order_obj_items['price'],0));//Sales Retail Price  Unit price on of the Sales Order Line
+            $ax_l[$key][] = '';//Price unit  Price Unit of the Sales order Line
 
-			$ax_pmt_price = $delivery_items['ax_pmt_price']/intval($order_obj_items['quantity']);
-			$ax_l[$key][] = $this->math->number_plus(array($ax_pmt_price,0));//Discount amount
-			$ax_l[$key][] = $this->math->number_plus(array($delivery_items['ax_pmt_percent'],0));//Discount % 
-			$ax_l[$key][] = '';//Discount % Level 1
-			$ax_l[$key][] = '';//Discount % Level 2
-			$ax_l[$key][] = '';//Discount % Level 3
-			$ax_l[$key][] = '';//Shipped Qty
+            $ax_pmt_price = $delivery_items['ax_pmt_price']/intval($order_obj_items['quantity']);
+            $ax_l[$key][] = $this->math->number_plus(array($ax_pmt_price,0));//Discount amount
+            $ax_l[$key][] = $this->math->number_plus(array($delivery_items['ax_pmt_percent'],0));//Discount %
+            $ax_l[$key][] = '';//Discount % Level 1
+            $ax_l[$key][] = '';//Discount % Level 2
+            $ax_l[$key][] = '';//Discount % Level 3
+            $ax_l[$key][] = '';//Shipped Qty
 
-			$ax_l[$key][] = '';//Invoiced Qty
-			$ax_l[$key][] = '';//Picking in progress Qty
-			$ax_l[$key][] = '';//Picked Qty
-			$ax_l[$key][] = 'Ea';//Item Sales Unit
-			$ax_l[$key][] = '';//Total Discount Amount excl. Tax
-			$ax_l[$key][] = '';//Discount label
-			$ax_l[$key][] = '';//Line amount excl. Taxes
-			$ax_l[$key][] = '';//Item Sales Tax Group
-			$ax_l[$key][] = '';//Sales Tax rate
-			$ax_l[$key][] = '';//Sales Tax amount
-			$ax_l[$key][] = '';//Line amount incl. Taxes
+            $ax_l[$key][] = '';//Invoiced Qty
+            $ax_l[$key][] = '';//Picking in progress Qty
+            $ax_l[$key][] = '';//Picked Qty
+            $ax_l[$key][] = 'Ea';//Item Sales Unit
+            $ax_l[$key][] = '';//Total Discount Amount excl. Tax
+            $ax_l[$key][] = '';//Discount label
+            $ax_l[$key][] = '';//Line amount excl. Taxes
+            $ax_l[$key][] = '';//Item Sales Tax Group
+            $ax_l[$key][] = '';//Sales Tax rate
+            $ax_l[$key][] = '';//Sales Tax amount
+            $ax_l[$key][] = '';//Line amount incl. Taxes
 
-			$ax_l[$key][] = '';//Batch Number
+            $ax_l[$key][] = '';//Batch Number
 
-			$ax_l_str[$key] = implode('|',$ax_l[$key]);
-		}
-		$key = $key+1;
-		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
-		
-		//礼品卡
-		$ax_gift_card_bn='';
-		$ax_card_flag=false;
-		if($delivery['order']['is_card']=="true"){
-			$ax_gift_card_bn=$ax_setting['ax_sample_bn'];
-			$ax_card_flag=true;
-		}else if($delivery['order']['is_mcd_card']=="true"){
-			$ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
-			$ax_card_flag=true;
-		}
-		if($ax_card_flag){
-			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
+            $ax_l_str[$key] = implode('|',$ax_l[$key]);
+        }
+        $key = $key+1;
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 
-		if($delivery['order']['is_w_card']=='true'){
-			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
-		//MCD包装
-		if($delivery['order']['mcd_package_sku']=='MCD'){
-			$ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
+        //礼品卡
+        $ax_gift_card_bn='';
+        $ax_card_flag=false;
+        if($delivery['order']['is_card']=="true"){
+            $ax_gift_card_bn=$ax_setting['ax_sample_bn'];
+            $ax_card_flag=true;
+        }else if($delivery['order']['is_mcd_card']=="true"){
+            $ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
+            $ax_card_flag=true;
+        }
+        if($ax_card_flag){
+            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
+
+        if($delivery['order']['is_w_card']=='true'){
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
+        //MCD包装
+        if($delivery['order']['mcd_package_sku']=='MCD'){
+            $ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
         //cvd
         if($delivery['order']['is_cvd']=='true'){
-			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
-			$key = $key+1;
-		}
-		
-		if(!empty($delivery['order']['ribbon_sku'])){
-			$arrRibbon=array();
-			$arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
-			$arrRibbon=$arrRibbon[0];
-			
-			$ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||';
-		}
-		
-		return implode("\n",$ax_l_str);
-	}
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $key = $key+1;
+        }
+
+        if(!empty($delivery['order']['ribbon_sku'])){
+            $arrRibbon=array();
+            $arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
+            $arrRibbon=$arrRibbon[0];
+
+            $ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||';
+        }
+
+        return implode("\n",$ax_l_str);
+    }
 
 	
 	/**

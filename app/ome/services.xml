@@ -323,7 +323,7 @@
     <service id="extend_filter_ome_mdl_return_product">
         <class>ome_finder_extend_filter_return_product</class>
     </service>
-   <service id="extend_filter_ome_mdl_return_product_problem">
+    <service id="extend_filter_ome_mdl_return_product_problem">
         <class>ome_finder_extend_filter_return_product_problem</class>
     </service>
     
@@ -479,6 +479,11 @@
 
     <service id="desktop.cert.check">
         <class>ome_cert_certcheck</class>
+    </service>
+
+    <!-- kafka日志 -->
+    <service id="desktop_finder.ome_mdl_kafka_api_log">
+        <class>ome_finder_kafka_api_log</class>
     </service>
 </services>
 

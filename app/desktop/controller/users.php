@@ -40,8 +40,13 @@ class desktop_ctl_users extends desktop_controller{
                     foreach($_POST['role'] as $roles)
                     $_POST['roles'][]=array('role_id'=>$roles);
                 }
-                $_POST['pam_account']['login_password'] = pam_encrypt::get_encrypted_password($_POST['pam_account']['login_password'],pam_account::get_account_type($this->app->app_id));
+				if($_POST['sys_type']=='local'){
+					$_POST['pam_account']['login_password'] =						pam_encrypt::get_encrypted_password($_POST['pam_account']['login_password'],pam_account::get_account_type($this->app->app_id));
+				}else{
+					$_POST['pam_account']['login_password'] = $_POST['pam_account']['login_password'];
+				}
                 $_POST['pam_account']['account_type'] = pam_account::get_account_type($this->app->app_id);
+				
                 if($users->save($_POST)){
 					foreach(kernel::servicelist('desktop_useradd') as $key=>$service){
 						if($service instanceof desktop_interface_useradd){
@@ -98,7 +103,11 @@ class desktop_ctl_users extends desktop_controller{
             }
             else{
                 $_POST['pam_account']['account_id'] = $_POST['user_id'];
-                $_POST['pam_account']['login_password'] = pam_encrypt::get_encrypted_password(trim($_POST['new_login_password']),pam_account::get_account_type($this->app->app_id));
+				if($sdf['sys_type']=='local'){
+					$_POST['pam_account']['login_password'] = pam_encrypt::get_encrypted_password(trim($_POST['new_login_password']),pam_account::get_account_type($this->app->app_id));
+				}else{
+					$_POST['pam_account']['login_password'] = $_POST['new_login_password'];
+				}
                 $users->save($_POST);
                 $this->end(true,app::get('desktop')->_('密码修改成功'));
             }

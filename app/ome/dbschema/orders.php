@@ -46,6 +46,20 @@ $db['orders']=array (
 	  'in_list' => true,
 	  'default_in_list' => false,
 	),
+    'is_creditOrder' =>
+      array (
+          'type' =>
+              array (
+                  '0' => '非积分订单',
+                  '1' => '积分订单',
+              ),
+          'default' => '0',
+          'label' => '是否是积分订单',
+          'width' => 70,
+          'editable' => false,
+          'in_list' => true,
+          'default_in_list' => false,
+      ),
     'archive' =>
     array (
       'type' => 'tinyint unsigned',

@@ -1,0 +1,11 @@
+<services>
+    <service id="desktop_finder.creditorderapi_mdl_api_log">
+        <class>creditorderapi_finder_api_log</class>
+    </service>
+    <service id="creditorderapi.site">
+        <class>creditorderapi_service_site</class>
+    </service>
+    <service id="desktop_finder.creditorderapi_mdl_apiconfig">
+        <class>creditorderapi_finder_apiconfig</class>
+    </service>
+</services>
