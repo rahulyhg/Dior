@@ -849,7 +849,7 @@ class ome_mdl_refund_apply extends dbeav_model{
             $kafkaQueue = app::get('ome')->model('kafka_queue');
             $moneyRes   = app::get('ome')->model('refunds')->dump(array('order_id'=>$order_id),'refund_bn,money');
             if(empty($moneyRes['refund_bn'])){
-                $refundBn = app::get('ome')->model('refunds')->dump(array('order_id'=>$order_id),'refund_apply_bn');
+                $refundBn = app::get('ome')->model('refund_apply')->dump(array('order_id'=>$order_id),'refund_apply_bn');
                 $moneyRes['refund_bn'] = $refundBn['refund_apply_bn'];
             }
 			$queueData = array(
