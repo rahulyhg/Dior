@@ -268,24 +268,26 @@ class ome_refund_apply
                      $return_ref_data = array('refund_apply_id'=>$data['apply_id'],'return_id'=>$data['return_id']);
                      $oreturn_refund_apply->save($return_ref_data);
                 }*/
-
-                ### 订单状态回传kafka august.yao 退款申请中 start ###
-                $kafkaQueue  = app::get('ome')->model('kafka_queue');
-                $queueData = array(
-                    'queue_title' => '订单退款申请中状态推送',
-                    'worker'      => 'ome_kafka_api.sendOrderStatus',
-                    'start_time'  => time(),
-                    'params'      => array(
-                        'status'   => 'refunding',
-                        'order_bn' => $z_order_bn,
-                        'logi_bn'  => '',
-                        'shop_id'  => $arrOrderBn['0']['shop_id'],
-                        'item_info'=> array(),
-                        'bill_info'=> array(),
-                    ),
-                );
-                $kafkaQueue->save($queueData);
-                ### 订单状态回传kafka august.yao 退款申请中 end ###
+                // 判断订单为礼品订单时不推送Kafka august.yao 2018-09-19
+                if($data['shop_type'] != 'cardshop'){
+                    ### 订单状态回传kafka august.yao 退款申请中 start ###
+                    $kafkaQueue  = app::get('ome')->model('kafka_queue');
+                    $queueData = array(
+                        'queue_title' => '订单退款申请中状态推送',
+                        'worker'      => 'ome_kafka_api.sendOrderStatus',
+                        'start_time'  => time(),
+                        'params'      => array(
+                            'status'   => 'refunding',
+                            'order_bn' => $z_order_bn,
+                            'logi_bn'  => '',
+                            'shop_id'  => $arrOrderBn['0']['shop_id'],
+                            'item_info'=> array(),
+                            'bill_info'=> array(),
+                        ),
+                    );
+                    $kafkaQueue->save($queueData);
+                    ### 订单状态回传kafka august.yao 退款申请中 end ###
+                }
                 
                 $oLoger->write_log('refund_apply@ome',$data['apply_id'],'申请退款成功');
                 return $msg;
