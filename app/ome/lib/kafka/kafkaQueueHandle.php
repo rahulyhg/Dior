@@ -22,8 +22,9 @@ class ome_kafka_kafkaQueueHandle{
             // 设置执行标志
             app::get('ome')->setConf('kafkaQueueIsTrue', 'isTrue');
         }
-
-        set_time_limit(0); // 设置脚本执行时间
+        // 设置脚本执行时间
+        set_time_limit(0);
+        $orderModel = app::get('ome')->model('orders');
         // 获取需要执行的任务
         $kafkaQueue = app::get('ome')->model('kafka_queue');
         $taskList   = $kafkaQueue->getList('*', array('status'=>'hibernate'));
@@ -32,10 +33,11 @@ class ome_kafka_kafkaQueueHandle{
             foreach ($taskList as $key=>$val){
                 // 数据处理
                 list($worker, $method) = explode('.', $val['worker']);
-                $errMsg   = null;
                 $obj_work = kernel::single($worker);
                 $params   = $val['params'];
-                $params['createtime'] = $val['start_time'];
+                // 获取订单创建时间
+                $createTime = $orderModel->dump(array('order_bn'=>$params['order_bn']),'order_id,createtime');
+                $params['createtime'] = $createTime['createtime'];
 
                 $response = call_user_func_array(array($obj_work, $method), array($params['order_bn'], $params['status'], $params, $params['shop_id']));
                 
