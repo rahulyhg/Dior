@@ -111,8 +111,7 @@ class creditorderapi_service{
         $__sign=$params['sign'];
         unset($params['sign']);
         $sign_str=$this->get_sign_str($params);
-        //$secret_key=$this->get_secret_key($params['app_key']);
-        $secret_key='A1s@e%68!p^d#K2';
+        $secret_key=$this->get_secret_key($params['app_key']);
         $sign_str.=$secret_key;
         $sign=strtoupper(md5($sign_str));
         return $sign===$__sign;
@@ -130,8 +129,16 @@ class creditorderapi_service{
     }
     //获取指定来源的secret_key
     private function get_secret_key($app_key){
-        $secret_key=app::get('ome')->model('shop')->getList('secret_key',array('shop_bn'=>$app_key));
-        return $secret_key[0]['secret_key'];
+        //$secret_key=app::get('ome')->model('shop')->getList('secret_key',array('shop_bn'=>$app_key));
+        $shopMdl  = app::get('ome')->model('shop');
+        $shopInfo = $shopMdl->getList('*',array('shop_bn'=>$app_key));
+        if(!empty($shopInfo)){
+            $sql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shopInfo['0']['shop_id']."%'";
+            $secret_key = app::get('creditorderapi')->model('apiconfig')->db->select($sql);
+            return $secret_key[0]['secret_key'];
+        }
+        return null;
+        
     }
     //剥离公共参数和业务参数
     private function split_service_params($params){
