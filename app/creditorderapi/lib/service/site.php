@@ -212,6 +212,23 @@ class creditorderapi_service_site
         }
 
         $oObj->db->commit($transaction);
+
+        ###### 订单状态回传kafka august.yao 创建订单 start ####
+        $kafkaQueue = app::get('ome')->model('kafka_queue');
+        $queueData = array(
+            'queue_title' => '订单创建推送',
+            'worker'      => 'ome_kafka_api.createOrder',
+            'start_time'  => time(),
+            'params'      => array(
+                'status'      => 'create',
+                'order_bn'    => $arrOrders['order_bn'],
+                'shop_id'     => $arrOrders['shop_id'],
+                'createOrder' => $arrOrders,
+            ),
+        );
+        $kafkaQueue->save($queueData);
+        ###### 订单状态回传kafka august.yao 创建订单 end ####
+
         return array('status'=>'succ','msg'=>'创建成功');exit();
     }
 

@@ -195,22 +195,22 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $this->writeLog($res_data,$insert_id);
 
             ###### 订单状态回传kafka august.yao 已取消 start####
-            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
-            $kafkaQueue  = app::get('ome')->model('kafka_queue');
-            $queueData = array(
-                'queue_title' => '订单已取消状态推送',
-                'worker'      => 'ome_kafka_api.sendOrderStatus',
-                'start_time'  => time(),
-                'params'      => array(
-                    'status'   => 'cancel',
-                    'order_bn' => $orderData[0]['order_bn'],
-                    'logi_bn'  => '',
-                    'shop_id'  => $orderData[0]['shop_id'],
-                    'item_info'=> array(),
-                    'bill_info'=> array(),
-                ),
-            );
-            $kafkaQueue->save($queueData);
+//            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
+//            $kafkaQueue  = app::get('ome')->model('kafka_queue');
+//            $queueData = array(
+//                'queue_title' => '订单已取消状态推送',
+//                'worker'      => 'ome_kafka_api.sendOrderStatus',
+//                'start_time'  => time(),
+//                'params'      => array(
+//                    'status'   => 'cancel',
+//                    'order_bn' => $orderData[0]['order_bn'],
+//                    'logi_bn'  => '',
+//                    'shop_id'  => $orderData[0]['shop_id'],
+//                    'item_info'=> array(),
+//                    'bill_info'=> array(),
+//                ),
+//            );
+//            $kafkaQueue->save($queueData);
             ###### 订单状态回传kafka august.yao 已取消 end ####
 
             //发送报警邮件
