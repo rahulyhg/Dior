@@ -1368,26 +1368,6 @@ class ome_ctl_admin_order extends desktop_controller{
 					$megentoInstance->update_status($orderdata['order_bn'],'canceled');
 				}
 
-                ### 订单状态回传kafka august.yao 已取消 start ###
-                if($orderdata['pay_bn'] == 'cod'){
-                    $kafkaQueue = app::get('ome')->model('kafka_queue');
-                    $queueData = array(
-                        'queue_title' => '订单已取消状态推送',
-                        'worker'      => 'ome_kafka_api.sendOrderStatus',
-                        'start_time'  => time(),
-                        'params'      => array(
-                            'status'   => 'cancel',
-                            'order_bn' => $orderdata['order_bn'],
-                            'logi_bn'  => '',
-                            'shop_id'  => $orderdata['shop_id'],
-                            'item_info'=> array(),
-                            'bill_info'=> array(),
-                        ),
-                    );
-                    $kafkaQueue->save($queueData);
-                }
-                ### 订单状态回传kafka august.yao 已取消 end ###
-
                 echo "<script>alert('订单取消成功');</script>";
             }else{
                 echo "<script>alert('订单取消失败,原因是:".$sync_rs['msg']."');</script>";
