@@ -82,7 +82,14 @@ class ome_kafka_api extends ome_kafka_request{
      * @return string
      */
     private function build_sign($params){
-        $request_data = array_merge($params, $this->public_params);
+
+        // 1001和1002签名规则
+        if($this->api_method == '10001'){
+            $request_data = json_decode($params['params'], true);
+        }else{
+            $request_data = array_merge($params, $this->public_params);
+        }
+
         ksort($request_data, 2);
         $sign_str = ''; // 签名字符串
         foreach($request_data as $k=>$v){
