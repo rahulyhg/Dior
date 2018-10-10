@@ -197,6 +197,7 @@ class creditorderapi_service{
         $log_data=array(
             'api_handler'=>'response',
             'api_name'=>$this->method,
+            'api_bn' => $data,
             'api_status'=>$api_status,
             'api_request_time'=>$this->request_time,
             'api_check_time' => $this->check_time,

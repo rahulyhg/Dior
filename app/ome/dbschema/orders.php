@@ -59,6 +59,8 @@ $db['orders']=array (
           'editable' => false,
           'in_list' => true,
           'default_in_list' => false,
+          'filtertype' => 'yes',
+          'filterdefault' => true,
       ),
     'archive' =>
     array (
