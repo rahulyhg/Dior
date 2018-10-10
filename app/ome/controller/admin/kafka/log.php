@@ -60,7 +60,8 @@ class ome_ctl_admin_kafka_log extends desktop_controller
         }
         // 创建订单
         if($log_data['http_request_data']['method'] == '10001'){
-            $response = $obj_work->createOrder($params['order_bn'], $params['status'], $params, $orderInfo['shop_id'], $id);
+            // 创建订单状态默认传create
+            $response = $obj_work->createOrder($params['order_bn'], 'create', array('createOrder' => $params), $orderInfo['shop_id'], $id);
         }
 
         // 更新重发次数
