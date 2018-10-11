@@ -10,7 +10,12 @@
 
     <permissions>
         <permission id="qm_setting">奇门配置</permission>
-
     </permissions>
+
+    <workground name="系统集成" id="channel_center" order="1100">
+        <menugroup name="WMS队列日志管理">
+            <menu controller='admin_queue' action='index' permission='setting_api_log' display='true'>wms队列日志</menu>
+        </menugroup>
+    </workground>
 
 </desktop>

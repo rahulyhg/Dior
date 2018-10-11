@@ -1302,6 +1302,19 @@ $db['orders']=array (
       'label' => '回写失败类型',
       'editable' => false,
     ),
+    'wms_status' => array(
+        'label' => app::get('base')->_('推送wms状态'),
+        'type'  => array(
+            'false' => app::get('base')->_('未推送'),
+            'true'  => app::get('base')->_('已推送'),
+        ),
+        'required' => true,
+        'default'  => 'false',
+        'in_list'  => true,
+        'width'    => 80,
+        'comment'  => '发货单创建推送wms状态',
+        'default_in_list' => true,
+    ),
   ),
   'index' =>
   array (
