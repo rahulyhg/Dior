@@ -12,7 +12,7 @@ cachemgr::init(false);
 echo "begin <br/>";
 
 ###### OMS->WMS 接口调用执行 ######
-$sql       = "select id from sdb_qmwms_queue where status='2' and repeat_num<5";
+$sql       = "select id from sdb_qmwms_queue where status='2' and repeat_num<5 and original_bn<>'' ";
 $queueData = app::get('qmwms')->model('queue')->db->select($sql);
 
 if(!empty($queueData)){
