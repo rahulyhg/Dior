@@ -1876,8 +1876,6 @@ class ome_mdl_orders extends dbeav_model{
             $rs['rsp'] = 'succ';
         }
         $rs['rsp'] = ($rs['rsp'] == 'succ')?'success':'fail';
-        
-
 
         if ($mode == 'async' || $rs['rsp'] == 'success'){
             $oOperation_log = &$this->app->model('operation_log');
@@ -1891,7 +1889,25 @@ class ome_mdl_orders extends dbeav_model{
                 $this->save($savedata);
 
                 //TODO: 订单取消作为单独的日志记录
-                //
+
+                ### 订单状态回传kafka august.yao 已取消 start ###
+                $orderRes   = $this->dump($order_id);
+                $kafkaQueue = app::get('ome')->model('kafka_queue');
+                $queueData = array(
+                    'queue_title' => '订单已取消状态推送',
+                    'worker'      => 'ome_kafka_api.sendOrderStatus',
+                    'start_time'  => time(),
+                    'params'      => array(
+                        'status'   => 'cancel',
+                        'order_bn' => $orderRes['order_bn'],
+                        'logi_bn'  => '',
+                        'shop_id'  => $orderRes['shop_id'],
+                        'item_info'=> array(),
+                        'bill_info'=> array(),
+                    ),
+                );
+                $kafkaQueue->save($queueData);
+                ### 订单状态回传kafka august.yao 已取消 end ###
                 
                 $this->unfreez($order_id);
                 $oOperation_log->write_log('order_modify@ome',$order_id,$memo);

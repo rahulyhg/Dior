@@ -195,22 +195,22 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $this->writeLog($res_data,$insert_id);
 
             ###### 订单状态回传kafka august.yao 已取消 start####
-            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
-            $kafkaQueue  = app::get('ome')->model('kafka_queue');
-            $queueData = array(
-                'queue_title' => '订单已取消状态推送',
-                'worker'      => 'ome_kafka_api.sendOrderStatus',
-                'start_time'  => time(),
-                'params'      => array(
-                    'status'   => 'cancel',
-                    'order_bn' => $orderData[0]['order_bn'],
-                    'logi_bn'  => '',
-                    'shop_id'  => $orderData[0]['shop_id'],
-                    'item_info'=> array(),
-                    'bill_info'=> array(),
-                ),
-            );
-            $kafkaQueue->save($queueData);
+//            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
+//            $kafkaQueue  = app::get('ome')->model('kafka_queue');
+//            $queueData = array(
+//                'queue_title' => '订单已取消状态推送',
+//                'worker'      => 'ome_kafka_api.sendOrderStatus',
+//                'start_time'  => time(),
+//                'params'      => array(
+//                    'status'   => 'cancel',
+//                    'order_bn' => $orderData[0]['order_bn'],
+//                    'logi_bn'  => '',
+//                    'shop_id'  => $orderData[0]['shop_id'],
+//                    'item_info'=> array(),
+//                    'bill_info'=> array(),
+//                ),
+//            );
+//            $kafkaQueue->save($queueData);
             ###### 订单状态回传kafka august.yao 已取消 end ####
 
             //发送报警邮件
@@ -386,7 +386,10 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $bn = $product['bn'];
             if($wms_all_products[$bn]){
                 $wms_product = $wms_all_products[$bn];
-                $store_freeze = $branch_product->getList('store_freeze,safe_store,store_freeze_change',array('product_id'=>$product['product_id'],'branch_id'=>1));
+                $store_freeze = $branch_product->getList('store,store_freeze,safe_store,store_freeze_change',array('product_id'=>$product['product_id'],'branch_id'=>1));
+                $oms_store = $store_freeze[0]['store'];//OMS系统库存
+                $oms_freeze = $store_freeze[0]['store_freeze'];//OMS冻结库存
+                $wms_store = $wms_product['quantity'];//获取的WMS库存
                 $store = $wms_product['quantity']+$store_freeze[0]['store_freeze']-$store_freeze[0]['store_freeze_change'];
                 $re = $branch_product->change_store(1,$product['product_id'],$store);
                 if($re){
@@ -402,16 +405,31 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
 					);
                 }
             }else{
-                $store_freeze = $branch_product->getList('store_freeze',array('product_id'=>$product['product_id'],'branch_id'=>1));
+                $store_freeze = $branch_product->getList('store,store_freeze',array('product_id'=>$product['product_id'],'branch_id'=>1));
+                $oms_store = $store_freeze[0]['store'];//OMS系统库存
+                $oms_freeze = $store_freeze[0]['store_freeze'];//OMS冻结库存
+                $wms_store = 0;//获取的WMS为0
                 $store = $store_freeze[0]['store_freeze']?$store_freeze[0]['store_freeze']:0;
                 $re = $branch_product->change_store(1,$product['product_id'],$store);
                 if($re){
+                    $hasUser = kernel::single('omeftp_auto_update_product')->getHasUseStore($product['bn']);
+                    $magentoStore = 0;
                     $arrStock[]=array(
 						'sku'=>$product['bn'],
-						'number'=>0,
+						'number'=>$magentoStore,
 					);
                 }
             }
+
+            # 记录商品库存更新记录
+            $log_dir=DATA_DIR.'/stock_log/';
+            # 创建日志目录
+            if(!is_dir($log_dir)){
+                mkdir($log_dir,0777,true);
+                chmod($log_dir,0777);
+            }
+            $var_export = "OMS系统更新前库存:".$oms_store.",OMS冻结库存:".$oms_freeze.",获取的WMS库存:".$wms_store.",未审单的库存:".$hasUser.",同步Magento的库存:".$magentoStore;
+            error_log(date('Y-m-d H:i:s')."货号".$product['bn']."的库存情况:"."\r\n".var_export($var_export,true)."\r\n",3,$log_dir.'stock'.date('Y-m-d').'.txt');
         }
 		
 		if(!empty($arrStock)){

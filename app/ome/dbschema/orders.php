@@ -1134,6 +1134,17 @@ $db['orders']=array (
 	  'default_in_list' => false,
       'label' => 'CVD Card',
     ),
+    'is_gift_choose' =>
+    array (
+      'type' =>'bool',
+      'default' => 'false',
+      'editable' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      'in_list' => true,
+	  'default_in_list' => false,
+      'label' => '礼物',
+    ),
     'logi_id' =>
     array (
       'type' => 'table:dly_corp@ome',

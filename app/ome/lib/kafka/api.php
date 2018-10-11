@@ -21,7 +21,6 @@ class ome_kafka_api extends ome_kafka_request{
         set_time_limit(0);
         ini_set("memory_limit", "128M");
         ini_set("max_execution_time", 0);
-        $this->api_name = 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/';
     }
 
     /**
@@ -83,7 +82,14 @@ class ome_kafka_api extends ome_kafka_request{
      * @return string
      */
     private function build_sign($params){
-        $request_data = array_merge($params, $this->public_params);
+
+        // 1001和1002签名规则
+        if($this->api_method == '10001'){
+            $request_data = json_decode($params['params'], true);
+        }else{
+            $request_data = array_merge($params, $this->public_params);
+        }
+
         ksort($request_data, 2);
         $sign_str = ''; // 签名字符串
         foreach($request_data as $k=>$v){
@@ -98,7 +104,10 @@ class ome_kafka_api extends ome_kafka_request{
      * @return string
      */
     private function get_app_key(){
-        return 'DIOR_DMALL';
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $KafkaConf = unserialize($KafkaConf);
+        return $KafkaConf['app_key'];
     }
 
     /**
@@ -106,7 +115,10 @@ class ome_kafka_api extends ome_kafka_request{
      * @return string
      */
     private function get_secret_key(){
-        return '228287BBAFF8A8BA4B2FB2CE90E0CC2D';
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $KafkaConf = unserialize($KafkaConf);
+        return $KafkaConf['secret_key'];
     }
 
     /**
@@ -115,7 +127,12 @@ class ome_kafka_api extends ome_kafka_request{
      * @return mixed
      */
     private function build_request_url(){
-        return 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method;
+        // 获取缓存信息
+        $KafkaConf = app::get('ome')->getConf('KafkaConf');
+        $KafkaConf = unserialize($KafkaConf);
+        return $KafkaConf['api_url'] . $this->api_method;
+        //return 'http://kafka.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 测试环境
+        //return 'http://kafkagw.chinanorth.cloudapp.chinacloudapi.cn/kafka/send/' . $this->api_method; // 正式环境
     }
 
     /**
