@@ -14,6 +14,15 @@ $db['api_log'] = array(
                 'extra' => 'auto_increment',
                 'label' => '请求ID',
             ),
+            'api_bn' => array(
+                'type' => 'varchar(50)',
+                'label' => '单据号',
+                'in_list' => true,
+                'default_in_list' => true,
+                'searchtype' => 'has',
+                'filtertype' => 'yes',
+                'filterdefault' => true,
+            ),
             'api_handler' => array(
                 'type' => array(
                     'request' => '请求',
