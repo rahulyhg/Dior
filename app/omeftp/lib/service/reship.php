@@ -404,6 +404,11 @@ class omeftp_service_reship{
 			$ax_l[$key][] = '';//Line amount incl. Taxes
 
 			$ax_l[$key][] = '';//Batch Number
+            
+            $ax_l[$key][] = '';//
+            $ax_l[$key][] = '';//
+            $ax_l[$key][] = 'NW';//site
+            $ax_l[$key][] = '22-RTN';//warehouse
 
 			$ax_l_str[$key] = implode('|',$ax_l[$key]);
 		}
