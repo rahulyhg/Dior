@@ -59,7 +59,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
 
         $data          = array('params'=>json_encode($update_data));
         $request_data  = $this->build_request($data, $shop_id, 'GET');
-        $response_data = $this->rpc($request_data, 'xml');
+        $response_data = $this->rpc($request_data, 'xml',$order_bn);
 
         if(!$this->check_api_status($response_data)){
             // 请求失败发送邮件提醒
@@ -175,7 +175,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
         }
         //$request_data  = $this->build_request($data, $shop_id, 'GET');
         $request_data  = $this->build_request2($data, $shop_id,$urlType, 'GET');
-        $response_data = $this->rpc($request_data, 'xml');
+        $response_data = $this->rpc($request_data, 'xml',$order_bn);
         //echo '<pre>d';print_r($response_data);exit;
         if(!$this->check_api_status($response_data)){
             // 请求失败发送邮件提醒
@@ -196,8 +196,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
      * @param string $result_type
      * @return bool|mixed
      */
-    public function rpc($request, $result_type = 'json'){
-
+    public function rpc($request, $result_type = 'json',$api_bn=''){
         $__key = md5(serialize(func_get_args()));
         if (isset($this->instance_data[$__key])){
             return $this->instance_data[$__key];
@@ -219,6 +218,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
         $data = array(
             'api_handler'       => 'request',
             'api_name'          => $this->api_name(),
+            'api_bn' => $api_bn,
             'api_status'        => $api_status,
             'api_request_time'  => $request_time,
             'api_check_time'    => time(),
