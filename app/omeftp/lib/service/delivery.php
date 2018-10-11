@@ -492,7 +492,17 @@ class omeftp_service_delivery{
             $ax_l[$key][] = '';//Line amount incl. Taxes
 
             $ax_l[$key][] = '';//Batch Number
-
+            
+            $ax_l[$key][] = '';//
+            $ax_l[$key][] = '';//
+            if($delivery['order']['is_creditOrder']=='1'){
+                $ax_l[$key][] = 'NW';//site
+                $ax_l[$key][] = '01-CRM';//warehouse
+            }else{
+                $ax_l[$key][] = '';//
+                $ax_l[$key][] = '';//
+            }
+            
             $ax_l_str[$key] = implode('|',$ax_l[$key]);
         }
         $key = $key+1;
@@ -509,22 +519,22 @@ class omeftp_service_delivery{
             $ax_card_flag=true;
         }
         if($ax_card_flag){
-            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||';
+            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||||||';
             $key = $key+1;
         }
 
         if($delivery['order']['is_w_card']=='true'){
-            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||||||';
             $key = $key+1;
         }
         //MCD包装
         if($delivery['order']['mcd_package_sku']=='MCD'){
-            $ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||||||';
             $key = $key+1;
         }
         //cvd
         if($delivery['order']['is_cvd']=='true'){
-            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||';
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||||||';
             $key = $key+1;
         }
 
@@ -533,7 +543,7 @@ class omeftp_service_delivery{
             $arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
             $arrRibbon=$arrRibbon[0];
 
-            $ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||';
+            $ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||||||';
         }
 
         return implode("\n",$ax_l_str);
@@ -605,7 +615,7 @@ class omeftp_service_delivery{
                 if (!$delivery['order']) {
                     $deliOrder = $deliOrderModel->dump(array('delivery_id'=>$delivery['delivery_id']),'*');
 
-                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku,order_confirm_time,is_cvd');
+                    $delivery['order'] = $orderModel->dump(array('order_id'=>$deliOrder['order_id']),'order_bn,cost_payment,shop_id,shop_type,welcomecard,pmt_order,createtime,invoice_name,cost_tax,invoice_area,invoice_addr,invoice_zip,invoice_contact,is_tax,tax_company,cost_freight,is_delivery,mark_text,custom_mark,sync,ship_area,order_id,self_delivery,createway,pmt_cost_shipping,is_w_card,pay_bn,message1,message2,message3,message4,message5,message6,discount,total_amount,taxpayer_identity_number,golden_box,ribbon_sku,is_einvoice,is_card,is_mcd,is_mcd_card,mcd_package_sku,order_confirm_time,is_cvd,is_creditOrder');
                 }
 
                 // 发货地址
