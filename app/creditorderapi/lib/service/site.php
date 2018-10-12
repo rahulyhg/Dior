@@ -264,6 +264,7 @@ class creditorderapi_service_site
         $paymentdata['status'] = 'succ';
         $paymentdata['memo'] = '';
         $paymentdata['is_orderupdate'] = 'false';
+        $paymentdata['statement_status'] = 'true';
         if(!$oPayment->create_payments($paymentdata,'api_order_add')){
             return false;
         }
