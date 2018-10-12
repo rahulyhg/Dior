@@ -290,18 +290,15 @@ class creditorderapi_service_site
         //地区处理
         $mObj = kernel::single("ome_mdl_members");
         list($city1, $city2, $city3) = explode('-',$address_id);
-        if(empty($city1)){
-            return false;
-        }
         $isCity2=$mObj->db->select("SELECT region_id FROM sdb_eccommon_regions WHERE local_name='$city2' AND region_grade='2'");
         if(empty($isCity2['0']['region_id'])){
-            return $city1.'/'.$city2.'/'.$city3;
+            return false;
         }
         $isCity2=$isCity2['0']['region_id'];
         if(!empty($city3)){
             $isCity3=$mObj->db->select("SELECT local_name,region_id FROM sdb_eccommon_regions WHERE p_region_id='$isCity2' AND region_grade='3' AND local_name='$city3'");
             if(empty($isCity3['0']['region_id'])){
-                return $city1.'/'.$city2.'/'.$city3;
+                return false;
             }
             return 'mainland:'.$city1.'/'.$city2.'/'.$city3.':'.$isCity3['0']['region_id'];
         }else{
