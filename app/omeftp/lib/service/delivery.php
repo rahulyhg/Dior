@@ -494,7 +494,6 @@ class omeftp_service_delivery{
             $ax_l[$key][] = '';//Batch Number
             
             $ax_l[$key][] = '';//
-            $ax_l[$key][] = '';//
             if($delivery['order']['is_creditOrder']=='1'){
                 $ax_l[$key][] = 'NW';//site
                 $ax_l[$key][] = '01-CRM';//warehouse
@@ -519,22 +518,22 @@ class omeftp_service_delivery{
             $ax_card_flag=true;
         }
         if($ax_card_flag){
-            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea||||||||||||';
+            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_gift_card_bn.'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||1|0.00|||||||||||Ea|||||||||||';
             $key = $key+1;
         }
 
         if($delivery['order']['is_w_card']=='true'){
-            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea||||||||||||';
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||1|0.00|||||||||||Ea|||||||||||';
             $key = $key+1;
         }
         //MCD包装
         if($delivery['order']['mcd_package_sku']=='MCD'){
-            $ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea||||||||||||';
+            $ax_l_str[] = 'L|GIFT WRAP||'.($key+1).'|'.$ax_setting['ax_mcd_package_bn'].'|||||||||1|0.00|||||||||||Ea|||||||||||';
             $key = $key+1;
         }
         //cvd
         if($delivery['order']['is_cvd']=='true'){
-            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea||||||||||||';
+            $ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_cvd_sample_bn'].'|||||||||1|0.00|||||||||||Ea|||||||||||';
             $key = $key+1;
         }
 
@@ -543,7 +542,7 @@ class omeftp_service_delivery{
             $arrRibbon=kernel::single("ome_mdl_products")->getList("name",array("bn"=>$delivery['order']['ribbon_sku']));
             $arrRibbon=$arrRibbon[0];
 
-            $ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea||||||||||||';
+            $ax_l_str[] = 'L|Ribbon||'.($key+1).'|'.$delivery['order']['ribbon_sku'].'||'.$arrRibbon['name'].'|||||||1|0.00|||||||||||Ea|||||||||||';
         }
 
         return implode("\n",$ax_l_str);
