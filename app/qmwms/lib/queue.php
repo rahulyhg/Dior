@@ -65,8 +65,8 @@ class qmwms_queue{
                 }
             }
             try{
-                if(! $obj_work->$api_method($api_params,$this->_method[$method])) {
-                    $this->end($id, 2);    
+                if(! $obj_work->$api_method($api_params,$this->_method[$method],$msg)) {
+                    $this->end($id, 2,$msg);
                     continue;
                 }
                 $this->end($id, 3);
@@ -100,7 +100,7 @@ class qmwms_queue{
             $id     = $taskInfo['id'];
             $params = $taskInfo['api_params'];
             // 将数据修改为运行中
-            //$this->begin($id);
+            $this->begin($id);
             // 数据处理
             list($worker, $method) = explode('.', $taskInfo['worker']);
             $obj_work = kernel::single($worker);
@@ -127,8 +127,8 @@ class qmwms_queue{
 
             try{
                 // 请求失败
-                if(!$obj_work->$method($params,$taskInfo['api_method'])) {
-                    $this->begin($taskInfo['id'], 'failure', '', $taskInfo['repeat_num']);
+                if(!$obj_work->$method($params,$taskInfo['api_method'],$msg)) {
+                    $this->begin($taskInfo['id'], 'failure', $msg, $taskInfo['repeat_num']);
                     continue;
                 }
                 // 删除数据
@@ -148,7 +148,7 @@ class qmwms_queue{
     {
         if($status == 'failure'){
             $repeat_num = $repeat_num + 1;
-            $this->_queue->update(array('status' => '2', 'msg' => $msg, 'repeat_num' => $repeat_num), array('id'=>$id));
+            $this->_queue->update(array('status' => 2, 'msg' => $msg, 'repeat_num' => $repeat_num), array('id'=>$id));
         }else{
             $this->_queue->update(array('status'=>1), array('id'=>$id));
         }

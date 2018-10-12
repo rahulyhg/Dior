@@ -349,7 +349,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
      * @param $params
      * 发货单创建接口
      */
-    public function wms_api_push_delivery($params,$method){
+    public function wms_api_push_delivery($params,$method,&$err_msd){
 
         $data     = $params['data'];
         $body     = $params['body'];
@@ -358,6 +358,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $insert_id = $this->writeLog($data);
         //发起请求
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //echo "<pre>";print_r($response);exit;
         //检查接口string返回是否是XML
         $is_xml = $this->check_xml($response);
         //ERP请求奇门返回信息写日志
@@ -373,6 +374,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_ax');
                 return true;
             }else{
+                $err_msd = $res_data['res_msg'];
                 return false;
             }
         }
@@ -384,7 +386,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
      * @param $method
      * 退货单创建接口
      */
-    public function wms_api_push_return($params,$method){
+    public function wms_api_push_return($params,$method,&$err_msd){
         $data        = $params['data'];
         $body        = $params['body'];
         $reship_id   = $params['reship_id'];
@@ -493,6 +495,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                 }
                 return true;
             }else{
+                $err_msd = $res_data['res_msg'];
                 return false;
             }
         }
