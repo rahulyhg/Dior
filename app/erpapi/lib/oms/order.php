@@ -525,31 +525,31 @@ class erpapi_oms_order
                 $post['price'][$isBn['0']['product_id'].'_pkg'.$h]=$mprice;
                 
                 $post['true_price'][$isBn['0']['product_id'].'_pkg'.$h]=$true_price;
-                $h++;
             }else{
                 if($product['type']=='gift'){
-                    $post['num'][$isBn['0']['product_id']."_gift"]['num']=$product['num'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['type']=$product['type'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['name']=$product['name'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['pmt_price']=$product['pmt_price'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['pmt_percent']=$product['pmt_percent'];
-                    $post['price'][$isBn['0']['product_id']."_gift"]=$mprice;
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['num']=$product['num'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['type']=$product['type'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['name']=$product['name'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['pmt_price']=$product['pmt_price'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['pmt_percent']=$product['pmt_percent'];
+                    $post['price'][$isBn['0']['product_id']."_gift".$h]=$mprice;
                     
-                    $post['true_price'][$isBn['0']['product_id']."_gift"]=$true_price;
+                    $post['true_price'][$isBn['0']['product_id']."_gift".$h]=$true_price;
                 }else{
-                    $post['num'][$isBn['0']['product_id']]['num']=$product['num'];
-                    $post['num'][$isBn['0']['product_id']]['type']=$product['type'];
-                    $post['num'][$isBn['0']['product_id']]['name']=$product['name'];
-                    $post['num'][$isBn['0']['product_id']]['is_mcd_product']=$product['is_mcd_product'];
-                    $post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
-                    $post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
-                    $post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
-                    $post['num'][$isBn['0']['product_id']]['lettering_type']=$product['lettering_type'];
-                    $post['price'][$isBn['0']['product_id']]=$mprice;
+                    $post['num'][$isBn['0']['product_id']."_".$h]['num']=$product['num'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['type']=$product['type'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['name']=$product['name'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['is_mcd_product']=$product['is_mcd_product'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['pmt_price']=$product['pmt_price'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['pmt_percent']=$product['pmt_percent'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['message1']=$product['lettering'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['lettering_type']=$product['lettering_type'];
+                    $post['price'][$isBn['0']['product_id']."_".$h]=$mprice;
                     
-                    $post['true_price'][$isBn['0']['product_id']]=$true_price;
+                    $post['true_price'][$isBn['0']['product_id']."_".$h]=$true_price;
                 }
             }
+            $h++;
             $isBn='';
         }
         
@@ -616,32 +616,6 @@ class erpapi_oms_order
         $price = $post['price'];
         $true_price = $post['true_price'];
        
-        if (!$num)
-            return $this->send_error('请选择商品');
-        $tmp_num = $num;
-        $pkg_num = array();
-        foreach ($num as $key => $v){
-            $no = explode('_',$key);
-            if ($no[0] == 'pkg') {
-                unset($tmp_num[$key]);
-                $pkg_num[$key] = array(
-                    'id' => $no[1],
-                    'num' => $v['num']
-                );
-            }
-            if ($v['num'] < 1 || $v['num'] > 499999){
-                return $this->send_error('数量必须大于1且小于499999');
-            }
-        }
-        if (!$price)
-            return $this->send_error('请选择商品');
-        foreach ($price as $v){
-            if ($v < 0){
-                return $this->send_error('请填写正确的价格');
-            }
-        }
-
-        $num = $tmp_num;
         $iorder = $post['order'];
         $iorder['consignee'] = $consignee;
         $iorder['shipping'] = $shipping;
@@ -651,11 +625,7 @@ class erpapi_oms_order
         $ax_pmt_price=0;
         if ($num)
         foreach ($num as $k => $i){
-            if(strpos($k,'_gift')){
-                $p = $pObj->dump(substr($k,0,strpos($k,'_gift')));
-            }else{
-                $p = $pObj->dump(strpos($k,'_pkg')?substr($k,0,strpos($k,'_pkg')):$k);
-            }
+            $p = $pObj->dump(substr($k,0,strpos($k,'_')));
             
             $z_g_tpye=$i['type'];
             $z_price=$price[$k];
