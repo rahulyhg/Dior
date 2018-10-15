@@ -224,7 +224,47 @@ class ome_kafka_api extends ome_kafka_request{
 
         $this->api_method = '10001';    // 接口名称
 
-        $request_data  = $this->build_request(array('params'=>json_encode($data['createOrder'])));
+        // 组装请求数据
+        if(isset($data['createOrder']['member_id'])){
+            // 用户信息
+            $userInfo = kernel::single("ome_mdl_members")->dump(array('member_id'=>$data['createOrder']['member_id']),'*');
+            // 地址信息
+            $addressId = app::get('ome')->model('orders')->dump(array('order_bn'=>$order_bn),'ship_area,order_id');
+            $addressId = explode(':', $addressId['ship_area']);
+            $addressId = str_replace('/', '-', $addressId[1]);
+            $products = array();
+            foreach ($data['createOrder']['order_objects'] as $key=>$val){
+                $products[] = array(
+                    'bn'         => $val['bn'],
+                    'name'       => urlencode($val['name']),
+                    'num'        => $val['quantity'],
+                    'sale_price' => $val['sale_price'],
+                );
+            }
+            $request_data  = array(
+                'order_bn'      => $data['createOrder']['order_bn'],
+                'createtime'    => $data['createOrder']['createtime'],
+                'pay_bn'        => $data['createOrder']['pay_bn'],
+                'paytime'       => $data['createOrder']['paytime'],
+                'cost_shipping' => $data['createOrder']['shipping']['cost_shipping'] ? $data['createOrder']['shipping']['cost_shipping'] : '0.00',
+                'is_letter'     => $data['createOrder']['is_letter'],
+                'address_id'    => urlencode($addressId),
+                'consignee'     => array(
+                    'name'  => urlencode($data['createOrder']['consignee']['name']),
+                    'mobile'=> $data['createOrder']['consignee']['mobile'],
+                    'addr'  => urlencode($data['createOrder']['consignee']['addr']),
+                ),
+                'account'       => array(
+                    'name'  => $userInfo['name'] ? urlencode($userInfo['name']) : urlencode('小周'),
+                    'mobile'=> $userInfo['mobile'] ? $userInfo['mobile'] : '13816565765',
+                ),
+                'products'      => $products,
+            );
+        }else{
+            $request_data = $data['createOrder'];
+        }
+
+        $request_data  = $this->build_request(array('params'=>json_encode($request_data)));
         $response_data = $this->rpc($request_data, 'json', $apiLogId);
 
         if(!$this->check_api_status($response_data)){
