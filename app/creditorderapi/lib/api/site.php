@@ -48,7 +48,7 @@ class creditorderapi_api_site extends creditorderapi_api{
         );
         $data=array('params'=>json_encode($request_data));
         $request_data=$this->build_request($data,$order_data[0]['shop_id']);
-        $response_data=$this->rpc($request_data);
+        $response_data=$this->rpc($request_data,'json',$order_data[0]['order_bn']);
         if(!$this->check_api_status($response_data)){
             //发送邮件提醒
             /*$shop_bn=app::get('ome')->model('shop')->getList('shop_bn',array('shop_id'=>$order_data[0]['shop_id']));
@@ -343,7 +343,7 @@ class creditorderapi_api_site extends creditorderapi_api{
 
         $data          = array('params'=>json_encode($update_data));
         $request_data  = $this->build_request($data,$shop_id);
-        $response_data = $this->rpc($request_data);
+        $response_data = $this->rpc($request_data,'json',$order_bn);
 
         if(!$this->check_api_status($response_data)){
             // 请求失败发送邮件提醒
