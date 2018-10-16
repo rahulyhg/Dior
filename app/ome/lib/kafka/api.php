@@ -230,8 +230,12 @@ class ome_kafka_api extends ome_kafka_request{
             $userInfo = kernel::single("ome_mdl_members")->dump(array('member_id'=>$data['createOrder']['member_id']),'*');
             // 地址信息
             $addressId = app::get('ome')->model('orders')->dump(array('order_bn'=>$order_bn),'ship_area,order_id');
-            $addressId = explode(':', $addressId['ship_area']);
+            $addressId = explode(':', $addressId['consignee']['area']);
             $addressId = str_replace('/', '-', $addressId[1]);
+            $addCount  = count(explode('-', $addressId));
+            if($addCount < 3 ){
+                $addressId = $data['createOrder']['address_id'];
+            }
             $products = array();
             foreach ($data['createOrder']['order_objects'] as $key=>$val){
                 $products[] = array(
@@ -255,8 +259,8 @@ class ome_kafka_api extends ome_kafka_request{
                     'addr'  => urlencode($data['createOrder']['consignee']['addr']),
                 ),
                 'account'       => array(
-                    'name'  => $userInfo['name'] ? urlencode($userInfo['name']) : urlencode('小周'),
-                    'mobile'=> $userInfo['mobile'] ? $userInfo['mobile'] : '13816565765',
+                    'name'  => urlencode($userInfo['contact']['name']),
+                    'mobile'=> $userInfo['contact']['phone']['mobile'],
                 ),
                 'products'      => $products,
             );
