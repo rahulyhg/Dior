@@ -215,6 +215,7 @@ class creditorderapi_service_site
 
         ###### 订单状态回传kafka august.yao 创建订单 start ####
         $kafkaQueue = app::get('ome')->model('kafka_queue');
+        $arrOrders['address_id'] = $order['address_id'];
         $queueData = array(
             'queue_title' => '订单创建推送',
             'worker'      => 'ome_kafka_api.createOrder',
@@ -281,6 +282,7 @@ class creditorderapi_service_site
         $paymentdata['status'] = 'succ';
         $paymentdata['memo'] = '';
         $paymentdata['is_orderupdate'] = 'false';
+        $paymentdata['statement_status'] = 'true';
         if(!$oPayment->create_payments($paymentdata,'api_order_add')){
             return false;
         }
@@ -306,18 +308,15 @@ class creditorderapi_service_site
         //地区处理
         $mObj = kernel::single("ome_mdl_members");
         list($city1, $city2, $city3) = explode('-',$address_id);
-        if(empty($city1)){
-            return false;
-        }
         $isCity2=$mObj->db->select("SELECT region_id FROM sdb_eccommon_regions WHERE local_name='$city2' AND region_grade='2'");
         if(empty($isCity2['0']['region_id'])){
-            return $city1.'/'.$city2.'/'.$city3;
+            return false;
         }
         $isCity2=$isCity2['0']['region_id'];
         if(!empty($city3)){
             $isCity3=$mObj->db->select("SELECT local_name,region_id FROM sdb_eccommon_regions WHERE p_region_id='$isCity2' AND region_grade='3' AND local_name='$city3'");
             if(empty($isCity3['0']['region_id'])){
-                return $city1.'/'.$city2.'/'.$city3;
+                return false;
             }
             return 'mainland:'.$city1.'/'.$city2.'/'.$city3.':'.$isCity3['0']['region_id'];
         }else{

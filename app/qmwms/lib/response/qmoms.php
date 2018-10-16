@@ -203,10 +203,28 @@ class qmwms_response_qmoms{
      */
     public function handle_wms_request($method,$content){
         $queue = app::get('qmwms')->model('queue');
-        $param['api_method'] = $method;
-        $param['api_params'] = $content;
-        $param['createtime'] = time();
-        $queue->save($param);
+        // 队列类型
+        if($method == 'returnOrderConfirm'){
+            $queueType = 'do_return';
+            $queueTitle= '退货入库单确认接口';
+            $worker = 'qmwms_response_qmoms.do_finish';
+        }elseif($method == 'deliveryOrderConfirm'){
+            $queueType = 'do_delivery';
+            $queueTitle= '发货单确认接口';
+            $worker = 'qmwms_response_qmoms.do_delivery';
+        }else{
+            return true;
+        }
+        $queueData  = array(
+            'original_bn' => '',
+            'queue_title' => $queueTitle,
+            'worker'      => $worker,
+            'createtime'  => time(),
+            'api_method'  => $method,
+            'api_params'  => $content,
+            'queue_type'  => $queueType,
+        );
+        $queue->save($queueData);
     }
     /**
      * @param $content
@@ -219,6 +237,7 @@ class qmwms_response_qmoms{
         $packages = $deliveryConfirm['packages']['package'];
 
         $orderData = $this->objectOrder->getList('*',array('order_bn'=>$orderBn));
+
         if(empty($orderData)){
             throw new Exception('INVALID_ORDER_CODE');
         }

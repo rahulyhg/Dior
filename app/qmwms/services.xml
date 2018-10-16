@@ -5,4 +5,7 @@
     <service id="qmwms.service.delivery">
         <class>qmwms_request_omsqm</class>
     </service>
+    <service id="desktop_finder.qmwms_mdl_queue">
+        <class>qmwms_finder_queue</class>
+    </service>
 </services> 
