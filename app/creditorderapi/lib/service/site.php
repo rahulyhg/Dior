@@ -215,6 +215,7 @@ class creditorderapi_service_site
 
         ###### 订单状态回传kafka august.yao 创建订单 start ####
         $kafkaQueue = app::get('ome')->model('kafka_queue');
+        $arrOrders['address_id'] = $order['address_id'];
         $queueData = array(
             'queue_title' => '订单创建推送',
             'worker'      => 'ome_kafka_api.createOrder',

@@ -232,6 +232,10 @@ class ome_kafka_api extends ome_kafka_request{
             $addressId = app::get('ome')->model('orders')->dump(array('order_bn'=>$order_bn),'ship_area,order_id');
             $addressId = explode(':', $addressId['consignee']['area']);
             $addressId = str_replace('/', '-', $addressId[1]);
+            $addCount  = count(explode('-', $addressId));
+            if($addCount < 3 ){
+                $addressId = $data['createOrder']['address_id'];
+            }
             $products = array();
             foreach ($data['createOrder']['order_objects'] as $key=>$val){
                 $products[] = array(
