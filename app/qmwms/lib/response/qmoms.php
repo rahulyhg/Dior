@@ -204,17 +204,16 @@ class qmwms_response_qmoms{
     public function handle_wms_request($method,$content){
         $queue = app::get('qmwms')->model('queue');
         // 队列类型
-        $queueType = '';
-        $queueTitle= '';
         if($method == 'returnOrderConfirm'){
             $queueType = 'do_return';
             $queueTitle= '退货入库单确认接口';
             $worker = 'qmwms_response_qmoms.do_finish';
-        }
-        if($method == 'deliveryOrderConfirm'){
+        }elseif($method == 'deliveryOrderConfirm'){
             $queueType = 'do_delivery';
             $queueTitle= '发货单确认接口';
             $worker = 'qmwms_response_qmoms.do_delivery';
+        }else{
+            return true;
         }
         $queueData  = array(
             'original_bn' => '',
