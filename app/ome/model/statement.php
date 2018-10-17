@@ -43,7 +43,7 @@ class ome_mdl_statement extends dbeav_model {
 								'statement_id'=>$payments[0]['statement_id'],
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
 								'memo'=>$payments[0]['memo'].','.$sdf['zwlsh'],
 							);
 					}else{
@@ -59,7 +59,7 @@ class ome_mdl_statement extends dbeav_model {
 								'statement_id'=>$payments[0]['statement_id'],
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
 								'memo'=>$payments[0]['memo'].','.$sdf['zwlsh'],
 							);
 						}else{
@@ -80,7 +80,7 @@ class ome_mdl_statement extends dbeav_model {
 								'original_type'=>'refunds',
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
 							);
 					}else{
 						$saveDate =  array(
@@ -89,7 +89,7 @@ class ome_mdl_statement extends dbeav_model {
 								'balance_status'=>'not_has',
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
 							);
 					}
 					//$this->save($saveDate);
@@ -127,7 +127,7 @@ class ome_mdl_statement extends dbeav_model {
 							'statement_id'=>$payments[0]['statement_id'],
 							'importer_time'=>time(),
 							'pay_time'=>strtotime($sdf['pay_time']),
-							'paymethod'=>'WeChat',
+							'paymethod'=>'wxpayjsapi',
 						);
 					$this->save($updateData);
 				}else{
@@ -140,7 +140,7 @@ class ome_mdl_statement extends dbeav_model {
 							'original_bn'=>$sdf['wx_order_bn'],
 							'importer_time'=>time(),
 							'pay_time'=>strtotime($sdf['pay_time']),
-							'paymethod'=>'WeChat',
+							'paymethod'=>'wxpayjsapi',
 							'original_type'=>$original_type,
 						);
 					//$flag = $this->insert($saveDate);
