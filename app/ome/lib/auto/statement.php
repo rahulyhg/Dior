@@ -8,6 +8,13 @@ class ome_auto_statement{
 		$statementObj = app::get('ome')->model('statement');
 		$refundObj = app::get('ome')->model('refunds');
 		$orderObj= app::get('ome')->model('orders');
+        $cfgObj = app::get('ome')->model('payment_cfg');
+       
+        $cfgConfig = $cfgObj->getList('*');
+        $pay_bn = array();
+        foreach($cfgConfig as $cfg){
+            $pay_bn[$cfg['id']] = $cfg['pay_bn'];
+        }
 
 		$payments = $paymentObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 	
@@ -25,7 +32,7 @@ class ome_auto_statement{
 			$data['paycost'] = $row['paycost'];
 			$data['cur_money'] = $row['cur_money'];
 			$data['payment'] = $row['payment'];
-			$data['paymethod'] = $row['paymethod'];
+			$data['paymethod'] = $pay_bn[$row['payment']];
 			$data['memo'] = $row['memo'];
 			$data['trade_no'] = $row['trade_no'];
 			$statementObj->save($data);
@@ -47,7 +54,7 @@ class ome_auto_statement{
 			$data['paycost'] = $row['paycost'];
 			$data['cur_money'] = $row['cur_money'];
 			$data['payment'] = $row['payment'];
-			$data['paymethod'] = $row['paymethod'];
+			$data['paymethod'] = $pay_bn[$row['payment']];
 			$data['memo'] = $row['memo'];
 			$data['trade_no'] = $row['trade_no'];
 			$data['original_type'] = 'refunds';
@@ -127,8 +134,11 @@ class ome_auto_statement{
 			if($row['shop_id']=="c7c44eade93b87b69062c76dc27c8ae7"){
 				$row['paymethod'] = 'wechatcard';
 			}else{
-				if($row['paymethod']=='WeiChat'){
+				if($row['paymethod']=='wxpayjsapi'){
 					$row['paymethod'] = 'WeChat';
+				}
+                if($row['paymethod']=='alipay'){
+					$row['paymethod'] = 'Alipay';
 				}
 			}
 			

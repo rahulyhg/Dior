@@ -93,7 +93,12 @@ $db['statement']=array (
     ),
     'paymethod' =>
     array (
-      'type' => 'varchar(100)',
+      'type' => array(
+		'alipay'=>'支付宝',
+		'wxpayjsapi'=>'微信支付',
+        'cod'=>'货到付款',
+	  ),
+      'default'=>'alipay',
       'label' => '支付方式',
       'width' => 110,
       'editable' => false,
@@ -215,6 +220,14 @@ $db['statement']=array (
       'editable' => false,
 	  'in_list' => true,
 	),
+    'createtime'=>array(
+         'type' => 'time',
+        'label' => '下单时间',
+        'filtertype' => 'time',
+        'filterdefault' => true,
+        'editable' => false,
+        'in_list' => true,
+    ),
 	'pay_time'=>array(
 		'type' => 'time',
 		'label' => '支付时间',
@@ -230,6 +243,8 @@ $db['statement']=array (
       'comment' => '财务备注',
 	  'in_list' => true,
 	  'label' => '财务备注',
+      'filtertype' => 'normal',
+      'filterdefault' => true,
     ),
     'payment_refer' =>
     array(
