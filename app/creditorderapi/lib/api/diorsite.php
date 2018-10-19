@@ -54,7 +54,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
         // 请求接口数据
         $update_data = array(
             'OrderCode'       => $order_bn,
-            'ReferenceNumber' => '',
+            'ReferenceNumber' => $logi_no,
         );
 
         $data          = array('params'=>json_encode($update_data));
