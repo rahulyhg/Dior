@@ -8,31 +8,25 @@ class ome_auto_statement{
 		$statementObj = app::get('ome')->model('statement');
 		$refundObj = app::get('ome')->model('refunds');
 		$orderObj= app::get('ome')->model('orders');
-        $cfgObj = app::get('ome')->model('payment_cfg');
-       
-        $cfgConfig = $cfgObj->getList('*');
-        $pay_bn = array();
-        foreach($cfgConfig as $cfg){
-            $pay_bn[$cfg['id']] = $cfg['pay_bn'];
-        }
 
 		$payments = $paymentObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 	
 		foreach($payments as $row){
-			$data = array();
-			$wx_order_bn='';
+			$data = $order = array();
 			$data['original_bn'] = $row['payment_bn'];
 			$data['order_id'] = $row['order_id'];
-			if($row['shop_id']=="c7c44eade93b87b69062c76dc27c8ae7"){
-				$wx_order_bn =$orderObj->getList("wx_order_bn",array('order_id'=>$row['order_id'],'shop_type'=>'cardshop'));
-				$data['wx_order_bn']=$wx_order_bn['0']['wx_order_bn'];
-			}
+			
+            $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$row['order_id']));
+            $order = $order[0];
+            $data['wx_order_bn']=$order['wx_order_bn'];
+            $data['paymethod'] = $order['pay_bn'];
+            $data['createtime'] = $order['createtime'];
+
 			$data['shop_id'] = $row['shop_id'];
 			$data['money'] = $row['money'];
 			$data['paycost'] = $row['paycost'];
 			$data['cur_money'] = $row['cur_money'];
 			$data['payment'] = $row['payment'];
-			$data['paymethod'] = $pay_bn[$row['payment']];
 			$data['memo'] = $row['memo'];
 			$data['trade_no'] = $row['trade_no'];
 			$statementObj->save($data);
@@ -42,19 +36,20 @@ class ome_auto_statement{
 		$refunds = $refundObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 		foreach($refunds as $row){
 			$data = array();
-			$wx_order_bn='';
 			$data['original_bn'] = $row['refund_bn'];
 			$data['order_id'] = $row['order_id'];
-			if($row['shop_id']=="c7c44eade93b87b69062c76dc27c8ae7"){
-				$wx_order_bn =$orderObj->getList("wx_order_bn",array('order_id'=>$row['order_id'],'shop_type'=>'cardshop'));
-				$data['wx_order_bn']=$wx_order_bn['0']['wx_order_bn'];
-			}
+			
+            $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$row['order_id']));
+            $order = $order[0];
+            $data['wx_order_bn']=$order['wx_order_bn'];
+            $data['paymethod'] = $order['pay_bn'];
+            $data['createtime'] = $order['createtime'];
+            
 			$data['shop_id'] = $row['shop_id'];
 			$data['money'] = $row['money'];
 			$data['paycost'] = $row['paycost'];
 			$data['cur_money'] = $row['cur_money'];
 			$data['payment'] = $row['payment'];
-			$data['paymethod'] = $pay_bn[$row['payment']];
 			$data['memo'] = $row['memo'];
 			$data['trade_no'] = $row['trade_no'];
 			$data['original_type'] = 'refunds';
