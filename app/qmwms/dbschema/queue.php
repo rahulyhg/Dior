@@ -65,7 +65,7 @@ $db['queue'] = array(
         ),
         'worker' => array(
             'type'     => 'varchar(200)',
-            'required' => true,
+            'required' => true,  
             'width'    => 200,
             'label'    => app::get('base')->_('执行方法'),
             'in_list'  => true,
