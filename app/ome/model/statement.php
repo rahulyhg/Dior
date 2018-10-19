@@ -1,7 +1,8 @@
 <?php
 class ome_mdl_statement extends dbeav_model {
 
-
+    //是否有导出配置
+    var $has_export_cnf = true;
 
 	public function balanceOfAccount($sdf){
 		$saveDate = array();
