@@ -396,12 +396,12 @@ class omeftp_service_back{
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 
 		if($delivery['order']['message1']){
-			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_setting['ax_sample_bn'].'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||-1|0.00||||||||||Ea|||||||||';
+			$ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_setting['ax_sample_bn'].'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||-1|0.00||||||||||Ea|||||||||||';
 			$key = $key+1;
 		}
 
 		if($delivery['order']['is_w_card']){
-			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||-1|0.00|||||||||||Ea||||||||';
+			$ax_l_str[] = 'L|Card||'.($key+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||-1|0.00|||||||||||Ea|||||||||||';
 		}
 		return implode("\n",$ax_l_str);
 	}
