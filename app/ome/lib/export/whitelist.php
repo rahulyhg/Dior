@@ -38,6 +38,8 @@ class ome_export_whitelist
             'wms_mdl_branch_product' => array('cansplit'=>0, 'splitnums'=>200),
             'drm_mdl_distributor_product_sku' => array('cansplit'=>1, 'splitnums'=>200, 'structure'=>'single'),
             'inventorydepth_mdl_shop_frame' => array('cansplit'=>1, 'splitnums'=>200, 'structure'=>'single'),
+            'ome_mdl_refund_apply' => array('cansplit'=>1, 'splitnums'=>200, 'structure'=>'single'),
+            'ome_mdl_statement' => array('cansplit'=>1, 'splitnums'=>200, 'structure'=>'single'),
             'ome_mdl_reship' => array('cansplit'=>1, 'splitnums'=>200, 'primary_key' => 'reship_id', 'structure'=>'multi'),
             'invoice_mdl_order' => array('cansplit'=>1, 'splitnums'=>200, 'primary_key' => 'id', 'structure'=>'single'),
             'wms_mdl_delivery'=>array('cansplit'=>1, 'splitnums'=>200, 'primary_key' => 'delivery_id', 'structure'=>'spec'),

@@ -1,6 +1,8 @@
 <?php
 
 class ome_mdl_refund_apply extends dbeav_model{
+    //是否有导出配置
+    var $has_export_cnf = true;
     //所用户信息
     static $__USERS = null;
 
