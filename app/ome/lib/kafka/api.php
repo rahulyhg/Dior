@@ -165,6 +165,7 @@ class ome_kafka_api extends ome_kafka_request{
             'order_bn'   => $order_bn,
             'status'     => $status,
             'createtime' => $data['createtime'],
+            'statusTime' => $data['statusTime'],
         );
 
 //        'paid'=>'已支付',
