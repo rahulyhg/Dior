@@ -40,6 +40,8 @@ class ome_kafka_kafkaQueueHandle{
                 // 获取订单创建时间
                 $createTime = $orderModel->dump(array('order_bn'=>$params['order_bn']),'order_id,createtime');
                 $params['createtime'] = $createTime['createtime'];
+                // 状态发生改变时间
+                $params['statusTime'] = $val['start_time'];
 
                 $response = call_user_func_array(array($obj_work, $method), array($params['order_bn'], $params['status'], $params, $params['shop_id']));
                 
