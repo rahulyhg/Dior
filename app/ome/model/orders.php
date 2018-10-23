@@ -1741,8 +1741,9 @@ class ome_mdl_orders extends dbeav_model{
 		}
 //exit();
         $c2c_shop_list = ome_shop_type::shop_list();
+               
         //积分兑礼订单不直接生成支付单
-        if($sdf['is_creditOrder']=='1'){
+        if($sdf['is_creditOrder']!='1'){
             if( !in_array($sdf['shop_type'], $c2c_shop_list) && (bccomp('0.000', ($sdf['total_amount']/1),3) == 0) ){ #0元订单是否需要财审.
                 kernel::single('ome_order_order')->order_pay_confirm($sdf['shop_id'],$sdf['order_id'],$sdf['total_amount']);
             }
