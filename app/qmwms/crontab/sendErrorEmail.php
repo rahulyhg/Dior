@@ -9,6 +9,6 @@ if(!kernel::register_autoload()){
 require_once(APP_DIR.'/base/defined.php');
 cachemgr::init(false);
 echo "begin <br/>";
-//OMS->WMS库存查询接口调用
+//每日定时发接口报错邮件
 kernel::single('qmwms_email_sendemail')->sendEmail();
 echo "<br/> end";

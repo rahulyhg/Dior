@@ -195,13 +195,13 @@ class qmwms_request_qimen{
 
         $message = '';
         if($ordersData[0]['message1']||$ordersData[0]['message2']||$ordersData[0]['message3']||$ordersData[0]['message4']||$ordersData[0]['message5']||$ordersData[0]['message6']){
-            $message1 = !empty($ordersData[0]['message1'])?$ordersData[0]['message1'].'==CR==':'';
-            $message2 =!empty($ordersData[0]['message2'])?$ordersData[0]['message2'].'==CR==':'';
-            $message3 = !empty($ordersData[0]['message3'])?$ordersData[0]['message3'].'==CR==':'';
-            $message4 = !empty($ordersData[0]['message4'])?$ordersData[0]['message4'].'==CR==':'';
-            $message5 = !empty($ordersData[0]['message5'])?$ordersData[0]['message5'].'==CR==':'';
-            $message6 = !empty($ordersData[0]['message6'])?$ordersData[0]['message6']:'';
-            $message = trim($message1.$message2.$message3.$message4.$message5.$message6,'==CR==');
+            $message1 = $ordersData[0]['message1'].'==CR==';
+            $message2 = $ordersData[0]['message2'].'==CR==';
+            $message3 = $ordersData[0]['message3'].'==CR==';
+            $message4 = $ordersData[0]['message4'].'==CR==';
+            $message5 = $ordersData[0]['message5'].'==CR==';
+            $message6 = $ordersData[0]['message6'];
+            $message  = $message1.$message2.$message3.$message4.$message5.$message6;
         }
 
         $itemId = 0;
