@@ -1,6 +1,9 @@
 <?php
 class qmwms_email_sendemail{
 
+    /**
+     * 每天三次定时发送失败订单报警邮件
+     */
     public function sendEmail(){
         $time = time();
         $hour = date('H',$time);
@@ -12,14 +15,31 @@ class qmwms_email_sendemail{
         }else{
             $modify = $time - 4*60*60;//18点各发一次邮件，间隔是4小时
         }
+        //奇门接口日志表（只查单据取消、发货确认、退货确认三个接口）
+        $sql1 = "select original_bn,res_msg,response from sdb_qmwms_qmrequest_log where status = 'failure' and task_name in('order.cancel','deliveryorder.confirm','returnorder.confirm') and last_modified >= {$modify} ";
+        $requst_log = kernel::database()->select($sql1);
 
-        $sql = "select original_bn,res_msg,response from sdb_qmwms_qmrequest_log where status = 'failure' and original_bn <> '' and last_modified >= {$modify} ";
-        $requst_log = kernel::database()->select($sql);
-        if(empty($requst_log)) return;
+        //取队列表：1.发货确认、退货确认订单
+        $wms_log1 = app::get('qmwms')->model('queue')->getList('id,original_bn,msg',array('status'=>'2','queue_type'=>array('do_delivery','do_return'),'last_modified|bthan'=>$modify));//发货确认、退货确认订单
+        //取队列表：2.发货创建、退货创建失败5次的订单
+        $wms_log2 = app::get('qmwms')->model('queue')->getList('id,original_bn,msg',array('status'=>'2','repeat_num'=>'5','queue_type'=>array('delivery','return','last_modified|bthan'=>$modify)));//发货创建、退货创建失败5次的订单
+        $wms_log = array_merge($wms_log1,$wms_log2);
+        //echo "<pre>";print_r($wms_log);exit;
+        if(empty($requst_log)&&empty($wms_log)) return;
+
+        //拼接报错信息
         $erroString = '';
         foreach($requst_log as $value){
             $failure_msg = !empty($value['res_msg'])?$value['res_msg']:$value['response'];
             $erroString .= "单据".$value['original_bn']." ".$failure_msg."<br>";
+        }
+        foreach($wms_log as $w_value){
+            //处理发货确认、退货确认订单单据无original_bn的情况
+            if(!empty($w_value['original_bn'])){
+                $erroString .= "单据".$w_value['original_bn']." ".$w_value['msg']."<br>";
+            }else{
+                $erroString .= "日志ID为".$w_value['id']."的单据"." ".$w_value['msg']."<br>";
+            }
         }
 
         //发送报警邮件

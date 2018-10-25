@@ -22,7 +22,7 @@ class emailsetting_email_sendemail{
 			$mail->AddReplyTo($smtpSetting['usermail'],$smtpSetting['smtpuname']);//回复地址
 			$mail->From       = $smtpSetting['usermail'];
 			$mail->FromName   = $smtpSetting['usermail'];
-//echo "<pre>";print_r($senders);exit;
+			//echo "<pre>";print_r($senders);exit;
 			foreach($senders as $sender){
 			    $mail->AddAddress($sender);
             }
@@ -33,7 +33,7 @@ class emailsetting_email_sendemail{
 			//$mail->AddAttachment("f:/test.png");  //可以添加附件
 
 			$mail->IsHTML(true); 
- //echo "<pre>";print_r($files);exit;
+ 			//echo "<pre>";print_r($files);exit;
             if(!empty($files)){
                 foreach($files as $file){
                     $mail->AddAttachment($file,basename($file));
