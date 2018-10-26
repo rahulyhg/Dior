@@ -112,7 +112,7 @@ class creditorderapi_api_diorsite extends creditorderapi_api_site{
         $shop_id   = $order_data[0]['shop_id'];
 
         // 已发货和已退货状态读取明细列表
-        if(($status == 'shipped')||($status=='complete')){
+        if(($status == 'shipped')||($status=='completed')){
             $item_info = app::get('ome')->model('delivery_items')->db->select("SELECT i.bn AS sku,i.number AS num
                                                                             FROM sdb_ome_delivery_items i
                                                                             LEFT JOIN sdb_ome_delivery d ON d.delivery_id = i.delivery_id
