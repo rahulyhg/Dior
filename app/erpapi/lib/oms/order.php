@@ -76,11 +76,11 @@ class erpapi_oms_order
         for($i=0;$i<=40;$i++){
             $begin=$i*10;
             $end=10;
-            $this->RoutePush($params,$begin,$end);
+            $this->RoutePush($params,$begin,$end, $i);
         }
     }
     
-    public function RoutePush($params=NULL,$begin=10,$end=10){
+    public function RoutePush($params=NULL,$begin=10,$end=10, $action=0){
         $twoweek=strtotime(date("Y-m-d H:i:s",strtotime("-3 week")));
         $objOrder = kernel::single("ome_mdl_orders");
         $mdl_reship=kernel::single("ome_mdl_reship");
@@ -119,10 +119,19 @@ class erpapi_oms_order
             }
             return true;
         }else{
-            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
+            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND is_creditOrder='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
             //$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn FROM sdb_ome_orders WHERE order_bn='500000472'";
         }
         $arrDelivery=$objOrder->db->select($sql);
+        
+        if($action == '0') {
+            $sql = "SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE is_creditOrder='1' AND pay_status='1' AND ship_status='1' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek'";
+            $arrCreditOrder = $objOrder->db->select($sql);
+            
+            if(!empty($arrCreditOrder)) {
+                $arrDelivery = array_merge($arrDelivery, $arrCreditOrder);
+            }
+        }
         
         if(empty($arrDelivery['0']['order_id']))return false;
         
