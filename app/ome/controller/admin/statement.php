@@ -36,7 +36,7 @@ class ome_ctl_admin_statement extends desktop_controller{
     			break;
        		case '9'://款平未发货订单 走挂账流程发给AX
     			$actions = array(
-                    array('label'=>'挂账','submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
+                    array('label'=>'挂账','confirm'=>app::get('ome')->_('是否确认挂账同步AX'),'submit'=>'index.php?app=ome&ctl=admin_statement&act=monthendSL'),
     			);
     			break;
             case '10'://礼品卡兑礼订单走原有流程发给AX
@@ -580,7 +580,8 @@ class ome_ctl_admin_statement extends desktop_controller{
 			}
 			
 			$ax_info[] = implode(',',$arow);
-		}echo "<pre>";print_r($ax_info);
+		}
+        //echo "<pre>";print_r($ax_info);
 		$content = implode("\n",$ax_info);
 		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
 		$file_brand = $ax_setting['ax_file_brand'];
@@ -595,7 +596,7 @@ class ome_ctl_admin_statement extends desktop_controller{
 			$file_name = ROOT_DIR.'/ftp/Testing/in/'.implode('_',$file_arr).'.dat';
 		}
 		
-		echo "<pre>";print_r($file_name);exit;
+		//echo "<pre>";print_r($file_name);exit;
 		$file = fopen($file_name,"w");
 		$res = fwrite($file,$content);
 		fclose($file);
@@ -628,4 +629,174 @@ class ome_ctl_admin_statement extends desktop_controller{
 		$paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
         $this->end(true,'同步完成');
      }
+     //挂账同步AX
+     function monthendSL(){
+        $this->begin('index.php?app=ome&ctl=admin_statement&act=index');
+		$payment_ids = $_POST['statement_id'];
+		$paymentObj = app::get('ome')->model('statement');
+		$paymentList = $paymentObj->getList('*',array('statement_id'=>$payment_ids));
+		foreach($paymentList as $payment){
+			if(!in_array($payment['balance_status'],array('auto','hand','sync'))){
+				$this->end(false,'存在未完成对账的文件');
+			}
+		}
+		$ax_info = array();
+        $objMath = kernel::single('eccommon_math');
+		$objOrder = app::get('ome')->model('orders');
+        $payments = $this->sortingData($paymentList);
+        foreach($payments as $row){
+			$payment_ids[] = $row['statement_id'];
+			$arow = array();
+			$arow[] = date('d/m/Y',$row['pay_time']);
+			$arow[] = $ax_setting['ax_h_customer_account']?$ax_setting['ax_h_customer_account']:'C4010P1';
+			if($row['original_type']=='refunds'){
+				$arow[] = sprintf("%1\$.2f",-$objMath->number_plus(array(abs($row['tatal_amount']),0)));
+				$arow[] = sprintf("%1\$.2f",-abs($objMath->number_plus(array($row['money'],0))));
+			}else{
+				$arow[] = $objMath->number_plus(array($row['tatal_amount'],0));
+				$arow[] = $objMath->number_plus(array($row['money'],0));
+			}
+
+			$order_bn = $objOrder->dump($row['order_id'],'order_bn');
+			if($row['original_type']=='refunds'){
+				$objRefundApply = app::get('ome')->model('refund_apply');
+				$refundInfo = $objRefundApply->getList('reship_id',array('refund_apply_bn'=>$row['original_bn']));
+				
+				$reship_id = $refundInfo[0]['reship_id'];
+				if($reship_id){
+					$objReship = app::get('ome')->model('reship');
+					$allReship = $objReship->getList('reship_id',array('order_id'=>$row['order_id']));
+					$reships = array_reverse($allReship);
+
+					foreach($reships as $key=>$value){
+						if($reship_id==$value['reship_id']){
+							$R = $key;
+							break;
+						}
+					}
+					$order_bn['order_bn'] = $order_bn['order_bn'].'-R'.($R+1);
+				}else{
+					$deliveryInfo = app::get('ome')->model('delivery_order')->getList('*',array('order_id'=>$row['order_id']));
+					if($deliveryInfo){
+						$order_bn['order_bn'] = $order_bn['order_bn'].'-R1';
+					}
+					$order_bn['order_bn'] = $order_bn['order_bn'].'-R1';
+				}
+			}
+			$arow[] = $order_bn['order_bn'];
+            //$arow[] = $row['difference_reason'];
+            if($row['paymethod']=='wxpayjsapi'){
+                $arow[] = 'DM-WechMonthendSL';
+            }elseif($row['paymethod']=='alipay'){
+                $arow[] = 'DM-AliMonthendSL';
+            }else{
+                $arow[] = $row['difference_reason'];
+            }
+			
+			
+			//兑礼订单的支付方式默认wechatcard
+			//$row['paymethod'] = 'wechatcard';
+			
+			
+			$arow[] = $row['paymethod'];
+			$arow[] = 'PG4A';
+			if($row['original_type']=='refunds'){
+				$arow[] =sprintf("%1\$.2f",-abs($objMath->number_plus(array($row['pay_fee'],0))));
+			}else{
+				$arow[] =sprintf("%1\$.2f",abs($objMath->number_plus(array($row['pay_fee'],0))));
+			}
+			if($row['original_type']=='payments'){
+				$arow[] = $row['paymethod'].' payment '.$order_bn['order_bn'].' in '.$arow[0];
+			}else{
+				$arow[] = $row['paymethod'].' return '.$order_bn['order_bn'].' in '.$arow[0];
+			}
+			
+			$ax_info[] = implode(',',$arow);
+		}
+        //echo "<pre>";print_r($ax_info);exit;
+		$content = implode("\n",$ax_info);
+		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+		$file_brand = $ax_setting['ax_file_brand'];
+		$file_prefix = $ax_setting['ax_file_prefix'];
+
+		$file_arr = array($file_prefix,$file_brand,'PAYMENT',date('YmdHis',time()));
+
+		$file_name = ROOT_DIR.'/ftp/Testing/in/'.implode('_',$file_arr).'.dat';
+		while(file_exists($file_name)){
+			sleep(1);
+			$file_arr = array($file_prefix,$file_brand,'PAYMENT',date('YmdHis',time()));
+			$file_name = ROOT_DIR.'/ftp/Testing/in/'.implode('_',$file_arr).'.dat';
+		}
+		
+		//echo "<pre>";print_r($file_name);exit;
+		$file = fopen($file_name,"w");
+		$res = fwrite($file,$content);
+		fclose($file);
+		//同步AX
+
+		if(!$res){
+			return true;
+		}
+		$params['remote'] = basename($file_name);
+		$params['local'] = $file_name;
+		$params['resume'] = 0;
+
+		$ftp_log_data = array(
+				'io_type'=>'out',
+				'work_type'=>'payments',
+				'createtime'=>time(),
+				'status'=>'prepare',
+				'file_local_route'=>$params['local'],
+				'file_ftp_route'=>$params['remote'],
+			);
+		$objLog = kernel::single('omeftp_log');
+		$ftp_log_id = $objLog->write_log($ftp_log_data,'ftp');
+
+		$ftp_flag = kernel::single('omeftp_ftp_operate')->push($params,$msg);
+		if($ftp_flag){
+			$objLog->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
+		}else{
+			$objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
+		}
+		$paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
+        $this->end(true,'同步完成');
+     }
+     //整理合并数据
+    function sortingData($payments){
+	    if(!empty($payments)){
+	        $row = array();
+	        $rowKey=$giftcard_key = 0;
+	        foreach($payments as $payment) {
+
+                $payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
+                $payMethod = $payment['paymethod'];
+                //普通订单的大订单号可以区分出支付类型和是否属于退款账单
+                $row[$payMethod]['order_bn'] = $payment['so_bn'];
+                $row[$payMethod]['paymethod'] = $payment['paymethod'];
+                $row[$payMethod]['original_type'] = $payment['original_type'];
+                $row[$payMethod]['pay_fee'] += $payment['pay_fee'];
+                $row[$payMethod]['money'] += $payment['money'];
+                $row[$payMethod]['tatal_amount'] += $payment['tatal_amount'];
+                $row[$payMethod]['pay_time'] = (!empty($payDate)) ? strtotime($payDate) : '';
+
+            }
+
+            $resArr  =array();
+	        //整理数组
+            foreach ($row as $key=>$prow){
+                    $resArr[$rowKey]['order_bn'] = $prow['order_bn'];
+                    $resArr[$rowKey]['paymethod'] = $prow['paymethod'];
+                    $resArr[$rowKey]['original_type'] = $prow['original_type'];
+                    $resArr[$rowKey]['pay_fee'] = $prow['pay_fee'];
+                    $resArr[$rowKey]['money'] = $prow['money'];
+                    $resArr[$rowKey]['tatal_amount'] = $prow['tatal_amount'];
+                    $resArr[$rowKey]['pay_time'] = $prow['pay_time'];
+                    $rowKey++;
+            }
+            //echo '<pre>d';print_r($resArr);exit;
+            return $resArr;
+        }else{
+	        return null;
+        }
+    }
 }
