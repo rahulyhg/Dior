@@ -671,14 +671,17 @@ class omeftp_service_delivery{
 
         $delivery = array();
         if($is_credit){
-            $str = " AND o.shop_id = '472e6d340d663e97ee0a36518d233cce'";
-            $delivery['shop_id'] = '472e6d340d663e97ee0a36518d233cce';
+            //$str = " AND o.shop_id = '472e6d340d663e97ee0a36518d233cce'";
+            //$delivery['shop_id'] = '472e6d340d663e97ee0a36518d233cce';
+            $str = " AND s.shop_bn = 'dior_credit'";
+
         }else{//minishop兑礼订单不通过该计划任务执行
-            $str = " AND o.shop_id != '472e6d340d663e97ee0a36518d233cce' AND o.shop_type<>'minishop' AND o.pay_bn='".$pay_bn."'";
+            //$str = " AND o.shop_id != '472e6d340d663e97ee0a36518d233cce' AND o.shop_type<>'minishop' AND o.pay_bn='".$pay_bn."'";
             //非礼品卡订单使用官方店SHOPID获取AX配置
-            $delivery['shop_id'] = '3428ce619f4b6f429ffb159eacfce0fd';
+            //$delivery['shop_id'] = '3428ce619f4b6f429ffb159eacfce0fd';
+            $str = " AND s.shop_bn != 'dior_credit' AND o.shop_type<>'minishop' AND o.pay_bn='".$pay_bn."'";
         }
-        $delivery_sql = "SELECT o.*,d.delivery_id,d.delivery_bn FROM sdb_ome_orders o LEFT  JOIN sdb_ome_delivery_order c ON  o.order_id = c.order_id LEFT  JOIN sdb_ome_delivery d ON  c.delivery_id=d.delivery_id WHERE d.delivery_time>'".$from_time."' AND d.delivery_time<'".$to_time."' AND d.status='succ'";
+        $delivery_sql = "SELECT o.*,d.delivery_id,d.delivery_bn FROM sdb_ome_orders o LEFT  JOIN sdb_ome_delivery_order c ON  o.order_id = c.order_id LEFT  JOIN sdb_ome_delivery d ON  c.delivery_id=d.delivery_id  LEFT JOIN sdb_ome_shop s ON  o.shop_id=s.shop_id WHERE d.delivery_time>'".$from_time."' AND d.delivery_time<'".$to_time."' AND d.status='succ'";
         $delivery_sql .=$str;
 
         $deliveryOrder = $orderMdl->db->select($delivery_sql);
@@ -690,6 +693,7 @@ class omeftp_service_delivery{
         $ribbonNum=$mcdPNum=$cvdNum =$wcardNum= 0;
 
         if(!empty($deliveryOrder)&&is_array($deliveryOrder)){
+            $delivery['shop_id']  = $deliveryOrder['0']['shop_id'];
             foreach ($deliveryOrder  as $key=>$order){
                 //运费
                 if($order['cost_freight']>$order['pmt_cost_shipping']){
@@ -810,11 +814,7 @@ class omeftp_service_delivery{
         if(empty($delivery)){
             return false;
         }
-        if($is_credit){//积分订单店铺
-            $shop_id = '472e6d340d663e97ee0a36518d233cce';
-        }else{//其余店铺通用配置
-            $shop_id = '3428ce619f4b6f429ffb159eacfce0fd';
-        }
+        $shop_id = $delivery['shop_id'];
         $apiconfigSql = "SELECT * FROM sdb_creditorderapi_apiconfig WHERE shop_id LIKE '%".$shop_id."%'";
         $creditOrderApi = app::get('creditorderapi')->model('apiconfig')->db->select($apiconfigSql);
 
