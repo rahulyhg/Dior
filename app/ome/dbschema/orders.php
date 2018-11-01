@@ -35,6 +35,17 @@ $db['orders']=array (
 	  'in_list' => true,
 	  'default_in_list' => false,
 	),
+    'so_order_num'=>array(
+	  'type' => 'varchar(32)',
+	  'label' => 'SO文件合并订单编号',
+	  'is_title' => true,
+	  'width' => 125,
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
 	'wx_order_bn'=>array(
 	  'type' => 'varchar(32)',
 	  'label' => 'WX系统订单号',

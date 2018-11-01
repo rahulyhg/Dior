@@ -20,7 +20,7 @@ class ome_ctl_admin_statement extends desktop_controller{
 			case '3':
 				$actions = array(
                     array('label'=>'导入账单','href'=>'index.php?app=ome&ctl=admin_statement&act=importBill','target'=>'dialog::{width:400,height:150,title:\'导入\'}'),
-					array('label'=>'同步AX','submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
+					//array('label'=>'同步AX','submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
 				);
 				break;
 			case '7':
@@ -29,6 +29,21 @@ class ome_ctl_admin_statement extends desktop_controller{
 					array('label'=>'COD二次导入','href'=>'index.php?app=ome&ctl=admin_statement&act=cod_import','target'=>'dialog::{width:400,height:150,title:\'导入\'}'),
 				);
 				break;
+			case '8'://正常订单走合并流程发给AX
+    			$actions = array(
+                    array('label'=>'同步AX','confirm'=>app::get('ome')->_('是否确认同步AX'),'submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
+    			);
+    			break;
+       		case '9'://款平未发货订单 走挂账流程发给AX
+    			$actions = array(
+                    array('label'=>'挂账','submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
+    			);
+    			break;
+            case '10'://礼品卡兑礼订单走原有流程发给AX
+    			$actions = array(
+                    array('label'=>'同步AX','confirm'=>app::get('ome')->_('是否确认同步AX'),'submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax_giftcard'),
+    			);
+    			break;
 			default:
 				$actions = array(
                     array('label'=>'导入账单','href'=>'index.php?app=ome&ctl=admin_statement&act=importBill','target'=>'dialog::{width:400,height:150,title:\'导入\'}'),
@@ -62,6 +77,9 @@ class ome_ctl_admin_statement extends desktop_controller{
 		 $sync_count = $objPayment->count(array('balance_status'=>'sync'));
 		 $not_has_count = $objPayment->count(array('balance_status'=>'not_has','disabled'=>'false'));
 		 $cod_first = $objPayment->count(array('cod_time'=>'first','disabled'=>'false'));
+         $so_succCount = $objPayment->count(array('cod_time'=>'second','so_bn|noequal'=>'','so_status'=>'so_succ','balance_status'=>array('auto','hand')));
+         $so_failCount = $objPayment->count(array('cod_time'=>'second','balance_status'=>array('auto','hand'),'filter_sql' => 'so_bn is null'));
+         $cardCount = $objPayment->count(array('cod_time'=>'second','shop_id'=>'4395c5a0b113b9d11cb4ba53c48b4d88','balance_status'=>array('auto','hand')));
 		 $sub_menu = array(
             1 => array('label'=>app::get('base')->_('全部'),'filter'=>$base_filter,'addon'=>$all_count,'optional'=>false),
             2 => array('label'=>app::get('base')->_('未对账'),'filter'=>array('balance_status'=>'none'),'addon'=>$none_count,'optional'=>false),
@@ -71,7 +89,10 @@ class ome_ctl_admin_statement extends desktop_controller{
 			5 => array('label'=>app::get('base')->_('已同步'),'filter'=>array('balance_status'=>'sync'),'addon'=>$sync_count,'optional'=>false),
 			6 => array('label'=>app::get('base')->_('不匹配记录'),'filter'=>array('balance_status'=>'not_has','disabled'=>'false'),'addon'=>$not_has_count,'optional'=>false),
 			7 => array('label'=>app::get('base')->_('cod第一次导入'),'filter'=>array('cod_time'=>'first','disabled'=>'false'),'addon'=>$cod_first,'optional'=>false),
-			
+			8 => array('label'=>app::get('base')->_('官网货平款平'),'filter'=>array('cod_time'=>'second','so_bn|noequal'=>'','so_status'=>'so_succ','balance_status'=>array('auto','hand')),'addon'=>$so_succCount,'optional'=>false),
+            9 => array('label'=>app::get('base')->_('官网款平未发货'),'filter'=>array('cod_time'=>'second','balance_status'=>array('auto','hand'),'filter_sql' => 'so_bn is null'),'addon'=>$so_failCount,'optional'=>false),
+            10 => array('label'=>app::get('base')->_('礼品卡兑礼订单'),'filter'=>array('cod_time'=>'second','shop_id'=>'4395c5a0b113b9d11cb4ba53c48b4d88','balance_status'=>array('auto','hand')),'addon'=>$cardCount,'optional'=>false),
+
         );
 //print_r($sub_menu);exit;
 		return $sub_menu;
@@ -484,5 +505,127 @@ class ome_ctl_admin_statement extends desktop_controller{
 		$this->end(true,'同步完成');
 		
 	 }
+     //礼品卡账单直接生成paymentfile
+     function sync_ax_giftcard(){
+        $this->begin('index.php?app=ome&ctl=admin_statement&act=index');
+		$payment_ids = $_POST['statement_id'];
+		$paymentObj = app::get('ome')->model('statement');
+		$payments = $paymentObj->getList('*',array('statement_id'=>$payment_ids));
+		foreach($payments as $payment){
+			if(!in_array($payment['balance_status'],array('auto','hand','sync'))){
+				$this->end(false,'存在未完成对账的文件');
+			}
+		}
+		$ax_info = array();
+		//$ax_info[] = array('Paynment date','Customer number','Pay amount','order Amount','Order Number','Reason Code','Paynment method','Brand','Fee amount','Transaction Text');
+		$objMath = kernel::single('eccommon_math');
+		$objOrder = app::get('ome')->model('orders');
+        foreach($payments as $row){
+			$payment_ids[] = $row['statement_id'];
+			$arow = array();
+			$arow[] = date('d/m/Y',$row['pay_time']);
+			$arow[] = $ax_setting['ax_h_customer_account']?$ax_setting['ax_h_customer_account']:'C4010P1';
+			if($row['original_type']=='refunds'){
+				$arow[] = sprintf("%1\$.2f",-$objMath->number_plus(array(abs($row['tatal_amount']),0)));
+				$arow[] = sprintf("%1\$.2f",-abs($objMath->number_plus(array($row['money'],0))));
+			}else{
+				$arow[] = $objMath->number_plus(array($row['tatal_amount'],0));
+				$arow[] = $objMath->number_plus(array($row['money'],0));
+			}
 
+			$order_bn = $objOrder->dump($row['order_id'],'order_bn');
+			if($row['original_type']=='refunds'){
+				$objRefundApply = app::get('ome')->model('refund_apply');
+				$refundInfo = $objRefundApply->getList('reship_id',array('refund_apply_bn'=>$row['original_bn']));
+				
+				$reship_id = $refundInfo[0]['reship_id'];
+				if($reship_id){
+					$objReship = app::get('ome')->model('reship');
+					$allReship = $objReship->getList('reship_id',array('order_id'=>$row['order_id']));
+					$reships = array_reverse($allReship);
+
+					foreach($reships as $key=>$value){
+						if($reship_id==$value['reship_id']){
+							$R = $key;
+							break;
+						}
+					}
+					$order_bn['order_bn'] = $order_bn['order_bn'].'-R'.($R+1);
+				}else{
+					$deliveryInfo = app::get('ome')->model('delivery_order')->getList('*',array('order_id'=>$row['order_id']));
+					if($deliveryInfo){
+						$order_bn['order_bn'] = $order_bn['order_bn'].'-R1';
+					}
+					$order_bn['order_bn'] = $order_bn['order_bn'].'-R1';
+				}
+			}
+			$arow[] = $order_bn['order_bn'];
+			$arow[] = $row['difference_reason'];
+			
+			//兑礼订单的支付方式默认wechatcard
+			$row['paymethod'] = 'wechatcard';
+			
+			
+			$arow[] = $row['paymethod'];
+			$arow[] = 'PG4A';
+			if($row['original_type']=='refunds'){
+				$arow[] =sprintf("%1\$.2f",-abs($objMath->number_plus(array($row['pay_fee'],0))));
+			}else{
+				$arow[] =sprintf("%1\$.2f",abs($objMath->number_plus(array($row['pay_fee'],0))));
+			}
+			if($row['original_type']=='payments'){
+				$arow[] = $row['paymethod'].' payment '.$order_bn['order_bn'].' in '.$arow[0];
+			}else{
+				$arow[] = $row['paymethod'].' return '.$order_bn['order_bn'].' in '.$arow[0];
+			}
+			
+			$ax_info[] = implode(',',$arow);
+		}echo "<pre>";print_r($ax_info);
+		$content = implode("\n",$ax_info);
+		$ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+		$file_brand = $ax_setting['ax_file_brand'];
+		$file_prefix = $ax_setting['ax_file_prefix'];
+
+		$file_arr = array($file_prefix,$file_brand,'PAYMENT',date('YmdHis',time()));
+
+		$file_name = ROOT_DIR.'/ftp/Testing/in/'.implode('_',$file_arr).'.dat';
+		while(file_exists($file_name)){
+			sleep(1);
+			$file_arr = array($file_prefix,$file_brand,'PAYMENT',date('YmdHis',time()));
+			$file_name = ROOT_DIR.'/ftp/Testing/in/'.implode('_',$file_arr).'.dat';
+		}
+		
+		echo "<pre>";print_r($file_name);exit;
+		$file = fopen($file_name,"w");
+		$res = fwrite($file,$content);
+		fclose($file);
+		//同步AX
+
+		if(!$res){
+			return true;
+		}
+		$params['remote'] = basename($file_name);
+		$params['local'] = $file_name;
+		$params['resume'] = 0;
+
+		$ftp_log_data = array(
+				'io_type'=>'out',
+				'work_type'=>'payments',
+				'createtime'=>time(),
+				'status'=>'prepare',
+				'file_local_route'=>$params['local'],
+				'file_ftp_route'=>$params['remote'],
+			);
+		$objLog = kernel::single('omeftp_log');
+		$ftp_log_id = $objLog->write_log($ftp_log_data,'ftp');
+
+		$ftp_flag = kernel::single('omeftp_ftp_operate')->push($params,$msg);
+		if($ftp_flag){
+			$objLog->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
+		}else{
+			$objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
+		}
+		$paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
+        $this->end(true,'同步完成');
+     }
 }
