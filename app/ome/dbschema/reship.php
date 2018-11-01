@@ -46,6 +46,17 @@ $db['reship']=array (
       'default_in_list' => false,
       'is_title' => true,
     ),
+    'so_order_num'=>array(
+	  'type' => 'varchar(32)',
+	  'label' => 'SO文件合并订单编号',
+	  'is_title' => true,
+	  'width' => 125,
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
     'order_id' =>
     array (
       'type' => 'table:orders@ome',
