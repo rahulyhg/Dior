@@ -325,7 +325,7 @@ class ome_auto_statement{
     function merge_payment($payments){
 	    if(!empty($payments)){
 	        $row = array();
-	        $giftcard_key = 0;
+	        $rowKey = $giftcard_key = 0;
 	        foreach($payments as $payment) {
 
                 $payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
@@ -337,7 +337,7 @@ class ome_auto_statement{
                     $row[$payment['so_bn']][$payDate]['pay_fee'] += $payment['pay_fee'];
                     $row[$payment['so_bn']][$payDate]['money'] += $payment['money'];
                     $row[$payment['so_bn']][$payDate]['tatal_amount'] += $payment['tatal_amount'];
-                    $row[$payment['so_bn']]['pay_time'] = (!empty($payDate)) ? strtotime($payDate) : '';
+                    $row[$payment['so_bn']][$payDate]['pay_time'] = (!empty($payDate)) ? strtotime($payDate) : '';
                     //echo '<pre>drr';print_r($row);exit;
                 }
                 //礼品卡店铺没有SO文件单独使用原有的逻辑
@@ -369,13 +369,14 @@ class ome_auto_statement{
 	        //整理数组
             foreach ($row as $key=>$value){
 	            foreach ($value as $k=>$prow){
-                    $resArr[]['order_bn'] = $prow['order_bn'];
-                    $resArr[]['paymethod'] = $prow['paymethod'];
-                    $resArr[]['original_type'] = $prow['original_type'];
-                    $resArr[]['pay_fee'] = $prow['pay_fee'];
-                    $resArr[]['money'] = $prow['money'];
-                    $resArr[]['tatal_amount'] = $prow['tatal_amount'];
-                    $resArr[]['pay_time'] = $prow['pay_time'];
+                    $resArr[$rowKey]['order_bn'] = $prow['order_bn'];
+                    $resArr[$rowKey]['paymethod'] = $prow['paymethod'];
+                    $resArr[$rowKey]['original_type'] = $prow['original_type'];
+                    $resArr[$rowKey]['pay_fee'] = $prow['pay_fee'];
+                    $resArr[$rowKey]['money'] = $prow['money'];
+                    $resArr[$rowKey]['tatal_amount'] = $prow['tatal_amount'];
+                    $resArr[$rowKey]['pay_time'] = $prow['pay_time'];
+                    $rowKey++;
                 }
             }
             return $resArr;
