@@ -743,22 +743,23 @@ class omeftp_service_delivery{
                 //订单中的丝带数量
                 if($order['ribbon_sku']){
                     $ribbonArr[$order['ribbon_sku']]['quantity'] +=1;
-                    $ribbonNum++;
+                    $ribbonNum++;$totalNum++;
                 }
                 //MCD包装数量
                 if($order['mcd_package_sku']=='MCD'){
-                    $mcdPNum++;
+                    $mcdPNum++;$totalNum++;
                 }
                 //cvd数量
                 if($order['is_cvd']=='true'){
-                    $cvdNum++;
+                    $cvdNum++;$totalNum++;
                 }
                 //MCD包装数量
                 if($order['is_w_card']=='true'){
-                    $wcardNum++;
+                    $wcardNum++;$totalNum++;
                 }
                 //如果包含礼品卡
-                if(($order['is_card']=='true')||($order['is_mcd_card']=='true')){
+                //if(($order['is_card']=='true')||($order['is_mcd_card']=='true')){
+                if($order['message1']||$order['message2']||$order['message3']||$order['message4']||$order['message5']||$order['message6']){
                     $giftCardArr[] = array(
                         'order_id' => $order['order_id'],
                         'message1'=>$order['message1'],'message2'=>$order['message2'],
@@ -766,6 +767,7 @@ class omeftp_service_delivery{
                         'message5'=>$order['message5'],'message6'=>$order['message6'],
                         'is_card'=>$order['is_card'],'is_mcd_card'=>$order['is_mcd_card'],
                     );
+                    $totalNum++;
                 }
                 $orderArr[] = $order['order_id'];
             }
@@ -1008,7 +1010,8 @@ class omeftp_service_delivery{
         $ax_h[] = '';//total  discount %
 
         $itemNums = $delivery['itemNum'];
-        if($delivery['order']['message1']||$delivery['order']['message2']||$delivery['order']['message3']||$delivery['order']['message4']||$delivery['order']['message5']||$delivery['order']['message6']){
+        //总数量在合并时计算$itemNums
+        /*if($delivery['order']['message1']||$delivery['order']['message2']||$delivery['order']['message3']||$delivery['order']['message4']||$delivery['order']['message5']||$delivery['order']['message6']){
             $itemNums += 1;
         }
         if($delivery['order']['is_w_card']=='true'){
@@ -1022,7 +1025,7 @@ class omeftp_service_delivery{
         }
         if($delivery['order']['is_cvd']=='true'){
             $itemNums +=1 ;
-        }
+        }*/
 
         $ax_h[] = intval($itemNums);//total quantity
 
