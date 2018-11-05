@@ -1,0 +1,17 @@
+<services>
+ 	<service id="conditions_lists">
+        <class>promotion_conditions_goods</class>
+        <class>promotion_conditions_order</class>
+		<class>promotion_conditions_time</class>
+		<class>promotion_conditions_shop</class>
+    </service>
+	
+	<service id="actions_lists">
+        <class>promotion_actions_gift</class>
+    </service>
+	
+	 <service id="desktop_finder.promotion_mdl_orders">
+        <class>promotion_finder_orders</class>
+    </service>
+</services>
+

@@ -914,7 +914,9 @@ class erpapi_oms_order
             $iorder['address_id']=$address_id;
             $iorder['form_id']=$post['form_id'];
             kernel::single("giftcard_wechat_request_message")->send($iorder);
-        
+            //促销
+            $iorder['payed'] = $iorder['total_amount'];
+            kernel::single("promotion_process")->process(array($iorder));
         }
 
         return $this->send_succ('创建成功');
