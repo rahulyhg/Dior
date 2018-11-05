@@ -230,11 +230,14 @@ class ome_auto_statement{
         $objOrder = app::get('ome')->model('orders');
         $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
         $payment_ids = array();
-        $payments = $this->merge_payment($payments);
-        if(empty($payments)){
+        $paymentList = $this->merge_payment($payments);
+        if(empty($paymentList)){
             return false;
         }
-        foreach($payments as $row){
+		foreach($payments as $row){
+			$payment_ids[] = $row['statement_id'];
+		}
+        foreach($paymentList as $row){
             $payment_ids[] = $row['statement_id'];
             $arow = array();
             $arow[] = date('d/m/Y',$row['pay_time']);
