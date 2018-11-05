@@ -797,11 +797,12 @@ class omeftp_service_delivery{
                 if($fileRes){
                     $orderId = implode(',',$orderArr);
                     $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '".$delivery['order']['order_bn']."' WHERE order_id in (".$orderId.")";
-                    //echo '<pre>d';print_r($updateSql);exit;
+                    //echo '<pre>d';print_r($updateSql);
                     $orderMdl->db->exec($updateSql);
                     //对账表插入大订单号
-                    $updateStatementSql = "UPDATE sdb_ome_statement SET so_bn = ".$delivery['order']['order_bn']."' WHERE order_id in (".$orderId.") AND original_type='payments'";
-                    $orderMdl->db->exec($updateSql);
+                    $updateStatementSql = "UPDATE sdb_ome_statement SET so_bn = '".$delivery['order']['order_bn']."' WHERE order_id in (".$orderId.") AND original_type='payments'";
+					//echo '<pre>d';print_r($updateStatementSql);
+                    $orderMdl->db->exec($updateStatementSql);
                 }
             }
         }
