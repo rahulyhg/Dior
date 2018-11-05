@@ -1315,6 +1315,13 @@ $db['orders']=array (
         'comment'  => '发货单创建推送wms状态',
         'default_in_list' => true,
     ),
+    'is_u_g' =>
+    array (
+       'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
+      'editable' => false,
+    ),
   ),
   'index' =>
   array (
