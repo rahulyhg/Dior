@@ -663,7 +663,7 @@ class omeftp_service_delivery{
     function cron_Delivery($is_credit = true,$pay_bn = ''){
         $from_time = strtotime(date("Y-m-d",time()));
         $to_time = strtotime("+1 day");
-        //$from_time = '1540277128';
+        //$from_time = '1540200000';
         //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $orderItemMdl = app::get('ome')->model('order_items');
@@ -690,7 +690,7 @@ class omeftp_service_delivery{
         $delivery['cost_shipping']=0;
         $delivery['cod_shipping_cost'] = 0;
         $totalNum = 0;
-        $ribbonNum=$mcdPNum=$cvdNum =$wcardNum= 0;
+        $ribbonNum=$mcdPNum=$cvdNum =$wcardNum=$mesNum =  0;
 
         if(!empty($deliveryOrder)&&is_array($deliveryOrder)){
             $delivery['shop_id']  = $deliveryOrder['0']['shop_id'];
@@ -743,22 +743,23 @@ class omeftp_service_delivery{
                 //订单中的丝带数量
                 if($order['ribbon_sku']){
                     $ribbonArr[$order['ribbon_sku']]['quantity'] +=1;
-                    $ribbonNum++;
+                    $ribbonNum++;$totalNum++;
                 }
                 //MCD包装数量
                 if($order['mcd_package_sku']=='MCD'){
-                    $mcdPNum++;
+                    $mcdPNum++;$totalNum++;
                 }
                 //cvd数量
                 if($order['is_cvd']=='true'){
-                    $cvdNum++;
+                    $cvdNum++;$totalNum++;
                 }
                 //MCD包装数量
                 if($order['is_w_card']=='true'){
-                    $wcardNum++;
+                    $wcardNum++;$totalNum++;
                 }
                 //如果包含礼品卡
-                if(($order['is_card']=='true')||($order['is_mcd_card']=='true')){
+                //if(($order['is_card']=='true')||($order['is_mcd_card']=='true')){
+                if($order['message1']||$order['message2']||$order['message3']||$order['message4']||$order['message5']||$order['message6']){
                     $giftCardArr[] = array(
                         'order_id' => $order['order_id'],
                         'message1'=>$order['message1'],'message2'=>$order['message2'],
@@ -766,6 +767,7 @@ class omeftp_service_delivery{
                         'message5'=>$order['message5'],'message6'=>$order['message6'],
                         'is_card'=>$order['is_card'],'is_mcd_card'=>$order['is_mcd_card'],
                     );
+                    $mesNum++;$totalNum++;
                 }
                 $orderArr[] = $order['order_id'];
             }
@@ -778,6 +780,7 @@ class omeftp_service_delivery{
             $delivery['mcdPNum'] = $mcdPNum;
             $delivery['cvdNum'] = $cvdNum;
             $delivery['wcardNum'] = $wcardNum;
+            $delivery['mesNum'] = $mesNum;
             //积分订单
             if($is_credit){
                 $delivery ['order']['is_creditOrder'] ='1';
@@ -1008,7 +1011,8 @@ class omeftp_service_delivery{
         $ax_h[] = '';//total  discount %
 
         $itemNums = $delivery['itemNum'];
-        if($delivery['order']['message1']||$delivery['order']['message2']||$delivery['order']['message3']||$delivery['order']['message4']||$delivery['order']['message5']||$delivery['order']['message6']){
+        //总数量在合并时计算$itemNums
+        /*if($delivery['order']['message1']||$delivery['order']['message2']||$delivery['order']['message3']||$delivery['order']['message4']||$delivery['order']['message5']||$delivery['order']['message6']){
             $itemNums += 1;
         }
         if($delivery['order']['is_w_card']=='true'){
@@ -1022,7 +1026,7 @@ class omeftp_service_delivery{
         }
         if($delivery['order']['is_cvd']=='true'){
             $itemNums +=1 ;
-        }
+        }*/
 
         $ax_h[] = intval($itemNums);//total quantity
 
@@ -1219,11 +1223,14 @@ class omeftp_service_delivery{
                     $ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
                     $ax_card_flag=true;
                 }
-                if($ax_card_flag){
+                /*if($ax_card_flag){
                     $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.$card['message1'].'==CR=='.$card['message2'].'==CR=='.$card['message3'].'==CR=='.$card['message4'].'==CR=='.$card['message5'].'==CR=='.$card['message6'].'||||1|0.00|||||||||||Ea|||||||||||';
                     $line = $line+1;
-                }
+                }*/
             }
+            $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.'==CR=='.'==CR=='.'==CR=='.'==CR=='.'==CR=='.
+            '||||'.$delivery['mesNum'].'|0.00|||||||||||Ea|||||||||||';
+            $line = $line+1;
         }
         //echo '<pre>2ss';print_r($delivery);
         //if($delivery['is_w_card']=='true'){
