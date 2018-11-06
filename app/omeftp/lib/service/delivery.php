@@ -690,7 +690,7 @@ class omeftp_service_delivery{
         $delivery['cost_shipping']=0;
         $delivery['cod_shipping_cost'] = 0;
         $totalNum = 0;
-        $ribbonNum=$mcdPNum=$cvdNum =$wcardNum= 0;
+        $ribbonNum=$mcdPNum=$cvdNum =$wcardNum=$mesNum =  0;
 
         if(!empty($deliveryOrder)&&is_array($deliveryOrder)){
             $delivery['shop_id']  = $deliveryOrder['0']['shop_id'];
@@ -767,7 +767,7 @@ class omeftp_service_delivery{
                         'message5'=>$order['message5'],'message6'=>$order['message6'],
                         'is_card'=>$order['is_card'],'is_mcd_card'=>$order['is_mcd_card'],
                     );
-                    $totalNum++;
+                    $mesNum++;$totalNum++;
                 }
                 $orderArr[] = $order['order_id'];
             }
@@ -780,6 +780,7 @@ class omeftp_service_delivery{
             $delivery['mcdPNum'] = $mcdPNum;
             $delivery['cvdNum'] = $cvdNum;
             $delivery['wcardNum'] = $wcardNum;
+            $delivery['mesNum'] = $mesNum;
             //积分订单
             if($is_credit){
                 $delivery ['order']['is_creditOrder'] ='1';
@@ -1227,6 +1228,9 @@ class omeftp_service_delivery{
                     $line = $line+1;
                 }*/
             }
+            $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.'==CR=='.'==CR=='.'==CR=='.'==CR=='.'==CR=='.
+            '||||'.$delivery['mesNum'].'|0.00|||||||||||Ea|||||||||||';
+            $line = $line+1;
         }
         //echo '<pre>2ss';print_r($delivery);
         //if($delivery['is_w_card']=='true'){
