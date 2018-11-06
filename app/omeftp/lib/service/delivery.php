@@ -663,7 +663,7 @@ class omeftp_service_delivery{
     function cron_Delivery($is_credit = true,$pay_bn = ''){
         $from_time = strtotime(date("Y-m-d",time()));
         $to_time = strtotime("+1 day");
-        //$from_time = '1540277128';
+        //$from_time = '1540200000';
         //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $orderItemMdl = app::get('ome')->model('order_items');
@@ -1222,10 +1222,10 @@ class omeftp_service_delivery{
                     $ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
                     $ax_card_flag=true;
                 }
-                if($ax_card_flag){
+                /*if($ax_card_flag){
                     $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.$card['message1'].'==CR=='.$card['message2'].'==CR=='.$card['message3'].'==CR=='.$card['message4'].'==CR=='.$card['message5'].'==CR=='.$card['message6'].'||||1|0.00|||||||||||Ea|||||||||||';
                     $line = $line+1;
-                }
+                }*/
             }
         }
         //echo '<pre>2ss';print_r($delivery);
