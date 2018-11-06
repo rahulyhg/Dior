@@ -544,8 +544,8 @@ class omeftp_service_reship{
                     $sql = "select i.*,b.obj_type from sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON i.obj_id = b.obj_id WHERE  i.order_id='".$orderId."' AND i.product_id='".$ritem['product_id']."'";
                     $itemInfo = $orderItemMdl->db->select($sql);
                     $r_item[$ritem['bn']]['true_price'] = $itemInfo['0']['true_price'];
-                    $r_item[$ritem['bn']]['ax_pmt_price'] = $itemInfo['0']['ax_pmt_price'];
-                    $r_item[$ritem['bn']]['num'] = $ritem['num'];
+                    $r_item[$ritem['bn']]['ax_pmt_price'] += $itemInfo['0']['ax_pmt_price'];
+                    $r_item[$ritem['bn']]['num'] += $ritem['num'];
                     $r_item[$ritem['bn']]['item_type'] = $itemInfo['0']['obj_type'];
                     $r_item[$ritem['bn']]['ax_pmt_percent'] = $itemInfo['0']['ax_pmt_percent'];
                     $r_item[$ritem['bn']]['name'] = $ritem['product_name'];
@@ -847,7 +847,8 @@ class omeftp_service_reship{
 
 
             $ax_l[$key][] = '0.00';//Discount amount
-            $ax_l[$key][] = $this->math->number_plus(array($reship_items['ax_pmt_percent'],0));//Discount %
+            //$ax_l[$key][] = $this->math->number_plus(array($reship_items['ax_pmt_percent'],0));//Discount %
+			$ax_l[$key][] = '0.00';
             $ax_l[$key][] = '';//Discount % Level 1
             $ax_l[$key][] = '';//Discount % Level 2
             $ax_l[$key][] = '';//Discount % Level 3
