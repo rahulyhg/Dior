@@ -78,7 +78,7 @@ class ome_ctl_admin_statement extends desktop_controller{
 		 $not_has_count = $objPayment->count(array('balance_status'=>'not_has','disabled'=>'false'));
 		 $cod_first = $objPayment->count(array('cod_time'=>'first','disabled'=>'false'));
          $so_succCount = $objPayment->count(array('cod_time'=>'second','so_bn|noequal'=>'','so_status'=>'so_succ','balance_status'=>array('auto','hand')));
-         $so_failCount = $objPayment->count(array('cod_time'=>'second','balance_status'=>array('auto','hand'),'filter_sql' => 'so_bn is null'));
+         $so_failCount = $objPayment->count(array('cod_time'=>'second','so_bn'=>'','balance_status'=>array('auto','hand')));
          $cardCount = $objPayment->count(array('cod_time'=>'second','shop_id'=>'4395c5a0b113b9d11cb4ba53c48b4d88','balance_status'=>array('auto','hand')));
 		 $sub_menu = array(
             1 => array('label'=>app::get('base')->_('全部'),'filter'=>$base_filter,'addon'=>$all_count,'optional'=>false),
@@ -90,7 +90,7 @@ class ome_ctl_admin_statement extends desktop_controller{
 			6 => array('label'=>app::get('base')->_('不匹配记录'),'filter'=>array('balance_status'=>'not_has','disabled'=>'false'),'addon'=>$not_has_count,'optional'=>false),
 			7 => array('label'=>app::get('base')->_('cod第一次导入'),'filter'=>array('cod_time'=>'first','disabled'=>'false'),'addon'=>$cod_first,'optional'=>false),
 			8 => array('label'=>app::get('base')->_('官网货平款平'),'filter'=>array('cod_time'=>'second','so_bn|noequal'=>'','so_status'=>'so_succ','balance_status'=>array('auto','hand')),'addon'=>$so_succCount,'optional'=>false),
-            9 => array('label'=>app::get('base')->_('官网款平未发货'),'filter'=>array('cod_time'=>'second','balance_status'=>array('auto','hand'),'filter_sql' => 'so_bn is null'),'addon'=>$so_failCount,'optional'=>false),
+             9 => array('label'=>app::get('base')->_('官网款平未发货'),'filter'=>array('cod_time'=>'second','so_bn'=>'','balance_status'=>array('auto','hand')),'addon'=>$so_failCount,'optional'=>false),
             10 => array('label'=>app::get('base')->_('礼品卡兑礼订单'),'filter'=>array('cod_time'=>'second','shop_id'=>'4395c5a0b113b9d11cb4ba53c48b4d88','balance_status'=>array('auto','hand')),'addon'=>$cardCount,'optional'=>false),
 
         );
