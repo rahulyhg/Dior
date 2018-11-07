@@ -573,7 +573,7 @@ class omeftp_service_reship{
                 $fileRes = $this->deliverySO($delivery);
                 if($fileRes){
                     $reshipId = implode(',',$reshipArr);
-                    $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '".$delivery['total_reship_bn']."' WHERE order_id in (".$reshipId.")";
+                    $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."' WHERE reship_id in (".$reshipId.")";
                     //echo '<pre>d';print_r($updateSql);exit;
                     $orderMdl->db->exec($updateSql);
                 }
