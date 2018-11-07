@@ -113,7 +113,7 @@ class promotion_actions_gift{
         $objItems = kernel::single("promotion_mdl_order_items");
         $limit_nums = $data['limit_nums'];
         
-        if(preg_match("/^(0{1}|[1-9]{1,})$/", $limit_nums)) {
+        if($limit_nums > 0) {
             $primary_key = $data['primary_key'];
             $nums = $data['nums'];
             
