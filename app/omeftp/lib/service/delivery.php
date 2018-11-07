@@ -1228,8 +1228,7 @@ class omeftp_service_delivery{
                     $line = $line+1;
                 }*/
             }
-            $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.'==CR=='.'==CR=='.'==CR=='.'==CR=='.'==CR=='.
-            '||||'.$delivery['mesNum'].'|0.00|||||||||||Ea|||||||||||';
+            $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||||||'.$delivery['mesNum'].'|0.00|||||||||||Ea|||||||||||';
             $line = $line+1;
         }
         //echo '<pre>2ss';print_r($delivery);
