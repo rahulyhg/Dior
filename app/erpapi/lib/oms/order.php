@@ -911,12 +911,11 @@ class erpapi_oms_order
 
         //小程序发送模板消息
         if($post['order_refer_source']=="minishop"){//EC小程序
-            $iorder['address_id']=$address_id;
-            $iorder['form_id']=$post['form_id'];
-            kernel::single("giftcard_wechat_request_message")->send($iorder);
             //促销
-            $iorder['payed'] = $iorder['total_amount'];
-            kernel::single("promotion_process")->process(array($iorder));
+            if(app::get('promotion')->is_installed()) {
+                $iorder['payed'] = $iorder['total_amount'];
+                kernel::single("promotion_process")->process(array($iorder));
+            }
         }
 
         return $this->send_succ('创建成功');

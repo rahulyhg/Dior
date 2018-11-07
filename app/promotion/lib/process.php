@@ -34,6 +34,10 @@ class promotion_process{
 	} 
 	
 	function filterPromotion(&$order){
+        if(empty($this->promotion)) {
+            return true;
+        }
+        
 		foreach($this->promotion as $promotion){
 			//需要重写的
 			if(isset($promotion['conditions_serialize']['relate'])){
