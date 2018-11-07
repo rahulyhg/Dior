@@ -171,9 +171,11 @@ class promotion_actions_gift{
 		$objOrders=app::get('ome')->model('orders');
 		$order_id=$arrGift['order_id'];
         
+        $itemnum = 0;
 		foreach($arrGift['items'] as $product){
 			$quantity=$product['nums'];
 			$product_id=$product['product_id'];
+            $itemnum = $itemnum + $quantity;
 			$arrProduct=array();
 					
 			$arrProduct=$objOrders->db->select("SELECT goods_id,name,bn FROM sdb_ome_products WHERE product_id='$product_id'");
@@ -193,5 +195,7 @@ class promotion_actions_gift{
 				error_log("object失败:".$order_id.":",3,DATA_DIR.'/iup/'.date("Ymd").'zjrorder.txt');	
 			}
 		}
+        
+        $objOrders->db->exec("UPDATE sdb_ome_orders SET itemnum=itemnum+$itemnum WHERE order_id='$order_id'");
 	}
 }
