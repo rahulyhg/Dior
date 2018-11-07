@@ -1,0 +1,585 @@
+<{capture name="header"}>
+<{css app="ome" src="ome.css"}>
+<{css app="ome" src="style.css"}>
+<{script src="coms/modedialog.js" app="desktop"}>
+<{script src="coms/pager.js" app="desktop"}>
+<{/capture}>
+<form action="index.php?app=promotion&ctl=admin_orders&act=toAdd" method="post" >
+  <h3><{t}>基本信息<{/t}></h3>
+<div id="x-g-basic" class="goods-detail tableform">
+<input type="hidden" value="<{$rule_id}>" name="rule_id">  
+		<div class="division">
+			<table border="0" cellpadding="0" cellspacing="0" class="rule_list">
+				<tr>
+					<th style="width:10%"><{t}>规则名称<{/t}>：</th>
+					<td style="width:90%"><{input type="text" class="inputstyle" name="rule[name]" required="true" vtype='required' value=$arrPromotion.name size=60 }><em><font color="red">*</font></em></td>
+				</tr>
+				<tr>
+					<th><{t}>规则描述<{/t}>：</th>
+					<td><{input type="textarea" style=" width:80%" class="inputstyle" value=$arrPromotion.description name="rule[description]" rows="10" }></td>
+				</tr>
+				<tr>
+					<th><{t}>启用状态<{/t}>：</th>
+					 <td>
+					 <label><input type="radio" name="rule[status]"<{if $arrPromotion.status != 'false' }> checked="checked"<{/if}> value="true" ><{t}>是<{/t}></label>
+					 <label><input type="radio" name="rule[status]"<{if $arrPromotion.status == "false"}> checked="checked"<{/if}> value="false" ><{t}>否<{/t}></label>
+					 </td>
+				</tr>
+				<tr>
+					<th><{t}>开始时间<{/t}>：</th>
+					<td>
+						<{input type="time" value=$arrPromotion.from_time vtype="required" name="from_time"}>
+					</td>
+				</tr>
+				<tr>
+					<th><{t}>结束时间<{/t}>：</th>
+					<td>
+						<{input type="time" value=$arrPromotion.to_time vtype="required" name="to_time"}>
+					</td>
+				</tr>
+
+			</table>
+		</div>
+ 
+</div>
+
+<h3><{t}>选择店铺<{/t}></h3>
+<div id="x-g-basic" class="goods-detail tableform">
+
+    <div class="division">
+        <table border="0" cellpadding="0" cellspacing="0" class="rule_list">
+            <tr>
+                <td style="width:40px;" align="right"><{t}>店铺<{/t}>：</td>
+                <td align="left" style="line-height:20px;">
+                   <{foreach from=$arrShop item=shop}>
+                   <input type="checkbox" name="shop[]" value="<{$shop.shop_id}>" style="vertical-align:middle;" <{if $shop.seleted=='1'}> checked="checked"<{/if}>><span style="vertical-align:middle;">&nbsp&nbsp<{$shop.name}></span><br>
+                   <{/foreach}>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<h3><{t}>订单来源<{/t}></h3>
+<div id="x-g-basic" class="goods-detail tableform">
+
+    <div class="division">
+        <table border="0" cellpadding="0" cellspacing="0" class="rule_list">
+            <tr>
+                <td style="width:40px;" align="right"><{t}>来源<{/t}>：</td>
+                <td align="left" style="line-height:20px;">
+                    <{foreach from=$arrSource item=source}>
+                        <input type="checkbox" name="source[]" value="<{$source.source}>" style="vertical-align:middle;" <{if $source.seleted=='1'}> checked="checked"<{/if}>><span style="vertical-align:middle;">&nbsp&nbsp<{$source.source}></span><br>
+                    <{/foreach}>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<h3><{t}>优惠条件<{/t}></h3>
+  <div class="tableform">
+	<div class="division">
+	<div style="margin:10px 5px;"><span style="vertical-align:middle;">订单金额:&nbsp</span><input type="checkbox" class="conditions_order_use" value="1" name="conditions[order][use]" <{if $arrPromotion.conditions_serialize.order.use=="1"}> checked="checked"<{/if}> style="vertical-align:middle;"> &nbsp<sap id="conditions_order_minmax" style="display:none;"><input type="text" value="<{$arrPromotion.conditions_serialize.order.min}>" name="conditions[order][min]" style="width:40px;">&nbsp ~&nbsp <input type="text" value="<{$arrPromotion.conditions_serialize.order.max}>" name="conditions[order][max]" style="width:40px;"></sap></div>
+	<div style="margin:10px 5px; display:none;"> 
+		
+		<select name="conditions[goods][kinds]" id="goods_kinds" class="goods_kinds">
+			<option value="1" <{if $arrPromotion.conditions_serialize.goods.kinds=="1"}> selected="selected" <{/if}>>单个</option>
+			<option value="2" <{if $arrPromotion.conditions_serialize.goods.kinds=="2"}> selected="selected" <{/if}>>多个</option>
+		</select>
+		
+		&nbsp&nbsp商品 &nbsp<input type="radio" class="conditions_isinclude" value="1" <{if $arrPromotion.conditions_serialize.goods.isinclude=="1"}> checked="checked"<{/if}> name="conditions[goods][isinclude]" checked="checked">包含  <input type="radio" class="conditions_isinclude" value="2" <{if $arrPromotion.conditions_serialize.goods.isinclude=="2"}> checked="checked"<{/if}> name="conditions[goods][isinclude]">排除 
+		
+		<input type="hidden"  id="goods_type" name="conditions[goods][type]" value="<{$arrPromotion.conditions_serialize.goods.type}>">
+		  <{button label="货品" id="purchase-find-btn"}>
+		  <{button label="捆绑货品" id="purchase-find-pkg-btn"}>
+		  <{button	style="display:none"  label="切换到捆绑商品" id="addPkg" app="desktop" }>
+		  <{button	style="display:none"   label="切换到货品" id="addBn" app="desktop" }>&nbsp&nbsp
+		  
+		  <div style="display:none;" id="conditions_relate_order"><span style="vertical-align:middle;">以下商品金额不包含在订单金额中: </span><input type="checkbox" id="conditions_relate_order_checkbox" value="1" name="conditions[relate]" <{if $arrPromotion.conditions_serialize.relate=="1"}> checked="checked"<{/if}> style="vertical-align:middle;">&nbsp</div>
+		
+		<div style="margin:10px 0" id="conditions_range"> 
+		 范围: &nbsp<input type="checkbox" id="conditions_range_checkbox" value="1" name="conditions[goods][range]" <{if $arrPromotion.conditions_serialize.goods.range=="1"}> checked="checked"<{/if}>>&nbsp任意一个指定商品
+		  </div>
+		
+		  <table class="gridlist" id="purchase_table"  style="margin:4px 0;">
+			<thead>
+			  <tr>
+				<th>货号</th>
+				<th>货品名称</th>
+				<th>数量</th>
+				<th style="width:30px;">删除</th>
+			  </tr>
+			</thead>
+			<tbody id="dataNode">
+			  <tr>
+				<td colspan="7" style="padding:0;"><div class="note" style="margin:0;"> 暂无对应的货品信息 </div></td>
+			  </tr>
+			</tbody>
+		  </table>
+		  <div align="right">
+			<{button type="button" id="purchase-delall-btn" label="全部删除" }>
+		</div> 
+	</div>
+    </div>
+</div>
+
+<h3><{t}>优惠方案<{/t}></h3>
+ <div class="tableform">
+     <div class="division">
+		<table border="0" cellpadding="0" cellspacing="0" class="rule_list">
+					<tr>
+						<td style="width:100%" align="left"><input type="radio" value="gift" name="actions" class='action_conditions' <{if $arrPromotion.actions=="gift"}> checked="checked" <{/if}>/>订单送赠品
+						<div class="tableform" id="action_gift" style="display:none;">
+						<span style="vertical-align:middle;">全选赠品：</span><input type="checkbox" <{if $arrPromotion.actions_serialize.gift.all=="1"}> checked="checked" <{/if}> value="1" name="actions_serialize[gift][all]" style="vertical-align:middle;"><{input type="object" multiple="true" object="products@ome" breakpoint="1" cols="name" select="checkbox" textcol='name,bn' key='product_id' extra_value=$arrPromotion.actions_serialize.gift.extra_value value=$arrPromotion.actions_serialize.gift.bn name="actions_serialize[gift][bn]" view='promotion:finder/input_extra_view.html' style=" display:inline;"}>
+						 <span style="vertical-align:middle;">全选捆绑赠品：</span><input type="checkbox" value="1" name="actions_serialize[gift][pkg_all]" <{if $arrPromotion.actions_serialize.gift.pkg_all=="1"}> checked="checked" <{/if}> style="vertical-align:middle;"><{input type="object" multiple="true" object="pkg_goods@omepkg" breakpoint="1" cols="name" select="checkbox" textcol='name,pkg_bn' key='goods_id' value=$arrPromotion.actions_serialize.gift.pkg_bn  extra_value=$arrPromotion.actions_serialize.gift.extra_pkg_value  view='promotion:finder/input_extra_pkg_view.html'    name="actions_serialize[gift][pkg_bn]" style=" display:inline;"}><br>
+						 <!--限量:<input type="text" name="actions_serialize[gift][limit_nums]" style="width:60px;" value="<{$arrPromotion.actions_serialize.gift.limit_nums}>">&nbsp(注:留空则不限量)-->
+						 </div>
+						 </td>
+					</tr>
+					
+				</table>
+		<div id="cc" class="noprint table-action"> <{button type="button" class="btn" id="purchase-save-btn" label="保 存"}> &nbsp; <{button type="button" class="btn" id="return-btn" label="关 闭" onclick="javascript:window.close();"}>
+		</div>
+     </div>
+ </div>
+</form>
+<script>
+(function(){
+var goods_kinds=1;
+var callurl='index.php?app=promotion&ctl=admin_orders&act=getProducts',store=[];
+var pkg_callurl='index.php?app=promotion&ctl=admin_orders&act=getPkgProducts',store=[];
+var pkgtpl = 0;//按钮标识，是否使用了添加捆绑商品
+var tpl;
+var tpl_kinds='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'
+		+'	<td>{bn}<input type="hidden" name="conditions[goods][product_id][]" value="{product_id}"></td><td class="product-name" visibility="{visibility}">{name}</td>'
+		+'  <td><input type="text" name="conditions[goods][nums][]" value="1" style="width:30px;" disabled="disabled"></td>'
+		+'	<td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'
+		+'</tr>';
+var tpl_single='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'
+		+'	<td>{bn}<input type="hidden" name="conditions[goods][product_id][]" value="{product_id}"></td><td class="product-name" visibility="{visibility}">{name}</td>'
+		+'  <td><input type="text" name="conditions[goods][nums][]" value="{nums}" style="width:30px;"></td>'
+		+'	<td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'
+		+'</tr>';
+   //捆绑商品模板
+var pkg_tpl ='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'
+	   +'  <td>{bn}<input type="hidden" name="conditions[goods][product_id][]" value="{product_id}"></td><td class="product-name" visibility="">{name}</td>'
+	   +'  <td><input type="text" name="conditions[goods][nums][]" value="1" style="width:30px;" disabled="disabled"></td>'
+	   +'  <td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'
+	   +'</tr>';
+var pkg_single_tpl ='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'
+	   +'  <td>{bn}<input type="hidden" name="conditions[goods][product_id][]" value="{product_id}"></td><td class="product-name" visibility="">{name}</td>'
+	   +'  <td><input type="text" name="conditions[goods][nums][]" value="{nums}" style="width:30px;"></td>'
+	   +'  <td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'
+	   +'</tr>';
+
+<{if $rule_id!=""}>
+	var actions="<{$arrPromotion.actions}>";
+	$('action_'+actions).setStyle('display','block');
+	
+	<{if $arrPromotion.conditions_serialize.order.use=="1"}>
+		$('conditions_order_minmax').style.display ='inline';
+	<{/if}>
+	
+	<{if $arrPromotion.conditions_serialize.goods.kinds=="1"}>
+		$('conditions_range_checkbox').set("checked",false);
+		$('conditions_range').style.display ='none';
+	<{else}>
+		<{if $arrPromotion.conditions_serialize.goods.isinclude=="2"}>
+			$('conditions_range_checkbox').set("checked",false);
+			$('conditions_range').style.display ='none';
+		<{/if}>
+	<{/if}>
+	
+	 <{if $arrPromotion.conditions_serialize.goods.isinclude=="2"}>
+		$('conditions_relate_order').style.display ='inline';
+	 <{/if}> 
+	
+	var goods_edit_data='<{$goods_edit_data}>';
+	if(goods_edit_data){
+		goods_kinds="<{$arrPromotion.conditions_serialize.goods.kinds}>";
+		var goods_edit_data='<{$goods_edit_data}>';
+		rs=JSON.decode(goods_edit_data);
+		pkgtpl=rs[0]['pkgtpl'];
+		store.combine(rs);
+		createProduct(store);
+		
+		var goods_type="<{$arrPromotion.conditions_serialize.goods.type}>";
+		if(goods_type=="normal"){
+			$('purchase-find-pkg-btn').style.display ='none';//关闭捆绑赠品
+			$('addPkg').style.display ='inline';
+			$('addBn').style.display ='none';
+		}else{
+			$('purchase-find-btn').style.display ='none';//关闭普通商品
+			$('addPkg').style.display ='none';
+			$('addBn').style.display ='inline';
+		}
+	}else{
+		$('conditions_range').style.display ='none';
+	}
+<{else}>
+$('conditions_range').style.display ='none';
+<{/if}> 
+
+$ES('.conditions_order_use').addEvent('click',function(el){ 
+	$ES(this).each(function(el){
+		if (el.checked){
+			$('conditions_order_minmax').style.display ='inline';
+		}else{
+			$('conditions_order_minmax').style.display ='none';
+		}
+	});
+});
+
+$ES('.action_conditions').addEvent('click',function(){ 
+			$ES('.action_conditions').each(function(el){
+				if (el.checked){
+					$('action_'+el.value).setStyle('display','block');
+				}else{
+					$('action_'+el.value).setStyle('display','none');
+				}
+			});
+		});
+		
+$('goods_kinds').addEvent('change',function(){
+    $ES(this).each(function(el){
+		if(el.value=="1"){
+			goods_kinds=el.value;
+			$('conditions_range_checkbox').set("checked",false);
+			$('conditions_range').style.display ='none';
+		}else{
+			goods_kinds=el.value;
+			$ES('.conditions_isinclude').each(function(isinclude){
+				if(isinclude.value=="1"&&isinclude.checked){
+					$('conditions_range').style.display ='block';
+				}
+			});
+			
+		}
+	});
+   if(!pag||!pag.data)return;
+	var delarr=[];
+	pag.data.each(function(d){
+		delarr.push(d['product_id']);
+	});
+		
+	delProduct(pag,delarr);
+	emptyData();
+	
+});
+
+$ES('.conditions_isinclude').addEvent('click',function(){
+   $ES(this).each(function(el){
+		if(el.value=="1"){
+			$ES('#goods_kinds').each(function(kinds){
+				if(kinds.value=="2"){
+					$('conditions_range').style.display ='block';
+				}
+			});
+			$('conditions_relate_order').style.display ='none';
+			$('conditions_relate_order_checkbox').set("checked",false);
+		}else{
+			$('conditions_range_checkbox').set("checked",false);
+			$('conditions_relate_order').style.display ='inline';
+			$('conditions_range').style.display ='none';
+		}
+   });
+});
+			
+var visiTips = new Tips({
+		onShow:function(tip,el){
+			el.addClass('active');
+			tip.setStyle('display','block');
+		},
+		text: function(element){
+			if(element.get('visibility')=='false'){
+				return '隐藏商品';
+			}else{
+				return '';
+			}
+		}
+});
+	
+	$('purchase-find-btn').addEvent('click',function(e){
+		$('goods_type').set('value','normal');
+		$('addPkg').style.display ='inline';
+		$('addBn').style.display ='none';
+		$('purchase-find-pkg-btn').style.display ='none';//点击普通商品时，关闭捆绑赠品
+				
+		$ES('.goods_kinds').each(function(el){
+			goods_kinds=el.value;
+		});
+		if(goods_kinds==1){
+			if(typeof(pag)!="undefined"){
+				if(pag.data.length>0){
+					alert('清先删除当前商品');
+					return false;
+				}
+			}
+			var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=promotion&ctl=admin_orders&act=findProduct&singleselect=1');
+		}else{
+			var url='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=promotion&ctl=admin_orders&act=findProduct');
+		}
+		
+		new finderDialog(url,{params:{url:callurl,name:'product_id[]'},width:1000,height:660,
+			onCallback:function(rs){
+				if(!rs)return;
+				rs=JSON.decode(rs);
+				init(rs);
+			}
+		});
+	});
+	//点击添加捆绑货品
+	$('purchase-find-pkg-btn').addEvent('click',function(e){
+		$('goods_type').set('value','bind');
+		$('purchase-find-btn').style.display ='none';//点击捆绑商品时，关闭普通商品
+		$('addBn').style.display ='inline';
+		pkgtpl = 1;
+		
+		$ES('.goods_kinds').each(function(el){
+			goods_kinds=el.value;
+		});
+		 
+		if(goods_kinds=="1"){
+			if(typeof(pag)!="undefined"){
+				if(pag.data.length>0){
+					alert('清先删除当前商品');
+					return false;
+				}
+			}
+			var url ='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=promotion&ctl=admin_orders&act=findPkgProduct&singleselect=1');
+		}else{
+			var url ='index.php?app=desktop&act=alertpages&goto='+encodeURIComponent('index.php?app=promotion&ctl=admin_orders&act=findPkgProduct');
+		}
+		
+		
+		new finderDialog(url,{params:{url:pkg_callurl,name:'product_id[]'},width:1000,height:660,
+			onCallback:function(rs){
+				if(!rs)return;
+				rs=JSON.decode(rs);
+				init(rs);
+			}
+		});
+	});
+	//切换到货品添加
+	$('addBn').addEvent('click',function(e){
+		emptyData();
+		$('goods_type').set('value','normal');
+		$('purchase-find-btn').style.display ='inline';
+		$('addPkg').style.display ='inline';
+		$('purchase-find-pkg-btn').style.display ='none';
+		$('addBn').style.display ='none';
+		if(!pag||!pag.data)return;
+		var delarr=[];
+		pag.data.each(function(d){
+			 delarr.push(d['product_id']);
+		});
+		delProduct(pag,delarr);
+		emptyData();
+		
+	});
+	//切换到捆绑货品添加
+	$('addPkg').addEvent('click',function(e){
+		$('goods_type').set('value','bind');
+		$('purchase-find-pkg-btn').style.display ='inline';
+		$('addBn').style.display ='inline';
+		$('purchase-find-btn').style.display ='none';
+		$('addPkg').style.display ='none';
+		if(!pag||!pag.data)return;
+		
+		var delarr=[];
+		pag.data.each(function(d){
+			 delarr.push(d['product_id']);
+		});
+		delProduct(pag,delarr);
+		emptyData();
+	});
+
+
+	var pag,rows;
+	function emptyData(){
+		var noData='<tr>'
+			+'<td colspan="7" style="padding:0;"><div class="note" style="margin:0;"> 暂无对应的货品信息 </div></td>'
+			+'</tr>';
+		$('dataNode').set('html',noData);
+	}
+	function createProduct(data){
+	
+	   if(pkgtpl){
+	   //使用捆绑货品的模板节点
+		  if(goods_kinds=="1"){
+		      tpl = pkg_single_tpl;
+		  }else{
+		      tpl = pkg_tpl;
+		  }
+		 
+	   }else{
+		  if(goods_kinds=="1"){
+		      tpl = tpl_single;
+		  }else{
+			  tpl = tpl_kinds;
+		  }
+	    }
+		/*var tpl='<tr key="{product_id}" id="product_{product_id}" title="点击选取/反选此条记录">'
+        +'  <td>{bn}<input type="hidden" name="pid[]" value="{product_id}"></td><td class="product-name" visibility="">{name}</td>'
+        +'  <td><{img src="bundle/delecate.gif" app="desktop" key="state" class="pointer btn-delete-item"}></td>'
+        +'</tr>';*/
+		
+		
+	 
+		pag=new PageData(tpl,data,{'updateMain':$('dataNode'),'pageNum':15,
+		'onShow':function(){
+			 var _this=this;
+			 $$('#dataNode input[type]').addEvent('change',function(e){
+				 var pid=this.getParent('tr').get('key'),value=this.value;
+				_this.editData(pid,[this.get('key'),value]);
+			});
+
+			rows=$ES('#dataNode tr');
+			rows.each(function(item,i){
+				item.addEvent('click',function(e){
+					this.toggleClass('selected');
+				});
+				item.getElement('.btn-delete-item').addEvent('click',function(e){
+					if(_this.selectData(item.get('key')) && confirm('确定要删除 '+ _this.selectData(item.get('key'))['name'] +' 吗？')) _this.delData(item.get('key'));
+					if(!$E('#dataNode tr')) emptyData();
+				});
+			});
+			
+			$ES('.product-name').each(function(item){
+				if(item.get('visibility')=='false'){
+					item.setStyle('color','#808080');
+				}
+			});
+			$ES('.product-name').removeEvent('mouseover').addEvent('mouseover',function(e){
+				if (this.get('visibility')=='false')
+				{
+					var e  = new Event(e), el = e.target;
+					visiTips.attach(el);
+					el.addEvent('mouseleave',function(){
+						this.removeClass('active');
+					});
+					el.fireEvent('mouseenter',e);
+				}
+		  });
+		}
+		});
+	}
+	function init(rs){
+		var tmparr=findProduct(rs,'product_id');
+		 store.unshift.apply(store,tmparr.reverse());
+		 createProduct(store);
+	}
+	function findProduct(arr,PRIMARY){
+		if(!store.length)return arr;
+		store.each(function(a){
+			arr.each(function(b){
+				if(a[PRIMARY]==b[PRIMARY])arr.erase(b);
+			});
+		});
+		return arr;
+	}
+
+	function delProduct(obj,arr){
+		arr.each(function(d){obj.delData(d);});
+	}
+
+	$('purchase-delall-btn').addEvent('click',function(e){
+		if(!pag||!pag.data)return;
+		var delarr=[];
+		pag.data.each(function(d){
+			 delarr.push(d['product_id']);
+		});
+		if(confirm('确认删除全部货品吗？')){
+			delProduct(pag,delarr);
+			emptyData();
+		}
+	});
+
+
+	$('purchase-save-btn').addEvent('click',function(e){
+		var form=this.getParent('form');
+		if(pag){
+		  var data=pag.toHideInput($('dataNode').getElement('tr'));
+			 form.store('target',{extraData:data,
+			  onComplete:function(jsontext){
+				  try{
+					  var json = Json.evaluate(jsontext);
+					  if (typeof(json.error) == 'undefined'){
+						  opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+						  setTimeout('window.close()',200);
+					  }
+				  }catch(e){
+
+				  }
+			  }});
+		}else{
+			form.store('target',{
+			  onComplete:function(jsontext){
+				  try{
+					  var json = Json.evaluate(jsontext);
+					  if (typeof(json.error) == 'undefined'){
+						  opener.finderGroup['<{$env.get.finder_id}>'].refresh.delay(100,opener.finderGroup['<{$env.get.finder_id}>']);
+						  setTimeout('window.close()',200);
+					  }
+				  }catch(e){
+
+				  }
+			  }});
+		}
+		form.fireEvent('submit',e);
+	});
+})();
+
+function chgexigence(o){
+	o.checked?$("exigence").show():$("exigence").hide();
+}
+function validSupplier(element){
+	element=$(element);
+	new Element('span',{'class':'error caution notice-inline','html':'本项必填'}).injectAfter(element);
+	element.removeEvents('blur').addEvent('blur',function(){
+	   if(validate(element)) element.removeEvent('blur',arguments.callee);
+	});
+}
+
+
+function pushDate(o){
+	if(o.value!==""){
+		if(/^\d*$/.test(o.value)){
+			if (o.getNext('.error')) o.getNext('.error').dispose();
+			$("pushdate").set("text",(new Date(Date.parse(new Date())+86400000 * o.value.toInt())).toLocaleDateString());
+		}
+		else o.value="";
+	}
+	else $("pushdate").empty();
+}
+
+function prichange(ss){
+	if (ss == 1){
+		$$('.endd').hide();
+		$('price').set('value', '');
+	}else{
+		$$('.endd').show();
+	}
+}
+
+function checkName(thisval){
+	if(/!|！/.test(thisval)){
+		var val = thisval.replace("!","");
+		val = val.replace("！","");
+		$('purchase_name').set('value', val);
+	}
+//切换赠品类型时，清除
+function changeType(){
+	if(!pag||!pag.data)return;
+	var delarr=[];
+	pag.data.each(function(d){
+		 delarr.push(d['product_id']);
+	});
+	if(confirm('确认删除全部货品吗？')){
+		delProduct(pag,delarr);
+		emptyData();
+	}
+}
+}
+</script>

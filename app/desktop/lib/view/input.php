@@ -158,12 +158,16 @@ class desktop_view_input{
             //过滤不存在的值
             //某些数据被添加后 可能原表数据已删除，但此处value中还存在。
             $_params_items_row_key = array();
-            foreach( $params['items'] as $_params_items_row ) {
+            foreach( $params['items'] as $_item=>$_params_items_row ) {
+                //zjr添加extra_value
+				if(isset($params['extra_value']) && $params['extra_value']){
+					$params['items'][$_item]['extra_value'] = explode(':', $params['extra_value'][$_item]);
+				}
                 $_params_items_row_key[] = $_params_items_row[$key];
             }
             $params['value'] = implode(',',$_params_items_row_key);
         }
-
+//echo "<pre>";print_r($params);exit;
         if(isset($params['multiple']) && $params['multiple']){
             if(isset($params['items']) && count($params['items'])){
                 $params['display_datarow'] = 'true';

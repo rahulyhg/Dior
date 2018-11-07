@@ -672,6 +672,17 @@ EOF;
                 $_POST['data'] = array_map('current',$arr_list);
             }
             $items = $obj->getList('*', array($keycol=>$_POST['data']));
+            //zjr添加extra_value
+			if(isset($_POST['extra_value']) && $_POST['extra_value']){
+				foreach( $items as $_item=>$_params_items_row ) {
+					foreach($_POST['items'] as $post_items_key=>$post_items){
+						if($post_items==$_params_items_row[$keycol]){
+							$items[$_item]['extra_value'] = explode(':', $_POST['extra_value'][$post_items_key]);
+							break;
+						}
+					}
+				}//echo "<pre>";print_r($_POST);print_r($items);exit;
+            }
             $name = $items[0][$textColumn];
             if($_POST['type']=='radio'){
                 if(strpos($textColumn,'@')!==false){
