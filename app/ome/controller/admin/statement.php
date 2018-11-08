@@ -35,9 +35,9 @@ class ome_ctl_admin_statement extends desktop_controller{
     			);
     			break;
        		case '9'://款平未发货订单 走挂账流程发给AX
-    			$actions = array(
+    			/*$actions = array(
                     array('label'=>'挂账','confirm'=>app::get('ome')->_('是否确认挂账同步AX'),'submit'=>'index.php?app=ome&ctl=admin_statement&act=monthendSL'),
-    			);
+    			);*/
     			break;
             case '10'://礼品卡兑礼订单走原有流程发给AX
     			$actions = array(
@@ -520,6 +520,7 @@ class ome_ctl_admin_statement extends desktop_controller{
 		//$ax_info[] = array('Paynment date','Customer number','Pay amount','order Amount','Order Number','Reason Code','Paynment method','Brand','Fee amount','Transaction Text');
 		$objMath = kernel::single('eccommon_math');
 		$objOrder = app::get('ome')->model('orders');
+         $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
         foreach($payments as $row){
 			$payment_ids[] = $row['statement_id'];
 			$arow = array();
@@ -644,6 +645,7 @@ class ome_ctl_admin_statement extends desktop_controller{
         $objMath = kernel::single('eccommon_math');
 		$objOrder = app::get('ome')->model('orders');
         $payments = $this->sortingData($paymentList);
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
         foreach($payments as $row){
 			$payment_ids[] = $row['statement_id'];
 			$arow = array();

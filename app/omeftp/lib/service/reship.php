@@ -637,7 +637,7 @@ class omeftp_service_reship{
                 'file_ftp_route'=>$params['remote'],
             );
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
-
+            return true;
         }else{
             $this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
             //发送报警邮件
@@ -650,6 +650,7 @@ class omeftp_service_reship{
             $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货SO文件生成失败';//【ADP-PROD】ByPass订单#10008688发送失败
             $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是SO文件内容和错误信息。<br>SO文件内容：<br>$ax_content<br/><br>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>$msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
             kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+            return false;
         }
     }
 
