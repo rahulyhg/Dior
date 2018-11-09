@@ -12,56 +12,71 @@ class ome_auto_statement{
 		$payments = $paymentObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 	
 		foreach($payments as $row){
-			$data = $order = array();
-			$data['original_bn'] = $row['payment_bn'];
-			$data['order_id'] = $row['order_id'];
-			
-            $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$row['order_id']));
-            $order = $order[0];
-            $data['wx_order_bn']=$order['wx_order_bn'];
-            $data['paymethod'] = $order['pay_bn'];
-            $data['createtime'] = $order['createtime'];
+            //查询该支付流水是否先存在对账表  如果存在则直接对账
+            $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'paymethod'=>$row['pay_bn'],'original_type'=>'payments'));
+            if(!empty($ifExist)){
+                $this->paymentsUpdate($row,$ifExist['0'],'payments');
+            }else{
+                $data = $order = array();
+                $data['original_bn'] = $row['payment_bn'];
+                $data['order_id'] = $row['order_id'];
 
-			$data['shop_id'] = $row['shop_id'];
-			$data['money'] = $row['money'];
-			$data['paycost'] = $row['paycost'];
-			$data['cur_money'] = $row['cur_money'];
-			$data['payment'] = $row['payment'];
-			$data['memo'] = $row['memo'];
-			$data['trade_no'] = $row['trade_no'];
-			$statementObj->save($data);
-			$paymentObj->update(array('statement_status'=>'true'),array('payment_id'=>$row['payment_id']));
+                $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$row['order_id']));
+                $order = $order[0];
+                $data['wx_order_bn']=$order['wx_order_bn'];
+                $data['paymethod'] = $order['pay_bn'];
+                $data['createtime'] = $order['createtime'];
+
+                $data['shop_id'] = $row['shop_id'];
+                $data['money'] = $row['money'];
+                $data['paycost'] = $row['paycost'];
+                $data['cur_money'] = $row['cur_money'];
+                $data['payment'] = $row['payment'];
+                $data['memo'] = $row['memo'];
+                $data['trade_no'] = $row['trade_no'];
+
+                $statementObj->save($data);
+                $paymentObj->update(array('statement_status'=>'true'),array('payment_id'=>$row['payment_id']));
+            }
+
 		}
 
 		$refunds = $refundObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 		foreach($refunds as $row){
-			$data = array();
-			$data['original_bn'] = $row['refund_bn'];
-			$data['order_id'] = $row['order_id'];
-			
-            $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$row['order_id']));
-            $order = $order[0];
-            $data['wx_order_bn']=$order['wx_order_bn'];
-            $data['paymethod'] = $order['pay_bn'];
-            $data['createtime'] = $order['createtime'];
-            //退货退款的AX文件整合编号
-            $refundApplyInfo = app::get('ome')->model('refund_apply')->getList('*',array('refund_bn'=>$row['refund_bn']));
-            if($refundApplyInfo['0']['reship_id']){
-                $reshipInfo = app::get('ome')->model('reship')->getList('*',array('reship_id'=>$refundApplyInfo['0']['reship_id']));
-                $data['so_bn'] = $reshipInfo['0']['so_order_num'];
+            //查询该支付流水是否先存在对账表  如果存在则直接对账
+            $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'paymethod'=>$row['pay_bn'],'original_type'=>'refunds'));
+            if(!empty($ifExist)){
+                $this->paymentsUpdate($row,$ifExist['0'],'refunds');
+            }else{
+                $data = array();
+                $data['original_bn'] = $row['refund_bn'];
+                $data['order_id'] = $row['order_id'];
+
+                $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$row['order_id']));
+                $order = $order[0];
+                $data['wx_order_bn']=$order['wx_order_bn'];
+                $data['paymethod'] = $order['pay_bn'];
+                $data['createtime'] = $order['createtime'];
+                //退货退款的AX文件整合编号
+                $refundApplyInfo = app::get('ome')->model('refund_apply')->getList('*',array('refund_bn'=>$row['refund_bn']));
+                if($refundApplyInfo['0']['reship_id']){
+                    $reshipInfo = app::get('ome')->model('reship')->getList('*',array('reship_id'=>$refundApplyInfo['0']['reship_id']));
+                    $data['so_bn'] = $reshipInfo['0']['so_order_num'];
+                }
+
+
+                $data['shop_id'] = $row['shop_id'];
+                $data['money'] = $row['money'];
+                $data['paycost'] = $row['paycost'];
+                $data['cur_money'] = $row['cur_money'];
+                $data['payment'] = $row['payment'];
+                $data['memo'] = $row['memo'];
+                $data['trade_no'] = $row['trade_no'];
+                $data['original_type'] = 'refunds';
+                $statementObj->save($data);
+                $refundObj->update(array('statement_status'=>'true'),array('refund_id'=>$row['refund_id']));
             }
 
-            
-			$data['shop_id'] = $row['shop_id'];
-			$data['money'] = $row['money'];
-			$data['paycost'] = $row['paycost'];
-			$data['cur_money'] = $row['cur_money'];
-			$data['payment'] = $row['payment'];
-			$data['memo'] = $row['memo'];
-			$data['trade_no'] = $row['trade_no'];
-			$data['original_type'] = 'refunds';
-			$statementObj->save($data);
-			$refundObj->update(array('statement_status'=>'true'),array('refund_id'=>$row['refund_id']));
 		}
 		
 	}
@@ -69,28 +84,29 @@ class ome_auto_statement{
 	public function auto_sync(){
 		$paymentObj = app::get('ome')->model('statement');
 		//普通订单合并同步AX
-		$normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|noequal'=>'4395c5a0b113b9d11cb4ba53c48b4d88'),0,1000);
+		$normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,1000);
+
 		if(empty($normal_payments)){
 			return true;
 		}
 		do{
 			//$this->sync_payments($payments);
             $this->sync_payments2($normal_payments);
-            $normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|noequal'=>'4395c5a0b113b9d11cb4ba53c48b4d88'),0,100);
+            $normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
 			if(empty($normal_payments)){
 				break;
 			}
 		}while(true);
 
-		//兑礼订单发送给AX走原有不合并的逻辑
-		$giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id'=>'4395c5a0b113b9d11cb4ba53c48b4d88'),0,100);
+		//购卡订单、兑礼订单发送给AX走原有不合并的逻辑
+		$giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
         if(empty($normal_payments)){
             return true;
         }
         do{
             $this->sync_payments($giftCardE_payments);
             //$this->sync_payments2($normal_payments);
-            $giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id'=>'4395c5a0b113b9d11cb4ba53c48b4d88'),0,100);
+            $giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
             if(empty($giftCardE_payments)){
                 break;
             }
@@ -330,45 +346,30 @@ class ome_auto_statement{
 	        $row = array();
 	        $rowKey = $giftcard_key = 0;
 	        foreach($payments as $payment) {
-
-                $payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
-                if ($payment['so_bn']) {
-                    //普通订单的大订单号可以区分出支付类型和是否属于退款账单
-                    $row[$payment['so_bn']][$payDate]['order_bn'] = $payment['so_bn'];
-                    $row[$payment['so_bn']][$payDate]['paymethod'] = $payment['paymethod'];
-                    $row[$payment['so_bn']][$payDate]['original_type'] = $payment['original_type'];
-                    $row[$payment['so_bn']][$payDate]['pay_fee'] += $payment['pay_fee'];
-                    $row[$payment['so_bn']][$payDate]['money'] += $payment['money'];
-                    $row[$payment['so_bn']][$payDate]['tatal_amount'] += $payment['tatal_amount'];
-                    $row[$payment['so_bn']][$payDate]['pay_time'] = (!empty($payDate)) ? strtotime($payDate) : '';
-                    //echo '<pre>drr';print_r($row);exit;
+                //生成大订单号
+                if($payment['paymethod']=='alipay'){
+                    $S = 'A';
                 }
+                if($payment['paymethod']=='wxpayjsapi'){
+                    $S = 'W';
+                }
+                $payDate = $S.date('Ymd',$payment['pay_time']);
+                //$payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
+
+                //普通订单的大订单号可以区分出支付类型和是否属于退款账单
+                $row[$payDate]['order_bn'] = $payDate;
+                $row[$payDate]['paymethod'] = $payment['paymethod'];
+                $row[$payDate]['original_type'] = $payment['original_type'];
+                $row[$payDate]['pay_fee'] += $payment['pay_fee'];
+                $row[$payDate]['money'] += $payment['money'];
+                $row[$payDate]['tatal_amount'] += $payment['tatal_amount'];
+                $row[$payDate]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+                //echo '<pre>drr';print_r($row);exit;
+
                 //礼品卡店铺没有SO文件单独使用原有的逻辑
-                if ($payment['shop_id'] == 'c7c44eade93b87b69062c76dc27c8ae7') {
-                    if ($payment['original_type'] == 'payments') {//支付单
-                        $row['giftcard'][$giftcard_key]['order_bn'] = '';
-                        $row['giftcard'][$giftcard_key]['paymethod'] = 'wechatcard';
-                        $row['giftcard'][$giftcard_key]['original_type'] = $payment['original_type'];
-                        $row['giftcard'][$giftcard_key]['pay_fee'] = $payment['pay_fee'];
-                        $row['giftcard'][$giftcard_key]['money'] = $payment['money'];
-                        $row['giftcard'][$giftcard_key]['tatal_amount'] = $payment['tatal_amount'];
-                        $row['giftcard'][$giftcard_key]['pay_time'] = (!empty($payDate)) ? strtotime($payDate) : '';
-                        $giftcard_key++;
-                    }/*else{//退款单
-                        $row['giftcard_r'][$payDate]['order_bn'] = '';
-                        $row['giftcard_r'][$payDate]['paymethod'] = 'wechatcard';
-                        $row['giftcard_r'][$payDate]['original_type'] = $payment['original_type'];
-                        $row['giftcard_r'][$payDate]['pay_fee']+= $payment['pay_fee'];
-                        $row['giftcard_r'][$payDate]['money'] += $payment['money'];
-                        $row['giftcard_r'][$payDate]['tatal_amount'] += $payment['tatal_amount'];
-                        $row['giftcard_r'][$payDate]['pay_time'] = strtotime($payDate);
-                    }*/
-
-                }
 
             }
-
-            $resArr  =array();
+            /*$resArr  =array();
 	        //整理数组
             foreach ($row as $key=>$value){
 	            foreach ($value as $k=>$prow){
@@ -381,10 +382,57 @@ class ome_auto_statement{
                     $resArr[$rowKey]['pay_time'] = $prow['pay_time'];
                     $rowKey++;
                 }
-            }
-            return $resArr;
+            }*/
+
+            return $row;
         }else{
 	        return null;
         }
+    }
+    //账单先导入再对账
+    function paymentsUpdate($dataRow,$statementRow,$paymentType='payments'){
+        if(empty($dataRow)||empty($statementRow)){
+            return false;
+        }
+
+        $statementObj = app::get('ome')->model('statement');
+        $refundObj = app::get('ome')->model('refunds');
+        $orderObj= app::get('ome')->model('orders');
+        //对账
+        if($statementRow['0']['import_money']>0){
+
+        }
+        if($paymentType=='payments'){
+            $data['order_id'] = $dataRow['order_id'];
+            $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$dataRow['order_id']));
+            $order = $order[0];
+            $data['wx_order_bn']=$order['wx_order_bn']?$order['wx_order_bn']:'';
+            $data['paymethod'] = $order['pay_bn'];
+            $data['createtime'] = $order['createtime'];
+            $data['shop_id'] = $dataRow['shop_id'];
+            $data['money'] = $dataRow['money'];
+            $data['paycost'] = $dataRow['paycost'];
+            $data['cur_money'] = $dataRow['cur_money'];
+            $data['payment'] = $dataRow['payment'];
+            $data['memo'] = $dataRow['memo']?($dataRow['memo'].$statementRow['memo']):$statementRow['memo'];
+            $data['trade_no'] = $dataRow['trade_no'];
+            $data['difference_money']= abs($statementRow['import_money']-$dataRow['money']);
+            $data['balance_status']= ($statementRow['import_money']==$dataRow['money'])?'auto':'require';
+            $data['statement_id']= $statementRow['statement_id'];
+        }
+        if($paymentType=='refunds'){
+            $data = array(
+                'difference_money'=>abs(abs($statementRow['explode_money'])-$dataRow[0]['money']),
+                'balance_status'=>(abs($statementRow['explode_money'])==$dataRow[0]['money'])?'auto':'require',
+                'memo'=>$dataRow['memo']?($dataRow['memo'].$statementRow['memo']):$statementRow['memo'],
+                'shop_id' => $dataRow['shop_id'],
+                'money' => $dataRow['money'],
+                'paycost'=> $dataRow['paycost'],
+                'cur_money' => $dataRow['cur_money'],
+                'payment'=> $dataRow['payment'],
+                'trade_no' => $dataRow['trade_no'],
+            );
+        }
+        $statementObj->save($data);
     }
 }
