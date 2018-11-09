@@ -663,7 +663,7 @@ class omeftp_service_delivery{
     function cron_Delivery($is_credit = true,$pay_bn = ''){
         $from_time = strtotime(date("Y-m-d",time()));
         $to_time = strtotime("+1 day");
-        //$from_time = '1540200000';
+        //$from_time = '1540137600';
         //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $orderItemMdl = app::get('ome')->model('order_items');
@@ -686,126 +686,146 @@ class omeftp_service_delivery{
 
         $deliveryOrder = $orderMdl->db->select($delivery_sql);
         //echo '<pre>2ss';print_r($deliveryOrder);exit;
-        $sendnumArr = $pmtnumArr = $giftCardArr=$ribbonArr = $orderArr =  array();
-        $delivery['cost_shipping']=0;
-        $delivery['cod_shipping_cost'] = 0;
-        $totalNum = 0;
-        $ribbonNum=$mcdPNum=$cvdNum =$wcardNum=$mesNum =  0;
 
-        if(!empty($deliveryOrder)&&is_array($deliveryOrder)){
-            $delivery['shop_id']  = $deliveryOrder['0']['shop_id'];
-            foreach ($deliveryOrder  as $key=>$order){
-                //运费
-                if($order['cost_freight']>$order['pmt_cost_shipping']){
-                    $delivery['cost_shipping'] +=$order['cost_freight']-$order['pmt_cost_shipping'];
-                }else{
-                    $delivery['cost_shipping'] = '0.00';
-                }
-                //cod运费
-                if($delivery['is_cod']=='true'){
-                    $delivery['cod_shipping_cost'] += $this->math->number_plus(array($order['cost_payment']-$order['pmt_cost_shipping'],0));
-                }
-                $objects = $orderObjMdl->getList('*',array('order_id'=>$order['order_id']));
+        if(!empty($deliveryOrder)&&is_array($deliveryOrder)) {
+            $delivery['shop_id'] = $deliveryOrder['0']['shop_id'];
+            //按照支付时间分批次
+            $deliveryList = $this->batchDelivery($deliveryOrder);
+            if (!$deliveryList) {
+                echo 'DATA ERROR';
+                exit;
+            }
+            foreach ($deliveryList as $payDate => $deliveryArr) {
+                $sendnumArr = $pmtnumArr = $giftCardArr=$ribbonArr = $orderArr =  array();
+                $delivery['cost_shipping']=0;
+                $delivery['cod_shipping_cost'] = 0;
+                $totalNum = 0;
+                $ribbonNum=$mcdPNum=$cvdNum =$wcardNum=$mesNum =  0;
+                foreach ($deliveryArr as $key => $order) {
+                    //运费
+                    if ($order['cost_freight'] > $order['pmt_cost_shipping']) {
+                        $delivery['cost_shipping'] += $order['cost_freight'] - $order['pmt_cost_shipping'];
+                    } else {
+                        $delivery['cost_shipping'] = '0.00';
+                    }
+                    //cod运费
+                    if ($delivery['is_cod'] == 'true') {
+                        $delivery['cod_shipping_cost'] += $this->math->number_plus(array($order['cost_payment'] - $order['pmt_cost_shipping'], 0));
+                    }
+                    $objects = $orderObjMdl->getList('*', array('order_id' => $order['order_id']));
 
-                if(empty($objects)){
-                    continue;
-                }
-
-                foreach($objects as $object){
-                    $item = $orderItemMdl->getList('*',array('order_id'=>$order['order_id'],'obj_id'=>$object['obj_id']));
-                    $item = $item['0'];
-                    if($object['send_num']=='0'){
+                    if (empty($objects)) {
                         continue;
                     }
 
-                    if((($item['ax_pmt_price']!='0.000')&&(!empty($item['ax_pmt_price'])))||(!empty($item['ax_pmt_percent'])&&$item['ax_pmt_percent']!='0.000')){//有折扣金额的不合并
-                        //echo '<pre>2';print_r($item);eixt;
-                        $pmtarray = array(
-                            'bn' => $item['bn'],
-                            'price' => $item['price'],
-                            'ax_pmt_price' => $item['ax_pmt_price'],
-                            'quantity' => $item['sendnum'],
-                            'obj_type' => $object['obj_type'],
-                            'ax_pmt_percent' => $item['ax_pmt_percent'],
-                            'name' => $item['name'],
-                        );
-                        $pmtnumArr[] =$pmtarray;
-                        $totalNum +=$item['sendnum'];
-                    }else{
-                        $sendnumArr[$item['bn']]['quantity'] +=  $item['sendnum'];
-                        //$sendnumArr[$item['bn']]['ax_pmt_percent'] +=  $item['ax_pmt_percent'];
-                        $sendnumArr[$item['bn']]['price'] =  $item['price'];
-                        $sendnumArr[$item['bn']]['name'] =  $item['name'];
-                        $sendnumArr[$item['bn']]['obj_type'] =  $object['obj_type'];
-                        $totalNum +=$item['sendnum'];
-                    }
-                }
-                //订单中的丝带数量
-                if($order['ribbon_sku']){
-                    $ribbonArr[$order['ribbon_sku']]['quantity'] +=1;
-                    $ribbonNum++;$totalNum++;
-                }
-                //MCD包装数量
-                if($order['mcd_package_sku']=='MCD'){
-                    $mcdPNum++;$totalNum++;
-                }
-                //cvd数量
-                if($order['is_cvd']=='true'){
-                    $cvdNum++;$totalNum++;
-                }
-                //MCD包装数量
-                if($order['is_w_card']=='true'){
-                    $wcardNum++;$totalNum++;
-                }
-                //如果包含礼品卡
-                //if(($order['is_card']=='true')||($order['is_mcd_card']=='true')){
-                if($order['message1']||$order['message2']||$order['message3']||$order['message4']||$order['message5']||$order['message6']){
-                    $giftCardArr[] = array(
-                        'order_id' => $order['order_id'],
-                        'message1'=>$order['message1'],'message2'=>$order['message2'],
-                        'message3'=>$order['message3'],'message4'=>$order['message4'],
-                        'message5'=>$order['message5'],'message6'=>$order['message6'],
-                        'is_card'=>$order['is_card'],'is_mcd_card'=>$order['is_mcd_card'],
-                    );
-                    $mesNum++;$totalNum++;
-                }
-                $orderArr[] = $order['order_id'];
-            }
-            $delivery['sendItemsArr'] = $sendnumArr;
-            $delivery['pmtItemsArr'] = $pmtnumArr;
-            $delivery['ribbonArr'] = $ribbonArr;
-            $delivery['giftCardArr'] = $giftCardArr;
-            $delivery['ribbonNum'] = $ribbonNum;
-            $delivery['itemNum'] = $totalNum;
-            $delivery['mcdPNum'] = $mcdPNum;
-            $delivery['cvdNum'] = $cvdNum;
-            $delivery['wcardNum'] = $wcardNum;
-            $delivery['mesNum'] = $mesNum;
-            //积分订单
-            if($is_credit){
-                $delivery ['order']['is_creditOrder'] ='1';
-            }else{
-                $delivery ['order']['pay_bn'] = $pay_bn;
-                $delivery ['order']['is_creditOrder'] = '0';
-            }
+                    foreach ($objects as $object) {
+                        $item = $orderItemMdl->getList('*', array('order_id' => $order['order_id'], 'obj_id' => $object['obj_id']));
+                        $item = $item['0'];
+                        if ($object['send_num'] == '0') {
+                            continue;
+                        }
 
-            if($ribbonNum!=0){
-                $delivery ['order']['$line'] = '0';
-            }
-            if(!empty($sendnumArr)||!empty($sendnumArr)){
-                $arrNum=array(1,2,3,4,5,6,7,8,9,0);
-                $delivery['order']['order_bn'] =  date("YmdHis").$arrNum[rand(0,9)].$arrNum[rand(0,9)].$arrNum[rand(0,9)];
-                //echo '<pre>d';print_r($delivery);
-                $fileRes = $this->deliverySO($is_credit,$delivery);
-                if($fileRes){
-                    $orderId = implode(',',$orderArr);
-                    $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '".$delivery['order']['order_bn']."' WHERE order_id in (".$orderId.")";
-                    //echo '<pre>d';print_r($updateSql);
-                    $orderMdl->db->exec($updateSql);
-                    //对账表插入大订单号
-                    $updateStatementSql = "UPDATE sdb_ome_statement SET so_bn = '".$delivery['order']['order_bn']."' WHERE order_id in (".$orderId.") AND original_type='payments'";
-					//echo '<pre>d';print_r($updateStatementSql);
-                    $orderMdl->db->exec($updateStatementSql);
+                        if ((($item['ax_pmt_price'] != '0.000') && (!empty($item['ax_pmt_price']))) || (!empty($item['ax_pmt_percent']) && $item['ax_pmt_percent'] != '0.000')) {//有折扣金额的不合并
+                            //echo '<pre>2';print_r($item);eixt;
+                            $pmtarray = array(
+                                'bn' => $item['bn'],
+                                'price' => $item['price'],
+                                'ax_pmt_price' => $item['ax_pmt_price'],
+                                'quantity' => $item['sendnum'],
+                                'obj_type' => $object['obj_type'],
+                                'ax_pmt_percent' => $item['ax_pmt_percent'],
+                                'name' => $item['name'],
+                            );
+                            $pmtnumArr[] = $pmtarray;
+                            $totalNum += $item['sendnum'];
+                        } else {
+                            $sendnumArr[$item['bn']]['quantity'] += $item['sendnum'];
+                            //$sendnumArr[$item['bn']]['ax_pmt_percent'] +=  $item['ax_pmt_percent'];
+                            $sendnumArr[$item['bn']]['price'] = $item['price'];
+                            $sendnumArr[$item['bn']]['name'] = $item['name'];
+                            $sendnumArr[$item['bn']]['obj_type'] = $object['obj_type'];
+                            $totalNum += $item['sendnum'];
+                        }
+                    }
+                    //订单中的丝带数量
+                    if ($order['ribbon_sku']) {
+                        $ribbonArr[$order['ribbon_sku']]['quantity'] += 1;
+                        $ribbonNum++;
+                        $totalNum++;
+                    }
+                    //MCD包装数量
+                    if ($order['mcd_package_sku'] == 'MCD') {
+                        $mcdPNum++;
+                        $totalNum++;
+                    }
+                    //cvd数量
+                    if ($order['is_cvd'] == 'true') {
+                        $cvdNum++;
+                        $totalNum++;
+                    }
+                    //MCD包装数量
+                    if ($order['is_w_card'] == 'true') {
+                        $wcardNum++;
+                        $totalNum++;
+                    }
+                    //如果包含礼品卡
+                    //if(($order['is_card']=='true')||($order['is_mcd_card']=='true')){
+                    if ($order['message1'] || $order['message2'] || $order['message3'] || $order['message4'] || $order['message5'] || $order['message6']) {
+                        $giftCardArr[] = array(
+                            'order_id' => $order['order_id'],
+                            'message1' => $order['message1'], 'message2' => $order['message2'],
+                            'message3' => $order['message3'], 'message4' => $order['message4'],
+                            'message5' => $order['message5'], 'message6' => $order['message6'],
+                            'is_card' => $order['is_card'], 'is_mcd_card' => $order['is_mcd_card'],
+                        );
+                        $mesNum++;
+                        $totalNum++;
+                    }
+                    $orderArr[] = $order['order_id'];
+                }
+                $delivery['sendItemsArr'] = $sendnumArr;
+                $delivery['pmtItemsArr'] = $pmtnumArr;
+                $delivery['ribbonArr'] = $ribbonArr;
+                $delivery['giftCardArr'] = $giftCardArr;
+                $delivery['ribbonNum'] = $ribbonNum;
+                $delivery['itemNum'] = $totalNum;
+                $delivery['mcdPNum'] = $mcdPNum;
+                $delivery['cvdNum'] = $cvdNum;
+                $delivery['wcardNum'] = $wcardNum;
+                $delivery['mesNum'] = $mesNum;
+                //积分订单
+                if ($is_credit) {
+                    $delivery ['order']['is_creditOrder'] = '1';
+                } else {
+                    $delivery ['order']['pay_bn'] = $pay_bn;
+                    $delivery ['order']['is_creditOrder'] = '0';
+                }
+
+                if ($ribbonNum != 0) {
+                    $delivery ['order']['$line'] = '0';
+                }
+                if (!empty($sendnumArr) || !empty($sendnumArr)) {
+                    //生成大订单号
+                    if($pay_bn=='alipay'){
+                        $S = 'A';
+                    }
+                    if($pay_bn=='wxpayjsapi'){
+                        $S = 'W';
+                    }
+                    $delivery['payDate'] = $S.$payDate;
+                    $delivery['order']['order_bn'] = $S.$payDate.time();
+                    //echo '<pre>d';print_r($delivery);
+                    $fileRes = $this->deliverySO($is_credit, $delivery);
+                    if ($fileRes) {
+                        $orderId = implode(',', $orderArr);
+                        $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '" . $delivery['order']['order_bn'] . "' WHERE order_id in (" . $orderId . ")";
+                        //echo '<pre>d';print_r($updateSql);
+                        $orderMdl->db->exec($updateSql);
+                        //对账表插入大订单号
+                        $updateStatementSql = "UPDATE sdb_ome_statement SET so_bn = '" . $delivery['order']['order_bn'] . "' WHERE order_id in (" . $orderId . ") AND original_type='payments'";
+                        //echo '<pre>d';print_r($updateStatementSql);
+                        $orderMdl->db->exec($updateStatementSql);
+                    }
                 }
             }
         }
@@ -1051,7 +1071,8 @@ class omeftp_service_delivery{
             $arrCards=$objCards->getList("p_order_bn",array('order_bn'=>$delivery['order']['order_bn']),0,1);
             $ax_h[] = $arrCards[0]['p_order_bn'];
         }else{
-            $ax_h[] = $delivery['order']['order_bn'];
+            //$ax_h[] = $delivery['order']['order_bn'];
+            $ax_h[] = $delivery['payDate'];
         }
 
         return implode('|',$ax_h);
@@ -1264,5 +1285,17 @@ class omeftp_service_delivery{
         }
         //echo '<pre>2ss';print_r($ax_l_str);exit;
         return implode("\n",$ax_l_str);
+    }
+    //按照支付时间区分
+    function batchDelivery($deliveryOrder = array()){
+        if(empty($deliveryOrder)){
+            return false;
+        }
+        $deliveryList = array();
+        foreach ($deliveryOrder as $key=>$value){
+            $payDate = date('Ymd',$value['paytime']);
+            $deliveryList[$payDate][] = $value;
+        }
+        return $deliveryList;
     }
 }

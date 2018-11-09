@@ -82,6 +82,7 @@ class ome_mdl_statement extends dbeav_model {
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
 								'paymethod'=>'alipay',
+                                'memo'=>$sdf['zwlsh'],
 							);
 					}else{
 						$saveDate =  array(
@@ -91,9 +92,10 @@ class ome_mdl_statement extends dbeav_model {
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
 								'paymethod'=>'alipay',
+                                'memo'=>$sdf['zwlsh'],
 							);
 					}
-					//$this->save($saveDate);
+					$this->save($saveDate);
 				}
 				break;
 			case 'weixin':
@@ -144,7 +146,7 @@ class ome_mdl_statement extends dbeav_model {
 							'paymethod'=>'wxpayjsapi',
 							'original_type'=>$original_type,
 						);
-					//$flag = $this->insert($saveDate);
+					$flag = $this->insert($saveDate);
 				}
 				break;
 			case 'cod':

@@ -514,8 +514,8 @@ class omeftp_service_reship{
     function cron_Reship($pay_bn){
         $from_time = strtotime(date("Y-m-d",time()));
         $to_time = strtotime("+1 day");
-        //$from_time = '1540277128';
-        //$to_time = '1540310400';
+        $from_time = '1540137600';
+        $to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $reshipMdl = app::get('ome')->model('reship');
         $shopMdl = app::get('ome')->model('shop');
@@ -526,59 +526,75 @@ class omeftp_service_reship{
         $delivery = array();
         //$str = "  AND o.pay_bn='".$pay_bn."'";
 
-        $reship_sql = "SELECT r.* FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='return' ".
+        $reship_sql = "SELECT r.*,o.paytime FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='return' ".
             " AND r.order_confirm_time<'".$to_time."'  AND r.order_confirm_time>'".$from_time."'  AND o.pay_bn='".$pay_bn."'";
         $reships = $reshipMdl->db->select($reship_sql);
-        //合并退货商品数据
-        $r_item = $reshipArr = array();
-        $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $returnNum = 0;
+
         if(!empty($reships)){
-            foreach($reships as $key=>$reship){
-                $orderId = $reship['order_id'];
-                $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
-                if(empty($ritems)){
-                    continue;
+            $reshipList = $this->batchReship($reships);
+            if (!$reshipList) {
+                echo 'DATA ERROR';
+                exit;
+            }
+            foreach ($reshipList as $payDate => $reshipArray) {
+                //合并退货商品数据
+                $r_item  = array();
+                $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $returnNum = 0;
+                foreach($reshipArray as $key=>$reship){
+                    $orderId = $reship['order_id'];
+                    $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
+                    if(empty($ritems)){
+                        continue;
+                    }
+
+                    foreach($ritems as $key =>$ritem){
+                        $sql = "select i.*,b.obj_type from sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON i.obj_id = b.obj_id WHERE  i.order_id='".$orderId."' AND i.product_id='".$ritem['product_id']."'";
+                        $itemInfo = $orderItemMdl->db->select($sql);
+                        $r_item[$ritem['bn']]['true_price'] = $itemInfo['0']['true_price'];
+                        $r_item[$ritem['bn']]['ax_pmt_price'] += $itemInfo['0']['ax_pmt_price'];
+                        $r_item[$ritem['bn']]['num'] += $ritem['num'];
+                        $r_item[$ritem['bn']]['item_type'] = $itemInfo['0']['obj_type'];
+                        $r_item[$ritem['bn']]['ax_pmt_percent'] = $itemInfo['0']['ax_pmt_percent'];
+                        $r_item[$ritem['bn']]['name'] = $ritem['product_name'];
+
+                        $rMoneyTotal+=$ritem['price'];
+                        $rItemNumTotal+=$ritem['num'];
+                        if($ritem['return_type']=='return'){
+                            $returnNum +=$ritem['num'];
+                        }
+                    }
+                    $reshipNum++;
+                    $totalBcMoney +=$reship ['bcmoney'];
+                    $reshipArr[] = $reship['reship_id'];
                 }
-
-                foreach($ritems as $key =>$ritem){
-                    $sql = "select i.*,b.obj_type from sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON i.obj_id = b.obj_id WHERE  i.order_id='".$orderId."' AND i.product_id='".$ritem['product_id']."'";
-                    $itemInfo = $orderItemMdl->db->select($sql);
-                    $r_item[$ritem['bn']]['true_price'] = $itemInfo['0']['true_price'];
-                    $r_item[$ritem['bn']]['ax_pmt_price'] += $itemInfo['0']['ax_pmt_price'];
-                    $r_item[$ritem['bn']]['num'] += $ritem['num'];
-                    $r_item[$ritem['bn']]['item_type'] = $itemInfo['0']['obj_type'];
-                    $r_item[$ritem['bn']]['ax_pmt_percent'] = $itemInfo['0']['ax_pmt_percent'];
-                    $r_item[$ritem['bn']]['name'] = $ritem['product_name'];
-
-                    $rMoneyTotal+=$ritem['price'];
-                    $rItemNumTotal+=$ritem['num'];
-                    if($ritem['return_type']=='return'){
-                        $returnNum +=$ritem['num'];
+                if(!empty($r_item)){
+                    $delivery['reshipNum'] = $reshipNum;//售后单数量
+                    $delivery['rMoneyTotal'] = $rMoneyTotal;//售后商品总价
+                    $delivery['rNumTotal'] = $rItemNumTotal;//售后商品数量
+                    $delivery['returnNum'] = $returnNum;//退货商品数量
+                    $delivery['totalBcMoney'] = $totalBcMoney;//售后配送总费用
+                    $delivery['r_item'] = $r_item;
+                    $delivery['order']['pay_bn'] = $pay_bn;
+                    //$arrNum=array(1,2,3,4,5,6,7,8,9,0);
+                    //$delivery['total_reship_bn'] =  date("YmdHis").$arrNum[rand(0,9)].$arrNum[rand(0,9)].$arrNum[rand(0,9)];
+                    //生成大订单号
+                    if($pay_bn=='alipay'){
+                        $S = 'A';
+                    }
+                    if($pay_bn=='wxpayjsapi'){
+                        $S = 'W';
+                    }
+                    $delivery['payDate'] = $S.$payDate;
+                    $delivery['total_reship_bn'] = $S.$payDate.time();
+                    $fileRes = $this->deliverySO($delivery);
+                    if($fileRes){
+                        $reshipId = implode(',',$reshipArr);
+                        $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."' WHERE reship_id in (".$reshipId.")";
+                        //echo '<pre>d';print_r($updateSql);exit;
+                        $orderMdl->db->exec($updateSql);
                     }
                 }
-                $reshipNum++;
-                $totalBcMoney +=$reship ['bcmoney'];
-                $reshipArr[] = $reship['reship_id'];
             }
-            if(!empty($r_item)){
-                $delivery['reshipNum'] = $reshipNum;//售后单数量
-                $delivery['rMoneyTotal'] = $rMoneyTotal;//售后商品总价
-                $delivery['rNumTotal'] = $rItemNumTotal;//售后商品数量
-                $delivery['returnNum'] = $returnNum;//退货商品数量
-                $delivery['totalBcMoney'] = $totalBcMoney;//售后配送总费用
-                $delivery['r_item'] = $r_item;
-                $delivery['order']['pay_bn'] = $pay_bn;
-                $arrNum=array(1,2,3,4,5,6,7,8,9,0);
-                $delivery['total_reship_bn'] =  date("YmdHis").$arrNum[rand(0,9)].$arrNum[rand(0,9)].$arrNum[rand(0,9)];
-                $fileRes = $this->deliverySO($delivery);
-                if($fileRes){
-                    $reshipId = implode(',',$reshipArr);
-                    $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."' WHERE reship_id in (".$reshipId.")";
-                    //echo '<pre>d';print_r($updateSql);exit;
-                    $orderMdl->db->exec($updateSql);
-                }
-            }
-
         }
     }
     public function deliverySO($delivery){
@@ -754,7 +770,7 @@ class omeftp_service_reship{
         $ax_h[] = '';
         $ax_h[] = '';
         $ax_h[] = '';
-        $ax_h[] = $reship_bn.'-R'.$nums;
+        $ax_h[] = $delivery['payDate'].'-R'.$nums;
         return implode('|',$ax_h);
     }
     public function get_ax_d2($delivery){
@@ -876,5 +892,18 @@ class omeftp_service_reship{
             $ax_l_str[$key] = implode('|',$ax_l[$key]);
         }
         return implode("\n",$ax_l_str);
+    }
+
+    //按照支付时间区分
+    function batchReship($reships = array()){
+        if(empty($reships)){
+            return false;
+        }
+        $reshipList = array();
+        foreach ($reships as $key=>$value){
+            $payDate = date('Ymd',$value['paytime']);
+            $reshipList[$payDate][] = $value;
+        }
+        return $reshipList;
     }
 }

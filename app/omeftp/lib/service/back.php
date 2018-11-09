@@ -517,8 +517,8 @@ class omeftp_service_back{
     function cron_back($pay_bn){
         $from_time = strtotime(date("Y-m-d",time()));
         $to_time = strtotime("+1 day");
-        //$from_time = '1540277128';
-        //$to_time = '1540310400';
+        $from_time = '1540137600';
+        $to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $reshipMdl = app::get('ome')->model('reship');
         $shopMdl = app::get('ome')->model('shop');
@@ -529,66 +529,80 @@ class omeftp_service_back{
         $delivery = array();
         $str = "  AND o.pay_bn='".$pay_bn."'";
 
-        $sql = "SELECT r.* FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='refuse' ".
+        $sql = "SELECT r.*,o.paytime FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='refuse' ".
             "  AND r.order_confirm_time<'".$to_time."'  AND r.order_confirm_time>'".$from_time."'";
         $reship_sql = $sql.$str;
         $reships = $reshipMdl->db->select($reship_sql);
-        //合并退货商品数据
-        $r_item = array();
-        $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $orderCostFreight=$orderCostPayment = 0;
+
         if(!empty($reships)){
-            foreach($reships as $key=>$reship){
-                $orderId = $reship['order_id'];
-                $orderInfo = $orderMdl->getList('*',array('order_id'=>$orderId));
-                $itemsSql  = "SELECT i.*,b.obj_type FROM sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON  i.obj_id = b.obj_id  WHERE  i.order_id='".$orderId."'";
-                $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
-                $items = $orderItemMdl->db->select($itemsSql);
-                if(empty($items)){
-                    continue;
-                }
+            $reshipList = $this->batchReship($reships);
+            if (!$reshipList) {
+                echo 'DATA ERROR';
+                exit;
+            }
+            foreach ($reshipList as $payDate => $reshipArray) {
+                //合并退货商品数据
+                $r_item = array();
+                $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $orderCostFreight=$orderCostPayment = 0;
+                foreach($reshipArray as $key=>$reship){
+                    $orderId = $reship['order_id'];
+                    $orderInfo = $orderMdl->getList('*',array('order_id'=>$orderId));
+                    $itemsSql  = "SELECT i.*,b.obj_type FROM sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON  i.obj_id = b.obj_id  WHERE  i.order_id='".$orderId."'";
+                    $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
+                    $items = $orderItemMdl->db->select($itemsSql);
+                    if(empty($items)){
+                        continue;
+                    }
 
-                if($orderInfo['0']['message1']){
-                    $rItemNumTotal += 1;
+                    if($orderInfo['0']['message1']){
+                        $rItemNumTotal += 1;
+                    }
+                    if($orderInfo['0']['is_w_card']){
+                        $rItemNumTotal +=1 ;
+                    }
+                    //cod费用合并
+                    if($orderInfo['0']['is_cod']){
+                        $orderCostPayment +=$orderInfo['0']['cost_payment'];
+                    }
+                    //运费合并
+                    $orderCostFreight += ($orderInfo['0']['cost_freight']-$orderInfo['0']['pmt_cost_shipping']);
+                    foreach($items as $key =>$item){
+                        $itemInfo = $orderItemMdl->db->select($sql);
+                        $r_item[$item['bn']]['true_price'] = $item['true_price'];
+                        $r_item[$item['bn']]['ax_pmt_price'] = $item['ax_pmt_price']/$item['nums'];
+                        $r_item[$item['bn']]['quantity'] = $item['nums'];
+                        $r_item[$item['bn']]['item_type'] = $item['obj_type'];
+                        $r_item[$item['bn']]['ax_pmt_percent'] = $item['ax_pmt_percent'];
+                        $r_item[$item['bn']]['name'] = $item['name'];
+                        $r_item[$item['bn']]['item_id'] = $item['item_id'];
+                        $r_item[$item['bn']]['message1'] = $item['message1'];
+                        $r_item[$item['bn']]['message2'] = $item['message2'];
+                        $r_item[$item['bn']]['message3'] = $item['message3'];
+                        $r_item[$item['bn']]['message4'] = $item['message4'];
+                        $rMoneyTotal+=$item['price'];
+                        $rItemNumTotal+=$item['nums'];
+                    }
                 }
-                if($orderInfo['0']['is_w_card']){
-                    $rItemNumTotal +=1 ;
-                }
-                //cod费用合并
-                if($orderInfo['0']['is_cod']){
-                    $orderCostPayment +=$orderInfo['0']['cost_payment'];
-                }
-                //运费合并
-                $orderCostFreight += ($orderInfo['0']['cost_freight']-$orderInfo['0']['pmt_cost_shipping']);
-                foreach($items as $key =>$item){
-                    $itemInfo = $orderItemMdl->db->select($sql);
-                    $r_item[$item['bn']]['true_price'] = $item['true_price'];
-                    $r_item[$item['bn']]['ax_pmt_price'] = $item['ax_pmt_price']/$item['nums'];
-                    $r_item[$item['bn']]['quantity'] = $item['nums'];
-                    $r_item[$item['bn']]['item_type'] = $item['obj_type'];
-                    $r_item[$item['bn']]['ax_pmt_percent'] = $item['ax_pmt_percent'];
-                    $r_item[$item['bn']]['name'] = $item['name'];
-                    $r_item[$item['bn']]['item_id'] = $item['item_id'];
-                    $r_item[$item['bn']]['message1'] = $item['message1'];
-                    $r_item[$item['bn']]['message2'] = $item['message2'];
-                    $r_item[$item['bn']]['message3'] = $item['message3'];
-                    $r_item[$item['bn']]['message4'] = $item['message4'];
-                    $rMoneyTotal+=$item['price'];
-                    $rItemNumTotal+=$item['nums'];
+                if(!empty($r_item)){
+                    $delivery['reshipNum'] = $reshipNum;//拒收单数量
+                    $delivery['rMoneyTotal'] = $rMoneyTotal;//拒收商品总价
+                    $delivery['rNumTotal'] = $rItemNumTotal;//拒收商品数量
+                    $delivery['delivery_items'] = $r_item;
+                    $delivery['orderCostFreight'] = $orderCostFreight;//拒收订单的运费总和，已减去运费折扣
+                    $delivery['orderCostPayment'] = $orderCostPayment;//拒收订单的运费总和
+                    $delivery['order']['pay_bn'] = $pay_bn;
+                    //生成大订单号
+                    if($pay_bn=='alipay'){
+                        $S = 'A';
+                    }
+                    if($pay_bn=='wxpayjsapi'){
+                        $S = 'W';
+                    }
+                    $delivery['payDate'] = $S.$payDate;
+                    $delivery['order']['order_bn'] = $S.$payDate.time();
+                    $this->deliverySO($delivery);
                 }
             }
-            if(!empty($r_item)){
-                $delivery['reshipNum'] = $reshipNum;//拒收单数量
-                $delivery['rMoneyTotal'] = $rMoneyTotal;//拒收商品总价
-                $delivery['rNumTotal'] = $rItemNumTotal;//拒收商品数量
-                $delivery['delivery_items'] = $r_item;
-                $delivery['orderCostFreight'] = $orderCostFreight;//拒收订单的运费总和，已减去运费折扣
-                $delivery['orderCostPayment'] = $orderCostPayment;//拒收订单的运费总和
-                $delivery['order']['pay_bn'] = $pay_bn;
-                $arrNum=array(1,2,3,4,5,6,7,8,9,0);
-                $delivery['order']['order_bn'] =  date("YmdHis").$arrNum[rand(0,9)].$arrNum[rand(0,9)].$arrNum[rand(0,9)];
-                $this->deliverySO($delivery);
-            }
-
         }
     }
     public function deliverySO($delivery){
@@ -758,7 +772,7 @@ class omeftp_service_back{
         $ax_h[] = 'ACH';
         $ax_h[] = '';
         $ax_h[] = '';
-        $ax_h[] = $delivery['order']['order_bn'];
+        $ax_h[] = $delivery['payDate'];
 
         return implode('|',$ax_h);
     }

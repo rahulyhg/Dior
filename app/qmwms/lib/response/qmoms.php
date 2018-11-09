@@ -314,7 +314,7 @@ class qmwms_response_qmoms{
             if($orderData['0']['paytime']<1541001600){//11月之前的按照原有逻辑生成SO文件
                 kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
             }else{
-                if($orderData[0]['shop_type']=='minishop'){
+                if(($orderData[0]['shop_type']=='minishop')||($orderData[0]['is_creditOrder']=='1')){
                     //11月之后的礼品卡兑礼订单按照原有逻辑生成SO文件，其余计划任务
                     kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
                 }
