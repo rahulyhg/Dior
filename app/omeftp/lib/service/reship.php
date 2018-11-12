@@ -514,8 +514,8 @@ class omeftp_service_reship{
     function cron_Reship($pay_bn){
         $from_time = strtotime(date("Y-m-d",time()));
         $to_time = strtotime("+1 day");
-        $from_time = '1540137600';
-        $to_time = '1540310400';
+        //$from_time = '1540137600';
+        //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $reshipMdl = app::get('ome')->model('reship');
         $shopMdl = app::get('ome')->model('shop');
@@ -847,7 +847,8 @@ class omeftp_service_reship{
             $ax_l[$key][] = '';//AX SO line number
             $ax_l[$key][] = $line+1;//External SO line number
             $line++;
-            $ax_l[$key][] = $reship_items['bn'];//Item Number
+            //$ax_l[$key][] = $reship_items['bn'];//Item Number
+            $ax_l[$key][] = $key;
             $ax_l[$key][] = '';//Item description
             $ax_l[$key][] = '';//Text Detailled description of the item
             $ax_l[$key][] = '';//External Item Code?? 需确认
