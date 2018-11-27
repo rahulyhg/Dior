@@ -344,6 +344,7 @@ class ome_auto_statement{
     function merge_payment($payments){
 	    if(!empty($payments)){
 	        $row = array();
+	        $orderMdl = app::get('ome')->model('orders');
 	        $rowKey = $giftcard_key = 0;
 	        foreach($payments as $payment) {
                 //生成大订单号
@@ -353,6 +354,8 @@ class ome_auto_statement{
                 if($payment['paymethod']=='wxpayjsapi'){
                     $S = 'W';
                 }
+                $orderInfo = $orderMdl->getList('*',array('order_id'=>$payment['order_id']));
+                $payment['pay_time'] = $orderInfo['0']['paytime'];
                 $payDate = $S.date('Ymd',$payment['pay_time']);
                 //$payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
 
