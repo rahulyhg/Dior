@@ -721,8 +721,8 @@ class omeftp_service_reship{
         $reship_bn = $delivery['total_reship_bn'];
         $nums = $delivery['reshipNum'];
         //$ax_h[] = $delivery['order']['order_bn'].'-R'.$nums;//字段意思不明确，待定
-        $ax_h[] =$reship_bn.'-R'.$nums;
-
+        //$ax_h[] =$reship_bn.'-R'.$nums;
+        $ax_h[] =$reship_bn;
         //$ax_h[] = $delivery['order']['ax_order_bn'];//AX SO number
         $ax_h[] = $reship_bn;
 
@@ -770,7 +770,8 @@ class omeftp_service_reship{
         $ax_h[] = '';
         $ax_h[] = '';
         $ax_h[] = '';
-        $ax_h[] = $delivery['payDate'].'-R'.$nums;
+        //$ax_h[] = $delivery['payDate'].'-R'.$nums;
+        $ax_h[] = $delivery['payDate'];
         return implode('|',$ax_h);
     }
     public function get_ax_d2($delivery){
