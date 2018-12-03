@@ -60,7 +60,8 @@ class ome_auto_statement{
                 $data['paymethod'] = $order['pay_bn'];
                 $data['createtime'] = $order['createtime'];
                 //退货退款的AX文件整合编号
-                $refundApplyInfo = app::get('ome')->model('refund_apply')->getList('*',array('refund_bn'=>$row['refund_bn']));
+                $refundApplyInfo = app::get('ome')->model('refund_apply')->getList('*',array('refund_apply_bn'=>$row['refund_bn']));
+				
                 if($refundApplyInfo['0']['reship_id']){
                     $reshipInfo = app::get('ome')->model('reship')->getList('*',array('reship_id'=>$refundApplyInfo['0']['reship_id']));
                     $data['so_bn'] = $reshipInfo['0']['so_order_num'];
@@ -360,15 +361,28 @@ class ome_auto_statement{
                 $payment['pay_time'] = $orderInfo['0']['paytime'];
                 $payDate = $S.date('Ymd',$payment['pay_time']);
                 //$payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
-
+				if($payment['original_type']=='payments'){
+					$key = 'p'.$payDate;
+					$row[$key]['order_bn'] = $payDate;
+					$row[$key]['paymethod'] = $payment['paymethod'];
+					$row[$key]['original_type'] = 'payments';
+					$row[$key]['pay_fee'] += $payment['pay_fee'];
+					$row[$key]['money'] += $payment['money'];
+					$row[$key]['tatal_amount'] += $payment['tatal_amount'];
+					$row[$key]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+				}
+				if($payment['original_type']=='refunds'){
+					$key = 'r'.$payDate;
+					$row[$payDate]['order_bn'] = $payDate;
+					$row[$payDate]['paymethod'] = $payment['paymethod'];
+					$row[$payDate]['original_type'] = 'refunds';
+					$row[$payDate]['pay_fee'] += $payment['pay_fee'];
+					$row[$payDate]['money'] += $payment['money'];
+					$row[$payDate]['tatal_amount'] += $payment['tatal_amount'];
+					$row[$payDate]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+				}
                 //普通订单的大订单号可以区分出支付类型和是否属于退款账单
-                $row[$payDate]['order_bn'] = $payDate;
-                $row[$payDate]['paymethod'] = $payment['paymethod'];
-                $row[$payDate]['original_type'] = $payment['original_type'];
-                $row[$payDate]['pay_fee'] += $payment['pay_fee'];
-                $row[$payDate]['money'] += $payment['money'];
-                $row[$payDate]['tatal_amount'] += $payment['tatal_amount'];
-                $row[$payDate]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+                
                 //echo '<pre>drr';print_r($row);exit;
 
                 //礼品卡店铺没有SO文件单独使用原有的逻辑
@@ -388,7 +402,6 @@ class ome_auto_statement{
                     $rowKey++;
                 }
             }*/
-
             return $row;
         }else{
 	        return null;
