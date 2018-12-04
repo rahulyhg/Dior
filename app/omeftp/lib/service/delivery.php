@@ -701,6 +701,7 @@ class omeftp_service_delivery{
                 $delivery['cod_shipping_cost'] = 0;
                 $totalNum = 0;
                 $ribbonNum=$mcdPNum=$cvdNum =$wcardNum=$mesNum =  0;
+                $orderAmount = 0;
                 foreach ($deliveryArr as $key => $order) {
                     //运费
                     if ($order['cost_freight'] > $order['pmt_cost_shipping']) {
@@ -782,6 +783,7 @@ class omeftp_service_delivery{
                         $totalNum++;
                     }
                     $orderArr[] = $order['order_id'];
+                    $orderAmount+=$order['payed'];
                 }
                 $delivery['sendItemsArr'] = $sendnumArr;
                 $delivery['pmtItemsArr'] = $pmtnumArr;
@@ -825,8 +827,11 @@ class omeftp_service_delivery{
                         $updateStatementSql = "UPDATE sdb_ome_statement SET so_bn = '" . $delivery['order']['order_bn'] . "' WHERE order_id in (" . $orderId . ") AND original_type='payments'";
                         //echo '<pre>d';print_r($updateStatementSql);
                         $orderMdl->db->exec($updateStatementSql);
+                        //记录该合并文件的总金额日志
+                        error_log("支付时间:".$S.$payDate."总金额:".$orderAmount."\r\n",3,DATA_DIR.'/solog/'.date("Ymd").'.txt');
                     }
                 }
+                
             }
         }
 

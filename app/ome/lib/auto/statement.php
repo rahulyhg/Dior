@@ -44,9 +44,11 @@ class ome_auto_statement{
 		$refunds = $refundObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
 		foreach($refunds as $row){
             //查询该支付流水是否先存在对账表  如果存在则直接对账
-            $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'paymethod'=>$row['pay_bn'],'original_type'=>'refunds'));
+            $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'original_type'=>'refunds'));
             if(!empty($ifExist)){
                 $this->paymentsUpdate($row,$ifExist['0'],'refunds');
+				$updateRefundSql = "UPDATE sdb_ome_refunds SET statement_status='true' WHERE refund_id=".$row['refund_id'];
+				$refundObj->db->exec($updateRefundSql);
             }else{
                 $data = array();
                 $data['original_bn'] = $row['refund_bn'];
@@ -58,7 +60,8 @@ class ome_auto_statement{
                 $data['paymethod'] = $order['pay_bn'];
                 $data['createtime'] = $order['createtime'];
                 //退货退款的AX文件整合编号
-                $refundApplyInfo = app::get('ome')->model('refund_apply')->getList('*',array('refund_bn'=>$row['refund_bn']));
+                $refundApplyInfo = app::get('ome')->model('refund_apply')->getList('*',array('refund_apply_bn'=>$row['refund_bn']));
+				
                 if($refundApplyInfo['0']['reship_id']){
                     $reshipInfo = app::get('ome')->model('reship')->getList('*',array('reship_id'=>$refundApplyInfo['0']['reship_id']));
                     $data['so_bn'] = $reshipInfo['0']['so_order_num'];
@@ -358,15 +361,28 @@ class ome_auto_statement{
                 $payment['pay_time'] = $orderInfo['0']['paytime'];
                 $payDate = $S.date('Ymd',$payment['pay_time']);
                 //$payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
-
+				if($payment['original_type']=='payments'){
+					$key = 'p'.$payDate;
+					$row[$key]['order_bn'] = $payDate;
+					$row[$key]['paymethod'] = $payment['paymethod'];
+					$row[$key]['original_type'] = 'payments';
+					$row[$key]['pay_fee'] += $payment['pay_fee'];
+					$row[$key]['money'] += $payment['money'];
+					$row[$key]['tatal_amount'] += $payment['tatal_amount'];
+					$row[$key]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+				}
+				if($payment['original_type']=='refunds'){
+					$key = 'r'.$payDate;
+					$row[$payDate]['order_bn'] = $payDate;
+					$row[$payDate]['paymethod'] = $payment['paymethod'];
+					$row[$payDate]['original_type'] = 'refunds';
+					$row[$payDate]['pay_fee'] += $payment['pay_fee'];
+					$row[$payDate]['money'] += $payment['money'];
+					$row[$payDate]['tatal_amount'] += $payment['tatal_amount'];
+					$row[$payDate]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+				}
                 //普通订单的大订单号可以区分出支付类型和是否属于退款账单
-                $row[$payDate]['order_bn'] = $payDate;
-                $row[$payDate]['paymethod'] = $payment['paymethod'];
-                $row[$payDate]['original_type'] = $payment['original_type'];
-                $row[$payDate]['pay_fee'] += $payment['pay_fee'];
-                $row[$payDate]['money'] += $payment['money'];
-                $row[$payDate]['tatal_amount'] += $payment['tatal_amount'];
-                $row[$payDate]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
+                
                 //echo '<pre>drr';print_r($row);exit;
 
                 //礼品卡店铺没有SO文件单独使用原有的逻辑
@@ -386,7 +402,6 @@ class ome_auto_statement{
                     $rowKey++;
                 }
             }*/
-
             return $row;
         }else{
 	        return null;
@@ -402,9 +417,6 @@ class ome_auto_statement{
         $refundObj = app::get('ome')->model('refunds');
         $orderObj= app::get('ome')->model('orders');
         //对账
-        if($statementRow['0']['import_money']>0){
-
-        }
         if($paymentType=='payments'){
             $data['order_id'] = $dataRow['order_id'];
             $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$dataRow['order_id']));
@@ -419,14 +431,15 @@ class ome_auto_statement{
             $data['payment'] = $dataRow['payment'];
             $data['memo'] = $dataRow['memo']?($dataRow['memo'].$statementRow['memo']):$statementRow['memo'];
             $data['trade_no'] = $dataRow['trade_no'];
-            $data['difference_money']= abs($statementRow['import_money']-$dataRow['money']);
-            $data['balance_status']= ($statementRow['import_money']==$dataRow['money'])?'auto':'require';
+            $data['difference_money']= abs($statementRow['tatal_amount']-$dataRow['money']);
+            $data['balance_status']= ($statementRow['tatal_amount']==$dataRow['money'])?'auto':'require';
             $data['statement_id']= $statementRow['statement_id'];
+			$data['so_bn']= $order['so_order_num']?$order['so_order_num']:'';
         }
         if($paymentType=='refunds'){
             $data = array(
-                'difference_money'=>abs(abs($statementRow['explode_money'])-$dataRow[0]['money']),
-                'balance_status'=>(abs($statementRow['explode_money'])==$dataRow[0]['money'])?'auto':'require',
+                'difference_money'=>abs(abs($statementRow['tatal_amount'])+$dataRow['money']),
+                'balance_status'=>(abs($statementRow['tatal_amount']+$dataRow['money'])=='0')?'auto':'require',
                 'memo'=>$dataRow['memo']?($dataRow['memo'].$statementRow['memo']):$statementRow['memo'],
                 'shop_id' => $dataRow['shop_id'],
                 'money' => $dataRow['money'],
@@ -434,7 +447,15 @@ class ome_auto_statement{
                 'cur_money' => $dataRow['cur_money'],
                 'payment'=> $dataRow['payment'],
                 'trade_no' => $dataRow['trade_no'],
+				'statement_id'=> $statementRow['statement_id'],
+				'order_id'=> $dataRow['order_id'],
             );
+			//查询是否是退货退款  如果是退货则更新退货单的SOBN
+			$refundMdl = app::get('ome')->model('refunds');
+			$sql = "SELECT s.* FROM sdb_ome_refunds r LEFT JOIN sdb_ome_refund_apply a ON r.refund_bn = a.refund_apply_bn LEFT JOIN sdb_ome_reship s ON a.reship_id = s.reship_id WHERE r.refund_id='".$dataRow['refund_id']."'";
+			$reshipInfo = $refundMdl->db->select($sql);
+			//echo '<pre>q';print_r($reshipInfo);exit;
+			$data['so_bn']= $reshipInfo['0']['so_order_num']?$reshipInfo['0']['so_order_num']:'';
         }
         $statementObj->save($data);
     }

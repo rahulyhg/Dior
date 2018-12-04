@@ -540,6 +540,7 @@ class omeftp_service_reship{
                 //合并退货商品数据
                 $r_item  = array();
                 $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $returnNum = 0;
+                $reshipMoney =0;
                 foreach($reshipArray as $key=>$reship){
                     $orderId = $reship['order_id'];
                     $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
@@ -566,6 +567,8 @@ class omeftp_service_reship{
                     $reshipNum++;
                     $totalBcMoney +=$reship ['bcmoney'];
                     $reshipArr[] = $reship['reship_id'];
+                    
+                    $reshipMoney+=$reship['tmoney'];
                 }
                 if(!empty($r_item)){
                     $delivery['reshipNum'] = $reshipNum;//售后单数量
@@ -592,6 +595,8 @@ class omeftp_service_reship{
                         $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."' WHERE reship_id in (".$reshipId.")";
                         //echo '<pre>d';print_r($updateSql);exit;
                         $orderMdl->db->exec($updateSql);
+                        //记录该合并文件的总金额日志
+                        error_log("支付时间:".$S.$payDate."退货总金额:".$reshipMoney."\r\n",3,DATA_DIR.'/solog/'.date("Ymd").'R.txt');    
                     }
                 }
             }
