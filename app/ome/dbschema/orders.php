@@ -73,6 +73,22 @@ $db['orders']=array (
           'filtertype' => 'yes',
           'filterdefault' => true,
       ),
+    'so_type' =>
+      array (
+          'type' =>
+              array (
+                  '0' => '非合并',
+                  '1' => '合并',
+              ),
+          'default' => '0',
+          'label' => 'SO文件发送给AX的方式',
+          'width' => 70,
+          'editable' => false,
+          'in_list' => true,
+          'default_in_list' => false,
+          'filtertype' => 'yes',
+          'filterdefault' => true,
+      ),
     'archive' =>
     array (
       'type' => 'tinyint unsigned',

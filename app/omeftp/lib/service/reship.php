@@ -592,7 +592,7 @@ class omeftp_service_reship{
                     $fileRes = $this->deliverySO($delivery);
                     if($fileRes){
                         $reshipId = implode(',',$reshipArr);
-                        $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."' WHERE reship_id in (".$reshipId.")";
+                        $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."',so_type='1'  WHERE reship_id in (".$reshipId.")";
                         //echo '<pre>d';print_r($updateSql);exit;
                         $orderMdl->db->exec($updateSql);
                         //记录该合并文件的总金额日志
