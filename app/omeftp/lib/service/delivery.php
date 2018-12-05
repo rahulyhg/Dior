@@ -820,7 +820,7 @@ class omeftp_service_delivery{
                     $fileRes = $this->deliverySO($is_credit, $delivery);
                     if ($fileRes) {
                         $orderId = implode(',', $orderArr);
-                        $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '" . $delivery['order']['order_bn'] . "' WHERE order_id in (" . $orderId . ")";
+                        $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '" . $delivery['order']['order_bn'] . "',so_type='1' WHERE order_id in (" . $orderId . ")";
                         //echo '<pre>d';print_r($updateSql);
                         $orderMdl->db->exec($updateSql);
                         //对账表插入大订单号

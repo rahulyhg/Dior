@@ -57,6 +57,21 @@ $db['reship']=array (
 	  'in_list' => true,
 	  'default_in_list' => false,
 	),
+    'so_type' =>array (
+      'type' =>
+          array (
+              '0' => '非合并',
+              '1' => '合并',
+          ),
+      'default' => '0',
+      'label' => 'SO文件发送给AX的方式',
+      'width' => 70,
+      'editable' => false,
+      'in_list' => true,
+      'default_in_list' => false,
+      'filtertype' => 'yes',
+      'filterdefault' => true,
+      ),
     'order_id' =>
     array (
       'type' => 'table:orders@ome',
