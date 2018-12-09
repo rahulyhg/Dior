@@ -1029,7 +1029,7 @@ class ome_mdl_reship extends dbeav_model{
       $this->update(array('status'=>'succ'),array('reship_id'=>$reship_id));
 
       $oShop = $this->app->model('shop');
-      $shop_type = $oShop->getRow(array('shop_id'=>$shop_id),'node_type');
+      $shop_type = $oShop->getRow(array('shop_id'=>$shop_id),'node_type,name,shop_bn');
 
       $c2c_shop_type = ome_shop_type::shop_list();
       if(!empty($shop_type['node_type']) && !in_array($shop_type['node_type'],$c2c_shop_type)){
@@ -1213,7 +1213,7 @@ class ome_mdl_reship extends dbeav_model{
                 'cost_shipping' => $change_order_sdf['shipping']['cost_shipping'],  // 运费
                 'order_memo'    => '',  // 订单备注
                 'address_id'    => $change_order_sdf['consignee']['addr'],  // 收货地区
-                'order_refer_source' => 'pc', // 订单来源平台
+                'order_refer_source' => $orders['order_refer_source'], // 订单来源平台 2018-11-19 17:29
                 'is_card'       => $orders['is_card'],  // 是否礼品卡
                 'is_letter'     => $orders['is_lettering'],  // 是否刻字
                 'is_w_card'     => $orders['is_w_card'],  // 是否是欢迎卡
@@ -1221,6 +1221,7 @@ class ome_mdl_reship extends dbeav_model{
                 'welcomecard'   => $orders['welcomecard'],  // 欢迎卡信息
                 'wechat_openid' => $orders['wechat_openid'],  // 微信openid
                 'is_tax'        => $orders['is_tax'],  // 是否开票
+                'order_type'        => $shop_type['name'],  // 来源店铺 2018-11-19 17:29
                 'consignee'     => array(
                     'addr'          => $change_order_sdf['consignee']['addr'],  // 收货地址
                     'name'          => $change_order_sdf['consignee']['name'],  // 收货人姓名

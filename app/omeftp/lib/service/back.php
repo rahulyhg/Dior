@@ -513,6 +513,398 @@ class omeftp_service_back{
 
         return $delivery;
 	}
+	//计划任务生成拒收AX文件
+    function cron_back($pay_bn){
+        $from_time = strtotime(date("Y-m-d",time()));
+        $to_time = strtotime("+1 day");
+        $from_time = '1540137600';
+        $to_time = '1540310400';
+        $orderMdl = app::get('ome')->model('orders');
+        $reshipMdl = app::get('ome')->model('reship');
+        $shopMdl = app::get('ome')->model('shop');
+        $orderItemMdl = app::get('ome')->model('order_items');
+        $reshipItemMdl = app::get('ome')->model('reship_items');
+        $orderObjMdl = app::get('ome')->model('order_objects');
+
+        $delivery = array();
+        $str = "  AND o.pay_bn='".$pay_bn."'";
+
+        $sql = "SELECT r.*,o.paytime FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='refuse' ".
+            "  AND r.order_confirm_time<'".$to_time."'  AND r.order_confirm_time>'".$from_time."'";
+        $reship_sql = $sql.$str;
+        $reships = $reshipMdl->db->select($reship_sql);
+
+        if(!empty($reships)){
+            $reshipList = $this->batchReship($reships);
+            if (!$reshipList) {
+                echo 'DATA ERROR';
+                exit;
+            }
+            foreach ($reshipList as $payDate => $reshipArray) {
+                //合并退货商品数据
+                $r_item = array();
+                $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $orderCostFreight=$orderCostPayment = 0;
+                foreach($reshipArray as $key=>$reship){
+                    $orderId = $reship['order_id'];
+                    $orderInfo = $orderMdl->getList('*',array('order_id'=>$orderId));
+                    $itemsSql  = "SELECT i.*,b.obj_type FROM sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON  i.obj_id = b.obj_id  WHERE  i.order_id='".$orderId."'";
+                    $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
+                    $items = $orderItemMdl->db->select($itemsSql);
+                    if(empty($items)){
+                        continue;
+                    }
+
+                    if($orderInfo['0']['message1']){
+                        $rItemNumTotal += 1;
+                    }
+                    if($orderInfo['0']['is_w_card']){
+                        $rItemNumTotal +=1 ;
+                    }
+                    //cod费用合并
+                    if($orderInfo['0']['is_cod']){
+                        $orderCostPayment +=$orderInfo['0']['cost_payment'];
+                    }
+                    //运费合并
+                    $orderCostFreight += ($orderInfo['0']['cost_freight']-$orderInfo['0']['pmt_cost_shipping']);
+                    foreach($items as $key =>$item){
+                        $itemInfo = $orderItemMdl->db->select($sql);
+                        $r_item[$item['bn']]['true_price'] = $item['true_price'];
+                        $r_item[$item['bn']]['ax_pmt_price'] = $item['ax_pmt_price']/$item['nums'];
+                        $r_item[$item['bn']]['quantity'] = $item['nums'];
+                        $r_item[$item['bn']]['item_type'] = $item['obj_type'];
+                        $r_item[$item['bn']]['ax_pmt_percent'] = $item['ax_pmt_percent'];
+                        $r_item[$item['bn']]['name'] = $item['name'];
+                        $r_item[$item['bn']]['item_id'] = $item['item_id'];
+                        $r_item[$item['bn']]['message1'] = $item['message1'];
+                        $r_item[$item['bn']]['message2'] = $item['message2'];
+                        $r_item[$item['bn']]['message3'] = $item['message3'];
+                        $r_item[$item['bn']]['message4'] = $item['message4'];
+                        $rMoneyTotal+=$item['price'];
+                        $rItemNumTotal+=$item['nums'];
+                    }
+                }
+                if(!empty($r_item)){
+                    $delivery['reshipNum'] = $reshipNum;//拒收单数量
+                    $delivery['rMoneyTotal'] = $rMoneyTotal;//拒收商品总价
+                    $delivery['rNumTotal'] = $rItemNumTotal;//拒收商品数量
+                    $delivery['delivery_items'] = $r_item;
+                    $delivery['orderCostFreight'] = $orderCostFreight;//拒收订单的运费总和，已减去运费折扣
+                    $delivery['orderCostPayment'] = $orderCostPayment;//拒收订单的运费总和
+                    $delivery['order']['pay_bn'] = $pay_bn;
+                    //生成大订单号
+                    if($pay_bn=='alipay'){
+                        $S = 'A';
+                    }
+                    if($pay_bn=='wxpayjsapi'){
+                        $S = 'W';
+                    }
+                    $delivery['payDate'] = $S.$payDate;
+                    $delivery['order']['order_bn'] = $S.$payDate.time();
+                    $this->deliverySO($delivery);
+                }
+            }
+        }
+    }
+    public function deliverySO($delivery){
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $file_brand = $ax_setting['ax_file_brand'];
+        $file_prefix = $ax_setting['ax_file_prefix'];
+
+        $file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
+        $file_name = implode('_',$file_arr);
 
 
+        if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+            mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+            chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+        }
+        $file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+
+        while(file_exists($file_params['file'])){
+            sleep(1);
+            $file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
+            $file_name = implode('_',$file_arr);
+
+            if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+                mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+                chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+            }
+            $file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+        }
+
+        $file_params['method'] = 'a';
+        $file_params['data'] = $this->getContentSO($delivery,$file_params['file']);
+
+        $file_log_data = array(
+            'content'=>$file_params['data']?$file_params['data']:'没有数据',
+            'io_type'=>'in',
+            'work_type'=>'delivery',
+            'createtime'=>time(),
+            'status'=>'prepare',
+            'file_route'=>$file_params['file'],
+        );
+        $file_log_id = $this->operate_log->write_log($file_log_data,'file');
+
+        $flag = $this->file_obj->toWrite($file_params,$msg);
+        if($flag){
+            $this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time()),$file_log_id,'file');
+            $params['remote'] = $this->file_obj->getFileName($file_params['file']);
+            $params['local'] = $file_params['file'];
+            $params['resume'] = 0;
+
+            $ftp_log_data = array(
+                'io_type'=>'out',
+                'work_type'=>'reship',
+                'createtime'=>time(),
+                'status'=>'prepare',
+                'file_local_route'=>$file_params['file'],
+                'file_ftp_route'=>$params['remote'],
+            );
+            $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
+
+        }else{
+            $this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
+            //发送报警邮件
+            //$reshipData = app::get('ome')->model('reship')->getList('reship_bn',array('reship_id'=>$reship_id));
+            $reship_bn  = $delivery['total_reship_bn'];
+            $ax_content = $file_log_data['content'];
+            $file_route = $file_log_data['file_route'];
+
+            $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
+            $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货SO文件生成失败';//【ADP-PROD】ByPass订单#10008688发送失败
+            $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是SO文件内容和错误信息。<br>SO文件内容：<br>$ax_content<br/><br>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>$msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+            kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+        }
+    }
+
+    public function getContentSO($delivery,$file){
+        $ax_content_arr = array();
+
+        $ax_header = app::get('omeftp')->getConf('AX_Header');
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $file_brand = $ax_setting['ax_file_brand'];
+        $str = 'ORDER_RET_DIOR';
+        $ax_content_arr[] = $ax_header.$str;
+
+        $ax_h = $this->get_ax_h2($delivery);
+        $ax_content_arr [] = $ax_h;
+
+        $ax_d = $this->get_ax_d2($delivery);
+        $ax_content_arr [] = $ax_d;
+
+        $ax_i = $this->get_ax_i($delivery);
+        $ax_content_arr [] = $ax_i;  //发票功能暂时无法支持
+
+        $az_l = $this->get_ax_l2($delivery);
+        $ax_content_arr [] = $az_l;
+
+        $content = implode("\n",$ax_content_arr);
+        return $content;
+    }
+
+    public function get_ax_h2($delivery){
+        $ax_h = array();
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+
+        $ax_h_h = $ax_setting['ax_h'];
+        $ax_h[] = $ax_h_h?$ax_h_h:'H';
+
+        $ax_h_sales_country_code = $ax_setting['ax_h_sales_country_code'];
+        $ax_h[] = $ax_h_sales_country_code?$ax_h_sales_country_code:'CN';
+
+        $ax_h_salas_division = $ax_setting['ax_h_salas_division'];
+        $ax_h[] = $ax_h_salas_division?$ax_h_salas_division:'01';
+
+        $ax_h_sales_organization = $ax_setting['ax_h_sales_organization'];
+        $ax_h[] = $ax_h_sales_organization?$ax_h_sales_organization:'2920';
+
+        $ax_h_plant = $ax_setting['ax_h_plant'];
+        $ax_h[] = $ax_h_plant?$ax_h_plant:'1190';
+
+        $ax_h[] = $delivery['order']['order_bn'].'-R1';//字段意思不明确，待定
+
+        //$ax_h[] = $delivery['order']['ax_order_bn'];;//AX SO number
+        $ax_h[] = $delivery['order']['order_bn'];
+
+        $ax_h_customer_account = $ax_setting['ax_h_customer_account'];
+        $ax_h[] = $ax_h_customer_account?$ax_h_customer_account:'C4010P1';// 固定参数  值待定
+
+        $ax_h_invoice_ccount = $ax_setting['ax_h_invoice_ccount'];
+        $ax_h[] = $ax_h_invoice_ccount?$ax_h_invoice_ccount:'C4010P1';//固定参数  值待定
+
+        $ax_h_sales_order_status = $ax_setting['ax_h_sales_order_status'];
+        $ax_h[] = $ax_h_sales_order_status?$ax_h_sales_order_status:'SEND_TO_ERP';// Sales order Status
+
+        $ax_h[] = ''; //Sales Description
+        //error_log(var_export($custom_mark,true),3,'f:/cc.txt');
+        $ax_h_currency = $ax_setting['ax_h_currency'];
+        $ax_h[] = $ax_h_currency?$ax_h_currency:'CNY';// currency
+
+        $ax_h[] = sprintf("%1\$.2f",-($this->math->number_plus(array($delivery['orderCostFreight'],0))));// freight amount 配送费用
+
+        $ax_h[] = ($delivery['orderCostPayment']!='0.00')?sprintf("%1\$.2f",-($this->math->number_plus(array($delivery['orderCostPayment'],0)))):'0.00';//cod fee amount
+
+        $ax_h[] = '0.00'; //total discount amount  优惠金额
+
+        $ax_h[] = '';//total  discount %
+
+        $itemNums = $delivery['rNumTotal'];
+        //已合并过
+        /*if($delivery['order']['message1']){
+            $itemNums += 1;
+        }
+        if($delivery['order']['is_w_card']){
+            $itemNums +=1 ;
+        }*/
+
+        $ax_h[] = -intval($itemNums);//total quantity
+
+        $ax_h[] = '';//Alt. delivery account
+        $ax_h[] = date('Y-m-d H:i:s',time());//date of order creation 订单创建时间
+
+        $ax_h[] = '';//Language
+
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = 'ACH';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = $delivery['payDate'];
+
+        return implode('|',$ax_h);
+    }
+    public function get_ax_d2($delivery){
+        $ax_d = array();
+        $ax_d[] = 'D';
+        //$order_confirm_time = date('Y-m-d H:i:s',$delivery['order_confirm_time']);
+        $order_confirm_time= date('Y-m-d H:i:s',time());
+        $ax_d[] = '';//Requested receipt Date
+        $ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
+        $ax_d[] = '';//Confirmed receipt Date
+        $ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
+
+        $ax_d[] = '';//配送时间  暂时留空
+
+        $ax_d[] = '';//Condition of Delivery   set by AX
+
+        $ax_d_mode_of_delivery = app::get('omeftp')->getConf('ax_d_mode_of_delivery');
+        //if($delivery['consignee']['province']=='上海'||$delivery['consignee']['province']=='江苏省'||$delivery['consignee']['province']=='浙江省'||$delivery['consignee']['province']=='安徽省'||$delivery['consignee']['province']=='西藏自治区'){
+        $ax_d[] = 'SF_STD';//
+        //}else{
+        //   $ax_d[] = 'SF_SP';
+        //}
+
+        $ax_d[] = '';//Packing Slip number
+        $ax_d[] = '';//Shipping Date
+
+        $ax_d[] = '';//Shipping Tracking URL
+        $ax_d[] = '';//Shipping tracking ID
+
+        //收货信息
+        $ax_d[] = '';//Delivery Name
+        $ax_d[] = '';//Delivery Street name
+        $ax_d[] = '';//Delivery ZIP
+        $ax_d[] = '';//Delivery City
+        $ax_d[] = '';//Delivery State ID
+        $ax_d[] = '';//Delivery Country/Region
+        $ax_d[] = '';//Delivery Contact
+        $ax_d[] = '';//Order Total Weight
+
+        $ax_d[] = '';//3rd Party Id
+        $ax_d[] = '';//3rd Party Name
+        $ax_d[] = '';//3rd Party Street name
+        $ax_d[] = '';//3rd Party ZIP / Postal code
+        $ax_d[] = '';//3rd Party City
+        $ax_d[] = '';//3rd Party State ID
+        $ax_d[] = '';//3rd Party Country/Region
+        $ax_d[] = '';//3rd Party
+
+        return implode('|',$ax_d);
+    }
+    public function get_ax_l2($delivery){
+        $ax_l = array();
+        //$orderObjModel = app::get('ome')->model('order_objects');
+        $line = 0;
+        foreach($delivery['delivery_items'] as $key=>$delivery_items){
+            //$order_obj_items = $orderObjModel->dump($delivery_items['obj_id']);
+
+            $ax_l[$line][] = 'L';
+            if($delivery_items['obj_type']=='goods'){
+                $ax_l[$line][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($delivery_items['obj_type']=='gift'){
+                $ax_l[$line][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($delivery_items['obj_type']=='sample'){
+                $ax_l[$line][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
+            }else{
+                $ax_l[$line][] = 'Sales';
+            }
+
+            $ax_l[$line][] = '';//AX SO line number
+            $ax_l[$line][] = $line+1;//External SO line number
+            $ax_l[$line][] = $delivery_items['bn'];//Item Number
+            $ax_l[$line][] = '';//Item description
+
+            $ax_l[$line][] = $delivery_items['name'];//Item Number
+
+            $ax_l[$line][] = $delivery_items['item_id'];//External Item Code
+            $ax_l[$line][] = '';//Bar code of the salable item  //条形码
+            if($delivery_items['obj_type']=='sample'){
+                $ax_l[$line][] = $delivery_items['message1'];//First line of the gift message
+                $ax_l[$line][] = $delivery_items['message2'];//Second line of the gift message
+                $ax_l[$line][] = $delivery_items['message3'];//Third line of the gift message
+                $ax_l[$line][] = $delivery_items['message4'];//Fourth line of the gift message
+            }else{
+                $ax_l[$line][] = '';//First line of the gift message
+                $ax_l[$line][] = '';//Second line of the gift message
+                $ax_l[$line][] = '';//Third line of the gift message
+                $ax_l[$line][] = '';//Fourth line of the gift message
+            }
+            //$ax_pmt_price = $delivery_items['ax_pmt_price']/intval($order_obj_items['quantity']);
+            $ax_l[$line][] = -intval($delivery_items['quantity']);//Ordered quantity  Sales ordered quantity
+            $ax_l[$line][] = $this->math->number_plus(array(($delivery_items['price']-$delivery_items['ax_pmt_price']),0));//Sales Retail Price  Unit price on of the Sales Order Line
+            $ax_l[$line][] = '';//Price unit  Price Unit of the Sales order Line
+
+            $ax_l[$line][] = '';//Discount amount
+            $ax_l[$line][] = $this->math->number_plus(array($delivery_items['ax_pmt_percent'],0));//Discount %
+            $ax_l[$line][] = '';//Discount % Level 1
+            $ax_l[$line][] = '';//Discount % Level 2
+            $ax_l[$line][] = '';//Discount % Level 3
+            $ax_l[$line][] = '';//Shipped Qty
+
+            $ax_l[$line][] = '';//Invoiced Qty
+            $ax_l[$line][] = '';//Picking in progress Qty
+            $ax_l[$line][] = '';//Picked Qty
+            $ax_l[$line][] = 'Ea';//Item Sales Unit
+            $ax_l[$line][] = '';//Total Discount Amount excl. Tax
+            $ax_l[$line][] = '';//Discount label
+            $ax_l[$line][] = '';//Line amount excl. Taxes
+            $ax_l[$line][] = '';//Item Sales Tax Group
+            $ax_l[$line][] = '';//Sales Tax rate
+            $ax_l[$line][] = '';//Sales Tax amount
+            $ax_l[$line][] = '';//Line amount incl. Taxes
+
+            $ax_l[$line][] = '';//Batch Number
+
+            $ax_l[$line][] = '';//
+            $ax_l[$line][] = 'NW';//site
+            $ax_l[$line][] = '22-RTN';//warehouse
+
+            $ax_l_str[$line] = implode('|',$ax_l[$line]);
+        }
+        $line = $line+1;
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+
+        if($delivery['order']['message1']){
+            $ax_l_str[] = 'L|Gift||'.($key+1).'|'.$ax_setting['ax_sample_bn'].'|||||'.$delivery['order']['message1'].'==CR=='.$delivery['order']['message2'].'==CR=='.$delivery['order']['message3'].'==CR=='.$delivery['order']['message4'].'==CR=='.$delivery['order']['message5'].'==CR=='.$delivery['order']['message6'].'||||-1|0.00||||||||||Ea|||||||||||';
+            $line = $line+1;
+        }
+
+        if($delivery['order']['is_w_card']){
+            $ax_l_str[] = 'L|Card||'.($line+1).'|'.$ax_setting['ax_gift_bn'].'|||||||||-1|0.00|||||||||||Ea|||||||||||';
+        }
+        return implode("\n",$ax_l_str);
+    }
 }

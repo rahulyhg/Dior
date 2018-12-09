@@ -511,5 +511,406 @@ class omeftp_service_reship{
         return $delivery;
 	}
 
+    function cron_Reship($pay_bn){
+        $from_time = strtotime(date("Y-m-d",time()));
+        $to_time = strtotime("+1 day");
+        //$from_time = '1540137600';
+        //$to_time = '1540310400';
+        $orderMdl = app::get('ome')->model('orders');
+        $reshipMdl = app::get('ome')->model('reship');
+        $shopMdl = app::get('ome')->model('shop');
+        $orderItemMdl = app::get('ome')->model('order_items');
+        $reshipItemMdl = app::get('ome')->model('reship_items');
+        $orderObjMdl = app::get('ome')->model('order_objects');
 
+        $delivery = array();
+        //$str = "  AND o.pay_bn='".$pay_bn."'";
+
+        $reship_sql = "SELECT r.*,o.paytime FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='return' ".
+            " AND r.order_confirm_time<'".$to_time."'  AND r.order_confirm_time>'".$from_time."'  AND o.pay_bn='".$pay_bn."'";
+        $reships = $reshipMdl->db->select($reship_sql);
+
+        if(!empty($reships)){
+            $reshipList = $this->batchReship($reships);
+            if (!$reshipList) {
+                echo 'DATA ERROR';
+                exit;
+            }
+            foreach ($reshipList as $payDate => $reshipArray) {
+                //合并退货商品数据
+                $r_item  = array();
+                $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $returnNum = 0;
+                $reshipMoney =0;
+                foreach($reshipArray as $key=>$reship){
+                    $orderId = $reship['order_id'];
+                    $ritems = $reshipItemMdl->getList('*',array('reship_id'=>$reship['reship_id'],'return_type'=>'return'));
+                    if(empty($ritems)){
+                        continue;
+                    }
+
+                    foreach($ritems as $key =>$ritem){
+                        $sql = "select i.*,b.obj_type from sdb_ome_order_items i LEFT  JOIN  sdb_ome_order_objects b ON i.obj_id = b.obj_id WHERE  i.order_id='".$orderId."' AND i.product_id='".$ritem['product_id']."'";
+                        $itemInfo = $orderItemMdl->db->select($sql);
+                        $r_item[$ritem['bn']]['true_price'] = $itemInfo['0']['true_price'];
+                        $r_item[$ritem['bn']]['ax_pmt_price'] += $itemInfo['0']['ax_pmt_price'];
+                        $r_item[$ritem['bn']]['num'] += $ritem['num'];
+                        $r_item[$ritem['bn']]['item_type'] = $itemInfo['0']['obj_type'];
+                        $r_item[$ritem['bn']]['ax_pmt_percent'] = $itemInfo['0']['ax_pmt_percent'];
+                        $r_item[$ritem['bn']]['name'] = $ritem['product_name'];
+
+                        $rMoneyTotal+=$ritem['price'];
+                        $rItemNumTotal+=$ritem['num'];
+                        if($ritem['return_type']=='return'){
+                            $returnNum +=$ritem['num'];
+                        }
+                    }
+                    $reshipNum++;
+                    $totalBcMoney +=$reship ['bcmoney'];
+                    $reshipArr[] = $reship['reship_id'];
+                    
+                    $reshipMoney+=$reship['tmoney'];
+                }
+                if(!empty($r_item)){
+                    $delivery['reshipNum'] = $reshipNum;//售后单数量
+                    $delivery['rMoneyTotal'] = $rMoneyTotal;//售后商品总价
+                    $delivery['rNumTotal'] = $rItemNumTotal;//售后商品数量
+                    $delivery['returnNum'] = $returnNum;//退货商品数量
+                    $delivery['totalBcMoney'] = $totalBcMoney;//售后配送总费用
+                    $delivery['r_item'] = $r_item;
+                    $delivery['order']['pay_bn'] = $pay_bn;
+                    //$arrNum=array(1,2,3,4,5,6,7,8,9,0);
+                    //$delivery['total_reship_bn'] =  date("YmdHis").$arrNum[rand(0,9)].$arrNum[rand(0,9)].$arrNum[rand(0,9)];
+                    //生成大订单号
+                    if($pay_bn=='alipay'){
+                        $S = 'A';
+                    }
+                    if($pay_bn=='wxpayjsapi'){
+                        $S = 'W';
+                    }
+                    $delivery['payDate'] = $S.$payDate;
+                    $delivery['total_reship_bn'] = $S.$payDate.time();
+                    $fileRes = $this->deliverySO($delivery);
+                    if($fileRes){
+                        $reshipId = implode(',',$reshipArr);
+                        $updateSql = "UPDATE sdb_ome_reship SET so_order_num = '".$delivery['total_reship_bn']."',so_type='1'  WHERE reship_id in (".$reshipId.")";
+                        //echo '<pre>d';print_r($updateSql);exit;
+                        $orderMdl->db->exec($updateSql);
+                        //记录该合并文件的总金额日志
+                        error_log("支付时间:".$S.$payDate."退货总金额:".$reshipMoney."\r\n",3,DATA_DIR.'/solog/'.date("Ymd").'R.txt');    
+                    }
+                }
+            }
+        }
+    }
+    public function deliverySO($delivery){
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $file_brand = $ax_setting['ax_file_brand'];
+        $file_prefix = $ax_setting['ax_file_prefix'];
+
+        $file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
+        $file_name = implode('_',$file_arr);
+
+
+        if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+            mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+            chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+        }
+        $file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+
+        while(file_exists($file_params['file'])){
+            sleep(1);
+            $file_arr = array($file_prefix,$file_brand,'RETURN',date('YmdHis',time()));
+            $file_name = implode('_',$file_arr);
+
+            if(!file_exists(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()))){
+                mkdir(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777,true);
+                chmod(ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()),0777);
+            }
+            $file_params['file'] = ROOT_DIR.'/ftp/Testing/in/'.date('Ymd',time()).'/'.$file_name.'.dat';
+        }
+
+        $file_params['method'] = 'a';
+        $file_params['data'] = $this->getContentSO($delivery,$file_params['file']);
+
+        $file_log_data = array(
+            'content'=>$file_params['data']?$file_params['data']:'没有数据',
+            'io_type'=>'in',
+            'work_type'=>'delivery',
+            'createtime'=>time(),
+            'status'=>'prepare',
+            'file_route'=>$file_params['file'],
+        );
+        $file_log_id = $this->operate_log->write_log($file_log_data,'file');
+
+        $flag = $this->file_obj->toWrite($file_params,$msg);
+        if($flag){
+            $this->operate_log->update_log(array('status'=>'succ','lastmodify'=>time()),$file_log_id,'file');
+            $params['remote'] = $this->file_obj->getFileName($file_params['file']);
+            $params['local'] = $file_params['file'];
+            $params['resume'] = 0;
+
+            $ftp_log_data = array(
+                'io_type'=>'out',
+                'work_type'=>'reship',
+                'createtime'=>time(),
+                'status'=>'prepare',
+                'file_local_route'=>$file_params['file'],
+                'file_ftp_route'=>$params['remote'],
+            );
+            $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
+            return true;
+        }else{
+            $this->operate_log->update_log(array('status'=>'fail','memo'=>$msg),$file_log_id,'file');
+            //发送报警邮件
+            //$reshipData = app::get('ome')->model('reship')->getList('reship_bn',array('reship_id'=>$reship_id));
+            $reship_bn  = $delivery['total_reship_bn'];
+            $ax_content = $file_log_data['content'];
+            $file_route = $file_log_data['file_route'];
+
+            $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
+            $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货SO文件生成失败';//【ADP-PROD】ByPass订单#10008688发送失败
+            $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是SO文件内容和错误信息。<br>SO文件内容：<br>$ax_content<br/><br>SO文件全路径：<br>$file_route<br/><br>错误信息是：<br>$msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
+            kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
+            return false;
+        }
+    }
+
+    public function getContentSO($delivery,$file){
+        $ax_content_arr = array();
+
+        $ax_header = app::get('omeftp')->getConf('AX_Header');
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $file_brand = $ax_setting['ax_file_brand'];
+        $str = 'ORDER_RET_DIOR';
+        $ax_content_arr[] = $ax_header.$str;
+
+        $ax_h = $this->get_ax_h2($delivery);
+        $ax_content_arr [] = $ax_h;
+
+        $ax_d = $this->get_ax_d2($delivery);
+        $ax_content_arr [] = $ax_d;
+
+        $ax_i = $this->get_ax_i($delivery);
+        $ax_content_arr [] = $ax_i;  //发票功能暂时无法支持
+
+        $az_l = $this->get_ax_l2($delivery);
+        $ax_content_arr [] = $az_l;
+
+        $content = implode("\n",$ax_content_arr);
+        return $content;
+    }
+
+    public function get_ax_h2($delivery){
+        $ax_h = array();
+        $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+
+        $ax_h_h = $ax_setting['ax_h'];
+        $ax_h[] = $ax_h_h?$ax_h_h:'H';
+
+        $ax_h_sales_country_code = $ax_setting['ax_h_sales_country_code'];
+        $ax_h[] = $ax_h_sales_country_code?$ax_h_sales_country_code:'CN';
+
+        $ax_h_salas_division = $ax_setting['ax_h_salas_division'];
+        $ax_h[] = $ax_h_salas_division?$ax_h_salas_division:'01';
+
+        $ax_h_sales_organization = $ax_setting['ax_h_sales_organization'];
+        $ax_h[] = $ax_h_sales_organization?$ax_h_sales_organization:'2920';
+
+        $ax_h_plant = $ax_setting['ax_h_plant'];
+        $ax_h[] = $ax_h_plant?$ax_h_plant:'1190';
+
+        $objReship = app::get('ome')->model('reship');
+        //$reship_bn = $objReship->getList('reship_bn,order_id,bcmoney',array('reship_id'=>$reship_id));
+        //$allReship = $objReship->getList('reship_id',array('order_id'=>$reship_bn[0]['order_id']));
+        //$nums =count($allReship);
+        $reship_bn = $delivery['total_reship_bn'];
+        $nums = $delivery['reshipNum'];
+        //$ax_h[] = $delivery['order']['order_bn'].'-R'.$nums;//字段意思不明确，待定
+        //$ax_h[] =$reship_bn.'-R'.$nums;
+        $ax_h[] =$reship_bn;
+        //$ax_h[] = $delivery['order']['ax_order_bn'];//AX SO number
+        $ax_h[] = $reship_bn;
+
+        $ax_h_customer_account = $ax_setting['ax_h_customer_account'];
+        $ax_h[] = $ax_h_customer_account?$ax_h_customer_account:'C6002P1';// 固定参数  值待定
+
+        $ax_h_invoice_ccount = $ax_setting['ax_h_invoice_ccount'];
+        $ax_h[] = $ax_h_invoice_ccount?$ax_h_invoice_ccount:'C6002P1';//固定参数  值待定
+
+        $ax_h_sales_order_status = app::get('omeftp')->getConf('ax_h_sales_order_status');
+        $ax_h[] = $ax_h_sales_order_status?$ax_h_sales_order_status:'SEND_TO_ERP';// Sales order Status
+
+        $ax_h[] = '';//Sales Description合并后默认空
+
+        $ax_h_currency = app::get('omeftp')->getConf('ax_h_currency');
+        $ax_h[] = $ax_h_currency?$ax_h_currency:'CNY';// currency
+
+        //$ax_h[] = $reship_bn[0]['bcmoney']>0?sprintf("%1\$.2f",-($this->math->number_plus(array($reship_bn[0]['bcmoney'],0)))):'0.00';// freight amount 配送费用
+        $ax_h[] = $delivery['totalBcMoney']>0?sprintf("%1\$.2f",-($this->math->number_plus(array($delivery['totalBcMoney'],0)))):'0.00';// freight amount 配送费用
+
+        $ax_h[] = '0.00';//cod fee amount
+
+        $ax_h[] = '0.00'; //total discount amount  优惠金额
+
+        $ax_h[] = '';//total  discount %
+        //MCD去掉换货明细
+        /*$orderReship = app::get('ome')->model('reship_items');
+        $reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
+        foreach($reInfo as $ri){
+            $itemNum += $ri['num'];
+        }*/
+        $ax_h[] = -intval($delivery['returnNum']);//total quantity
+
+        $ax_h[] = '';//Alt. delivery account
+        $ax_h[] = date('Y-m-d H:i:s',time());//date of order creation 订单创建时间
+
+        $ax_h[] = '';//Language
+
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        //$ax_h[] = $reshipInfo['return_reason'];
+        $ax_h[] = '';
+        $ax_h[] = '';
+        $ax_h[] = '';
+        //$ax_h[] = $delivery['payDate'].'-R'.$nums;
+        $ax_h[] = $delivery['payDate'];
+        return implode('|',$ax_h);
+    }
+    public function get_ax_d2($delivery){
+        $ax_d = array();
+        $ax_d[] = 'D';
+        //$order_confirm_time = date('Y-m-d H:i:s',$delivery['order_confirm_time']);
+        $order_confirm_time= date('Y-m-d H:i:s',time());
+        $ax_d[] = '';//Requested receipt Date
+        $ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Requested Ship Date
+        $ax_d[] = '';//Confirmed receipt Date
+        $ax_d[] = !empty($order_confirm_time)?$order_confirm_time:'';//Confirmed Ship Date
+
+        $ax_d[] = '';//配送时间  暂时留空
+
+        $ax_d[] = '';//Condition of Delivery   set by AX
+
+        $ax_d_mode_of_delivery = app::get('omeftp')->getConf('ax_d_mode_of_delivery');
+        //if($delivery['consignee']['province']=='上海'||$delivery['consignee']['province']=='江苏省'||$delivery['consignee']['province']=='浙江省'||$delivery['consignee']['province']=='安徽省'||$delivery['consignee']['province']=='西藏自治区'){
+         $ax_d[] = 'SF_STD';//
+        //}else{
+        //   $ax_d[] = 'SF_SP';
+        //}
+
+        $ax_d[] = '';//Packing Slip number
+        $ax_d[] = '';//Shipping Date
+
+        $ax_d[] = '';//Shipping Tracking URL
+        $ax_d[] = '';//Shipping tracking ID
+
+        //收货信息
+        $ax_d[] = '';//Delivery Name
+        $ax_d[] = '';//Delivery Street name
+        $ax_d[] = '';//Delivery ZIP
+        $ax_d[] = '';//Delivery City
+        $ax_d[] = '';//Delivery State ID
+        $ax_d[] = '';//Delivery Country/Region
+        $ax_d[] = '';//Delivery Contact
+        $ax_d[] = '';//Order Total Weight
+
+        $ax_d[] = '';//3rd Party Id
+        $ax_d[] = '';//3rd Party Name
+        $ax_d[] = '';//3rd Party Street name
+        $ax_d[] = '';//3rd Party ZIP / Postal code
+        $ax_d[] = '';//3rd Party City
+        $ax_d[] = '';//3rd Party State ID
+        $ax_d[] = '';//3rd Party Country/Region
+        $ax_d[] = '';//3rd Party
+
+        return implode('|',$ax_d);
+    }
+    public function get_ax_l2($delivery){
+        $ax_l =$reInfo=array();
+        $orderItemModel     = app::get('ome')->model('order_items');
+
+        //$orderReship = app::get('ome')->model('reship_items');
+        //MCD去掉换货明细
+        //$reInfo = $orderReship->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
+        $reInfo = $delivery['r_item'];
+        $line = 0;
+        foreach($reInfo as $key=>$reship_items){
+            $develiy_items=array();
+            $ax_pmt_price=0;
+
+            $ax_l[$key][] = 'L';
+            if($reship_items['item_type']=='product'){
+                $ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($reship_items['item_type']=='gift'){
+                $ax_l[$key][] = 'Sample';//SAP Item Type   eg.Sales  Gift  sample
+            }elseif($reship_items['item_type']=='sample'){
+                $ax_l[$key][] = 'Gift';//SAP Item Type   eg.Sales  Gift  sample
+            }else{
+                $ax_l[$key][] = 'Sales';//SAP Item Type   eg.Sales  Gift  sample
+            }
+            $ax_l[$key][] = '';//AX SO line number
+            $ax_l[$key][] = $line+1;//External SO line number
+            $line++;
+            //$ax_l[$key][] = $reship_items['bn'];//Item Number
+            $ax_l[$key][] = $key;
+            $ax_l[$key][] = '';//Item description
+            $ax_l[$key][] = '';//Text Detailled description of the item
+            $ax_l[$key][] = '';//External Item Code?? 需确认
+            $ax_l[$key][] = '';//Bar code of the salable item  //条形码
+
+            $ax_l[$key][] = '';//First line of the gift message
+            $ax_l[$key][] = '';//Second line of the gift message
+            $ax_l[$key][] = '';//Third line of the gift message
+            $ax_l[$key][] = '';//Fourth line of the gift message
+
+            $ax_l[$key][] = -$reship_items['num'];//Ordered quantity  Sales ordered quantity
+            $ax_l[$key][] = $this->math->number_plus(array($reship_items['true_price'],0));//Sales Retail Price  Unit price on of the Sales Order Line
+            $ax_l[$key][] = '';//Price unit  Price Unit of the Sales order Line
+
+
+            $ax_l[$key][] = '0.00';//Discount amount
+            //$ax_l[$key][] = $this->math->number_plus(array($reship_items['ax_pmt_percent'],0));//Discount %
+			$ax_l[$key][] = '0.00';
+            $ax_l[$key][] = '';//Discount % Level 1
+            $ax_l[$key][] = '';//Discount % Level 2
+            $ax_l[$key][] = '';//Discount % Level 3
+            $ax_l[$key][] = '';//Shipped Qty
+
+            $ax_l[$key][] = '';//Invoiced Qty
+            $ax_l[$key][] = '';//Picking in progress Qty
+            $ax_l[$key][] = '';//Picked Qty
+            $ax_l[$key][] = 'Ea';//Item Sales Unit
+            $ax_l[$key][] = '';//Total Discount Amount excl. Tax
+            $ax_l[$key][] = '';//Discount label
+            $ax_l[$key][] = '';//Line amount excl. Taxes
+            $ax_l[$key][] = '';//Item Sales Tax Group
+            $ax_l[$key][] = '';//Sales Tax rate
+            $ax_l[$key][] = '';//Sales Tax amount
+            $ax_l[$key][] = '';//Line amount incl. Taxes
+
+            $ax_l[$key][] = '';//Batch Number
+
+            $ax_l[$key][] = '';//
+            $ax_l[$key][] = 'NW';//site
+            $ax_l[$key][] = '22-RTN';//warehouse
+
+            $ax_l_str[$key] = implode('|',$ax_l[$key]);
+        }
+        return implode("\n",$ax_l_str);
+    }
+
+    //按照支付时间区分
+    function batchReship($reships = array()){
+        if(empty($reships)){
+            return false;
+        }
+        $reshipList = array();
+        foreach ($reships as $key=>$value){
+            $payDate = date('Ymd',$value['paytime']);
+            $reshipList[$payDate][] = $value;
+        }
+        return $reshipList;
+    }
 }

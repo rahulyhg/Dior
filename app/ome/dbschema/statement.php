@@ -47,6 +47,33 @@ $db['statement']=array (
 	  'in_list' => true,
 	  'default_in_list' => false,
 	),
+    'so_bn'=>array(
+	  'type' => 'varchar(20)',
+	  'label' => 'SO文件合并编号',
+	  'is_title' => true,
+	  'width' => 125,
+	  'editable' => false,
+      'default' => '',
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
+    'so_status'=>array( 
+	  'type' => array(
+		'so_succ'=>'货平款平',
+		'so_fail'=>'货不平款平',
+		'payment_fail'=>'货平款不平',
+	  ),
+	  'label' => '对货状态',
+      'default' => 'so_succ',
+      'required' => true,
+	  'filtertype' => 'yes',
+	  'filterdefault' => true,
+      'editable' => false,
+	  'in_list' => true,
+      'default_in_list' => true,
+	),
 	'shop_id' =>
     array (
       'type' => 'table:shop@ome',

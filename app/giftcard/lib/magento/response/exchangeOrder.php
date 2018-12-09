@@ -191,8 +191,8 @@ class giftcard_magento_response_exchangeOrder
 		$arrOrders['itemnum']=$totalNums;
 		$arrOrders['order_bn']=$order['order_bn'];
 		$arrOrders['wx_order_bn']=$order['wx_order_bn'];
-		//店铺
-		$arrShop=$sObj->getList("shop_id",array('shop_type'=>'minishop'));
+		// 店铺 2018-11-19 august.yao update
+		$arrShop=$sObj->getList("shop_id,name,shop_bn",array('shop_type'=>'minishop'));
 		$arrOrders['shop_id']=$arrShop[0]['shop_id'];
 		$arrOrders['shop_type']='minishop';
 		$arrOrders['order_refer_source']='minishop';
@@ -257,6 +257,23 @@ class giftcard_magento_response_exchangeOrder
 			$oObj->db->rollBack();
 	        return array('status'=>'fail','msg'=>$msg);exit();
 		}
+
+        ###### 订单状态回传kafka august.yao 2018-11-19 创建订单 start ####
+        $arrOrders['order_type'] = $arrShop[0]['name'];
+        $kafkaQueue = app::get('ome')->model('kafka_queue');
+        $queueData  = array(
+            'queue_title' => '订单创建推送',
+            'worker'      => 'ome_kafka_api.createOrder',
+            'start_time'  => time(),
+            'params'      => array(
+                'status'      => 'create',
+                'order_bn'    => $arrOrders['order_bn'],
+                'shop_id'     => $arrOrders['shop_id'],
+                'createOrder' => $arrOrders,
+            ),
+        );
+        $kafkaQueue->save($queueData);
+        ###### 订单状态回传kafka august.yao 创建订单 end ####
 		
 		$oObj->db->commit($transaction);
 		//模板消息
