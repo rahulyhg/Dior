@@ -527,7 +527,7 @@ class omeftp_service_reship{
         //$str = "  AND o.pay_bn='".$pay_bn."'";
 
         $reship_sql = "SELECT r.*,o.paytime FROM sdb_ome_reship r LEFT  JOIN  sdb_ome_orders o ON  r.order_id=o.order_id WHERE r.status='succ' AND r.is_check='7' AND r.return_type='return' ".
-            " AND r.order_confirm_time<'".$to_time."'  AND r.order_confirm_time>'".$from_time."'  AND o.pay_bn='".$pay_bn."'  AND o.so_order_num<>''";
+            " AND r.order_confirm_time<'".$to_time."'  AND r.order_confirm_time>'".$from_time."'  AND o.pay_bn='".$pay_bn."' AND o.so_type='1'";
         $reships = $reshipMdl->db->select($reship_sql);
 
         if(!empty($reships)){
