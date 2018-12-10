@@ -210,7 +210,7 @@ class creditorderapi_service_site
         $arrOrders['order_type'] = $shopInfo[0]['name'];
         $kafkaQueue = app::get('ome')->model('kafka_queue');
         $queueData  = array(
-            'queue_title' => '订单创建推送',
+            'queue_title' => '订单创建推送-积分兑礼',
             'worker'      => 'ome_kafka_api.createOrder',
             'start_time'  => time(),
             'params'      => array(

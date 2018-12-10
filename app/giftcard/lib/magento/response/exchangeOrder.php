@@ -262,7 +262,7 @@ class giftcard_magento_response_exchangeOrder
         $arrOrders['order_type'] = $arrShop[0]['name'];
         $kafkaQueue = app::get('ome')->model('kafka_queue');
         $queueData  = array(
-            'queue_title' => '订单创建推送',
+            'queue_title' => '订单创建推送-订单兑换',
             'worker'      => 'ome_kafka_api.createOrder',
             'start_time'  => time(),
             'params'      => array(
