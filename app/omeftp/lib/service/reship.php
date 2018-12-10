@@ -538,7 +538,7 @@ class omeftp_service_reship{
             }
             foreach ($reshipList as $payDate => $reshipArray) {
                 //合并退货商品数据
-                $r_item  = array();
+                $r_item = $reshipArr = array();
                 $reshipNum = $rMoneyTotal=$rItemNumTotal = $totalBcMoney= $returnNum = 0;
                 $reshipMoney =0;
                 foreach($reshipArray as $key=>$reship){
