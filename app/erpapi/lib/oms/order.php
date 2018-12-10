@@ -76,11 +76,11 @@ class erpapi_oms_order
         for($i=0;$i<=40;$i++){
             $begin=$i*10;
             $end=10;
-            $this->RoutePush($params,$begin,$end);
+            $this->RoutePush($params,$begin,$end, $i);
         }
     }
     
-    public function RoutePush($params=NULL,$begin=10,$end=10){
+    public function RoutePush($params=NULL,$begin=10,$end=10, $action=0){
         $twoweek=strtotime(date("Y-m-d H:i:s",strtotime("-3 week")));
         $objOrder = kernel::single("ome_mdl_orders");
         $mdl_reship=kernel::single("ome_mdl_reship");
@@ -119,10 +119,19 @@ class erpapi_oms_order
             }
             return true;
         }else{
-            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
+            $sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE (pay_status='0' AND is_cod='true' AND ship_status='1' AND process_status='splited' AND route_status='0') OR (pay_status='1' AND ship_status='1' AND is_cod='false' AND process_status='splited' AND route_status='0' AND is_creditOrder='0' AND createtime>'$twoweek') ORDER BY paytime ASC limit $begin,$end";
             //$sql="SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn FROM sdb_ome_orders WHERE order_bn='500000472'";
         }
         $arrDelivery=$objOrder->db->select($sql);
+        
+        if($action == '0') {
+            $sql = "SELECT logi_no,order_id,pay_bn,total_amount,payment,order_bn,shop_type,is_mcd,createway,relate_order_bn,is_creditOrder FROM sdb_ome_orders WHERE is_creditOrder='1' AND pay_status='1' AND ship_status='1' AND process_status='splited' AND route_status='0' AND createtime>'$twoweek'";
+            $arrCreditOrder = $objOrder->db->select($sql);
+            
+            if(!empty($arrCreditOrder)) {
+                $arrDelivery = array_merge($arrDelivery, $arrCreditOrder);
+            }
+        }
         
         if(empty($arrDelivery['0']['order_id']))return false;
         
@@ -525,31 +534,31 @@ class erpapi_oms_order
                 $post['price'][$isBn['0']['product_id'].'_pkg'.$h]=$mprice;
                 
                 $post['true_price'][$isBn['0']['product_id'].'_pkg'.$h]=$true_price;
-                $h++;
             }else{
                 if($product['type']=='gift'){
-                    $post['num'][$isBn['0']['product_id']."_gift"]['num']=$product['num'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['type']=$product['type'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['name']=$product['name'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['pmt_price']=$product['pmt_price'];
-                    $post['num'][$isBn['0']['product_id']."_gift"]['pmt_percent']=$product['pmt_percent'];
-                    $post['price'][$isBn['0']['product_id']."_gift"]=$mprice;
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['num']=$product['num'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['type']=$product['type'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['name']=$product['name'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['pmt_price']=$product['pmt_price'];
+                    $post['num'][$isBn['0']['product_id']."_gift".$h]['pmt_percent']=$product['pmt_percent'];
+                    $post['price'][$isBn['0']['product_id']."_gift".$h]=$mprice;
                     
-                    $post['true_price'][$isBn['0']['product_id']."_gift"]=$true_price;
+                    $post['true_price'][$isBn['0']['product_id']."_gift".$h]=$true_price;
                 }else{
-                    $post['num'][$isBn['0']['product_id']]['num']=$product['num'];
-                    $post['num'][$isBn['0']['product_id']]['type']=$product['type'];
-                    $post['num'][$isBn['0']['product_id']]['name']=$product['name'];
-                    $post['num'][$isBn['0']['product_id']]['is_mcd_product']=$product['is_mcd_product'];
-                    $post['num'][$isBn['0']['product_id']]['pmt_price']=$product['pmt_price'];
-                    $post['num'][$isBn['0']['product_id']]['pmt_percent']=$product['pmt_percent'];
-                    $post['num'][$isBn['0']['product_id']]['message1']=$product['lettering'];
-                    $post['num'][$isBn['0']['product_id']]['lettering_type']=$product['lettering_type'];
-                    $post['price'][$isBn['0']['product_id']]=$mprice;
+                    $post['num'][$isBn['0']['product_id']."_".$h]['num']=$product['num'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['type']=$product['type'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['name']=$product['name'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['is_mcd_product']=$product['is_mcd_product'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['pmt_price']=$product['pmt_price'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['pmt_percent']=$product['pmt_percent'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['message1']=$product['lettering'];
+                    $post['num'][$isBn['0']['product_id']."_".$h]['lettering_type']=$product['lettering_type'];
+                    $post['price'][$isBn['0']['product_id']."_".$h]=$mprice;
                     
-                    $post['true_price'][$isBn['0']['product_id']]=$true_price;
+                    $post['true_price'][$isBn['0']['product_id']."_".$h]=$true_price;
                 }
             }
+            $h++;
             $isBn='';
         }
         
@@ -616,32 +625,6 @@ class erpapi_oms_order
         $price = $post['price'];
         $true_price = $post['true_price'];
        
-        if (!$num)
-            return $this->send_error('请选择商品');
-        $tmp_num = $num;
-        $pkg_num = array();
-        foreach ($num as $key => $v){
-            $no = explode('_',$key);
-            if ($no[0] == 'pkg') {
-                unset($tmp_num[$key]);
-                $pkg_num[$key] = array(
-                    'id' => $no[1],
-                    'num' => $v['num']
-                );
-            }
-            if ($v['num'] < 1 || $v['num'] > 499999){
-                return $this->send_error('数量必须大于1且小于499999');
-            }
-        }
-        if (!$price)
-            return $this->send_error('请选择商品');
-        foreach ($price as $v){
-            if ($v < 0){
-                return $this->send_error('请填写正确的价格');
-            }
-        }
-
-        $num = $tmp_num;
         $iorder = $post['order'];
         $iorder['consignee'] = $consignee;
         $iorder['shipping'] = $shipping;
@@ -651,11 +634,7 @@ class erpapi_oms_order
         $ax_pmt_price=0;
         if ($num)
         foreach ($num as $k => $i){
-            if(strpos($k,'_gift')){
-                $p = $pObj->dump(substr($k,0,strpos($k,'_gift')));
-            }else{
-                $p = $pObj->dump(strpos($k,'_pkg')?substr($k,0,strpos($k,'_pkg')):$k);
-            }
+            $p = $pObj->dump(substr($k,0,strpos($k,'_')));
             
             $z_g_tpye=$i['type'];
             $z_price=$price[$k];
@@ -932,10 +911,11 @@ class erpapi_oms_order
 
         //小程序发送模板消息
         if($post['order_refer_source']=="minishop"){//EC小程序
-            $iorder['address_id']=$address_id;
-            $iorder['form_id']=$post['form_id'];
-            kernel::single("giftcard_wechat_request_message")->send($iorder);
-        
+            //促销
+            if(app::get('promotion')->is_installed()) {
+                $iorder['payed'] = $iorder['total_amount'];
+                kernel::single("promotion_process")->process(array($iorder));
+            }
         }
 
         return $this->send_succ('创建成功');

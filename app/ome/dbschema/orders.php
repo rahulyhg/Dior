@@ -35,6 +35,17 @@ $db['orders']=array (
 	  'in_list' => true,
 	  'default_in_list' => false,
 	),
+    'so_order_num'=>array(
+	  'type' => 'varchar(32)',
+	  'label' => 'SO文件合并订单编号',
+	  'is_title' => true,
+	  'width' => 125,
+	  'editable' => false,
+	  'filtertype' => 'normal',
+	  'filterdefault' => true,
+	  'in_list' => true,
+	  'default_in_list' => false,
+	),
 	'wx_order_bn'=>array(
 	  'type' => 'varchar(32)',
 	  'label' => 'WX系统订单号',
@@ -59,6 +70,24 @@ $db['orders']=array (
           'editable' => false,
           'in_list' => true,
           'default_in_list' => false,
+          'filtertype' => 'yes',
+          'filterdefault' => true,
+      ),
+    'so_type' =>
+      array (
+          'type' =>
+              array (
+                  '0' => '非合并',
+                  '1' => '合并',
+              ),
+          'default' => '0',
+          'label' => 'SO文件发送给AX的方式',
+          'width' => 70,
+          'editable' => false,
+          'in_list' => true,
+          'default_in_list' => false,
+          'filtertype' => 'yes',
+          'filterdefault' => true,
       ),
     'archive' =>
     array (
@@ -1298,6 +1327,26 @@ $db['orders']=array (
       ),
       'default' => 'none',
       'label' => '回写失败类型',
+      'editable' => false,
+    ),
+    'wms_status' => array(
+        'label' => app::get('base')->_('推送wms状态'),
+        'type'  => array(
+            'false' => app::get('base')->_('未推送'),
+            'true'  => app::get('base')->_('已推送'),
+        ),
+        'required' => true,
+        'default'  => 'false',
+        'in_list'  => true,
+        'width'    => 80,
+        'comment'  => '发货单创建推送wms状态',
+        'default_in_list' => true,
+    ),
+    'is_u_g' =>
+    array (
+       'type' => 'bool',
+      'default' => 'false',
+      'required' => true,
       'editable' => false,
     ),
   ),

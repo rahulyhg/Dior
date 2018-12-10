@@ -1,7 +1,8 @@
 <?php
 class ome_mdl_statement extends dbeav_model {
 
-
+    //是否有导出配置
+    var $has_export_cnf = true;
 
 	public function balanceOfAccount($sdf){
 		$saveDate = array();
@@ -43,7 +44,7 @@ class ome_mdl_statement extends dbeav_model {
 								'statement_id'=>$payments[0]['statement_id'],
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
 								'memo'=>$payments[0]['memo'].','.$sdf['zwlsh'],
 							);
 					}else{
@@ -59,7 +60,7 @@ class ome_mdl_statement extends dbeav_model {
 								'statement_id'=>$payments[0]['statement_id'],
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
 								'memo'=>$payments[0]['memo'].','.$sdf['zwlsh'],
 							);
 						}else{
@@ -80,7 +81,8 @@ class ome_mdl_statement extends dbeav_model {
 								'original_type'=>'refunds',
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
+                                'memo'=>$sdf['zwlsh'],
 							);
 					}else{
 						$saveDate =  array(
@@ -89,10 +91,11 @@ class ome_mdl_statement extends dbeav_model {
 								'balance_status'=>'not_has',
 								'importer_time'=>time(),
 								'pay_time'=>strtotime($sdf['pay_time']),
-								'paymethod'=>'Alipay',
+								'paymethod'=>'alipay',
+                                'memo'=>$sdf['zwlsh'],
 							);
 					}
-					//$this->save($saveDate);
+					$this->save($saveDate);
 				}
 				break;
 			case 'weixin':
@@ -127,7 +130,7 @@ class ome_mdl_statement extends dbeav_model {
 							'statement_id'=>$payments[0]['statement_id'],
 							'importer_time'=>time(),
 							'pay_time'=>strtotime($sdf['pay_time']),
-							'paymethod'=>'WeChat',
+							'paymethod'=>'wxpayjsapi',
 						);
 					$this->save($updateData);
 				}else{
@@ -140,10 +143,10 @@ class ome_mdl_statement extends dbeav_model {
 							'original_bn'=>$sdf['wx_order_bn'],
 							'importer_time'=>time(),
 							'pay_time'=>strtotime($sdf['pay_time']),
-							'paymethod'=>'WeChat',
+							'paymethod'=>'wxpayjsapi',
 							'original_type'=>$original_type,
 						);
-					//$flag = $this->insert($saveDate);
+					$flag = $this->insert($saveDate);
 				}
 				break;
 			case 'cod':

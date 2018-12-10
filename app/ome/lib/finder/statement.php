@@ -55,28 +55,6 @@ class ome_finder_statement{
         return $order['order_bn'];
     }
 
-
-	var $column_order_time='下单时间';
-    var $column_order_time_width='130';
-    function column_order_time($row)
-    {
-        $archive = $row[$this->col_prefix . 'archive'];
-        
-        $order_id = $row[$this->col_prefix . 'order_id'];
-        
-        if ($archive == '1' ) {
-            $orderObj = app::get('archive')->model('orders');
-            
-        }else{
-            $orderObj = app::get('ome')->model('orders');
-            
-        }
-        $filter = array('order_id'=>$order_id);
-        $order = $orderObj->dump($filter,'createtime');
-
-        return date('Y-m-d H:i:s',$order['createtime']);
-    }
-
 	var $column_operate='操作';
     var $column_operate_width='100';
     function column_operate($row)

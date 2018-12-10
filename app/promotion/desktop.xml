@@ -1,0 +1,12 @@
+<desktop>	
+<workground name="订单促销" id="orders_promotion"  order="300">
+        <menugroup name="订单促销">  
+            <menu controller='admin_orders' action='index' permission='orders_promotion_list' display='true'>促销列表</menu>
+		</menugroup>
+    </workground>
+
+	<permissions>
+	    <permission id="orders_promotion_list">促销列表</permission>  
+    </permissions>
+
+</desktop>

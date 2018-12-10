@@ -7,7 +7,8 @@
 class qmwms_request_omsqm extends qmwms_request_qimen{
 
     public function __construct($app){
-        $this->log_mdl = app::get('qmwms')->model('qmrequest_log');
+        $this->log_mdl     = app::get('qmwms')->model('qmrequest_log');
+        $this->qmwms_queue = app::get('qmwms')->model('queue');
     }
 
     //发货单创建
@@ -17,36 +18,21 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $res = $this->_deliveryOrderCreate($order_id);
         $body = $res['body'];
         $order_bn = $res['order_bn'];
-
         //记录ERP请求日志
         $data = $this->pre_params($order_bn,$order_id,$method,$msg,$body);
-        $insert_id = $this->writeLog($data);
-        $response = kernel::single('qmwms_request_abstract')->request($body,$method);
-        //检查接口string返回是否是XML
-        $is_xml = $this->check_xml($response);
-        //ERP请求奇门返回信息写日志
-        if(isset($insert_id)){
-            $res_data = $this->res_params($response,$order_id,'deliveryOrderCreate',null);
-            if(!isset($response) || empty($response) || !$is_xml){
-                $res_data['status'] = 'failure';
-                $res_data['res_msg'] = '单据创建失败';
-            }
-            $this->writeLog($res_data,$insert_id);
-
-            if($res_data['status']=='success'){
-                kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_ax');
-            }else{
-                //发送报警邮件
-                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
-                $original_params = htmlspecialchars($body);
-                $response_params = htmlspecialchars($response);
-                $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
-
-                $subject = '【Dior-PROD】ByPass订单#'.$order_bn.'发货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-                //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);//关闭即时触发邮件
-            }
-        }
+        //保存数据到队列表,稍后顺序执行
+        $res['data']     = $data;
+        $res['order_id'] = $order_id;
+        $queueData  = array(
+            'original_bn' => $order_bn,
+            'queue_title' => '发货单创建接口',
+            'worker'      => 'qmwms_request_omsqm.wms_api_push_delivery',
+            'createtime'  => time(),
+            'api_method'  => 'deliveryorder.create',
+            'api_params'  => $res,
+            'queue_type'  => 'delivery',
+        );
+        $this->qmwms_queue->save($queueData);
     }
 
     //退货入库单创建
@@ -57,118 +43,24 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $res  = $this->_returnOrderCreate($reship_id);
         $body = $res['body'];
         $reship_bn = $res['reship_bn'];
-
         //记录ERP请求日志
         $data = $this->pre_params($reship_bn,$reship_id,$method,$msg,$body,$return_type,$change);
-        $insert_id = $this->writeLog($data);
-        $response = kernel::single('qmwms_request_abstract')->request($body,$method);
-        //检查接口string返回是否是XML
-        $is_xml = $this->check_xml($response);
-        //ERP请求奇门返回信息写日志
-        if(isset($insert_id)){
-            $res_data = $this->res_params($response,$reship_id,'returnOrderCreate',null);
-            if(!isset($response) || empty($response) || !$is_xml){
-                $res_data['status'] = 'failure';
-                $res_data['res_msg'] = '单据创建失败';
-            }
-            $this->writeLog($res_data,$insert_id);
-
-            if($res_data['status']=='success'){
-                $delivery = app::get('ome')->model('delivery')->dump($delivery_id);
-                $delivery = kernel::single('omeftp_service_reship')->format_delivery($delivery);
-
-                $orderReship = app::get('ome')->model('reship_items');
-                $objReship = app::get('ome')->model('reship');
-
-                //如果是magento发起的 直接返回无需再走下去
-                if($return_type=="change"&&empty($change)){
-                    return true;
-                }
-                if($return_type=="change"){
-                    kernel::single('omemagento_service_change')->sendChangeOrder($change);
-                }else{
-
-                    // 售后生成的新订单退货需传原始订单号,原始退的商品
-                    $arrOriginalOrder = $arrReship = array();
-                    if($delivery['order']['createway'] == "after"){
-                        $arrOriginalOrder = $objReship->getOriginalOrder($delivery['order']['order_bn']);
-                        $order_bn = $arrOriginalOrder['relate_order_bn']; // 老订单号
-                        $order_id = $arrOriginalOrder['order_id']; // 新订单号
-                        // 新订单号即为reship表的p_order_id,来查询退了哪些
-                        $arrReship = $objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
-                        $relate_reship_id = $arrReship[0]['reship_id'];
-                        $relate_change_items = unserialize($arrReship[0]['relate_change_items']);
-                        // 查看当前退货单退的商品
-                        $arrReshipItems = app::get('ome')->model('reship_items')->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
-                        //当前退货单退的商品即使原始退货单所换的商品，关联原始退的商品数量
-                        $arrRelateReturn = array();
-                        foreach($arrReshipItems as $k=>$reship){
-                            foreach($relate_change_items['items'] as $relate){
-                                if($arrReshipItems[$k]['num']>0&&$relate['ex_sku']==$reship['bn']){
-                                    if(isset($arrRelateReturn[$relate['sku']])){
-                                        $arrRelateReturn[$relate['sku']]['nums']=$arrRelateReturn[$relate['sku']]['nums']+1;
-                                    }else{
-                                        $arrRelateReturn[$relate['sku']]['nums']=1;
-                                    }
-                                    $arrReshipItems[$k]['num']--;
-                                }
-                            }
-                        }
-                    }else{
-                        $order_bn=$delivery['order']['order_bn'];
-                        $relate_reship_id=$reship_id;
-                    }
-
-                    ###### 订单状态回传kafka august.yao 退货申请中 start####
-                    $orderData  = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$delivery['order']['order_bn']));
-                    $kafkaQueue = app::get('ome')->model('kafka_queue');
-                    $queueData = array(
-                        'queue_title' => '订单退货申请中状态推送',
-                        'worker'      => 'ome_kafka_api.sendOrderStatus',
-                        'start_time'  => time(),
-                        'params'      => array(
-                            'status'   => 'reshipping',
-                            'order_bn' => $order_bn,
-                            'logi_bn'  => '',
-                            'shop_id'  => $orderData[0]['shop_id'],
-                            'item_info'=> array(),
-                            'bill_info'=> array(),
-                        ),
-                    );
-                    $kafkaQueue->save($queueData);
-                    ###### 订单状态回传kafka august.yao 退货申请中 end ####
-
-                    $reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
-                    $refund_info = array();
-                    foreach($reInfo as $reItem){
-                        if($delivery['order']['createway']=="after"){
-                            if(!isset($arrRelateReturn[$reItem['bn']]))continue;
-                            $nums=$arrRelateReturn[$reItem['bn']]['nums'];
-                        }else{
-                            $nums=$reItem['num'];
-                        }
-                        $refund_info[] = array(
-                            'sku'=>$reItem['bn'],
-                            'nums'=>$nums,
-                            'price'=>$reItem['price'],
-                            'oms_rma_id'=>$reship_id,//始终用新reship_id
-                        );
-                    }
-                    if(!empty($order_bn))kernel::single('omemagento_service_order')->update_status($order_bn,'return_required','',time(),$refund_info);
-                }
-
-            }else{
-                //发送报警邮件
-                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
-                $original_params = htmlspecialchars($body);
-                $response_params = htmlspecialchars($response);
-                $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
-
-                $subject = '【Dior-PROD】ByPass退单#'.$reship_bn.'退货创建失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-                //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
-            }
-        }
+        //保存数据到队列表,稍后顺序执行
+        $res['data']        = $data;
+        $res['reship_id']   = $reship_id;
+        $res['delivery_id'] = $delivery_id;
+        $res['return_type'] = $return_type;
+        $res['change']   = $change;
+        $queueData  = array(
+            'original_bn' => $reship_bn,
+            'queue_title' => '退货单创建接口',
+            'worker'      => 'qmwms_request_omsqm.wms_api_push_return',
+            'createtime'  => time(),
+            'api_method'  => 'returnorder.create',
+            'api_params'  => $res,
+            'queue_type'  => 'return',
+        );
+        $this->qmwms_queue->save($queueData);
     }
 
     //单据取消
@@ -195,22 +87,22 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $this->writeLog($res_data,$insert_id);
 
             ###### 订单状态回传kafka august.yao 已取消 start####
-            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
-            $kafkaQueue  = app::get('ome')->model('kafka_queue');
-            $queueData = array(
-                'queue_title' => '订单已取消状态推送',
-                'worker'      => 'ome_kafka_api.sendOrderStatus',
-                'start_time'  => time(),
-                'params'      => array(
-                    'status'   => 'cancel',
-                    'order_bn' => $orderData[0]['order_bn'],
-                    'logi_bn'  => '',
-                    'shop_id'  => $orderData[0]['shop_id'],
-                    'item_info'=> array(),
-                    'bill_info'=> array(),
-                ),
-            );
-            $kafkaQueue->save($queueData);
+//            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
+//            $kafkaQueue  = app::get('ome')->model('kafka_queue');
+//            $queueData = array(
+//                'queue_title' => '订单已取消状态推送',
+//                'worker'      => 'ome_kafka_api.sendOrderStatus',
+//                'start_time'  => time(),
+//                'params'      => array(
+//                    'status'   => 'cancel',
+//                    'order_bn' => $orderData[0]['order_bn'],
+//                    'logi_bn'  => '',
+//                    'shop_id'  => $orderData[0]['shop_id'],
+//                    'item_info'=> array(),
+//                    'bill_info'=> array(),
+//                ),
+//            );
+//            $kafkaQueue->save($queueData);
             ###### 订单状态回传kafka august.yao 已取消 end ####
 
             //发送报警邮件
@@ -273,7 +165,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //请求信息处理
-    protected function pre_params($bn,$id,$method,$msg,$body,$param1=null,$param2=null){
+    public function pre_params($bn,$id,$method,$msg,$body,$param1='',$param2=''){
         $data = array(
             'original_bn'=> $bn,
             'original_id'=> $id,
@@ -289,7 +181,7 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
     }
 
     //返回信息处理
-    public function res_params($response,$dj_id,$method,$memo,$offset=null,$limit=null){
+    public function res_params($response,$dj_id,$method,$memo='',$offset=null,$limit=null){
         //把返回的xml解析成数组
         $_response = kernel::single('qmwms_response_qmoms')->xmlToArray($response);
         //根据不同接口类型进行不同的处理
@@ -450,6 +342,164 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
             $is_xml = false;
         }
         return $is_xml;
+    }
+
+    /**
+     * @param $method
+     * @param $params
+     * 发货单创建接口
+     */
+    public function wms_api_push_delivery($params,$method,&$err_msd){
+
+        $data     = $params['data'];
+        $body     = $params['body'];
+        $order_id = $params['order_id'];
+        $order_bn = $params['order_bn'];
+        $insert_id = $this->writeLog($data);
+        //发起请求
+        $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //echo "<pre>";print_r($response);exit;
+        //检查接口string返回是否是XML
+        $is_xml = $this->check_xml($response);
+        //ERP请求奇门返回信息写日志
+        if(isset($insert_id)){
+            $res_data = $this->res_params($response,$order_id,'deliveryOrderCreate',null);
+            if(!isset($response) || empty($response) || !$is_xml){
+                $res_data['status'] = 'failure';
+                $res_data['res_msg'] = '单据创建失败';
+            }
+            $this->writeLog($res_data,$insert_id);
+
+            if($res_data['status']=='success'){
+                kernel::single('omemagento_service_order')->update_status($order_bn,'sent_to_ax');
+                return true;
+            }else{
+                $err_msd = $res_data['res_msg'];
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param $params
+     * @param $method
+     * 退货单创建接口
+     */
+    public function wms_api_push_return($params,$method,&$err_msd){
+        $data        = $params['data'];
+        $body        = $params['body'];
+        $reship_id   = $params['reship_id'];
+        $delivery_id = $params['delivery_id'];
+        $return_type = $params['return_type'];
+        $change      = $params['change'];
+
+        $insert_id = $this->writeLog($data);
+        //发起请求
+        $response = kernel::single('qmwms_request_abstract')->request($body,$method);
+        //检查接口string返回是否是XML
+        $is_xml = $this->check_xml($response);
+        //ERP请求奇门返回信息写日志
+        if(isset($insert_id)){
+            $res_data = $this->res_params($response,$reship_id,'returnOrderCreate',null);
+            if(!isset($response) || empty($response) || !$is_xml){
+                $res_data['status'] = 'failure';
+                $res_data['res_msg'] = '单据创建失败';
+            }
+            $this->writeLog($res_data,$insert_id);
+
+            if($res_data['status']=='success'){
+                $delivery = app::get('ome')->model('delivery')->dump($delivery_id);
+                $delivery = kernel::single('omeftp_service_reship')->format_delivery($delivery);
+
+                $orderReship = app::get('ome')->model('reship_items');
+                $objReship = app::get('ome')->model('reship');
+
+                //如果是magento发起的 直接返回无需再走下去
+                if($return_type=="change"&&empty($change)){
+                    return true;
+                }
+                if($return_type=="change"){
+                    kernel::single('omemagento_service_change')->sendChangeOrder($change);
+                }else{
+                    // 售后生成的新订单退货需传原始订单号,原始退的商品
+                    $arrOriginalOrder = $arrReship = array();
+                    if($delivery['order']['createway'] == "after"){
+                        $arrOriginalOrder = $objReship->getOriginalOrder($delivery['order']['order_bn']);
+                        $order_bn = $arrOriginalOrder['relate_order_bn']; // 老订单号
+                        $order_id = $arrOriginalOrder['order_id']; // 新订单号
+                        // 新订单号即为reship表的p_order_id,来查询退了哪些
+                        $arrReship = $objReship->getList("reship_id,relate_change_items",array('p_order_id'=>$order_id));
+                        $relate_reship_id = $arrReship[0]['reship_id'];
+                        $relate_change_items = unserialize($arrReship[0]['relate_change_items']);
+                        // 查看当前退货单退的商品
+                        $arrReshipItems = app::get('ome')->model('reship_items')->getList('*',array('reship_id'=>$reship_id,'return_type'=>'return'));
+                        //当前退货单退的商品即使原始退货单所换的商品，关联原始退的商品数量
+                        $arrRelateReturn = array();
+                        foreach($arrReshipItems as $k=>$reship){
+                            foreach($relate_change_items['items'] as $relate){
+                                if($arrReshipItems[$k]['num']>0&&$relate['ex_sku']==$reship['bn']){
+                                    if(isset($arrRelateReturn[$relate['sku']])){
+                                        $arrRelateReturn[$relate['sku']]['nums']=$arrRelateReturn[$relate['sku']]['nums']+1;
+                                    }else{
+                                        $arrRelateReturn[$relate['sku']]['nums']=1;
+                                    }
+                                    $arrReshipItems[$k]['num']--;
+                                }
+                            }
+                        }
+                    }else{
+                        $order_bn=$delivery['order']['order_bn'];
+                        $relate_reship_id=$reship_id;
+                    }
+
+                    ###### 订单状态回传kafka august.yao 退货申请中 start####
+                    $orderData  = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$delivery['order']['order_bn']));
+                    $kafkaQueue = app::get('ome')->model('kafka_queue');
+                    $queueData = array(
+                        'queue_title' => '订单退货申请中状态推送',
+                        'worker'      => 'ome_kafka_api.sendOrderStatus',
+                        'start_time'  => time(),
+                        'params'      => array(
+                            'status'   => 'reshipping',
+                            'order_bn' => $order_bn,
+                            'logi_bn'  => '',
+                            'shop_id'  => $orderData[0]['shop_id'],
+                            'item_info'=> array(),
+                            'bill_info'=> array(),
+                        ),
+                    );
+                    $kafkaQueue->save($queueData);
+                    ###### 订单状态回传kafka august.yao 退货申请中 end ####
+
+                    //更新状态到magento
+                    if(!empty($order_bn)){
+                        $reInfo = $orderReship->getList('*',array('reship_id'=>$relate_reship_id,'return_type'=>'return'));
+                        $refund_info = array();
+                        foreach($reInfo as $reItem){
+                            if($delivery['order']['createway']=="after"){
+                                if(!isset($arrRelateReturn[$reItem['bn']]))continue;
+                                $nums=$arrRelateReturn[$reItem['bn']]['nums'];
+                            }else{
+                                $nums=$reItem['num'];
+                            }
+                            $refund_info[] = array(
+                                'sku'=>$reItem['bn'],
+                                'nums'=>$nums,
+                                'price'=>$reItem['price'],
+                                'oms_rma_id'=>$reship_id,//始终用新reship_id
+                            );
+                        }
+                        kernel::single('omemagento_service_order')->update_status($order_bn,'return_required','',time(),$refund_info);
+                    }
+                }
+                return true;
+            }else{
+                $err_msd = $res_data['res_msg'];
+                return false;
+            }
+        }
+        return false;
     }
 
 

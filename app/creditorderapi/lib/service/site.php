@@ -6,9 +6,9 @@ class creditorderapi_service_site
         //echo '<pre>dd';print_r($data);exit;
         $res=$this->add($data);
         if($res['status']=='fail'){
-            $service->error('300',$res['msg']);
+            $service->error('300',$res['msg'],$res['order_bn']);
         }else{
-            $service->response(200);
+            $service->response(200,'',$res['order_bn']);
         }
     }
     public function add($order){
@@ -24,7 +24,7 @@ class creditorderapi_service_site
 
         //check地区
         if(!$address_id=$this->checkArea($order['address_id'])){
-            return array('status'=>'fail','msg'=>'地区不正确');exit();
+            return array('status'=>'fail','msg'=>'地区不正确','order_bn'=>$order_bn);exit();
         }
 
         //shipping
@@ -47,7 +47,7 @@ class creditorderapi_service_site
             $member['contact']['email']=$order['account']['email'];
             $member['contact']['area']=$address_id;
             if (!$mObj->save($member)){
-                return array('status'=>'fail','msg'=>'会员更新失败');exit();
+                return array('status'=>'fail','msg'=>'会员更新失败','order_bn'=>$order_bn);exit();
             }
         }
 
@@ -72,7 +72,7 @@ class creditorderapi_service_site
             $arrProduct=$arrProduct[0];
             $sm_id=$sales_model->getList('*',array('bn'=>$item['bn']));
             if (empty($arrProduct['goods_id']) || empty($sm_id)){
-                return array('status'=>'fail','msg'=>'商品不存在');exit();
+                return array('status'=>'fail','msg'=>'商品不存在','order_bn'=>$order_bn);exit();
             }
 
             $amount=$item['price']*$item['num'];
@@ -119,7 +119,7 @@ class creditorderapi_service_site
         }
         //判断下金额 //商品总金额-优惠+运费
         if(bccomp(bcadd(bcsub($cost_item,$order['pmt_order'],2),$order['cost_shipping'],2),$order['pay'],2)!='0'){
-            return array('status'=>'fail','msg'=>'订单金额不一致');exit();
+            return array('status'=>'fail','msg'=>'订单金额不一致','order_bn'=>$order_bn);exit();
         }
         $arrOrders['order_objects']=$iorder['order_objects'];
         $arrOrders['cost_item']=$cost_item;
@@ -130,7 +130,7 @@ class creditorderapi_service_site
         //店铺
         $shopInfo = $sObj->getList('shop_type,name',array('shop_id'=>$order['shop_id']));
         if(empty($shopInfo)){
-            return array('status'=>'fail','msg'=>'店铺不存在');exit();
+            return array('status'=>'fail','msg'=>'店铺不存在','order_bn'=>$order_bn);exit();
         }
         $arrOrders['shop_id']=$order['shop_id'];
         $arrOrders['shop_type']='magento';
@@ -149,7 +149,7 @@ class creditorderapi_service_site
         //payment
         $pay_bn=$objPayment->getList('id,pay_bn,custom_name',array('pay_bn'=>$order['pay_bn']));//支付方式
         if(empty($pay_bn)||empty($order['trade_no'])){
-            return array('status'=>'fail','msg'=>'支付参数异常');exit();
+            return array('status'=>'fail','msg'=>'支付参数异常','order_bn'=>$order_bn);exit();
         }else{
             $arrOrders['pay_bn']=$pay_bn['0']['pay_bn'];
             $arrOrders['payment']=$pay_bn['0']['custom_name'];
@@ -164,7 +164,7 @@ class creditorderapi_service_site
             $arrOrders['tax_no'] = $order['invoice']['tax_no'];
             $arrOrders['invoice_name'] = $order['invoice']['invoice_name'];
             if(!$arrOrders['invoice_area']=$this->checkArea( $order['invoice']['invoice_area'])){
-                return array('status'=>'fail','msg'=>'发票地区不正确');exit();
+                return array('status'=>'fail','msg'=>'发票地区不正确','order_bn'=>$order_bn);exit();
             }
             $arrOrders['invoice_addr'] = $order['invoice']['invoice_addr'];
             $arrOrders['invoice_zip'] = $order['invoice']['invoice_zip'];
@@ -190,7 +190,7 @@ class creditorderapi_service_site
         $transaction = $oObj->db->beginTransaction();
         if(!$oObj->create_order($arrOrders)){
             $oObj->db->rollBack();
-            return array('status'=>'fail','msg'=>'订单保存失败');exit();
+            return array('status'=>'fail','msg'=>'订单保存失败','order_bn'=>$order_bn);exit();
         }
         //订单明细相关信息添加**修改明细中的product_id为基础物料的id**
         foreach ($order['products'] as $value) {
@@ -201,7 +201,7 @@ class creditorderapi_service_site
         if(bccomp($order['pmt_order'],'0',2)=='1' && !empty($order['order_pmt'])) {
             if (!$this->add_order_pmt($arrOrders['order_id'], $order['order_pmt'])) {
                 $oObj->db->rollBack();
-                return array('status' => 'fail', 'msg' => '订单优惠信息保存失败');
+                return array('status' => 'fail', 'msg' => '订单优惠信息保存失败','order_bn'=>$order_bn);
                 exit();
             }
         }
@@ -225,10 +225,28 @@ class creditorderapi_service_site
 
         if(!$this->do_payorder($arrOrders)){
             $oObj->db->rollBack();//保存失败
-            return array('status'=>'fail','msg'=>'订单保存失败(支付单创建失败)');exit();
+            return array('status'=>'fail','msg'=>'订单保存失败(支付单创建失败)','order_bn'=>$order_bn);exit();
         }
 
         $oObj->db->commit($transaction);
+
+        ###### 订单状态回传kafka august.yao 创建订单 start ####
+        $kafkaQueue = app::get('ome')->model('kafka_queue');
+        $arrOrders['address_id'] = $order['address_id'];
+        $queueData = array(
+            'queue_title' => '订单创建推送',
+            'worker'      => 'ome_kafka_api.createOrder',
+            'start_time'  => time(),
+            'params'      => array(
+                'status'      => 'create',
+                'order_bn'    => $arrOrders['order_bn'],
+                'shop_id'     => $arrOrders['shop_id'],
+                'createOrder' => $arrOrders,
+            ),
+        );
+        $kafkaQueue->save($queueData);
+        ###### 订单状态回传kafka august.yao 创建订单 end ####
+
         return array('status'=>'succ','msg'=>'创建成功');exit();
     }
 
@@ -281,6 +299,7 @@ class creditorderapi_service_site
         $paymentdata['status'] = 'succ';
         $paymentdata['memo'] = '';
         $paymentdata['is_orderupdate'] = 'false';
+        $paymentdata['statement_status'] = 'true';
         if(!$oPayment->create_payments($paymentdata,'api_order_add')){
             return false;
         }

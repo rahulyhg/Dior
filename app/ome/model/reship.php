@@ -1339,6 +1339,23 @@ class ome_mdl_reship extends dbeav_model{
 		  //MCD reship中记录新订单order_id
 		  $Oreship->update(array('p_order_id'=>$neworderid),array('reship_id'=>$reship_id));
 
+            ###### 订单状态回传kafka august.yao 创建订单 start ####
+            $kafkaOrder['paytime'] = time();
+            $kafkaQueue = app::get('ome')->model('kafka_queue');
+            $queueData = array(
+                'queue_title' => '订单创建推送',
+                'worker'      => 'ome_kafka_api.createOrder',
+                'start_time'  => time(),
+                'params'      => array(
+                    'status'      => 'create',
+                    'order_bn'    => $change_order_sdf['order_bn'],
+                    'shop_id'     => $shop_id,
+                    'createOrder' => $kafkaOrder,
+                ),
+            );
+            $kafkaQueue->save($queueData);
+            ###### 订单状态回传kafka august.yao 创建订单 end ####
+
             ###### 订单状态回传kafka august.yao 已支付 start ####
             $kafkaQueue = app::get('ome')->model('kafka_queue');
             $queueData = array(
@@ -1356,23 +1373,6 @@ class ome_mdl_reship extends dbeav_model{
             );
             $kafkaQueue->save($queueData);
             ###### 订单状态回传kafka august.yao 已支付 end ####
-
-            ###### 订单状态回传kafka august.yao 创建订单 start ####
-            $kafkaOrder['paytime'] = time();
-            $kafkaQueue = app::get('ome')->model('kafka_queue');
-            $queueData = array(
-                'queue_title' => '订单创建推送',
-                'worker'      => 'ome_kafka_api.createOrder',
-                'start_time'  => time(),
-                'params'      => array(
-                    'status'      => 'create',
-                    'order_bn'    => $change_order_sdf['order_bn'],
-                    'shop_id'     => $shop_id,
-                    'createOrder' => $kafkaOrder,
-                ),
-            );
-            $kafkaQueue->save($queueData);
-            ###### 订单状态回传kafka august.yao 创建订单 end ####
         }
 
       }elseif($reshipinfo['return_type'] =='return'){

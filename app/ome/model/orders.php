@@ -1741,11 +1741,14 @@ class ome_mdl_orders extends dbeav_model{
 		}
 //exit();
         $c2c_shop_list = ome_shop_type::shop_list();
-
-        if( !in_array($sdf['shop_type'], $c2c_shop_list) && (bccomp('0.000', ($sdf['total_amount']/1),3) == 0) ){ #0元订单是否需要财审.
-
-            kernel::single('ome_order_order')->order_pay_confirm($sdf['shop_id'],$sdf['order_id'],$sdf['total_amount']);
+               
+        //积分兑礼订单不直接生成支付单
+        if($sdf['is_creditOrder']!='1'){
+            if( !in_array($sdf['shop_type'], $c2c_shop_list) && (bccomp('0.000', ($sdf['total_amount']/1),3) == 0) ){ #0元订单是否需要财审.
+                kernel::single('ome_order_order')->order_pay_confirm($sdf['shop_id'],$sdf['order_id'],$sdf['total_amount']);
+            }
         }
+        
 
         //增加订单创建日志
         $logObj = &app::get('ome')->model('operation_log');
@@ -1876,8 +1879,6 @@ class ome_mdl_orders extends dbeav_model{
             $rs['rsp'] = 'succ';
         }
         $rs['rsp'] = ($rs['rsp'] == 'succ')?'success':'fail';
-        
-
 
         if ($mode == 'async' || $rs['rsp'] == 'success'){
             $oOperation_log = &$this->app->model('operation_log');
@@ -1891,7 +1892,25 @@ class ome_mdl_orders extends dbeav_model{
                 $this->save($savedata);
 
                 //TODO: 订单取消作为单独的日志记录
-                //
+
+                ### 订单状态回传kafka august.yao 已取消 start ###
+                $orderRes   = $this->dump($order_id);
+                $kafkaQueue = app::get('ome')->model('kafka_queue');
+                $queueData = array(
+                    'queue_title' => '订单已取消状态推送',
+                    'worker'      => 'ome_kafka_api.sendOrderStatus',
+                    'start_time'  => time(),
+                    'params'      => array(
+                        'status'   => 'cancel',
+                        'order_bn' => $orderRes['order_bn'],
+                        'logi_bn'  => '',
+                        'shop_id'  => $orderRes['shop_id'],
+                        'item_info'=> array(),
+                        'bill_info'=> array(),
+                    ),
+                );
+                $kafkaQueue->save($queueData);
+                ### 订单状态回传kafka august.yao 已取消 end ###
                 
                 $this->unfreez($order_id);
                 $oOperation_log->write_log('order_modify@ome',$order_id,$memo);

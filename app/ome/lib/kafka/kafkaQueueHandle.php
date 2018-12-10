@@ -9,6 +9,8 @@ define('PHPEXCEL_ROOT', ROOT_DIR . '/app/omecsv/lib/static');   // 定义PHP_exc
  */
 class ome_kafka_kafkaQueueHandle{
 
+    private $_limit = 1000; // 默认处理数据量
+
     /**
      * 表ome_kafka_queue 处理
      */
@@ -27,7 +29,7 @@ class ome_kafka_kafkaQueueHandle{
         $orderModel = app::get('ome')->model('orders');
         // 获取需要执行的任务
         $kafkaQueue = app::get('ome')->model('kafka_queue');
-        $taskList   = $kafkaQueue->getList('*', array('status'=>'hibernate'));
+        $taskList   = $kafkaQueue->getList('*', array('status'=>'hibernate'), 0, $this->_limit);
 
         if($taskList){
             foreach ($taskList as $key=>$val){
@@ -38,6 +40,8 @@ class ome_kafka_kafkaQueueHandle{
                 // 获取订单创建时间
                 $createTime = $orderModel->dump(array('order_bn'=>$params['order_bn']),'order_id,createtime');
                 $params['createtime'] = $createTime['createtime'];
+                // 状态发生改变时间
+                $params['statusTime'] = $val['start_time'];
 
                 $response = call_user_func_array(array($obj_work, $method), array($params['order_bn'], $params['status'], $params, $params['shop_id']));
                 

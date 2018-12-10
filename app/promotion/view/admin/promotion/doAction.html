@@ -1,0 +1,42 @@
+<div class="tableform">
+<div class="division">
+<form method="post" action="" id="terminal">
+      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+        <tbody>
+       <tr>
+          <th></th>
+          <td>  
+		      <span id="jia">1</span>/<span>100</span>
+		  </td>
+        </tr>
+       
+         
+        </tbody>
+      </table>
+ 
+<div class="table-action">
+<{button class="btn-primary" type="button" id="begin" name="begin" label="开始"}>
+<{button class="btn-primary" type="button" id="guanbi" name="guanbi" label="关闭"}>
+</div>
+</form>
+</div>
+</div>
+
+ 
+<script>
+$('begin').onclick = function() {
+//	for(var i=0;i<4;i++){
+		
+		new Request({
+			url : 'index.php?app=promotion&ctl=admin_orders&act=ajaxActionConditions',
+			method : 'post',
+			onComplete : function(rs){
+			   //$('jia').set('html',i);
+			}
+		 }).send();
+//	}
+};
+$('guanbi').onclick = function() {
+    $('guanbi').getParent('.dialog').retrieve('instance').close();
+};
+ </script>

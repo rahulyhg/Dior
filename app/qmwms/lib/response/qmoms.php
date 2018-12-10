@@ -203,10 +203,28 @@ class qmwms_response_qmoms{
      */
     public function handle_wms_request($method,$content){
         $queue = app::get('qmwms')->model('queue');
-        $param['api_method'] = $method;
-        $param['api_params'] = $content;
-        $param['createtime'] = time();
-        $queue->save($param);
+        // 队列类型
+        if($method == 'returnOrderConfirm'){
+            $queueType = 'do_return';
+            $queueTitle= '退货入库单确认接口';
+            $worker = 'qmwms_response_qmoms.do_finish';
+        }elseif($method == 'deliveryOrderConfirm'){
+            $queueType = 'do_delivery';
+            $queueTitle= '发货单确认接口';
+            $worker = 'qmwms_response_qmoms.do_delivery';
+        }else{
+            return true;
+        }
+        $queueData  = array(
+            'original_bn' => '',
+            'queue_title' => $queueTitle,
+            'worker'      => $worker,
+            'createtime'  => time(),
+            'api_method'  => $method,
+            'api_params'  => $content,
+            'queue_type'  => $queueType,
+        );
+        $queue->save($queueData);
     }
     /**
      * @param $content
@@ -219,6 +237,7 @@ class qmwms_response_qmoms{
         $packages = $deliveryConfirm['packages']['package'];
 
         $orderData = $this->objectOrder->getList('*',array('order_bn'=>$orderBn));
+
         if(empty($orderData)){
             throw new Exception('INVALID_ORDER_CODE');
         }
@@ -291,8 +310,16 @@ class qmwms_response_qmoms{
         $info = json_decode($output,1);
 
         if ($info['rsp'] == 'succ') {
-            //发送订单文件到AX
-            kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
+            //发送兑礼订单文件到AX
+            if($orderData['0']['paytime']<1541001600){//11月之前的按照原有逻辑生成SO文件
+                kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
+            }else{
+                if(($orderData[0]['shop_type']=='minishop')||($orderData[0]['is_creditOrder']=='1')){
+                    //11月之后的礼品卡兑礼订单按照原有逻辑生成SO文件，其余计划任务
+                    kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
+                }
+            }
+
 
             if($orderData[0]['is_mcd']=="true"&&$orderData[0]['createway']=="after"){
                 $post=$arrReship=$arrOrders=array();
@@ -385,7 +412,10 @@ class qmwms_response_qmoms{
         //退货回传判断如果是 拒收直接返回成功  并生成SO文件
         if($returnType =='refuse'){
             //更新到AX
-            kernel::single('omeftp_service_back')->delivery($deliveryId,'拒收',$reshipId);
+            if(time()<1541001600){
+                kernel::single('omeftp_service_back')->delivery($deliveryId,'拒收',$reshipId);
+            }
+
 
             kernel::single('einvoice_request_invoice')->invoice_request($orderId,'getCancelInvoiceData');//@todo 暂时注释
             return true;
@@ -498,7 +528,10 @@ class qmwms_response_qmoms{
         $sign = kernel::single('ome_return')->toQC($reshipId,$returnItems,$msg);
         if($sign){
             //更新到AX
-            kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
+            if(time()<1541001600){
+                kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
+            }
+
 
             $createway=$orderData[0]['createway'];
             //售后生成的新订单
