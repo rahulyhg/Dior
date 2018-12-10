@@ -514,11 +514,11 @@ class omeftp_service_back{
         return $delivery;
 	}
 	//计划任务生成拒收AX文件
-    function cron_back($pay_bn){
-        $from_time = strtotime(date("Y-m-d",time()));
-        $to_time = strtotime("+1 day");
-        $from_time = '1540137600';
-        $to_time = '1540310400';
+    function cron_back($pay_bn,$from_time='',$to_time=''){
+        $from_time = $from_time?$from_time: strtotime(date("Y-m-d",time()));
+        $to_time = $to_time?$to_time: strtotime("+1 day");
+        //$from_time = '1540137600';
+        //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $reshipMdl = app::get('ome')->model('reship');
         $shopMdl = app::get('ome')->model('shop');
