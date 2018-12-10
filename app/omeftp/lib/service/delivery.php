@@ -681,7 +681,10 @@ class omeftp_service_delivery{
             //$delivery['shop_id'] = '3428ce619f4b6f429ffb159eacfce0fd';
             $str = " AND s.shop_bn != 'dior_credit' AND o.shop_type<>'minishop' AND o.pay_bn='".$pay_bn."'";
         }
-        $delivery_sql = "SELECT o.*,d.delivery_id,d.delivery_bn FROM sdb_ome_orders o LEFT  JOIN sdb_ome_delivery_order c ON  o.order_id = c.order_id LEFT  JOIN sdb_ome_delivery d ON  c.delivery_id=d.delivery_id  LEFT JOIN sdb_ome_shop s ON  o.shop_id=s.shop_id WHERE d.delivery_time>'".$from_time."' AND d.delivery_time<'".$to_time."' AND d.status='succ'";
+        $delivery_sql = "SELECT o.*,d.delivery_id,d.delivery_bn FROM sdb_ome_orders o LEFT  JOIN "
+        ."sdb_ome_delivery_order c ON  o.order_id = c.order_id LEFT  JOIN sdb_ome_delivery d ".
+        "ON  c.delivery_id=d.delivery_id  LEFT JOIN sdb_ome_shop s ON  o.shop_id=s.shop_id WHERE d.delivery_time>'"
+        .$from_time."' AND d.delivery_time<'".$to_time."' AND d.status='succ' AND o.so_type='1'";
         $delivery_sql .=$str;
 
         $deliveryOrder = $orderMdl->db->select($delivery_sql);
@@ -820,7 +823,7 @@ class omeftp_service_delivery{
                     $fileRes = $this->deliverySO($is_credit, $delivery);
                     if ($fileRes) {
                         $orderId = implode(',', $orderArr);
-                        $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '" . $delivery['order']['order_bn'] . "',so_type='1' WHERE order_id in (" . $orderId . ")";
+                        $updateSql = "UPDATE sdb_ome_orders SET so_order_num = '" . $delivery['order']['order_bn'] . "' WHERE order_id in (" . $orderId . ")";
                         //echo '<pre>d';print_r($updateSql);
                         $orderMdl->db->exec($updateSql);
                         //对账表插入大订单号
