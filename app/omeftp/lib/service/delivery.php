@@ -924,7 +924,7 @@ class omeftp_service_delivery{
                 'file_ftp_route'=>$params['remote'],
             );
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
-            return ture;
+            return true;
         }else{
             return false;
         }
