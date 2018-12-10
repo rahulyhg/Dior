@@ -250,8 +250,8 @@ class ome_auto_statement{
 			$objLog->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
 		}else{
 			$objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-		}
-		$paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));*/
+		}*/
+		$paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
 	}
 
     public function sync_payments2($payments){
@@ -354,8 +354,8 @@ class ome_auto_statement{
             $objLog->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
         }else{
             $objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-        }
-        $paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));*/
+        }*/
+        $paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
     }
 	//整理合并数据
     function merge_payment($payments){
