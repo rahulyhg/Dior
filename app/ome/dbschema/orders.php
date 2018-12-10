@@ -80,7 +80,7 @@ $db['orders']=array (
                   '0' => '非合并',
                   '1' => '合并',
               ),
-          'default' => '0',
+          'default' => '1',
           'label' => 'SO文件发送给AX的方式',
           'width' => 70,
           'editable' => false,
