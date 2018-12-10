@@ -128,7 +128,7 @@ class creditorderapi_service_site
         $arrOrders['pmt_order']=$order['pmt_order']-$total_goods_pmt;
 
         //店铺
-        $shopInfo = $sObj->getList('shop_type',array('shop_id'=>$order['shop_id']));
+        $shopInfo = $sObj->getList('shop_type,name',array('shop_id'=>$order['shop_id']));
         if(empty($shopInfo)){
             return array('status'=>'fail','msg'=>'店铺不存在');exit();
         }
@@ -205,6 +205,23 @@ class creditorderapi_service_site
                 exit();
             }
         }
+
+        ###### 订单状态回传kafka august.yao 2018-11-19 创建订单 start ####
+        $arrOrders['order_type'] = $shopInfo[0]['name'];
+        $kafkaQueue = app::get('ome')->model('kafka_queue');
+        $queueData  = array(
+            'queue_title' => '订单创建推送',
+            'worker'      => 'ome_kafka_api.createOrder',
+            'start_time'  => time(),
+            'params'      => array(
+                'status'      => 'create',
+                'order_bn'    => $arrOrders['order_bn'],
+                'shop_id'     => $arrOrders['shop_id'],
+                'createOrder' => $arrOrders,
+            ),
+        );
+        $kafkaQueue->save($queueData);
+        ###### 订单状态回传kafka august.yao 创建订单 end ####
 
         if(!$this->do_payorder($arrOrders)){
             $oObj->db->rollBack();//保存失败
