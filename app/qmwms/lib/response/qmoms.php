@@ -412,7 +412,8 @@ class qmwms_response_qmoms{
         //退货回传判断如果是 拒收直接返回成功  并生成SO文件
         if($returnType =='refuse'){
             //更新到AX
-            if(time()<1541001600){
+            //if(time()<1541001600){
+            if(empty($orderData['0']['so_order_num'])){
                 kernel::single('omeftp_service_back')->delivery($deliveryId,'拒收',$reshipId);
             }
 
@@ -528,7 +529,8 @@ class qmwms_response_qmoms{
         $sign = kernel::single('ome_return')->toQC($reshipId,$returnItems,$msg);
         if($sign){
             //更新到AX
-            if(time()<1541001600){
+            //if(time()<1541001600){
+            if(empty($orderData['0']['so_order_num'])){
                 kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
             }
 
