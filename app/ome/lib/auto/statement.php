@@ -88,7 +88,7 @@ class ome_auto_statement{
 		$paymentObj = app::get('ome')->model('statement');
 		$orderMdl = app::get('ome')->model('orders');
 		//普通订单合并同步AX
-		$normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
+		$normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
 
 		if(empty($normal_payments)){
 			return true;
@@ -110,21 +110,21 @@ class ome_auto_statement{
 			if(!empty($normal_payments_new)){
 				$this->sync_payments2($normal_payments_new);
 			}
-            $normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
+            $normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
 			if(empty($normal_payments)){
 				break;
 			}
 		}while(true);
 
 		//购卡订单、兑礼订单发送给AX走原有不合并的逻辑
-		$giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
+		$giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
         if(empty($normal_payments)){
             return true;
         }
         do{
             $this->sync_payments($giftCardE_payments);
             //$this->sync_payments2($normal_payments);
-            $giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,100);
+            $giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
             if(empty($giftCardE_payments)){
                 break;
             }
@@ -252,7 +252,7 @@ class ome_auto_statement{
 		}else{
 			$objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
 		}*/
-		$paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
+		$paymentObj->update(array('balance_status'=>'sync','sync_time'=>time()),array('statement_id'=>$payment_ids));
 	}
 
     public function sync_payments2($payments){
@@ -356,7 +356,7 @@ class ome_auto_statement{
         }else{
             $objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
         }*/
-        $paymentObj->update(array('balance_status'=>'sync'),array('statement_id'=>$payment_ids));
+        $paymentObj->update(array('balance_status'=>'sync','sync_time'=>time()),array('statement_id'=>$payment_ids));
     }
 	//整理合并数据
     function merge_payment($payments){
