@@ -94,6 +94,7 @@ class ome_auto_statement{
 			return true;
 		}
 		do{
+            $normal_payments_new = $normal_payments_old = array();
             foreach($normal_payments as $key=>$payInfo){
                 $orderInfo = $orderMdl->getList('*',array('order_id'=>$payInfo['order_id']));
                 if($orderInfo['0']['so_type']=='1'){
