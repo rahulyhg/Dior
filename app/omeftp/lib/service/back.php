@@ -345,7 +345,7 @@ class omeftp_service_back{
 			$ax_l[$key][] = $delivery_items['bn'];//Item Number
 			$ax_l[$key][] = '';//Item description
 
-			$ax_l[$key][] = $delivery_items['name'];//Item Number
+			$ax_l[$key][] = trim($delivery_items['name']);//Item Number
 			
 			$ax_l[$key][] = $delivery_items['item_id'];//External Item Code
 			$ax_l[$key][] = '';//Bar code of the salable item  //条形码
