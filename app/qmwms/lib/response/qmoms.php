@@ -311,11 +311,12 @@ class qmwms_response_qmoms{
 
         if ($info['rsp'] == 'succ') {
             //发送兑礼订单文件到AX
-            if($orderData['0']['paytime']<1541001600){//11月之前的按照原有逻辑生成SO文件
+            //if($orderData['0']['paytime']<1541001600){//11月之前的按照原有逻辑生成SO文件
+            if($orderData['0']['so_type']=='0'){
                 kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
             }else{
-                if(($orderData[0]['shop_type']=='minishop')||($orderData[0]['is_creditOrder']=='1')){
-                    //11月之后的礼品卡兑礼订单按照原有逻辑生成SO文件，其余计划任务
+                if(($orderData[0]['shop_id']!='3428ce619f4b6f429ffb159eacfce0fd')){
+                    //非官方商城订单都走原有逻辑
                     kernel::single('omeftp_service_delivery')->delivery($deliveryId,'false');
                 }
             }
@@ -412,8 +413,14 @@ class qmwms_response_qmoms{
         //退货回传判断如果是 拒收直接返回成功  并生成SO文件
         if($returnType =='refuse'){
             //更新到AX
-            if(time()<1541001600){
+            //if(time()<1541001600){
+            if($orderData['0']['so_type']=='0'){
                 kernel::single('omeftp_service_back')->delivery($deliveryId,'拒收',$reshipId);
+            }else{
+                if(($orderData[0]['shop_id']!='3428ce619f4b6f429ffb159eacfce0fd')){
+                    //非官方商城订单都走原有逻辑
+                    kernel::single('omeftp_service_back')->delivery($deliveryId,'拒收',$reshipId);
+                }
             }
 
 
@@ -528,8 +535,14 @@ class qmwms_response_qmoms{
         $sign = kernel::single('ome_return')->toQC($reshipId,$returnItems,$msg);
         if($sign){
             //更新到AX
-            if(time()<1541001600){
+            //if(time()<1541001600){
+            if($orderData['0']['so_type']=='0'){
                 kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
+            }else{
+                if(($orderData[0]['shop_id']!='3428ce619f4b6f429ffb159eacfce0fd')){
+                    //非官方商城订单都走原有逻辑
+                    kernel::single('omeftp_service_reship')->delivery($deliveryId,$reshipId);
+                }
             }
 
 

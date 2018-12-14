@@ -255,15 +255,17 @@ class ome_kafka_api extends ome_kafka_request{
                 'is_letter'     => $data['createOrder']['is_letter'],
                 'address_id'    => urlencode($addressId),
                 'consignee'     => array(
-                    'name'  => urlencode($data['createOrder']['consignee']['name']),
-                    'mobile'=> $data['createOrder']['consignee']['mobile'],
-                    'addr'  => urlencode($data['createOrder']['consignee']['addr']),
+                    'name'      => urlencode($data['createOrder']['consignee']['name']),
+                    'mobile'    => $data['createOrder']['consignee']['mobile'],
+                    'addr'      => urlencode($data['createOrder']['consignee']['addr']),
                 ),
                 'account'       => array(
-                    'name'  => urlencode($userInfo['contact']['name']),
-                    'mobile'=> $userInfo['contact']['phone']['mobile'],
+                    'name'      => urlencode($userInfo['contact']['name']),
+                    'mobile'    => $userInfo['contact']['phone']['mobile'],
                 ),
                 'products'      => $products,
+                'order_refer_source' => $data['createOrder']['order_refer_source'],
+                'order_type'    => $data['createOrder']['order_type'],
             );
         }else{
             $request_data = $data['createOrder'];

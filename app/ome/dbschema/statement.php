@@ -263,6 +263,14 @@ $db['statement']=array (
 		'editable' => false,
 		'in_list' => true,
 	),
+     'sync_time'=>array(
+        'type' => 'time',
+        'label' => 'paymentfile上传时间',
+        'filtertype' => 'time',
+        'filterdefault' => true,
+        'editable' => false,
+        'in_list' => true,
+     ),
 	'remark' =>
     array (
       'type' => 'varchar(255)',
