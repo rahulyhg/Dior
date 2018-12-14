@@ -50,13 +50,26 @@ class qmwms_request_qimen{
         foreach($orderItemsData as $item){
             $Engraving .= $item['message1'];
         }
-
+        
+        $is_prepare = $ordersData[0]['is_prepare'] == 'true' ? true : false;
+        $is_lettering = $ordersData[0]['is_lettering'] == 'true' ? true : false;
         //comment和remark信息及刻字信息,全部在custom_mark字段
         $custom_mark = unserialize($ordersData[0]['custom_mark']);
         $op_content    = '';
         if(!empty($ordersData[0]['custom_mark'])){
             foreach($custom_mark as $text){
-                $op_content .= $text['op_content'].';';
+                if($text['op_content'] == '刻字订单' && $is_prepare) {
+                    $op_content .= $text['op_content'].'/预售订单;';
+                }else{
+                    $op_content .= $text['op_content'].';';
+                }
+            }
+            if(!$is_lettering && $is_prepare) {
+                $op_content .= '预售订单;';
+            }
+        }else{
+            if($is_prepare) {
+                $op_content = '预售订单;';
             }
         }
 

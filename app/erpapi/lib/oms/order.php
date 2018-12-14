@@ -724,7 +724,6 @@ class erpapi_oms_order
         
         if($post['is_presell']=="1"){
             $iorder['is_prepare']=true;
-            $post['order_memo']='预售订单'.$post['order_memo'];
         }
         if ($post['order_memo']){
             $o_memo =  htmlspecialchars($post['order_memo']);
