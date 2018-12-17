@@ -235,7 +235,7 @@ class ome_kafka_api extends ome_kafka_request{
             $addressId = str_replace('/', '-', $addressId[1]);
             $addCount  = count(explode('-', $addressId));
             if($addCount < 3 ){
-                $addressId = $data['createOrder']['address_id'];
+                $addressId = $data['createOrder']['consignee']['addr'];
             }
             $products = array();
             foreach ($data['createOrder']['order_objects'] as $key=>$val){
@@ -268,6 +268,17 @@ class ome_kafka_api extends ome_kafka_request{
                 'order_type'    => $data['createOrder']['order_type'],
             );
         }else{
+            // 重推如果地址为空
+            if(!$data['createOrder']['address_id']){
+                // 地址信息
+                $addressId = app::get('ome')->model('orders')->dump(array('order_bn'=>$order_bn),'ship_area,order_id');
+                $addressId = explode(':', $addressId['consignee']['area']);
+                $addressId = str_replace('/', '-', $addressId[1]);
+                $addCount  = count(explode('-', $addressId));
+                if($addCount < 3 ){
+                    $data['createOrder']['address_id'] = $data['createOrder']['consignee']['addr'];
+                }
+            }
             $request_data = $data['createOrder'];
         }
 
