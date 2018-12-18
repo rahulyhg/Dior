@@ -229,7 +229,11 @@ class creditorderapi_service_site
         }
 
         $oObj->db->commit($transaction);
-
+        //促销
+        if(app::get('promotion')->is_installed()) {
+            $arrOrders['payed'] = $arrOrders['total_amount'];
+            kernel::single("promotion_process")->process(array($arrOrders));
+        }
         ###### 订单状态回传kafka august.yao 创建订单 start ####
         $kafkaQueue = app::get('ome')->model('kafka_queue');
         $arrOrders['address_id'] = $order['address_id'];
