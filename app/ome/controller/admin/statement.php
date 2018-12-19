@@ -20,7 +20,7 @@ class ome_ctl_admin_statement extends desktop_controller{
 			case '3':
 				$actions = array(
                     array('label'=>'导入账单','href'=>'index.php?app=ome&ctl=admin_statement&act=importBill','target'=>'dialog::{width:400,height:150,title:\'导入\'}'),
-					//array('label'=>'同步AX','submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
+					array('label'=>'同步AX','submit'=>'index.php?app=ome&ctl=admin_statement&act=sync_ax'),
 				);
 				break;
 			case '7':
