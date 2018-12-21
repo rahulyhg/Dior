@@ -161,7 +161,7 @@ class omeftp_service_reship{
 
 		$reshipInfo = app::get('ome')->model('reship')->dump($reship_id,'memo,return_reason,return_type,custom_mark');
 		if($reshipInfo['return_type']=="return"){
-			$ax_h[] = $reshipInfo['memo']; //Sales Description
+			$ax_h[] = trim($reshipInfo['memo']); //Sales Description
 		}else{
 			$memo=unserialize($reshipInfo['custom_mark']);
 			$memo=$memo[0]['op_content'];
@@ -169,7 +169,7 @@ class omeftp_service_reship{
 				$ax_h[] = '';
 			}else{
 				$memo=str_replace("|","",$memo);
-				$ax_h[] = $memo; //Sales Description
+				$ax_h[] = trim($memo); //Sales Description
 			}
 		}
 		
