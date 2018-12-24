@@ -692,6 +692,7 @@ class omeftp_service_delivery{
 
         if(!empty($deliveryOrder)&&is_array($deliveryOrder)) {
             $delivery['shop_id'] = $deliveryOrder['0']['shop_id'];
+            $delivery['order']['order_confirm_time'] = $deliveryOrder['0']['order_confirm_time'];
             //按照支付时间分批次
             $deliveryList = $this->batchDelivery($deliveryOrder);
             if (!$deliveryList) {
@@ -819,6 +820,7 @@ class omeftp_service_delivery{
                     }
                     $delivery['payDate'] = $S.$payDate;
                     $delivery['order']['order_bn'] = $S.$payDate.time();
+                    
                     //echo '<pre>d';print_r($delivery);
                     $fileRes = $this->deliverySO($is_credit, $delivery);
                     if ($fileRes) {
