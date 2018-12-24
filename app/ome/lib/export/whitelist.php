@@ -43,6 +43,7 @@ class ome_export_whitelist
             'ome_mdl_reship' => array('cansplit'=>1, 'splitnums'=>200, 'primary_key' => 'reship_id', 'structure'=>'multi'),
             'invoice_mdl_order' => array('cansplit'=>1, 'splitnums'=>200, 'primary_key' => 'id', 'structure'=>'single'),
             'wms_mdl_delivery'=>array('cansplit'=>1, 'splitnums'=>200, 'primary_key' => 'delivery_id', 'structure'=>'spec'),
+            'wms_mdl_products' => array('cansplit'=>1, 'splitnums'=>100000, 'structure'=>'single'),
 
         );
 
