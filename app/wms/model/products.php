@@ -1,5 +1,8 @@
 <?php
 class wms_mdl_products extends ome_mdl_products{
+    
+    var $has_export_cnf = true;
+    
     public function table_name($real = false){
         if($real){
            $table_name = 'sdb_ome_products';
@@ -63,70 +66,11 @@ class wms_mdl_products extends ome_mdl_products{
         return intval(count($row));
     }
 
-   
-
-    /**
-    * 库存导出
-    */
-    function fgetlist_csv( &$data,$filter,$offset,$exportType = 1 ) {
-        if( !$data['title']){
-            $title = array();
-
-            foreach($this->io_title('products') as $k => $v ){
-                $title[] = $this->charset->utf2local($v);
-            }
-            $data['title']['products'] = '"'.implode('","',$title).'"';
-        }
-        if( !$list=$this->getlist('*',$filter,0,-1) )return false;
-        foreach( $list as $aFilter ){
-            $pRow = array();
-            
-            $detail['bn'] ="\t".$this->charset->utf2local($aFilter['bn']);
-            $detail['barcode'] ="\t".$this->charset->utf2local($aFilter['barcode']);
-            $detail['name'] = $this->charset->utf2local($aFilter['name']);
-            $detail['spec_info'] = $this->charset->utf2local($aFilter['spec_info']);
-            $detail['store'] = $aFilter['store'];
-            #$detail['store_freeze'] = $aFilter['store_freeze'];
-            #$detail['arrive_store'] = $aFilter['arrive_store'];
-            foreach( $this->oSchema['csv']['products'] as $k => $v ){
-
-                $pRow[$k] =  utils::apath( $detail,explode('/',$v) );
-            }
-            $data['contents']['products'][] = implode(',',$pRow);
-        }
-
-   
-        return false;
+    public function fcount_csv($filter)
+    {
+        return $this->countlist($filter);
     }
-
-    function export_csv($data,$exportType = 1 ){
-
-        $output = array();
-        $output[] = $data['title']['products']."\n".implode("\n",(array)$data['contents']['products']);
-
-        echo implode("\n",$output);
-    }
-
-    function io_title( $filter, $ioType='csv' ){
-
-        switch( $filter ){
-            case 'products':
-                $this->oSchema['csv'][$filter] = array(
-               
-                '*:货号' => 'bn',
-                '*:条形码' => 'barcode',
-                '*:货品名称' => 'name',
-                '*:规格' => 'spec_info',
-                '*:库存' => 'store',
-                #'*:冻结库存' => 'store_freeze',
-                #'*:在途库存'=>'arrive_store'
-                );
-                break;
-        }
-        $this->ioTitle[$ioType][$filter] = array_keys( $this->oSchema[$ioType][$filter] );
-        return $this->ioTitle[$ioType][$filter];
-     }
-   
+    
     function _filter($filter,$tableAlias=null,$baseWhere=null){
         
         if (isset($filter['visibility']) && $filter['visibility']=='0') {
@@ -134,7 +78,8 @@ class wms_mdl_products extends ome_mdl_products{
         }
         return $where ." AND ".parent::_filter($filter,$tableAlias,$baseWhere);
     }
-   public function getProuductInfoById($product_id = false){
+    
+    public function getProuductInfoById($product_id = false){
        $sql = 'select 
                    products.product_id,goods.unit
                from sdb_ome_goods goods
@@ -142,7 +87,7 @@ class wms_mdl_products extends ome_mdl_products{
                where products.product_id='.$product_id;
        $data = $this->db->select($sql);
        return $data[0];
-   }
+    }    
 
 
 
