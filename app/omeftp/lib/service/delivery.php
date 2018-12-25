@@ -692,7 +692,7 @@ class omeftp_service_delivery{
 
         if(!empty($deliveryOrder)&&is_array($deliveryOrder)) {
             $delivery['shop_id'] = $deliveryOrder['0']['shop_id'];
-            $delivery['order']['order_confirm_time'] = $deliveryOrder['0']['order_confirm_time'];
+            $delivery['order']['order_confirm_time'] = strtotime(date('Y-m-d',$deliveryOrder['0']['order_confirm_time']).' 00:00:00');
             //按照支付时间分批次
             $deliveryList = $this->batchDelivery($deliveryOrder);
             if (!$deliveryList) {
