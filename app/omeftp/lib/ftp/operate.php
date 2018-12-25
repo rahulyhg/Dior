@@ -24,8 +24,7 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 				 if(!$this->push_md5($params, $msg)){
 					return false;
 				 }
-
-				 //$this->push_prepro($params,$msg);
+				 $this->push_back($params,$msg);
 				return true;
 			 }else{
 				return false;
@@ -35,6 +34,18 @@ class omeftp_ftp_operate implements omeftp_interface_ftp{
 		 }
 
 	 }
+      public function push_back($params,&$msg){
+        if($this->ftp_obj->instance($this->preprod_params,$msg)){
+            $params['remote'] = 'DATACHECK/'.$params['remote'];
+            if($this->ftp_obj->push($params,$msg)){
+                return true;
+            }else{
+                return false;
+            }
+         }else{
+            return false;
+         }
+     }
 
 	  public function push_prepro($params, &$msg){
 		 $this->preprod_params = array(
