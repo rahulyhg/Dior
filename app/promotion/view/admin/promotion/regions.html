@@ -1,0 +1,101 @@
+<style>
+input[type=checkbox]{display:none;}
+.province{font-size:16px; margin:0 0 5px 0; cursor:pointer;}
+.city{margin:0 0 0 25px; line-height:20px;}
+.city span{padding:0 3px;cursor:pointer;}
+.current-set {color: red; font-weight: 700;font-size:14px;}
+</style>
+
+<div class="tableform" style="width:950px;">
+<form action="index.php?app=promotion&ctl=admin_orders&act=createRole" method="post" id="region_form">
+<{foreach from=$regions item=province key=p_region_id}>
+    <div class="province" p="<{$province.province_id}>"><input type="checkbox" <{if $province.province_check=='true'}>checked=checked<{/if}>><{$province.province}></div>
+    <div class="city" id="region">
+    <{foreach from=$province.citys item=city key=region_id}>
+        <label for="c_<{$city.region_id}>"><span><input type="checkbox" name="citys[]" <{if $city.checked=='true'}>checked=checked<{/if}> value="<{$city.region_id}>_<{$city.local_name}>" id="c_<{$city.region_id}>" class="citys p_<{$province.province_id}>"><{$city.local_name}></span></label>
+     <{/foreach}>
+     </div>
+ <{/foreach}>
+    <div style="text-align:center;margin:20px 0 5px 0;">
+         <{button class="btn-primary"  label="确定" type="button" id="saveBtn"}>
+         <{button class="btn-primary"  label="取消" type="button" id="cancelBtn"}>
+    </div>
+</form>
+ </div>
+ 
+ <script>
+    $$('.province').addEvent('click',function(e){//alert(this.firstChild.checked);
+        var box = this.firstChild;
+        var p = this.get('p');
+        if(box.checked) {
+            this.firstChild.checked = false;
+            $$('.p_' + p).each(function(item){  
+                item.blur();
+                item.checked = false;
+                item.getParent().removeClass('current-set');
+            });
+        }else{
+            this.firstChild.checked = true;
+            $$('.p_' + p).each(function(item){  
+                item.blur();
+                item.checked = true;
+                item.getParent().addClass('current-set');
+            });
+        }
+        
+       /* $$('.p_' + this.get('p')).each(function(item){  
+            //item.blur();
+           //
+           // item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+        });*/
+    });
+    
+    $$('#region input[type=checkbox]').addEvent('click',function(e){
+        this.blur();
+        this.getParent()[this.checked?'addClass':'removeClass']('current-set');
+    });
+    
+    $$('#region input[type=checkbox]').each(function(item){  
+        item.blur();
+        item.getParent()[item.checked?'addClass':'removeClass']('current-set');
+    });
+    
+    $('cancelBtn').addEvent('click', function(){
+        $('cancelBtn').getParent('.dialog').retrieve('instance').close();
+    });
+    
+    $('saveBtn').addEvent('click', function(){
+        $('region_form').fireEvent('submit', {
+            stop: function() {
+            }
+        });
+    });
+    
+    $('region_form').removeEvents('submit').addEvent('submit', function(e) {
+        e.stop();
+        
+        new Request.JSON ({
+            url:this.action,
+            onRequest: function () {
+                $('saveBtn').set('disabled', 'true');
+                $('cancelBtn').set('disabled', 'true');
+            },
+            onSuccess: function(result) {
+                if (result.code =='SUCC') {
+                    var role = result.ids;
+                    var local_name = '<span>' + result.local_name + '&nbsp&nbsp<a href="javascript:void(0);" onclick="editRegion(this)" ref=\''+role+'\'>编辑</a>&nbsp;<a href="javascript:void(0);" onclick="delRegion(this)">删除</a></span>'
+
+                    $('add_region').style.display ='none';
+                    $('area').set('html', local_name);
+                    $('region_id').set('value', role);
+                    $('region_name').set('value', result.local_name);
+                    $('saveBtn').getParent('.dialog').retrieve('instance').close();
+                } else {
+                    $('saveBtn').set('disabled', '');
+                    $('cancelBtn').set('disabled', '');
+                    alert(result.msg);
+                }
+            }
+        })[this.method](this);
+    });     
+</script>
