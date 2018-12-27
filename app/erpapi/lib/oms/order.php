@@ -371,7 +371,8 @@ class erpapi_oms_order
         }
     }
     
-    public function checkArea($address_id){
+    public function checkArea($address_id, &$region_id = NULL)
+    {
         //地区处理
         $mObj = kernel::single("ome_mdl_members");
         list($city1, $city2, $city3) = explode('-',$address_id);
@@ -379,13 +380,18 @@ class erpapi_oms_order
         if(empty($isCity2['0']['region_id'])){
             return false;   
         }
-        $isCity2=$isCity2['0']['region_id'];
-        $isCity3=$mObj->db->select("SELECT local_name,region_id FROM sdb_eccommon_regions WHERE p_region_id='$isCity2' AND region_grade='3' AND local_name='$city3'");
-        if(empty($isCity3['0']['region_id'])){
-            return false;   
+        
+        $region_id = $isCity2['0']['region_id'];
+        
+        if(! empty($city3)) {
+            $isCity3=$mObj->db->select("SELECT local_name,region_id FROM sdb_eccommon_regions WHERE p_region_id='$region_id' AND region_grade='3' AND local_name='$city3'");
+            if(empty($isCity3['0']['region_id'])) {
+                return false;   
+            }
+            return 'mainland:' . $city1 . '/' . $city2 . '/' . $city3 . ':' . $isCity3['0']['region_id'];
+        }else{
+            return 'mainland:' . $city1 . '/' . $city2 . ':' . $region_id;
         }
-     
-        return 'mainland:'.$city1.'/'.$city2.'/'.$city3.':'.$isCity3['0']['region_id'];
     }
     
     public function add($params){
@@ -427,7 +433,7 @@ class erpapi_oms_order
         $post['shop_id']=$arrShop['0']['shop_id']."*ecos.b2c";//'8a24cd49e61ab1193ae21dcdd33384b2*ecos.b2c';//8a24cd49e61ab1193ae21dcdd33384b2//f983d9b59cf0d45b54a4336032146d12
         
         $address_id=$post['address_id'];
-        if(!$post['address_id']=$this->checkArea($post['address_id'])){
+        if(!$post['address_id']=$this->checkArea($post['address_id'], $region_id)){
             return $this->send_error('地区不正确');
         }
         
@@ -908,13 +914,10 @@ class erpapi_oms_order
             }
         }
 
-        //小程序发送模板消息
-        if($post['order_refer_source']=="minishop"){//EC小程序
-            //促销
-            if(app::get('promotion')->is_installed()) {
-                $iorder['payed'] = $iorder['total_amount'];
-                kernel::single("promotion_process")->process(array($iorder));
-            }
+        if(app::get('promotion')->is_installed()) {
+            $iorder['payed'] = $iorder['total_amount'];
+            $iorder['region_id'] = $region_id;
+            kernel::single("promotion_process")->process(array($iorder));
         }
 
         return $this->send_succ('创建成功');
@@ -1527,7 +1530,7 @@ class erpapi_oms_order
         
         if(!empty($params['order_bn'])){
             if($msg!='订单保存失败.请重试'){
-                kernel::single("emailsetting_send")->send("jasmine.yu@d1m.cn",'Dior 订单错误',$msg);
+                kernel::single("emailsetting_send")->send("mcdull.zou@d1m.cn",'Dior 订单错误',$msg);
             }
             error_log('订单:'.$params['order_bn']."错误:".$msg,3,DATA_DIR.'/magentoapi/'.date("Ymd").'zjrorder.txt');
         }else{

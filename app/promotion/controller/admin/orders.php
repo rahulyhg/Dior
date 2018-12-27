@@ -85,7 +85,7 @@ class promotion_ctl_admin_orders extends desktop_controller{
             }
         }
        
-		$this->pagedata['arrPromotion']=$arrPromotion;
+		$this->pagedata['arrPromotion']=$arrPromotion;//echo "<pre>";print_r($arrPromotion);exit();
 		$this->pagedata['rule_id']=$arrPromotion['rule_id'];//
 		$arrShop=$this->getShop();
 		$arrSaveShop=explode(',',$arrPromotion['shop']);
@@ -113,7 +113,7 @@ class promotion_ctl_admin_orders extends desktop_controller{
 		$this->singlepage('admin/promotion/orders.html');
 	}
 	
-	function toAdd(){//echo "<pre>";print_r($_POST);exit();
+	function toAdd(){
 		$this->begin('');
 		if(empty($_POST['shop'])){
             $this->end(false,'请选择店铺');
@@ -165,7 +165,6 @@ class promotion_ctl_admin_orders extends desktop_controller{
 				 }
             }
         }
-		
 		//echo "<pre>";print_r($data);exit();
 		$arrPromotion['rule_id']=$rule_id;
 		$arrPromotion['name']=$data['rule']['name'];
@@ -191,6 +190,71 @@ class promotion_ctl_admin_orders extends desktop_controller{
 		}
 	}
 	
+    function addRegions()
+    {
+        $objRegion = app::get('eccommon')->model('regions');
+        $arrRegions = $objRegion->getList('region_id,local_name,p_region_id', array('region_grade'=>'1'));
+        
+        if(!empty($_GET['role'])) {
+            $edit = true;
+            $role = explode(',', $_GET['role']);
+            $role = array_flip($role);
+        }
+        
+        foreach ($arrRegions as $row) {
+            $arr = array();
+            $province_check = false;
+            $arr = $objRegion->getList('region_id,local_name', array('p_region_id'=>$row['region_id']));
+            if($edit) {
+                foreach($arr as $k=>&$v) {
+                    if(isset($role[$v['region_id']])) {
+                        $v['checked'] = true; 
+                        $province_check = true;
+                    }
+                }
+            }
+            $data[] = array(
+                'province' => $row['local_name'],
+                'province_id' => $row['region_id'],
+                'province_check' => $province_check,
+                'citys' =>  $arr,
+            );
+        }
+        
+        $this->pagedata['regions'] = $data;//
+        $this->display("admin/promotion/regions.html");
+        
+    }
+    
+    function createRole()
+    {
+        $citys = $_POST['citys'];
+        $code = 'Fail';
+        if(empty($citys)) {
+            $msg = '请选择地域';
+        }else{
+            $ids = array();
+            foreach($citys as $k=>$city) {
+                $arr = explode('_', $city);
+                $ids[] = $arr[0];
+                if($k <= 6) {
+                    $local_name .= $arr['1'] . ',';
+                }
+            }
+            
+            $code = 'SUCC';
+            $local_name = trim($local_name, ',') . '等' . count($citys) . '个地域';
+            //echo "<pre>";print_r($ids);print_r($local_name);exit;
+        }
+        $data = array(
+            'code' => $code,
+            'msg' => $msg,
+            'ids' => $ids,
+            'local_name' => $local_name,
+        );
+        echo json_encode($data);
+    }
+    
 	///////////////////////////////new
 	function getEditProducts($rule_id){
         if ($gift_id == ''){

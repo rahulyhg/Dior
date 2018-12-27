@@ -37,8 +37,8 @@ class promotion_process{
         if(empty($this->promotion)) {
             return true;
         }
-        
-		foreach($this->promotion as $promotion){
+		
+        foreach($this->promotion as $promotion){
 			//需要重写的
 			if(isset($promotion['conditions_serialize']['relate'])){
 				$promotion['conditions_serialize']['goods']['checkamount']=1;

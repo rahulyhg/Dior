@@ -2,6 +2,7 @@
  	<service id="conditions_lists">
         <class>promotion_conditions_goods</class>
         <class>promotion_conditions_order</class>
+        <class>promotion_conditions_area</class>
 		<class>promotion_conditions_time</class>
 		<class>promotion_conditions_shop</class>
     </service>

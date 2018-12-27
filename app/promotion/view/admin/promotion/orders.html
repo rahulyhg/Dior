@@ -80,7 +80,15 @@
 <h3><{t}>优惠条件<{/t}></h3>
   <div class="tableform">
 	<div class="division">
-	<div style="margin:10px 5px;"><span style="vertical-align:middle;">订单金额:&nbsp</span><input type="checkbox" class="conditions_order_use" value="1" name="conditions[order][use]" <{if $arrPromotion.conditions_serialize.order.use=="1"}> checked="checked"<{/if}> style="vertical-align:middle;"> &nbsp<sap id="conditions_order_minmax" style="display:none;"><input type="text" value="<{$arrPromotion.conditions_serialize.order.min}>" name="conditions[order][min]" style="width:40px;">&nbsp ~&nbsp <input type="text" value="<{$arrPromotion.conditions_serialize.order.max}>" name="conditions[order][max]" style="width:40px;"></sap></div>
+        <h5>条件一</h5>
+	<div style="margin:0px 5px 10px 15px;"><span style="vertical-align:middle;">订单金额:&nbsp</span><input type="checkbox" class="conditions_order_use" value="1" name="conditions[order][use]" <{if $arrPromotion.conditions_serialize.order.use=="1"}> checked="checked"<{/if}> style="vertical-align:middle;"> &nbsp<sap id="conditions_order_minmax" style="display:none;"><input type="text" value="<{$arrPromotion.conditions_serialize.order.min}>" name="conditions[order][min]" style="width:40px;">&nbsp ~&nbsp <input type="text" value="<{$arrPromotion.conditions_serialize.order.max}>" name="conditions[order][max]" style="width:40px;"></sap></div>
+    
+        <h5>条件二</h5>
+	<div style="margin:0px 5px 10px 15px;">
+        <a href="javascript:void(0);" onclick="new Dialog('index.php?ctl=admin_orders&act=addRegions&app=promotion',{width:980,height:700,title:'选择地域'}); " id="add_region">添加地域</a> 
+        <span id="area"></span>
+        <span><input type="hidden" value="<{$arrPromotion.conditions_serialize.region.id}>" name="conditions[region][id]" id="region_id"><input type="hidden" value="<{$arrPromotion.conditions_serialize.region.name}>" name="conditions[region][name]" id="region_name"></span>
+        </div>
 	<div style="margin:10px 5px; display:none;"> 
 		
 		<select name="conditions[goods][kinds]" id="goods_kinds" class="goods_kinds">
@@ -145,6 +153,23 @@
  </div>
 </form>
 <script>
+//地域
+function editRegion(me)
+{
+    var role = me.get('ref');
+    new Dialog('index.php?ctl=admin_orders&act=addRegions&app=promotion&role=' + role,{width:980,height:700,title:'选择地域'});
+}
+
+function delRegion(me)
+{
+    if (confirm("你确定要删除当前指定区域吗？")) {
+        me.getParent().destroy();
+        $('add_region').style.display ='inline';
+        $('region_id').set('value', '');
+        $('region_name').set('value', '');
+    }
+}
+
 (function(){
 var goods_kinds=1;
 var callurl='index.php?app=promotion&ctl=admin_orders&act=getProducts',store=[];
@@ -194,7 +219,14 @@ var pkg_single_tpl ='<tr key="{product_id}" id="product_{product_id}" title="点
 	 <{if $arrPromotion.conditions_serialize.goods.isinclude=="2"}>
 		$('conditions_relate_order').style.display ='inline';
 	 <{/if}> 
-	
+     
+    <{if $arrPromotion.conditions_serialize.region.id }>
+        $('add_region').style.display ='none';
+        var edit_local_name = '<span><{$arrPromotion.conditions_serialize.region.name}>&nbsp&nbsp<a href="javascript:void(0);" onclick="editRegion(this)" ref="<{$arrPromotion.conditions_serialize.region.id}>">编辑</a>&nbsp;<a href="javascript:void(0);" onclick="delRegion(this)">删除</a></span>';
+        $('area').set('html', edit_local_name);
+    <{/if}>
+    
+    
 	var goods_edit_data='<{$goods_edit_data}>';
 	if(goods_edit_data){
 		goods_kinds="<{$arrPromotion.conditions_serialize.goods.kinds}>";
@@ -285,7 +317,9 @@ $ES('.conditions_isinclude').addEvent('click',function(){
 		}
    });
 });
-			
+
+
+
 var visiTips = new Tips({
 		onShow:function(tip,el){
 			el.addClass('active');
