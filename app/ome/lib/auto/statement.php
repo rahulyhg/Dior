@@ -90,45 +90,44 @@ class ome_auto_statement{
 		//普通订单合并同步AX
 		$normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
 
-		if(empty($normal_payments)){
-			return true;
-		}
-		do{
-            $normal_payments_new = $normal_payments_old = array();
-            foreach($normal_payments as $key=>$payInfo){
-                $orderInfo = $orderMdl->getList('*',array('order_id'=>$payInfo['order_id']));
-                if($orderInfo['0']['so_type']=='1'){
-                    $normal_payments_new[] = $payInfo;
-                }else{
-                    $normal_payments_old[] = $payInfo;
+		if(!empty($normal_payments)){
+            do{
+                $normal_payments_new = $normal_payments_old = array();
+                foreach($normal_payments as $key=>$payInfo){
+                    $orderInfo = $orderMdl->getList('*',array('order_id'=>$payInfo['order_id']));
+                    if($orderInfo['0']['so_type']=='1'){
+                        $normal_payments_new[] = $payInfo;
+                    }else{
+                        $normal_payments_old[] = $payInfo;
+                    }
                 }
-            }
-            //echo '<pre>d';print_r($normal_payments_old);print_r($normal_payments_new);exit;
-			if(!empty($normal_payments_old)){
-				$this->sync_payments($normal_payments_old);
-			}
-			if(!empty($normal_payments_new)){
-				$this->sync_payments2($normal_payments_new);
-			}
-            $normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
-			if(empty($normal_payments)){
-				break;
-			}
-		}while(true);
+                //echo '<pre>d';print_r($normal_payments_old);print_r($normal_payments_new);exit;
+    			if(!empty($normal_payments_old)){
+    				$this->sync_payments($normal_payments_old);
+    			}
+    			if(!empty($normal_payments_new)){
+    				$this->sync_payments2($normal_payments_new);
+    			}
+                $normal_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|notin'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
+    			if(empty($normal_payments)){
+    				break;
+    			}
+    		}while(true);
+		}
 
 		//购卡订单、兑礼订单发送给AX走原有不合并的逻辑
 		$giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
-        if(empty($normal_payments)){
-            return true;
+        if(!empty($giftCardE_payments)){
+            do{
+                $this->sync_payments($giftCardE_payments);
+                //$this->sync_payments2($normal_payments);
+                $giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
+                if(empty($giftCardE_payments)){
+                    break;
+                }
+            }while(true);
         }
-        do{
-            $this->sync_payments($giftCardE_payments);
-            //$this->sync_payments2($normal_payments);
-            $giftCardE_payments = $paymentObj->getList('*',array('balance_status'=>'running','shop_id|in'=>array('4395c5a0b113b9d11cb4ba53c48b4d88','c7c44eade93b87b69062c76dc27c8ae7')),0,500);
-            if(empty($giftCardE_payments)){
-                break;
-            }
-        }while(true);
+        
 	}
 
 	public function sync_payments($payments){
