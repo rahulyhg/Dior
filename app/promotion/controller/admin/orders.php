@@ -34,7 +34,7 @@ class promotion_ctl_admin_orders extends desktop_controller{
 	
 	function getShop(){
 		$objShop=app::get('ome')->model('shop');
-		$arrShop=$objShop->getList("shop_id,name");
+		$arrShop=$objShop->db->select("SELECT shop_id,name FROM sdb_ome_shop WHERE shop_type='magento' OR shop_bn='dior_credit'");
 		return $arrShop;
 	}
 	
