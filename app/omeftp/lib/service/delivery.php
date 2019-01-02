@@ -1243,24 +1243,26 @@ class omeftp_service_delivery{
         //礼品卡
         //echo '<pre>2ss';print_r($delivery['giftCardArr']);
         $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $mcdCardNum = $cardNum = 0;
         if(!empty($delivery['giftCardArr'])){
             foreach ($delivery['giftCardArr'] as $k=>$card){
-                $ax_gift_card_bn='';
-                $ax_card_flag=false;
                 if($card['is_card']=="true"){
                     $ax_gift_card_bn=$ax_setting['ax_sample_bn'];
-                    $ax_card_flag=true;
+                    $cardNum++;
                 }else if($card['is_mcd_card']=="true"){
-                    $ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
-                    $ax_card_flag=true;
+                    $ax_gift_mcdcard_bn=$ax_setting['ax_mcd_sample_bn'];
+                    $mcdCardNum++;
                 }
-                /*if($ax_card_flag){
-                    $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.$card['message1'].'==CR=='.$card['message2'].'==CR=='.$card['message3'].'==CR=='.$card['message4'].'==CR=='.$card['message5'].'==CR=='.$card['message6'].'||||1|0.00|||||||||||Ea|||||||||||';
-                    $line = $line+1;
-                }*/
             }
-            $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||||||'.$delivery['mesNum'].'|0.00|||||||||||Ea|||||||||||';
-            $line = $line+1;
+            if($cardNum){
+                $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||||||'.$cardNum.'|0.00|||||||||||Ea|||||||||||';
+                $line = $line+1;
+            }
+            if($mcdCardNum){
+                $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_mcdcard_bn.'|||||||||'.$mcdCardNum.'|0.00|||||||||||Ea|||||||||||';
+                $line = $line+1;
+            }
+            
         }
         //echo '<pre>2ss';print_r($delivery);
         //if($delivery['is_w_card']=='true'){
