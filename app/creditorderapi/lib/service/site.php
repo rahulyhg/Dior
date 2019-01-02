@@ -23,7 +23,7 @@ class creditorderapi_service_site
         $order_bn=$order['order_bn'];
 
         //check地区
-        if(!$address_id=$this->checkArea($order['address_id'])){
+        if(!$address_id=$this->checkArea($order['address_id'], $region_id)){
             return array('status'=>'fail','msg'=>'地区不正确','order_bn'=>$order_bn);exit();
         }
 
@@ -232,6 +232,7 @@ class creditorderapi_service_site
         //促销
         if(app::get('promotion')->is_installed()) {
             $arrOrders['payed'] = $arrOrders['total_amount'];
+            $arrOrders['region_id'] = $region_id;
             kernel::single("promotion_process")->process(array($arrOrders));
         }
         ###### 订单状态回传kafka august.yao 创建订单 start ####
@@ -324,26 +325,27 @@ class creditorderapi_service_site
         }
         return true;
     }
-
-    public function checkArea($address_id){
+    
+    public function checkArea($address_id, &$region_id = NULL)
+    {
         //地区处理
         $mObj = kernel::single("ome_mdl_members");
         list($city1, $city2, $city3) = explode('-',$address_id);
         $isCity2=$mObj->db->select("SELECT region_id FROM sdb_eccommon_regions WHERE local_name='$city2' AND region_grade='2'");
         if(empty($isCity2['0']['region_id'])){
-            return false;
+            return false;   
         }
-        $isCity2=$isCity2['0']['region_id'];
-        if(!empty($city3)){
-            $isCity3=$mObj->db->select("SELECT local_name,region_id FROM sdb_eccommon_regions WHERE p_region_id='$isCity2' AND region_grade='3' AND local_name='$city3'");
-            if(empty($isCity3['0']['region_id'])){
-                return false;
+
+        $region_id = $isCity2['0']['region_id'];
+
+        if(! empty($city3)) {
+            $isCity3=$mObj->db->select("SELECT local_name,region_id FROM sdb_eccommon_regions WHERE p_region_id='$region_id' AND region_grade='3' AND local_name='$city3'");
+            if(empty($isCity3['0']['region_id'])) {
+                return false;   
             }
-            return 'mainland:'.$city1.'/'.$city2.'/'.$city3.':'.$isCity3['0']['region_id'];
+            return 'mainland:' . $city1 . '/' . $city2 . '/' . $city3 . ':' . $isCity3['0']['region_id'];
         }else{
-            return 'mainland:'.$city1.'/'.$city2.':'.$isCity2;
+            return 'mainland:' . $city1 . '/' . $city2 . ':' . $region_id;
         }
-
-
     }
 }
