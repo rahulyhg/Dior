@@ -1249,7 +1249,8 @@ class omeftp_service_delivery{
                 if($card['is_card']=="true"){
                     $ax_gift_card_bn=$ax_setting['ax_sample_bn'];
                     $cardNum++;
-                }else if($card['is_mcd_card']=="true"){
+                } 
+                if($card['is_mcd_card']=="true"){
                     $ax_gift_mcdcard_bn=$ax_setting['ax_mcd_sample_bn'];
                     $mcdCardNum++;
                 }
