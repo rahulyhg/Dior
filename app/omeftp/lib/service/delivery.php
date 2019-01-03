@@ -663,7 +663,7 @@ class omeftp_service_delivery{
     function cron_Delivery($is_credit = true,$pay_bn = '',$from_time='',$to_time=''){
         $from_time =$from_time?$from_time:strtotime("-1 day");
         $to_time = $to_time?$to_time:strtotime(date("Y-m-d",time()));
-        //$from_time = '1540137600';
+        //$from_time = '1538323200';
         //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $orderItemMdl = app::get('ome')->model('order_items');
@@ -820,8 +820,8 @@ class omeftp_service_delivery{
                     }
                     $delivery['payDate'] = $S.$payDate;
                     $delivery['order']['order_bn'] = $S.$payDate.time();
-                    
-                    //echo '<pre>d';print_r($delivery);
+                    $delivery['order_list'] = $orderArr;
+                    //echo '<pre>d';print_r($delivery);exit();
                     $fileRes = $this->deliverySO($is_credit, $delivery);
                     if ($fileRes) {
                         $orderId = implode(',', $orderArr);
@@ -929,6 +929,14 @@ class omeftp_service_delivery{
                 'file_ftp_route'=>$params['remote'],
             );
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
+            
+            if($file_name&&(!empty($delivery['order_list']))){
+                $orderMdl = app::get('ome')->model('orders');
+                $orderId = implode(',', $delivery['order_list']);
+                $updateSql = "UPDATE sdb_ome_orders SET so_file_name = '" . $file_name . "' WHERE order_id in (" . $orderId . ")";
+                //echo '<pre>d';print_r($updateSql);exit;
+                $orderMdl->db->exec($updateSql);
+            }
             return true;
         }else{
             return false;
