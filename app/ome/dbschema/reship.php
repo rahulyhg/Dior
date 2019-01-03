@@ -31,6 +31,20 @@ $db['reship']=array (
       'default_in_list' => true,
       'is_title' => true,
     ),
+    'return_order_id' =>
+    array (
+        'type' => 'varchar(32)',
+        'required' => false,
+        'label' => 'WMS端退换货单号',
+        'comment' => 'WMS端退换货单号',
+        'editable' => false,
+        'filterdefault' => true,
+        'filtertype' => 'yes',
+        'width' =>200,
+        'in_list' => true,
+        'default_in_list' => false,
+        'is_title' => true,
+    ),
 	'm_reship_bn' =>
     array (
       'type' => 'varchar(32)',
