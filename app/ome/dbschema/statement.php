@@ -301,6 +301,16 @@ $db['statement']=array (
       'in_list' => true,
       'default_in_list' => true,
     ),
+   	'ax_file_name' =>
+    array (
+      'type' => 'varchar(100)',
+      'editable' => false,
+      'comment' => '对账文件名',
+	  'in_list' => true,
+	  'label' => '对账文件名',
+      'filtertype' => 'normal',
+      'filterdefault' => true,
+    ),
   ),
   'comment' => '对账记录',
   'index' =>
