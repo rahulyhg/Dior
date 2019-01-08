@@ -98,6 +98,20 @@ class ome_finder_extend_filter_orders{
                     'in_list' => true,
                     'default_in_list' => true,
                 ),
+                'lettering_type' => array (
+                    'type' =>
+                        array (
+                            0 => '普通',
+                            1 => '图案',
+                        ),
+                    'label' => '刻字类型',
+                    'width' => 85,
+                    'filtertype' => 'yes',
+                    'filterdefault' => true,
+                    'editable' => false,
+                    'in_list' => true,
+                    'default_in_list' => true,
+                ),
                 'product_barcode' => array (
                     'type' => 'varchar(32)',
                     'label' => '条形码',

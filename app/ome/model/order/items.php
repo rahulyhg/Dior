@@ -28,6 +28,27 @@ class ome_mdl_order_items extends dbeav_model{
         $rows = $this->db->select($sql);
         return $rows;
     }
+    
+    public function getOrderIdByFilterLetterType($lettering_type){
+        $sql = "SELECT count(1) as _c FROM sdb_ome_order_items WHERE lettering_type = '$lettering_type'";
+        $count = $this->db->selectrow($sql);
+        if ($count['_c'] >= 10000) {
+            $offset = 0; $limit = 9000; $list = array();
+            $sql = "SELECT order_id FROM sdb_ome_order_items WHERE lettering_type = '$lettering_type'";
+            $total = floor($count['_c']/$limit);
+            for ($i=$total;$i>=0;$i--) {
+                $rows = $this->db->selectlimit($sql,$limit,$i*$limit);
+                if ($rows) {
+                    $list = array_merge_recursive($list,$rows);
+                }
+            }
+            return $list;
+        }
+
+        $sql = "SELECT order_id FROM sdb_ome_order_items WHERE  lettering_type = '$lettering_type'";
+        $rows = $this->db->select($sql);
+        return $rows;
+    }
 
     public function getOrderIdByPbarcode($product_barcode){
         $sql = 'SELECT count(1) as _c FROM sdb_ome_order_items as I LEFT JOIN '.
