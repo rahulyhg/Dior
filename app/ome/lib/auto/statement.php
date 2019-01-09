@@ -355,7 +355,7 @@ class ome_auto_statement{
         }else{
             $objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
         }*/
-        $paymentObj->update(array('balance_status'=>'sync','sync_time'=>time()),array('statement_id'=>$payment_ids));
+        $paymentObj->update(array('balance_status'=>'sync','sync_time'=>time(),'ax_file_name'=>$file_name),array('statement_id'=>$payment_ids));
     }
 	//整理合并数据
     function merge_payment($payments){
@@ -371,11 +371,12 @@ class ome_auto_statement{
                 if($payment['paymethod']=='wxpayjsapi'){
                     $S = 'W';
                 }
-                $orderInfo = $orderMdl->getList('*',array('order_id'=>$payment['order_id']));
-                $payment['pay_time'] = $orderInfo['0']['paytime'];
-                $payDate = $S.date('Ymd',$payment['pay_time']);
+                
                 //$payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
 				if($payment['original_type']=='payments'){
+				    $orderInfo = $orderMdl->getList('*',array('order_id'=>$payment['order_id']));
+				    $payment['pay_time'] = $orderInfo['0']['paytime'];
+                    $payDate = $S.date('Ymd',$payment['pay_time']);//支付账单使用订单的支付时间
 					$key = 'p'.$payDate;
 					$row[$key]['order_bn'] = $payDate;
 					$row[$key]['paymethod'] = $payment['paymethod'];
@@ -393,6 +394,7 @@ class ome_auto_statement{
 					$row[$payDate]['pay_fee'] += $payment['pay_fee'];
 					$row[$payDate]['money'] += $payment['money'];
 					$row[$payDate]['tatal_amount'] += $payment['tatal_amount'];
+                    //退款账单直接使用导入的账单退款时间
 					$row[$payDate]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
 				}
                 //普通订单的大订单号可以区分出支付类型和是否属于退款账单
