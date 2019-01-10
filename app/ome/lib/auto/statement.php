@@ -373,11 +373,11 @@ class ome_auto_statement{
                 }
                 
                 //$payDate = date("Ymd", ($payment['paytime']?$payment['paytime']:time()));
+                $orderInfo = $orderMdl->getList('*',array('order_id'=>$payment['order_id']));
 				if($payment['original_type']=='payments'){
-				    $orderInfo = $orderMdl->getList('*',array('order_id'=>$payment['order_id']));
-				    $payment['pay_time'] = $orderInfo['0']['paytime'];
+				    $payment['pay_time'] = $orderInfo['0']['paytime']?$orderInfo['0']['paytime']:$orderInfo['0']['createtime'];
                     $payDate = $S.date('Ymd',$payment['pay_time']);//支付账单使用订单的支付时间
-					$key = 'p'.$payDate;
+                    $key = 'p'.$payDate;
 					$row[$key]['order_bn'] = $payDate;
 					$row[$key]['paymethod'] = $payment['paymethod'];
 					$row[$key]['original_type'] = 'payments';
@@ -387,6 +387,8 @@ class ome_auto_statement{
 					$row[$key]['pay_time'] = (!empty($payment['pay_time'])) ? $payment['pay_time'] : '';
 				}
 				if($payment['original_type']=='refunds'){
+				    $key_time = $orderInfo['0']['paytime']?$orderInfo['0']['paytime']:$orderInfo['0']['createtime'];
+				    $payDate = $S.date('Ymd',$key_time);//退款账单使用订单的支付时间合并
 					$key = 'r'.$payDate;
 					$row[$payDate]['order_bn'] = $payDate;
 					$row[$payDate]['paymethod'] = $payment['paymethod'];
