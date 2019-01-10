@@ -189,12 +189,12 @@ class ome_auto_pullBillFile{
         $response = explode(PHP_EOL, $response);
 
         foreach ($response as $key=>$val){
-            if(strpos($val, '﻿交易时间,公众账号ID,商户号,子商户号') !== false){
+            if(stripos($val, '交易时间,公众账号ID,商户号,子商户号') !== false){
                 // 去除bom头
                 $val = $this->checkBOM($val);
                 $result[] = explode(',', $val);
             }
-            if(strpos($val, '`') !== false){
+            if(stripos($val, '`') !== false){
                 $val  = str_replace(",","",$val);   // 将,替换掉
                 $data = explode('`', $val);
                 array_shift($data); // 删除第一个元素并下标从0开始
@@ -205,7 +205,7 @@ class ome_auto_pullBillFile{
                     $result[] = $data;
                 }
             }
-            if(strpos($val, '总交易单数,总交易额,总退款金额,总企业红包退款金额,手续费总金额') !== false){
+            if(stripos($val, '总交易单数,总交易额,总退款金额,总企业红包退款金额,手续费总金额') !== false){
                 // 去除bom头
                 $val = $this->checkBOM($val);
                 $result[] = explode(',', $val);
@@ -310,6 +310,8 @@ class ome_auto_pullBillFile{
         $charset[3] = substr($contents, 2, 1);
         if (ord($charset[1]) == 239 && ord($charset[2]) == 187 && ord($charset[3]) == 191) {
             return substr($contents, 3);
+        }else{
+            return $contents;
         }
     }
 }
