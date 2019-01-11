@@ -449,24 +449,54 @@ class qmwms_request_qimen{
 
     }
 
-    //单据取消
-    public function _orderCancel($delivery_id,$memo){
-        //撤销发货单(发货拦截)
-        $deliveryOrder = app::get('ome')->model('delivery_order')->getList('*',array('delivery_id'=>$delivery_id),0,-1);
-        $orderData = app::get('ome')->model('orders')->getList('order_bn',array('order_id'=>array($deliveryOrder[0]['order_id'])));
-
+    /**
+     * @Payne 单据取消接口
+     * @param $dj_id 订单传的值是 delivery_id 退单传的值是 reship_id
+     * @param $memo
+     * @param $type 单据类型 order=>表示订单  reship=>表示退单
+     * @return array
+     */
+    public function _orderCancel($dj_id,$memo,$type){
+        $oOrder  = app::get('ome')->model('orders');
+        $oReship = app::get('ome')->model('reship');
+        $body = array();
         $body['warehouseCode'] = 'LVMH_DMALL';//仓库编码(必填)
         $body['ownerCode']     = 'LVMH_PCD_OMS';//货主编码
-        $body['orderCode']     = $orderData[0]['order_bn'];//单据编号(必填)
-        $body['orderId']       = !empty($orderData[0]['ax_order_bn'])?$orderData[0]['ax_order_bn']:'DM-'.$orderData[0]['order_bn'];//仓储系统单据编码(必填)
-        $body['orderType']     = 'JYCK';//单据类型(JYCK=一般交易出库单;HHCK= 换货出库;PTCK=普通出库单;DBCK=调拨出库;B2BRK=B2B入库;B2BCK=B2B出库;QTCK=其他出库;SCRK=生产入库;CGRK=采购入库;DBRK= 调拨入库;QTRK=其他入库;XTRK= 销退入库;THRK=退货入库;HHRK= 换货入库;CGTH=采购退货出库单)
+        if($type=='return'){
+            #取消退货单
+            $reship  = $oReship->dump(array('reship_id'=>$dj_id),'reship_bn,order_id,return_order_id');
+            $order  = $oOrder->dump($reship['order_id'],'order_bn');
+            $order_bn = $order['order_bn'];
+            #获取退货单创建时的退货入库单号(returnOrderCode)作为单据编码orderCode
+            $allReship = $oReship->getList('reship_id',array('order_id'=>$reship['order_id']),0,-1,' reship_id asc');
+            foreach($allReship as $k=>$value){
+                if($value['reship_id']==$dj_id){
+                    $nums = $k+1;
+                }
+            }
+            $orderCode = $order_bn."-R".$nums;
+            #仓储系统单据编码 orderId
+            $orderId = !empty($reship['return_order_id']) ? $reship['return_order_id']:'RDM-'.$orderCode;
+            #请求参数
+            $body['orderCode'] = $orderCode;//单据编号(必填)
+            $body['orderId']   = $orderId;//仓储系统单据编码(必填)
+            $return_order_bn   = $reship['reship_bn'];//保存到日志的单据编号
+        }else{
+            #取消发货单(发货拦截)
+            $deliveryOrder = app::get('ome')->model('delivery_order')->getList('*',array('delivery_id'=>$dj_id),0,-1);
+            $orderData = $oOrder->getList('order_bn',array('order_id'=>array($deliveryOrder[0]['order_id'])));
+            #请求参数
+            $body['orderCode'] = $orderData[0]['order_bn'];//单据编号(必填)
+            $body['orderId']   = !empty($orderData[0]['ax_order_bn'])?$orderData[0]['ax_order_bn']:'DM-'.$orderData[0]['order_bn'];//仓储系统单据编码(必填)
+            $return_order_bn   = $orderData[0]['order_bn'];//保存到日志的单据编号
+        }
+        $body['orderType']     = 'JYCK';//单据类型(JYCK=一般交易出库单;HHCK= 换货出库;PTCK=普通出库单;THRK=退货入库;HHRK= 换货入库;)
         $body['cancelReason']  = $memo;//取消原因
-
         //返回xml格式数据
         $return = array();
         //$return['body']        =  $this->array2xml($body,'request');
         $return['body']     =  kernel::single('qmwms_request_xml')->data_encode($body);
-        $return['order_bn'] = $orderData[0]['order_bn'];
+        $return['order_bn'] = $return_order_bn;
         return $return;
     }
 

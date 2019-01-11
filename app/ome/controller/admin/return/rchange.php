@@ -1151,22 +1151,28 @@ class ome_ctl_admin_return_rchange extends desktop_controller {
         if(!$reship_id)
             die("单据号传递错误！");
         $Oreship = app::get('ome')->model('reship');
+        $oOperation_log = app::get('ome')->model('operation_log');//写日志
         $reship = $Oreship->dump(array('reship_id'=>$reship_id),'reship_bn,return_id,return_type');
         if($_POST){
             $reship_id = $_POST['reship_id'];
+            #触发奇门-WMS单据取消接口(退单取消)
+            $res = kernel::single('qmwms_request_omsqm')->orderCancel($reship_id,'退单取消','return');
+            if($res['status'] == 'success'){
+                $memo = '状态:拒绝';
+                $Oreship->update(array('is_check'=>'5','t_end'=>time()),array('reship_id'=>$reship_id));
+                //判断是否是已确认拒绝如果是需要释放冻结库存
+                if ($reship['return_type'] == 'change') {
+                    kernel::single('console_reship')->change_freezeproduct($reship_id,'-');
+                }
+                if($reship['return_id']){
+                    $oOperation_log->write_log('return@ome',$reship['return_id'],$memo);
+                    $data = array ('return_id' => $reship['return_id'], 'status' => '5', 'last_modified' => time () );
+                    $oProduct = app::get('ome')->model ( 'return_product' );
+                    $oProduct->update_status ( $data );
+                }
 
-            $Oreship->update(array('is_check'=>'5','t_end'=>time()),array('reship_id'=>$reship_id));
-            //判断是否是已确认拒绝如果是需要释放冻结库存
-            if ($reship['return_type'] == 'change') {
-                kernel::single('console_reship')->change_freezeproduct($reship_id,'-');
-            }
-            $memo = '状态:拒绝';
-            $oOperation_log = app::get('ome')->model('operation_log');//写日志
-            if($reship['return_id']){
-                $oOperation_log->write_log('return@ome',$reship['return_id'],$memo);
-                $data = array ('return_id' => $reship['return_id'], 'status' => '5', 'last_modified' => time () );
-                $oProduct = app::get('ome')->model ( 'return_product' );
-                $oProduct->update_status ( $data );
+            }else{
+                $memo = 'wms返回:'.$res['res_msg'];
             }
             $oOperation_log->write_log('reship@ome',$reship_id,$memo);
         }

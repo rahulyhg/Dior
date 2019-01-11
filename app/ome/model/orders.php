@@ -98,6 +98,17 @@ class ome_mdl_orders extends dbeav_model{
             $where .= '  AND order_id IN ('.implode(',', $orderId).')';
             unset($filter['product_bn']);
         }
+        
+        if(isset($filter['lettering_type'])){
+            $itemsObj = &$this->app->model("order_items");
+            $rows = $itemsObj->getOrderIdByFilterLetterType($filter['lettering_type']);
+            $orderId[] = 0;
+            foreach($rows as $row){
+                $orderId[] = $row['order_id'];
+            }
+            $where .= '  AND order_id IN ('.implode(',', $orderId).')';
+            unset($filter['lettering_type']);
+        }
 
         //支付失败
         if(isset($filter['payment_fail']) && $filter['payment_fail'] == true){

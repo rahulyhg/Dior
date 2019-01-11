@@ -63,59 +63,34 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
         $this->qmwms_queue->save($queueData);
     }
 
-    //单据取消
-    public function orderCancel($delivery_id,$memo=null){
+    /**
+     * @Payne 单据取消接口
+     * @param $dj_id订单传的值是 delivery_id 退单传的值是 reship_id
+     * @param null $memo
+     * @param $type 单据类型 order=>表示订单  reship=>表示退单
+     * @return array
+     */
+    public function orderCancel($dj_id,$memo='',$type=''){
         $method = 'order.cancel';
         $msg   = '单据取消';
-        $res   = $this->_orderCancel($delivery_id,$memo);
+        $res   = $this->_orderCancel($dj_id,$memo,$type);
         $body  = $res['body'];
         $dj_bn = $res['order_bn'];
         //记录ERP请求日志
-        $data = $this->pre_params($dj_bn,$delivery_id,$method,$msg,$body);
+        $data = $this->pre_params($dj_bn,$dj_id,$method,$msg,$body);
         $insert_id = $this->writeLog($data);
         $response = kernel::single('qmwms_request_abstract')->request($body,$method);
         //检查接口string返回是否是XML
         $is_xml = $this->check_xml($response);
         //ERP请求奇门返回信息写日志
         if(isset($insert_id)){
-            $res_data = $this->res_params($response,$delivery_id,'orderCancel',$memo);
+            $res_data = $this->res_params($response,$dj_id,'orderCancel',$memo);
             if(!isset($response) || empty($response) || !$is_xml){
                 $res_data['status'] = 'failure';
                 $res_data['res_msg'] = '单据取消失败';
             }
             $res_data['param1'] = $memo;
             $this->writeLog($res_data,$insert_id);
-
-            ###### 订单状态回传kafka august.yao 已取消 start####
-//            $orderData   = app::get('ome')->model('orders')->getList('*',array('order_bn'=>$dj_bn));
-//            $kafkaQueue  = app::get('ome')->model('kafka_queue');
-//            $queueData = array(
-//                'queue_title' => '订单已取消状态推送',
-//                'worker'      => 'ome_kafka_api.sendOrderStatus',
-//                'start_time'  => time(),
-//                'params'      => array(
-//                    'status'   => 'cancel',
-//                    'order_bn' => $orderData[0]['order_bn'],
-//                    'logi_bn'  => '',
-//                    'shop_id'  => $orderData[0]['shop_id'],
-//                    'item_info'=> array(),
-//                    'bill_info'=> array(),
-//                ),
-//            );
-//            $kafkaQueue->save($queueData);
-            ###### 订单状态回传kafka august.yao 已取消 end ####
-
-            //发送报警邮件
-            if($res_data['status'] != 'success'){
-                $failure_msg = !empty($res_data['res_msg'])?$res_data['res_msg']:$response;
-                $original_params = htmlspecialchars($body);
-                $response_params = htmlspecialchars($response);
-                $acceptor = app::get('desktop')->getConf('email.config.wmsapi_acceptoremail');
-
-                $subject = '【Dior-PROD】ByPass订单#'.$dj_bn.'单据取消失败';//【ADP-PROD】ByPass订单#10008688发送失败
-                $bodys   = "<font face='微软雅黑' size=2>Hi All, <br/>下面是接口请求和返回信息。<br>OMS请求XML：<br>$original_params<br/><br>WMS返回XML：<br>$response_params<br/><br>失败信息：<br>$failure_msg<br/><br/>本邮件为自动发送，请勿回复，谢谢。<br/><br/>D1M OMS 开发团队<br/>".date("Y-m-d H:i:s")."</font>";
-                //kernel::single('emailsetting_send')->send($acceptor,$subject,$bodys);
-            }
         }
         return $res_data;
     }
@@ -193,6 +168,9 @@ class qmwms_request_omsqm extends qmwms_request_qimen{
                     if(!empty($ax_order_bn))kernel::database()->exec($sql);
                     break;
                 case 'returnOrderCreate':
+                    $return_order_id = $_response['returnOrderId'];
+                    $sql = sprintf("update sdb_ome_reship set return_order_id = '%s' where reship_id = %s ",$return_order_id,$dj_id);
+                    if(!empty($return_order_id))kernel::database()->exec($sql);
                     break;
                 case 'orderCancel':
                     //$this->do_cancel($dj_id,$memo);

@@ -663,7 +663,7 @@ class omeftp_service_delivery{
     function cron_Delivery($is_credit = true,$pay_bn = '',$from_time='',$to_time=''){
         $from_time =$from_time?$from_time:strtotime("-1 day");
         $to_time = $to_time?$to_time:strtotime(date("Y-m-d",time()));
-        //$from_time = '1540137600';
+        //$from_time = '1538323200';
         //$to_time = '1540310400';
         $orderMdl = app::get('ome')->model('orders');
         $orderItemMdl = app::get('ome')->model('order_items');
@@ -820,8 +820,8 @@ class omeftp_service_delivery{
                     }
                     $delivery['payDate'] = $S.$payDate;
                     $delivery['order']['order_bn'] = $S.$payDate.time();
-                    
-                    //echo '<pre>d';print_r($delivery);
+                    $delivery['order_list'] = $orderArr;
+                    //echo '<pre>d';print_r($delivery);exit();
                     $fileRes = $this->deliverySO($is_credit, $delivery);
                     if ($fileRes) {
                         $orderId = implode(',', $orderArr);
@@ -929,6 +929,14 @@ class omeftp_service_delivery{
                 'file_ftp_route'=>$params['remote'],
             );
             $ftp_log_id = $this->operate_log->write_log($ftp_log_data,'ftp');
+            
+            if($file_name&&(!empty($delivery['order_list']))){
+                $orderMdl = app::get('ome')->model('orders');
+                $orderId = implode(',', $delivery['order_list']);
+                $updateSql = "UPDATE sdb_ome_orders SET so_file_name = '" . $file_name . "' WHERE order_id in (" . $orderId . ")";
+                //echo '<pre>d';print_r($updateSql);exit;
+                $orderMdl->db->exec($updateSql);
+            }
             return true;
         }else{
             return false;
@@ -1243,24 +1251,27 @@ class omeftp_service_delivery{
         //礼品卡
         //echo '<pre>2ss';print_r($delivery['giftCardArr']);
         $ax_setting    = app::get('omeftp')->getConf('AX_SETTING');
+        $mcdCardNum = $cardNum = 0;
         if(!empty($delivery['giftCardArr'])){
             foreach ($delivery['giftCardArr'] as $k=>$card){
-                $ax_gift_card_bn='';
-                $ax_card_flag=false;
                 if($card['is_card']=="true"){
                     $ax_gift_card_bn=$ax_setting['ax_sample_bn'];
-                    $ax_card_flag=true;
-                }else if($card['is_mcd_card']=="true"){
-                    $ax_gift_card_bn=$ax_setting['ax_mcd_sample_bn'];
-                    $ax_card_flag=true;
+                    $cardNum++;
+                } 
+                if($card['is_mcd_card']=="true"){
+                    $ax_gift_mcdcard_bn=$ax_setting['ax_mcd_sample_bn'];
+                    $mcdCardNum++;
                 }
-                /*if($ax_card_flag){
-                    $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||'.$card['message1'].'==CR=='.$card['message2'].'==CR=='.$card['message3'].'==CR=='.$card['message4'].'==CR=='.$card['message5'].'==CR=='.$card['message6'].'||||1|0.00|||||||||||Ea|||||||||||';
-                    $line = $line+1;
-                }*/
             }
-            $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||||||'.$delivery['mesNum'].'|0.00|||||||||||Ea|||||||||||';
-            $line = $line+1;
+            if($cardNum){
+                $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_card_bn.'|||||||||'.$cardNum.'|0.00|||||||||||Ea|||||||||||';
+                $line = $line+1;
+            }
+            if($mcdCardNum){
+                $ax_l_str[] = 'L|Gift||'.$line.'|'.$ax_gift_mcdcard_bn.'|||||||||'.$mcdCardNum.'|0.00|||||||||||Ea|||||||||||';
+                $line = $line+1;
+            }
+            
         }
         //echo '<pre>2ss';print_r($delivery);
         //if($delivery['is_w_card']=='true'){
