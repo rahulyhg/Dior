@@ -13,7 +13,7 @@ class ome_auto_statement{
 	
 		foreach($payments as $row){
             //查询该支付流水是否先存在对账表  如果存在则直接对账
-            $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'paymethod'=>$row['pay_bn'],'original_type'=>'payments'));
+            $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'original_type'=>'payments'));
             if(!empty($ifExist)){
                 $this->paymentsUpdate($row,$ifExist['0'],'payments');
             }else{
