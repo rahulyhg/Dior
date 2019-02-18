@@ -10,7 +10,7 @@ class omemagento_log_retry{
     public function order_status_retry(){
         $log_mdl = app::get('omemagento')->model('request_log');
         
-        $failLogs = $log_mdl->getList('*',array('task_name'=>'更新订单状态','createtime|than'=>'1548950400','status'=>'fail','retry|lthan'=>'4'));
+        $failLogs = $log_mdl->getList('*',array('task_name'=>'更新订单状态','createtime|than'=>'1550419200','status'=>'fail','retry|lthan'=>'4'));
         foreach($failLogs as $log){
 
             $params = unserialize($log['original_params']);
