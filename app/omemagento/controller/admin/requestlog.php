@@ -26,12 +26,12 @@ class omemagento_ctl_admin_requestlog extends desktop_controller{
 		$failCount = $mdl_log->count($base_filter);
 		$successCount = $mdl_log->count(array('status'=>'success'));
 		$allCount = $mdl_log->count();
-        $5failCount = $mdl_log->count(array('status'=>'fail','retry|bthan'=>'5'));
+        $failCount5 = $mdl_log->count(array('status'=>'fail','retry|bthan'=>'5'));
         $sub_menu = array(
             0 => array('label'=>app::get('base')->_('全部'),'optional'=>false,'addon'=>$allCount),
             1 => array('label'=>app::get('base')->_('失败请求'),'filter'=>$base_filter,'optional'=>false,'addon'=>$failCount),
             2 => array('label'=>app::get('base')->_('成功请求'),'filter'=>array('status'=>'success'),'optional'=>false,'addon'=>$successCount),
-            5 => array('label'=>app::get('base')->_('5次失败请求'),'filter'=>array('status'=>'fail','retry|bthan'=>'5'),'optional'=>false,'addon'=>$5failCount),
+            5 => array('label'=>app::get('base')->_('5次失败请求'),'filter'=>array('status'=>'fail','retry|bthan'=>'5'),'optional'=>false,'addon'=>$failCount5),
             
         );
         return $sub_menu;
