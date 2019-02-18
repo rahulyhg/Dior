@@ -9,6 +9,6 @@ if(!kernel::register_autoload()){
 require_once(APP_DIR.'/base/defined.php');
 cachemgr::init(false);
 echo "begin <br/>";
-#kernel::single('omemagento_log_retry')->order_status_retry();
-kernel::single('omemagento_log_clean')->cleanlog();
+kernel::single('omemagento_log_retry')->order_status_retry();
+#kernel::single('omemagento_log_clean')->cleanlog();
 echo "<br/> end";
