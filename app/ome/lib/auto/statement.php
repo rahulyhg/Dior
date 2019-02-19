@@ -245,12 +245,12 @@ class ome_auto_statement{
 		$objLog = kernel::single('omeftp_log');
 		$ftp_log_id = $objLog->write_log($ftp_log_data,'ftp');
 
-		/*$ftp_flag = kernel::single('omeftp_ftp_operate')->push($params,$msg);
+		$ftp_flag = kernel::single('omeftp_ftp_operate')->push($params,$msg);
 		if($ftp_flag){
 			$objLog->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
 		}else{
 			$objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-		}*/
+		}
 		$paymentObj->update(array('balance_status'=>'sync','sync_time'=>time()),array('statement_id'=>$payment_ids));
 	}
 
@@ -349,12 +349,12 @@ class ome_auto_statement{
         $objLog = kernel::single('omeftp_log');
         $ftp_log_id = $objLog->write_log($ftp_log_data,'ftp');
 
-        /*$ftp_flag = kernel::single('omeftp_ftp_operate')->push($params,$msg);
+        $ftp_flag = kernel::single('omeftp_ftp_operate')->push($params,$msg);
         if($ftp_flag){
             $objLog->update_log(array('status'=>'succ','lastmodify'=>time(),'memo'=>'上传成功！'),$ftp_log_id,'ftp');
         }else{
             $objLog->update_log(array('status'=>'fail','memo'=>$msg),$ftp_log_id,'ftp');
-        }*/
+        }
         $paymentObj->update(array('balance_status'=>'sync','sync_time'=>time(),'ax_file_name'=>$file_name),array('statement_id'=>$payment_ids));
     }
 	//整理合并数据
