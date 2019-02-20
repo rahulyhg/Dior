@@ -887,7 +887,11 @@ class ome_mdl_refund_apply extends dbeav_model{
 		$data['order_id']=$order_id;
 		$data['refund_amount']=$z_money;
 		$data['refund_status']=0;
+        if(!$oms_refund_rma_ids){
+            $oms_refund_rma_ids = 1;
+        }
 		$data['oms_refund_rma_ids']=$oms_refund_rma_ids;
+        
 		
 		kernel::single('omemagento_service_request')->do_request('refundlog',$data);
 	}

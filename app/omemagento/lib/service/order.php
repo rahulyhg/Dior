@@ -17,17 +17,21 @@ class omemagento_service_order{
         $orderMdl   = app::get('ome')->model('orders');
         $orderItemMdl = app::get('ome')->model('order_items');
         $orderInfo = $orderMdl->getList('ship_status,order_id',array('order_bn'=>$order_bn));
-        if($orderInfo[0]['ship_status']=='0'&&$status='refunding'&&$reship_items){
-            $orderItems = $orderItemsMdl->getList('*',array('order_id'=>$orderInfo[0]['order_id']));
-            $reship_items = array();
+        if($orderInfo[0]['ship_status']=='0'&&$status=='refunding'&&!$reship_items){
+
+            $orderItems = $orderItemMdl->getList('*',array('order_id'=>$orderInfo[0]['order_id']));
+            $itemsInfo = array();
             foreach($orderItems as $oitem){
-                $reship_items[] = array(
+                $itemsInfo[] = array(
                         'sku'=>$oitem['bn'],
                         'nums'=>$oitem['nums'],
                         'price'=>$oitem['price'],
-                        'oms_rma_id'=>0,//始终用新reship_id
+                        'oms_rma_id'=>1,
+                        'noshipped'=>1,
                     );
             }
+            $this->update_status($order_bn,'return_required',$tracking_code,$event_time,$itemsInfo);
+
         }
 		if($reship_items){
             foreach($reship_items as $key=>$item){
