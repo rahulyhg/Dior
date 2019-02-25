@@ -233,6 +233,9 @@ class qmwms_request_qimen{
                 'actualPrice'     => number_format($mx['true_price'],2,'.',''), //必须 实际成交价
                 'discountAmount'  =>number_format($mx['ax_pmt_price']/$mx['nums'],2,'.','')//单件商品折扣金额
             );
+            if($ordersData[0]['is_lettering']=='true'&&$mx['message1']){
+                $orderLine['extendProps'] = array('itemType'=>'engraving','itemMessage'=>$mx['message1']);
+            }
 
             if(count($orderItemsData) <=1){
                 $body['orderLines']['orderLine'] = $orderLine;
