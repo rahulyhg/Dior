@@ -156,6 +156,9 @@ class qmwms_request_qimen{
         $body['deliveryOrder']['receiverInfo']['area']        = $ordersData[0]['ship_district'];//
         $body['deliveryOrder']['receiverInfo']['detailAddress'] = $ordersData[0]['ship_addr'];//详细地址
         $body['deliveryOrder']['remark'] = $op_content;
+        if($ordersData[0]['is_lettering']=='true'){
+            $body['deliveryOrder']['engraving'] = 'Y';
+        }
 
         $extendPropsFapiao = array();
         if($ordersData[0]['is_einvoice'] == 'false'){
@@ -234,6 +237,8 @@ class qmwms_request_qimen{
                 'discountAmount'  =>number_format($mx['ax_pmt_price']/$mx['nums'],2,'.','')//单件商品折扣金额
             );
             if($ordersData[0]['is_lettering']=='true'&&$mx['message1']){
+                
+                $orderLine['engraving'] = 'Y';
                 $orderLine['extendProps'] = array('itemType'=>'engraving','itemMessage'=>$mx['message1']);
             }
 
