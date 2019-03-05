@@ -692,6 +692,7 @@ class erpapi_oms_order
                         'lettering_type' => $i['lettering_type'],
                         'message3' => $i['message3'],
                         'message4' => $i['message4'],
+                        'message6' => $i['lettering_tpl'],
                     )
                 )
             );
@@ -720,13 +721,13 @@ class erpapi_oms_order
         }
         $iorder['order_refer_source']=$post['order_refer_source'];
         
-        if (!empty($lettering)){
+        /*if (!empty($lettering)){
             $iorder['is_lettering']=true;
             $c_memo = array('op_name'=>'系统', 'op_time'=>date('Y-m-d H:i',time()), 'op_content'=>'刻字订单');
             $tmp[]  = $c_memo;
             $iorder['custom_mark']  = serialize($tmp);
             $tmp = null;
-        }
+        }*/
         
         if($post['is_presell']=="1"){
             $iorder['is_prepare']=true;

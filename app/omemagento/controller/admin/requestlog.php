@@ -31,7 +31,7 @@ class omemagento_ctl_admin_requestlog extends desktop_controller{
             0 => array('label'=>app::get('base')->_('全部'),'optional'=>false,'addon'=>$allCount),
             1 => array('label'=>app::get('base')->_('失败请求'),'filter'=>$base_filter,'optional'=>false,'addon'=>$failCount),
             2 => array('label'=>app::get('base')->_('成功请求'),'filter'=>array('status'=>'success'),'optional'=>false,'addon'=>$successCount),
-            5 => array('label'=>app::get('base')->_('5次失败请求'),'filter'=>array('status'=>'fail','retry|bthan'=>'5'),'optional'=>false,'addon'=>$failCount5),
+            5 => array('label'=>app::get('base')->_('5次失败请求'),'filter'=>array('status'=>'fail','retry|bthan'=>'4'),'optional'=>false,'addon'=>$failCount5),
             
         );
         return $sub_menu;

@@ -239,7 +239,10 @@ class qmwms_request_qimen{
             if($ordersData[0]['is_lettering']=='true'&&$mx['message1']){
                 
                 $orderLine['engraving'] = 'Y';
-                $orderLine['extendProps'] = array('itemType'=>'engraving','itemMessage'=>$mx['message1']);
+                if(preg_match('/[\x{4e00}-\x{9fa5}]/u',$mx['message1'])>0) {
+                    $font = 'Kunstler Script ';
+                }
+                $orderLine['extendProps'] = array('itemType'=>'engraving','itemMessage'=>$mx['message1'],'GNH_ID'=>'','Font'=>$font,'Template '=>$mx['message6']);
             }
 
             if(count($orderItemsData) <=1){
