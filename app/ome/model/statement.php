@@ -18,7 +18,14 @@ class ome_mdl_statement extends dbeav_model {
 				}
 				if($payments){
 					if($payments[0]['balance_status']=='not_has'){
-						return true;
+                        if($sdf['pay_type']=='收费'){//已导入过主支付信息，保存手续费
+                           $updateFee = array(
+                                'statement_id'=>$payments['0']['statement_id'],
+                                'pay_fee'=>(-1)*$sdf['explode_money'],
+                           );
+                           $this->save($updateFee);
+                        }
+                        return true;
 					}
 					if($payments[0]['balance_status']=='sync'){
 						return true;

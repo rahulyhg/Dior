@@ -10,7 +10,7 @@ class ome_auto_statement{
 		$orderObj= app::get('ome')->model('orders');
 
 		$payments = $paymentObj->getList('*',array('status'=>'succ','statement_status'=>'false'));
-	
+
 		foreach($payments as $row){
             //查询该支付流水是否先存在对账表  如果存在则直接对账
             $ifExist = $statementObj->getList('*',array('original_bn'=>$row['trade_no'],'original_type'=>'payments'));
@@ -436,6 +436,7 @@ class ome_auto_statement{
         $orderObj= app::get('ome')->model('orders');
         //对账
         if($paymentType=='payments'){
+            //echo '<pre>d';print_r($statementRow['tatal_amount']);print_r($dataRow['money']);exit;
             $data['order_id'] = $dataRow['order_id'];
             $order =$orderObj->getList("wx_order_bn,createtime,pay_bn",array('order_id'=>$dataRow['order_id']));
             $order = $order[0];
@@ -453,6 +454,12 @@ class ome_auto_statement{
             $data['balance_status']= ($statementRow['tatal_amount']==$dataRow['money'])?'auto':'require';
             $data['statement_id']= $statementRow['statement_id'];
 			$data['so_bn']= $order['so_order_num']?$order['so_order_num']:'';
+			//更新支付单的对账状态字段
+            if($statementObj->save($data))
+            {
+                $paymentObj = app::get('ome')->model('payments');
+                $paymentObj->update(array('statement_status'=>'true'),array('payment_id'=>$dataRow['payment_id']));
+            }
         }
         if($paymentType=='refunds'){
             $data = array(
@@ -474,7 +481,7 @@ class ome_auto_statement{
 			$reshipInfo = $refundMdl->db->select($sql);
 			//echo '<pre>q';print_r($reshipInfo);exit;
 			$data['so_bn']= $reshipInfo['0']['so_order_num']?$reshipInfo['0']['so_order_num']:'';
+            $statementObj->save($data);
         }
-        $statementObj->save($data);
     }
 }
